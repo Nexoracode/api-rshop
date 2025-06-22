@@ -1,8 +1,8 @@
 import { CategoryAttribute } from "src/modules/category-attribute/entities/category-attribute.entity";
 import { Product } from "src/modules/product/entities/product.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Tree, TreeChildren, TreeLevelColumn, TreeParent, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeLevelColumn, TreeParent, UpdateDateColumn } from "typeorm";
 import { ICategory } from "../interfaces/category.interface";
-import { Media } from "src/modules/upload/entities/image.entity";
+import { Media } from "src/modules/media/entities/image.entity";
 
 @Tree('closure-table')
 @Entity('categories')
@@ -30,16 +30,13 @@ export class Category implements ICategory {
     categoryAttributes: CategoryAttribute[];
 
     @Column({ default: 0 })
-    level: number
-
-    @Column({ nullable: true })
-    image: string;
+    level: number;
 
     @Column({ nullable: true })
     discount: string;
 
-    @OneToMany(() => Media, (media) => media.product)
-    media: Media[];
+    @OneToOne(() => Media, (media) => media.category)
+    media: Media;
 
     @CreateDateColumn({ name: 'created_at', select: false })
     createdAt: Date;

@@ -5,7 +5,7 @@ import { AppConfigModule } from './config/config.module';
 import { UserModule } from './modules/user/user.module';
 import { AddressModule } from './modules/address/address.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { UploadModule } from './modules/upload/upload.module';
+import { MediaModule } from './modules/media/media.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { CategoryAttributeModule } from './modules/category-attribute/category-attribute.module';
@@ -22,7 +22,7 @@ import { VariantProductModule } from './modules/variant-product/variant-product.
     UserModule,
     AddressModule,
     AuthModule,
-    UploadModule,
+    MediaModule,
     CategoryModule,
     ProductModule,
     CategoryAttributeModule,

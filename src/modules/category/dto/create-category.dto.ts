@@ -4,17 +4,19 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 export class CreateCategoryDto {
 
     @ApiProperty()
+    @IsString()
     @IsNotEmpty()
     title: string;
 
     @ApiProperty()
+    @IsString()
     @IsNotEmpty()
     slug: string;
 
     @ApiProperty()
-    @IsString()
+    @IsNumber()
     @IsOptional()
-    image: string;
+    mediaId: number;
 
     @ApiProperty()
     @IsString()

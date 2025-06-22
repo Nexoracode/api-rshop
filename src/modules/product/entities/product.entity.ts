@@ -1,5 +1,5 @@
 import { Category } from "src/modules/category/entities/category.entity";
-import { Media } from "src/modules/upload/entities/image.entity";
+import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 

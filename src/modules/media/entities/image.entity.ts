@@ -13,7 +13,7 @@ export class Media {
     url: string;
 
     @Column()
-    type: 'image' | 'video';
+    type: string;
 
     @Column({ nullable: true })
     altText?: string;

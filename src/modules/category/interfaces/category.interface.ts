@@ -1,6 +1,7 @@
 import { Product } from "src/modules/product/entities/product.entity";
 import { Category } from "../entities/category.entity";
 import { CategoryAttribute } from "src/modules/category-attribute/entities/category-attribute.entity";
+import { Media } from "src/modules/media/entities/image.entity";
 
 export interface ICategory {
     id: number;
@@ -10,7 +11,7 @@ export interface ICategory {
     products: Product[];
     categoryAttributes: CategoryAttribute[];
     level: number;
-    image: string;
+    media: Media;
     discount: string;
     createdAt: Date;
     updatedAt: Date;
