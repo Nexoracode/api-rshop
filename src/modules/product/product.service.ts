@@ -1,80 +1,74 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { CategoryService } from '../category/category.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { IProductService } from './interfaces/product.service.interface';
+import { IProductResponse } from './interfaces/product.response';
+import { runInTransaction } from 'src/common/helpers/transaction.helper';
+import { Media } from '../media/entities/image.entity';
+import { AttributeValue } from '../attributes/attribute-value/entities/attribute-value.entity';
+import { VariantProduct } from '../variant-product/entities/variant-product.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
-export class ProductService {
+export class ProductService implements IProductService {
     constructor(
-        @InjectRepository(Product)
-        private readonly productRepo: Repository<Product>,
-        private readonly categoryService: CategoryService,
+        private dataSource: DataSource,
     ) { }
 
-    async findAllProduct() {
-        return await this.productRepo.find({ relations: ['category', 'variants'] });
+    async create(data: CreateProductDto): Promise<IProductResponse> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const product = manager.create(Product, data);
+            if (!data.requiresPreparation) {
+                product.preparationDays = null;
+            }
+            const savedProduct = await manager.save(Product, product);
+            const category = manager.findOne(Category, { where: { id: data.categoryId } })
+            if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
+
+            if (data.mediaIds?.length) {
+                await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
+            }
+            if (data.attributeValueIds?.length) {
+                await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct })
+            }
+            if (data.variantIds?.length) {
+                await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct })
+            }
+            return savedProduct;
+        })
     }
 
-    async findProductById(id: number) {
-        const product = await this.productRepo.findOne({ where: { id }, relations: ['category', 'variants'] })
-        if (!product) throw new NotFoundException('product not found');
-        return product;
+
+    async update(id: number, data: UpdateProductDto): Promise<IProductResponse> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const product = await manager.findOne(Product, { where: { id } });
+            if (!product) throw new NotFoundException('محصول یافت نشد');
+
+            const category = manager.findOne(Category, { where: { id: data.categoryId } })
+            if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
+            const updated = manager.merge(Product, product, data);
+            if (!data.requiresPreparation) {
+                updated.preparationDays = null;
+            }
+            const savedProduct = await manager.save(Product, updated);
+
+            if (data.mediaIds?.length) {
+                await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
+            }
+
+            if (data.attributeValueIds?.length) {
+                await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct });
+            }
+
+            if (data.variantIds?.length) {
+                await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct });
+            }
+
+            return savedProduct;
+        });
     }
-
-    async findProductByCategoryId(categoryId: number) {
-        const product = await this.productRepo.find({ where: { category: { id: categoryId } }, relations: ['category', 'variants'] });
-        return product;
-    }
-
-    async createProduct(createDto: CreateProductDto) {
-        // const category = await this.categoryService.findByIdWithDescendants(createDto.categoryId);
-        // const product = this.productRepo.create({
-        //     title: createDto.title,
-        //     description: createDto.description,
-        //     category,
-        // })
-        // return await this.productRepo.save(product);
-    }
-
-    async updateProduct(updateDto: UpdateProductDto, id: number) {
-        // const category = await this.categoryService.findByIdWithDescendants(updateDto.categoryId);
-        // const product = await this.findProductById(id);
-        // product.title = updateDto.title;
-        // product.description = updateDto.description!;
-        // product.category = category
-        // return await this.productRepo.save(product);
-    }
-
-    // async findVariantByProduct(productId: number) {
-    //       await this.pService.findProductById(productId);
-    //       const variants = await this.pvRepo.find({
-    //           where: { product: { id: productId } },
-    //           relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
-    //       });
-    //       return variants.map(variant => {
-    //           const grouped = {};
-    //           for (const attr of variant.attributes) {
-    //               const groupName = attr.attribute.group?.name || 'مشخصات کلی';
-    //               if (!grouped[groupName]) grouped[groupName] = [];
-    //               grouped[groupName].push({
-    //                   attribute: attr.attribute.name,
-    //                   value: attr.value.value,
-    //               })
-    //           }
-
-    //           return {
-    //               id: variant.id,
-    //               sku: variant.sku,
-    //               price: variant.price,
-    //               stock: variant.stock,
-    //               groups: Object.entries(grouped).map(([group, items]) => ({
-    //                   group,
-    //                   items,
-    //               }))
-    //           }
-    //       });
-    //   }
 }

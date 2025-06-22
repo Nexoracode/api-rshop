@@ -9,14 +9,23 @@ export class VariantAttributeValue {
     id: number;
 
     @ManyToOne(() => VariantProduct, variant => variant.attributes, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'variant_id' })
     variant: VariantProduct;
 
-    @ManyToOne(() => Attribute, { eager: true })
-    @JoinColumn({ name: 'attribute_id' })
+    @Column()
+    variantId: number;
+
+    @ManyToOne(() => Attribute, { onDelete: 'CASCADE' })
     attribute: Attribute;
 
-    @ManyToOne(() => AttributeValue, { eager: true })
-    @JoinColumn({ name: 'value_id' })
+    @Column()
+    attributeId: number;
+
+    @ManyToOne(() => AttributeValue, { onDelete: 'CASCADE' })
     value: AttributeValue;
+
+    @Column()
+    valueId: number;
+
+    @Column({ nullable: true })
+    label: string;
 }

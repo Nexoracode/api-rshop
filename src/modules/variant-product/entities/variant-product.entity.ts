@@ -8,9 +8,6 @@ export class VariantProduct implements IVariantProduct {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Product, product => product.variants, { onDelete: 'CASCADE' })
-    product: Product;
-
     @Column('decimal')
     price: number;
 
@@ -19,6 +16,12 @@ export class VariantProduct implements IVariantProduct {
 
     @Column()
     sku: string;
+
+    @ManyToOne(() => Product, product => product.variants, { onDelete: 'CASCADE' })
+    product: Product
+
+    @Column()
+    productId: number;
 
     @OneToMany(() => VariantAttributeValue, value => value.variant, { cascade: true })
     attributes: VariantAttributeValue[]

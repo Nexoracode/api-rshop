@@ -18,14 +18,23 @@ export class Media {
     @Column({ nullable: true })
     altText?: string;
 
-    @ManyToOne(() => Product, (product) => product.media, { nullable: true, onDelete: 'CASCADE' })
+    @ManyToOne(() => Product, (product) => product.media, { nullable: true, onDelete: 'SET NULL' })
     product?: Product | null;
 
-    @ManyToOne(() => Category, (category) => category.media, { nullable: true, onDelete: 'CASCADE' })
+    @Column({ nullable: true })
+    productId: number;
+
+    @ManyToOne(() => Category, (category) => category.media, { nullable: true, onDelete: 'SET NULL' })
     category?: Category | null;
 
-    @ManyToOne(() => User, (user) => user.media, { nullable: true, onDelete: 'CASCADE' })
+    @Column({ nullable: true })
+    categoryId: number;
+
+    @ManyToOne(() => User, (user) => user.media, { nullable: true, onDelete: 'SET NULL' })
     user?: User | null
+
+    @Column({ nullable: true })
+    userId: number;
 
     @CreateDateColumn()
     createdAt: Date;

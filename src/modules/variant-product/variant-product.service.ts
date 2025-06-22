@@ -16,6 +16,9 @@ export class VariantProductService implements IVariantProductService {
     private readonly varRepo: Repository<VariantProduct>,
     private readonly productService: ProductService,
   ) { }
+  create(data: CreateVariantProductDto): Promise<IVariantProductGroupedResponse> {
+    throw new Error('Method not implemented.');
+  }
   findAll(): Promise<IVariantProductGroupedResponse[]> {
     throw new Error('Method not implemented.');
   }
@@ -29,25 +32,26 @@ export class VariantProductService implements IVariantProductService {
     throw new Error('Method not implemented.');
   }
 
-  async create(data: CreateVariantProductDto): Promise<IVariantProductGroupedResponse> {
-    await this.productService.findProductById(data.productId);
-    const variant = this.varRepo.create(data);
-    await this.varRepo.save(variant);
-    const loaded = await this.varRepo.findOne({
-      where: { id: variant.id },
-      relations: [
-        'attributes',
-        'attributes.attribute',
-        'attributes.attribute.group',
-        'attributes.value',
-        'product',
-      ]
-    });
 
-    if (!loaded) {
-      throw new NotFoundException('Variant product not found');
-    }
+  // async create(data: CreateVariantProductDto): Promise<IVariantProductGroupedResponse> {
+  //   await this.productService.findProductById(data.productId);
+  //   const variant = this.varRepo.create(data);
+  //   await this.varRepo.save(variant);
+  //   const loaded = await this.varRepo.findOne({
+  //     where: { id: variant.id },
+  //     relations: [
+  //       'attributes',
+  //       'attributes.attribute',
+  //       'attributes.attribute.group',
+  //       'attributes.value',
+  //       'product',
+  //     ]
+  //   });
 
-    return VariantProductMapper.toGroupedResponse(loaded);
-  }
+  //   if (!loaded) {
+  //     throw new NotFoundException('Variant product not found');
+  //   }
+
+  //   return VariantProductMapper.toGroupedResponse(loaded);
+  // }
 }

@@ -2,32 +2,73 @@ import { Category } from "src/modules/category/entities/category.entity";
 import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { IProduct } from "../interfaces/product.interface";
+import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 
-@Entity()
-export class Product {
+@Entity('products')
+export class Product implements IProduct {
+
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    title: string;
+    name: string;
 
-    @Column({ type: 'text' })
-    description: string;
+    @Column('decimal')
+    price: number;
+
+    @Column('int')
+    stock: number;
+
+    @Column({ default: false })
+    isSameDayShipping: boolean;
+
+    @Column({ default: false })
+    requiresPreparation: boolean;
+
+    @Column({ type: 'int', nullable: true })
+    preparationDays?: number | null;
+
+    @Column({ default: false })
+    isLimitedStock: boolean;
+
+    @Column({ nullable: true, type: 'decimal' })
+    discountAmount?: number | null | undefined;
+
+    @Column({ nullable: true, type: 'float' })
+    discountPercent?: number | null | undefined;
+
+    @Column({ default: false })
+    isFeatured: boolean;
+
+    @Column({ type: 'decimal', nullable: true })
+    weight: number;
+
+    @Column({ type: 'text', nullable: true })
+    description?: string | null | undefined;
+
+    @Column({ default: false })
+    isVisible: boolean;
 
     @ManyToOne(() => Category, category => category.products)
-    @JoinColumn({ name: 'category_id' })
     category: Category;
+
+    @Column()
+    categoryId: number;
+
+    @OneToMany(() => Media, media => media.product, { cascade: true })
+    media: Media[];
+
+    @OneToMany(() => AttributeValue, (attrValue) => attrValue.product, { cascade: true })
+    attributes: AttributeValue[];
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];
 
-    @OneToMany(() => Media, (media) => media.product)
-    media: Media[];
-
-    @CreateDateColumn({ name: 'created_at' })
+    @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'updated_at' })
+    @UpdateDateColumn()
     updatedAt: Date;
 
 }
