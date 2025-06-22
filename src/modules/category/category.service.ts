@@ -21,7 +21,6 @@ export class CategoryService implements ICategoryService {
         @InjectRepository(Media)
         private readonly mediaRepo: Repository<Media>,
         private dataSource: DataSource,
-        private uploadService: UploadService
     ) {
         this.treeCatRepo = this.dataSource.getTreeRepository(Category);
     }
@@ -40,73 +39,87 @@ export class CategoryService implements ICategoryService {
     }
 
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
-        const node = await this.treeCatRepo.findOne({ where: { id } })
+        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['media'] })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
         const category = await this.treeCatRepo.findDescendantsTree(node);
         return CategoryMapper.toResponse(category);
     }
 
-    async create(data: CreateCategoryDto): Promise<ICategoryResponse> {
+    async create(data: CreateCategoryDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             let level = 0;
-            const exists = await this.catRepo.findOne({ where: { title: data.title, slug: data.slug }, });
-            if (exists) throw new BadRequestException('نام یا نامک دسته تکراری می باشد.');
+            const existingTitle = await this.catRepo.findOne({ where: { title: data.title } });
+            if (existingTitle)
+                throw new BadRequestException('عنوان دسته بندی تکراری است.');
+            const existingSlug = await this.catRepo.findOne({ where: { slug: data.slug } });
+            if (existingSlug)
+                throw new BadRequestException('نامک دسته بندی تکراری است.');
             if (data.parentId && data.parentId !== 0) {
                 const parent = await manager.findOne(Category, { where: { id: data.parentId } });
                 if (!parent) throw new NotFoundException('دسته مادر یافت نشد');
                 level = parent.level;
             }
-            const media = await this.mediaRepo.findOne({ where: { id: data.mediaId } })
-            if (!media) throw new NotFoundException('فایل یافت نشد.');
             const category = manager.create(Category, {
                 ...data,
                 parent: data.parentId === 0 ? null : { id: data.parentId },
                 level: level + 1,
             });
             const savedCategory = await manager.save(Category, category);
-            await manager.update(Media, { id: data.mediaId }, { category });
+            if (data.mediaId) {
+                const media = await manager.findOne(Media, { where: { id: data.mediaId } });
+                if (!media) throw new NotFoundException('فایل مدیا یافت نشد.');
+                await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
+            }
             return CategoryMapper.toResponse(savedCategory);
-        })
+        });
     }
 
     async update(id: number, data: UpdateCategoryDto) {
         return runInTransaction(this.dataSource, async (manager) => {
-            const existsCategory = await this.findOne(id);
+            const existsCategory = await manager.findOne(Category, { where: { id } });
             if (!existsCategory) throw new NotFoundException('دسته مورد نظر یافت نشد');
-            let existsNameSlug = await this.catRepo.findOne({ where: { title: data.title, slug: data.slug } });
-            if (existsNameSlug) throw new BadRequestException('نام یا نامک دسته تکراری می باشد.');
-            const category = manager.merge(Category, existsCategory, data);
-            const mediaExists = await this.mediaRepo.findOne({ where: { category: { id } } });
-            if (mediaExists) {
-                await manager.remove(Media, mediaExists)
-                await this.uploadService.deleteFileByUrl(mediaExists.url);
-            }
-            const savedCategory = await manager.save(Category, category);
-            await manager.update(Media, { id: data.mediaId }, { category })
-            return CategoryMapper.toResponse(savedCategory);
-        })
-    }
 
+            const existingTitle = await this.catRepo.findOne({ where: { title: data.title } });
+            if (existingTitle && existingTitle.id !== id)
+                throw new BadRequestException('عنوان دسته بندی تکراری است.');
+
+            const existingSlug = await this.catRepo.findOne({ where: { slug: data.slug } });
+            if (existingSlug && existingSlug.id !== id)
+                throw new BadRequestException('نامک دسته بندی تکراری است.');
+
+            const category = manager.merge(Category, existsCategory, data);
+            const savedCategory = await manager.save(Category, category);
+
+            if (data.mediaId) {
+                const mediaDeleted = await manager.findOne(Media, { where: { category: { id } } });
+                if (mediaDeleted) await manager.remove(Media, mediaDeleted);
+                const media = await manager.findOne(Media, { where: { id: data.mediaId } });
+                if (!media) throw new NotFoundException('فایل مدیا یافت نشد.');
+                await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
+            } else {
+                const media = await manager.findOne(Media, { where: { category: { id } } })
+                if (media) await manager.remove(Media, media);
+            }
+            return CategoryMapper.toResponse(savedCategory);
+        });
+    }
 
     async remove(id: number): Promise<Record<string, string | null>> {
         return runInTransaction(this.dataSource, async (manager) => {
-            // const node = await this.treeCatRepo.findOne({ where: { id } })
-            // if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
-            // const category = await this.treeCatRepo.findDescendantsTree(node);
-            // const mapper = CategoryMapper.toResponse(category);
-            // if (!mapper.isDelete) throw new BadRequestException('حذف امکان پذیر نیست، دسته خالی نمی باشد.');
-            // const removedCategory = await manager.delete(Category, id);
-            // if (removedCategory.affected === 0) throw new BadRequestException('حذف انجام نشد، خطایی یافت شد');
-            const mediaExists = await this.mediaRepo.findOne({ where: { category: { id } } });
-            // if (mediaExists) {
-            //     await manager.remove(Media, mediaExists)
-            //     await this.uploadService.deleteFileByUrl(mediaExists.url);
-            // }
-            await this.uploadService.deleteFileByUrl(mediaExists!.url);
-            return {
-                message: 'حذف با موفقیت انجام شد',
-                data: null,
+            const node = await this.treeCatRepo.findOne({ where: { id } })
+            if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
+            const category = await this.treeCatRepo.findDescendantsTree(node);
+            const mapper = CategoryMapper.toResponse(category);
+            if (!mapper.isDelete) {
+                throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل زیرمجموعه یا آیتم است');
             }
+            const media = await manager.findOne(Media, { where: { category: { id } } });
+            if (media) await manager.remove(Media, media);
+
+            const deleted = await manager.delete(Category, id);
+            if (deleted.affected === 0)
+                throw new BadRequestException('حذف انجام نشد، خطایی رخ داده است');
+            return { message: 'دسته با موفقیت حذف شد', data: null };
         })
     }
 }

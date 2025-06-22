@@ -19,13 +19,13 @@ export class Media {
     altText?: string;
 
     @ManyToOne(() => Product, (product) => product.media, { nullable: true, onDelete: 'CASCADE' })
-    product?: Product;
+    product?: Product | null;
 
     @ManyToOne(() => Category, (category) => category.media, { nullable: true, onDelete: 'CASCADE' })
-    category?: Category;
+    category?: Category | null;
 
     @ManyToOne(() => User, (user) => user.media, { nullable: true, onDelete: 'CASCADE' })
-    user?: User
+    user?: User | null
 
     @CreateDateColumn()
     createdAt: Date;

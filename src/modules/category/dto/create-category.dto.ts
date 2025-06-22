@@ -16,7 +16,7 @@ export class CreateCategoryDto {
     @ApiProperty()
     @IsNumber()
     @IsOptional()
-    mediaId: number;
+    mediaId?: number | null;
 
     @ApiProperty()
     @IsString()
