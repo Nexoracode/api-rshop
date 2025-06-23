@@ -1,19 +1,22 @@
 import { Category } from "src/modules/category/entities/category.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Attribute } from "../../attribute/entities/attribute.entity";
+import { IAttributeGroup } from "../interfaces/attribute-group.interface";
 
 @Entity()
-export class AttributeGroup {
+export class AttributeGroup implements IAttributeGroup {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ length: 200, unique: true })
     name: string;
 
-    @ManyToOne(() => Category, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'category_id' })
-    category: Category;
+    @Column({ nullable: true })
+    slug?: string;
 
-    @OneToMany(() => Attribute, attribute => attribute.group, { eager: true })
+    @Column({ type: 'int', nullable: true })
+    displayOrder?: number;
+
+    @OneToMany(() => Attribute, attribute => attribute.group)
     attributes: Attribute[]
 }

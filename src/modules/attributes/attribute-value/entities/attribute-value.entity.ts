@@ -1,9 +1,11 @@
 import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Attribute } from "../../attribute/entities/attribute.entity";
 import { Product } from "src/modules/product/entities/product.entity";
+import { IAttributeValue } from "../interfaces/attribute-value.interface";
 
 @Entity()
-export class AttributeValue {
+export class AttributeValue implements IAttributeValue {
+
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -21,4 +23,10 @@ export class AttributeValue {
 
     @Column()
     attributeId: number;
+
+    @Column({ nullable: true })
+    displayColor?: string;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
 }

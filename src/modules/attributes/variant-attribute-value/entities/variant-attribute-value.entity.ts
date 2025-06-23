@@ -2,9 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Attribute } from "../../attribute/entities/attribute.entity";
 import { AttributeValue } from "../../attribute-value/entities/attribute-value.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
+import { IVariantAttributeValue } from "../interfaces/variant-attribute-value.interface";
 
 @Entity()
-export class VariantAttributeValue {
+export class VariantAttributeValue implements IVariantAttributeValue {
     @PrimaryGeneratedColumn()
     id: number;
 

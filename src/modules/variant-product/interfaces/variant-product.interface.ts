@@ -3,9 +3,11 @@ import { Product } from "src/modules/product/entities/product.entity";
 
 export interface IVariantProduct {
     id: number;
-    price: number;
     stock: number;
-    sku: string;
+    price: number;
+    isActive?: boolean | true;
     product: Product;
+    productId: number;
+    sku: string;
     attributes: VariantAttributeValue[];
 }

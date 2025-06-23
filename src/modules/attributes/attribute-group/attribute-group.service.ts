@@ -22,7 +22,6 @@ export class AttributeGroupService {
     }
     group = this.repo.create({
       name: dto.name,
-      category,
     });
     return await this.repo.save(group);
   }

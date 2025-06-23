@@ -8,11 +8,11 @@ export class VariantProduct implements IVariantProduct {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('decimal')
-    price: number;
-
-    @Column()
+    @Column({ type: 'int', nullable: true })
     stock: number;
+
+    @Column({ type: 'int', nullable: true })
+    price: number;
 
     @Column()
     sku: string;
@@ -23,6 +23,6 @@ export class VariantProduct implements IVariantProduct {
     @Column()
     productId: number;
 
-    @OneToMany(() => VariantAttributeValue, value => value.variant, { cascade: true })
+    @OneToMany(() => VariantAttributeValue, value => value.variant, { cascade: true, eager: true })
     attributes: VariantAttributeValue[]
 }
