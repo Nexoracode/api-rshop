@@ -22,6 +22,5 @@ export interface IProductResponse {
     category: ICategory;
     categoryId: number;
     media: Media[];
-    attributes: AttributeValue[];
     variants: VariantProduct[];
 }

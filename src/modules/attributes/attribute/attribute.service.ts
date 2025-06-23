@@ -18,6 +18,10 @@ export class AttributeService implements IAttributeService {
     @InjectRepository(AttributeGroup)
     private readonly groupRepo: Repository<AttributeGroup>,
   ) { }
+  async findAll(): Promise<IAttributeResponse[]> {
+    const attributes = await this.attributeRepo.find({ relations: ['group'] });
+    return attributes.map((attribute) => AttributeMapper.toResponse(attribute));
+  }
 
   async create(data: CreateAttributeDto): Promise<IAttributeResponse> {
     const group = data.groupId ? await this.groupRepo.findOne({ where: { id: data.groupId } }) : null;
@@ -41,5 +45,15 @@ export class AttributeService implements IAttributeService {
     Object.assign(attribute, data);
     const saved = await this.attributeRepo.save(attribute);
     return AttributeMapper.toResponse(saved);
+  }
+  async remove(id: number): Promise<Object> {
+    const deletedAttribute = await this.attributeRepo.delete(id);
+    if (deletedAttribute.affected === 0) {
+      throw new NotFoundException('ویژگی مورد نظر یافت نشد');
+    }
+    return {
+      message: 'حذف با موفقیت انجام شد.',
+      data: null,
+    }
   }
 }

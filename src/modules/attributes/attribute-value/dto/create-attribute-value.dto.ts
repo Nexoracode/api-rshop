@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { IsNotEmpty, IsNumber, IsOptional } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class CreateAttributeValueDto {
 
@@ -11,7 +10,10 @@ export class CreateAttributeValueDto {
     @ApiProperty()
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }) => Number(value))
-    @Transform(({ obj }) => obj.attribute_id, { toClassOnly: true })
     attributeId: number;
+
+    @ApiProperty({ required: false, default: true })
+    @IsOptional()
+    @IsBoolean()
+    isActive?: boolean | true;
 }

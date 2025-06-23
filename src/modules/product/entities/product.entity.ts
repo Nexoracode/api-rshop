@@ -63,9 +63,6 @@ export class Product implements IProduct {
     @OneToMany(() => Media, media => media.product, { cascade: true })
     media: Media[];
 
-    @OneToMany(() => AttributeValue, (attrValue) => attrValue.product, { cascade: true })
-    attributes: AttributeValue[];
-
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];
 

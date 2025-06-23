@@ -12,12 +12,6 @@ export class AttributeValue implements IAttributeValue {
     @Column()
     value: string;
 
-    @ManyToOne(() => Product, product => product.attributes, { onDelete: 'CASCADE' })
-    product: Product;
-
-    @Column()
-    productId: number;
-
     @ManyToOne(() => Attribute, attribute => attribute.values, { nullable: true, onDelete: 'CASCADE' })
     attribute: Attribute;
 

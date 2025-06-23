@@ -36,9 +36,9 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             }
-            if (data.attributeValueIds?.length) {
-                await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct })
-            }
+            // if (data.attributeValueIds?.length) {
+            //     await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct })
+            // }
             if (data.variantIds?.length) {
                 await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct })
             }
@@ -65,9 +65,9 @@ export class ProductService implements IProductService {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
 
-            if (data.attributeValueIds?.length) {
-                await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct });
-            }
+            // if (data.attributeValueIds?.length) {
+            //     await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct });
+            // }
 
             if (data.variantIds?.length) {
                 await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct });
