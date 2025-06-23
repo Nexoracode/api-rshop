@@ -5,12 +5,12 @@ import { UpdateAttributeValueDto } from './dto/update-attribute-value.dto';
 
 @Controller('attribute-value')
 export class AttributeValueController {
-  constructor(private readonly attributeValueService: AttributeValueService) {}
+  constructor(private readonly attributeValueService: AttributeValueService) { }
 
-  @Post()
-  create(@Body() createAttributeValueDto: CreateAttributeValueDto) {
-    return this.attributeValueService.create(createAttributeValueDto);
-  }
+  // @Post()
+  // create(@Body() createAttributeValueDto: CreateAttributeValueDto) {
+  //   return this.attributeValueService.create(createAttributeValueDto);
+  // }
 
   @Get()
   findAll() {

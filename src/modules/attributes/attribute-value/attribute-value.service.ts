@@ -14,14 +14,14 @@ export class AttributeValueService {
     private readonly attributeService: AttributeService
   ) { }
 
-  async create(createDto: CreateAttributeValueDto) {
-    const attribute = await this.attributeService.findOne(createDto.attributeId);
-    const attributeValue = this.avRepo.create({
-      ...createDto,
-      attribute,
-    });
-    return this.avRepo.save(attributeValue);
-  }
+  // async create(createDto: CreateAttributeValueDto) {
+  //   const attribute = await this.attributeService.findOne(createDto.attributeId);
+  //   const attributeValue = this.avRepo.create({
+  //     ...createDto,
+  //     attribute,
+  //   });
+  //   return this.avRepo.save(attributeValue);
+  // }
 
   async findAll() {
     return await this.avRepo.find({ relations: ['attribute'] });

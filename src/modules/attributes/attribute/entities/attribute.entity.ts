@@ -7,6 +7,7 @@ import { AttributeUnit } from "src/common/enums/attribute.enum";
 
 @Entity({ name: 'attributes' })
 export class Attribute implements IAttribute {
+    groupId: number;
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -23,10 +24,8 @@ export class Attribute implements IAttribute {
         nullable: true,
         onDelete: 'SET NULL'
     })
+    @JoinColumn({ name: 'group_id' })
     group: AttributeGroup;
-
-    @Column({ nullable: true })
-    groupId: number;
 
     @OneToMany(() => AttributeValue, (values) => values.attribute, {
         cascade: true,
@@ -43,4 +42,7 @@ export class Attribute implements IAttribute {
 
     @Column({ type: 'int', nullable: true })
     displayOrder?: number | undefined;
+
+    @Column({ type: 'boolean', default: false })
+    isVariant: boolean;
 }

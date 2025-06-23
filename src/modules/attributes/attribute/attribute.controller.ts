@@ -12,28 +12,28 @@ export class AttributeController {
     return this.attributeService.create(createAttributeDto);
   }
 
-  @Get()
-  findAll() {
-    return this.attributeService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.attributeService.findAll();
+  // }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.attributeService.findOne(id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id', ParseIntPipe) id: number) {
+  //   return this.attributeService.findOne(id);
+  // }
 
-  @Get('by-category/:categoryId')
-  findByCategoryId(@Param('categoryId', ParseIntPipe) categoryId: number) {
-    return this.attributeService.findByCategory(categoryId);
-  }
+  // @Get('by-category/:categoryId')
+  // findByCategoryId(@Param('categoryId', ParseIntPipe) categoryId: number) {
+  //   return this.attributeService.findByCategory(categoryId);
+  // }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateAttributeDto: UpdateAttributeDto) {
-    return this.attributeService.update(id, updateAttributeDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeDto) {
+    return this.attributeService.update(id, data);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.attributeService.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.attributeService.remove(id);
+  // }
 }
