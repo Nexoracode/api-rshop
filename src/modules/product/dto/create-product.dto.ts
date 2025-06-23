@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayMaxSize, IsArray, IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateIf } from "class-validator";
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateIf } from "class-validator";
+import { WeightUnit } from "src/common/enums/product.enum";
 
 export class CreateProductDto {
 
@@ -43,6 +44,10 @@ export class CreateProductDto {
     @IsOptional()
     @IsNumber()
     weight?: number;
+
+    @ApiProperty({ enum: WeightUnit })
+    @IsEnum(WeightUnit)
+    weightUnit: WeightUnit
 
     @IsOptional()
     @IsBoolean()

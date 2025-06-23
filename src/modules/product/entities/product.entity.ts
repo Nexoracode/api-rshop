@@ -4,6 +4,7 @@ import { VariantProduct } from "src/modules/variant-product/entities/variant-pro
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { IProduct } from "../interfaces/product.interface";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
+import { WeightUnit } from "src/common/enums/product.enum";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -11,7 +12,7 @@ export class Product implements IProduct {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @Column('decimal')
@@ -43,6 +44,9 @@ export class Product implements IProduct {
 
     @Column({ type: 'decimal', nullable: true })
     weight: number;
+
+    @Column({ type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
+    weightUnit: WeightUnit;
 
     @Column({ type: 'text', nullable: true })
     description?: string | null | undefined;

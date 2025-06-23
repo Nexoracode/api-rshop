@@ -1,5 +1,7 @@
+import { WeightUnit } from "src/common/enums/product.enum";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 import { Category } from "src/modules/category/entities/category.entity";
+import { ICategory } from "src/modules/category/interfaces/category.interface";
 import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 
@@ -16,9 +18,10 @@ export interface IProduct {
     discountPercent?: number | null;
     isFeatured: boolean | false;
     weight: number;
+    weightUnit: WeightUnit,
     description?: string | null;
     isVisible: boolean | false;
-    category: Category;
+    category: ICategory;
     categoryId: number;
     media: Media[],
     attributes: AttributeValue[],

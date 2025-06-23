@@ -21,14 +21,18 @@ export class ProductService implements IProductService {
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
+            const duplicate = await manager.findOne(Product, { where: { name: data.name } });
+            if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
+            const category = await manager.findOne(Category, { where: { id: data.categoryId } });
+            if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             const product = manager.create(Product, data);
             if (!data.requiresPreparation) {
                 product.preparationDays = null;
             }
-            const savedProduct = await manager.save(Product, product);
-            const category = manager.findOne(Category, { where: { id: data.categoryId } })
-            if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-
+            const savedProduct = await manager.save(Product, {
+                ...product,
+                category,
+            });
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             }
@@ -47,7 +51,8 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const product = await manager.findOne(Product, { where: { id } });
             if (!product) throw new NotFoundException('محصول یافت نشد');
-
+            const duplicate = await manager.findOne(Product, { where: { name: data.name } });
+            if (duplicate && duplicate.id !== id) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = manager.findOne(Category, { where: { id: data.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             const updated = manager.merge(Product, product, data);

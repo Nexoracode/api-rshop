@@ -11,7 +11,7 @@ export interface ICategory {
     products: Product[];
     categoryAttributes: CategoryAttribute[];
     level: number;
-    media: Media;
+    media: Media | null;
     discount: string;
     createdAt: Date;
     updatedAt: Date;
