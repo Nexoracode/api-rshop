@@ -2,5 +2,6 @@ export enum AttributeUnit {
     SELECT = 'select',
     TEXT = 'text',
     NUMBER = 'number',
-    BOOLEAN = 'boolean'
+    BOOLEAN = 'boolean',
+    COLOR = 'color',
 }

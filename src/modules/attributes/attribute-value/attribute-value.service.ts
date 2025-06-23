@@ -51,7 +51,7 @@ export class AttributeValueService implements IAttributeValueService {
       throw new NotFoundException('مقدار ویژگی یافت نشد.');
     }
     return {
-      message: 'حذف ویژگی با موفیت انجام شد',
+      message: 'حذف مقدار ویژگی با موفیت انجام شد',
       data: null,
     }
   }
