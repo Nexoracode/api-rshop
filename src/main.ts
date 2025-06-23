@@ -8,6 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/interceptors/http-exception';
 import { SnakeCaseInterceptor } from './common/interceptors/snake-case.interceptor';
+import * as fs from 'fs'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -29,8 +30,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('RShop')
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/swagger', app, documentFactory);
+  const document = SwaggerModule.createDocument(app, config);
+  fs.writeFileSync('./postman.json', JSON.stringify(document, null, 2));
+  SwaggerModule.setup('api/swagger', app, document);
   await app.listen(process.env.PORT ?? 3001);
 }
 

@@ -1,0 +1,1678 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/auth/request-otp": {
+      "post": {
+        "operationId": "AuthController_requestOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/verify-otp": {
+      "post": {
+        "operationId": "AuthController_verifyDto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "operationId": "UserController_findAllUI",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "operationId": "UserController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateUserDto"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "phone/email already exists"
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/cms": {
+      "get": {
+        "operationId": "UserController_findAllCMS",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "operationId": "UserController_findOneUI",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UserController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/cms/{id}": {
+      "get": {
+        "operationId": "UserController_findOneCMS",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/me/addresses": {
+      "get": {
+        "operationId": "UserController_findMeAddress",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "operationId": "UserController_createAddressForUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{id}/addresses": {
+      "post": {
+        "operationId": "UserController_createAddressForAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/me/addresses/{addressId}": {
+      "patch": {
+        "operationId": "UserController_updateUserAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_deleteUserAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/category/upload": {
+      "post": {
+        "operationId": "CategoryController_uploadImages",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "List of Category",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      }
+    },
+    "/api/category": {
+      "post": {
+        "operationId": "CategoryController_createCategory",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      },
+      "get": {
+        "operationId": "CategoryController_findAllTree",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      }
+    },
+    "/api/category/{id}": {
+      "get": {
+        "operationId": "CategoryController_findByIdWithDescendants",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      },
+      "patch": {
+        "operationId": "CategoryController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      },
+      "delete": {
+        "operationId": "CategoryController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Category"
+        ]
+      }
+    },
+    "/api/product": {
+      "post": {
+        "operationId": "ProductController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Product"
+        ]
+      }
+    },
+    "/api/product/{id}": {
+      "patch": {
+        "operationId": "ProductController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Product"
+        ]
+      }
+    },
+    "/api/variant-attribute-value": {
+      "post": {
+        "operationId": "VariantAttributeValueController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVariantAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantAttributeValue"
+        ]
+      },
+      "get": {
+        "operationId": "VariantAttributeValueController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantAttributeValue"
+        ]
+      }
+    },
+    "/api/variant-attribute-value/{id}": {
+      "get": {
+        "operationId": "VariantAttributeValueController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantAttributeValue"
+        ]
+      },
+      "patch": {
+        "operationId": "VariantAttributeValueController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVariantAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantAttributeValue"
+        ]
+      },
+      "delete": {
+        "operationId": "VariantAttributeValueController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantAttributeValue"
+        ]
+      }
+    },
+    "/api/category-attribute": {
+      "post": {
+        "operationId": "CategoryAttributeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CategoryAttribute"
+        ]
+      }
+    },
+    "/api/category-attribute/{categoryId}": {
+      "get": {
+        "operationId": "CategoryAttributeController_findOne",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CategoryAttribute"
+        ]
+      }
+    },
+    "/api/category-attribute/{id}": {
+      "delete": {
+        "operationId": "CategoryAttributeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "CategoryAttribute"
+        ]
+      }
+    },
+    "/api/attribute": {
+      "post": {
+        "operationId": "AttributeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Attribute"
+        ]
+      },
+      "get": {
+        "operationId": "AttributeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Attribute"
+        ]
+      }
+    },
+    "/api/attribute/{id}": {
+      "patch": {
+        "operationId": "AttributeController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Attribute"
+        ]
+      },
+      "delete": {
+        "operationId": "AttributeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Attribute"
+        ]
+      }
+    },
+    "/api/attribute-value": {
+      "post": {
+        "operationId": "AttributeValueController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeValue"
+        ]
+      }
+    },
+    "/api/attribute-value/attribute/{id}": {
+      "get": {
+        "operationId": "AttributeValueController_findByAttribute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeValue"
+        ]
+      }
+    },
+    "/api/attribute-value/{id}": {
+      "delete": {
+        "operationId": "AttributeValueController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeValue"
+        ]
+      }
+    },
+    "/api/attribute-group": {
+      "post": {
+        "operationId": "AttributeGroupController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttributeGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeGroup"
+        ]
+      },
+      "get": {
+        "operationId": "AttributeGroupController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeGroup"
+        ]
+      }
+    },
+    "/api/attribute-group/{id}": {
+      "get": {
+        "operationId": "AttributeGroupController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeGroup"
+        ]
+      },
+      "patch": {
+        "operationId": "AttributeGroupController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeGroup"
+        ]
+      },
+      "delete": {
+        "operationId": "AttributeGroupController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AttributeGroup"
+        ]
+      }
+    },
+    "/api/variant-product": {
+      "post": {
+        "operationId": "VariantProductController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVariantProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantProduct"
+        ]
+      },
+      "get": {
+        "operationId": "VariantProductController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantProduct"
+        ]
+      }
+    },
+    "/api/variant-product/{id}": {
+      "get": {
+        "operationId": "VariantProductController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantProduct"
+        ]
+      },
+      "patch": {
+        "operationId": "VariantProductController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVariantProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantProduct"
+        ]
+      },
+      "delete": {
+        "operationId": "VariantProductController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "VariantProduct"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "RShop Api",
+    "description": "the RShop API description",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "RShop",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "RequestDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "email or phone"
+          }
+        },
+        "required": [
+          "identifier"
+        ]
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "email or phone"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier",
+          "code"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "isPhoneVerified": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "super_admin",
+              "admin",
+              "user"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "phone",
+          "isPhoneVerified",
+          "email",
+          "password",
+          "role",
+          "isActive",
+          "avatarUrl",
+          "addresses"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateAddressDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAddressDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UploadFilesDto": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        },
+        "required": [
+          "files"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "mediaId": {
+            "type": "object"
+          },
+          "discount": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "mediaId",
+          "discount",
+          "parentId"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "mediaId": {
+            "type": "object"
+          },
+          "discount": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "isLimitedStock": {
+            "type": "boolean"
+          },
+          "categoryId": {
+            "type": "number"
+          },
+          "discountAmount": {
+            "type": "number"
+          },
+          "discountPercent": {
+            "type": "number"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "weightUnit": {
+            "type": "string",
+            "enum": [
+              "کیلوگرم",
+              "گرم"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attributeValueIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variantIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "price",
+          "stock",
+          "isLimitedStock",
+          "categoryId",
+          "discountAmount",
+          "discountPercent",
+          "isFeatured",
+          "weight",
+          "weightUnit",
+          "description",
+          "isVisible",
+          "mediaIds",
+          "attributeValueIds",
+          "variantIds"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "isLimitedStock": {
+            "type": "boolean"
+          },
+          "categoryId": {
+            "type": "number"
+          },
+          "discountAmount": {
+            "type": "number"
+          },
+          "discountPercent": {
+            "type": "number"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "weightUnit": {
+            "type": "string",
+            "enum": [
+              "کیلوگرم",
+              "گرم"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attributeValueIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variantIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreateVariantAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "variantId": {
+            "type": "number"
+          },
+          "attributeId": {
+            "type": "number"
+          },
+          "valueId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "variantId",
+          "attributeId",
+          "valueId"
+        ]
+      },
+      "UpdateVariantAttributeValueDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateCategoryAttributeDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "number"
+          },
+          "attributeId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "categoryId",
+          "attributeId"
+        ]
+      },
+      "CreateAttributeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "number"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "default": false
+          },
+          "slug": {
+            "type": "string"
+          },
+          "attributeUnit": {
+            "type": "string",
+            "enum": [
+              "select",
+              "text",
+              "number",
+              "boolean",
+              "color"
+            ],
+            "default": "text"
+          },
+          "displayOrder": {
+            "type": "object",
+            "default": null
+          },
+          "isVariant": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateAttributeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "number"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "default": false
+          },
+          "slug": {
+            "type": "string"
+          },
+          "attributeUnit": {
+            "type": "string",
+            "enum": [
+              "select",
+              "text",
+              "number",
+              "boolean",
+              "color"
+            ],
+            "default": "text"
+          },
+          "displayOrder": {
+            "type": "object",
+            "default": null
+          },
+          "isVariant": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "CreateAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "attributeId": {
+            "type": "number"
+          },
+          "displayColor": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "value",
+          "attributeId"
+        ]
+      },
+      "UpdateAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "attributeId": {
+            "type": "number"
+          },
+          "displayColor": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CreateAttributeGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "categoryId"
+        ]
+      },
+      "UpdateAttributeGroupDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "VariantAttributeInput": {
+        "type": "object",
+        "properties": {
+          "attributeId": {
+            "type": "number",
+            "example": 2,
+            "description": "شناسه ویژگی"
+          },
+          "valueId": {
+            "type": "number",
+            "example": 5,
+            "description": "شناسه مقدار ویژگی"
+          },
+          "label": {
+            "type": "string",
+            "example": "قرمز",
+            "description": "برچسب نمایشی مقدار ویژگی"
+          }
+        },
+        "required": [
+          "attributeId",
+          "valueId",
+          "label"
+        ]
+      },
+      "CreateVariantProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "attributes": {
+            "description": "لیست ویژگی‌ها و مقدارها",
+            "example": [
+              {
+                "attributeId": 2,
+                "valueId": 5,
+                "label": "قرمز"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAttributeInput"
+            }
+          }
+        },
+        "required": [
+          "productId",
+          "sku",
+          "stock",
+          "attributes"
+        ]
+      },
+      "UpdateVariantProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "attributes": {
+            "description": "لیست ویژگی‌ها و مقدارها",
+            "example": [
+              {
+                "attributeId": 2,
+                "valueId": 5,
+                "label": "قرمز"
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAttributeInput"
+            }
+          }
+        }
+      }
+    }
+  }
+}

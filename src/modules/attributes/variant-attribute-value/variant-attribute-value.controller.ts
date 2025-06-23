@@ -5,7 +5,7 @@ import { UpdateVariantAttributeValueDto } from './dto/update-variant-attribute-v
 
 @Controller('variant-attribute-value')
 export class VariantAttributeValueController {
-  constructor(private readonly variantAttributeValueService: VariantAttributeValueService) {}
+  constructor(private readonly variantAttributeValueService: VariantAttributeValueService) { }
 
   @Post()
   create(@Body() createVariantAttributeValueDto: CreateVariantAttributeValueDto) {

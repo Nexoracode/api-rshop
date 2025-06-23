@@ -7,6 +7,7 @@ export interface IVariantProductResponse {
     attributes: {
         attributeId: number;
         valueId: number;
+        label: string;
     }[];
 }
 
@@ -15,15 +16,17 @@ export interface IVariantProductGroupedResponse {
     sku: string;
     price: number;
     stock: number;
-    groups: VariantGroup[];
+    productId: number;
+    variants: VariantGroup[];
 }
 
 export interface VariantGroup {
-    group: string;
+    groupName: string;
     items: VariantGroupItem[];
 }
 
 export interface VariantGroupItem {
     attribute: string;
     value: string;
+    label: string;
 }
