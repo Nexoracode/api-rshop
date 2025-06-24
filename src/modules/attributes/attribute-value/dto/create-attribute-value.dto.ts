@@ -17,6 +17,11 @@ export class CreateAttributeValueDto {
     @IsString()
     displayColor?: string;
 
+    @ApiProperty({ default: null })
+    @IsNumber()
+    @IsOptional()
+    displayOrder: number;
+
     @ApiProperty({ required: false, default: true })
     @IsOptional()
     @IsBoolean()

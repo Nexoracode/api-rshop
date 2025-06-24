@@ -7,5 +7,6 @@ export interface IAttributeValueResponse {
     attribute: Attribute;
     attributeId: number;
     displayColor?: string | undefined;
+    displayOrder: number;
     isActive: boolean;
 }

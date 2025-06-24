@@ -21,6 +21,9 @@ export class AttributeValue implements IAttributeValue {
     @Column({ nullable: true })
     displayColor?: string;
 
+    @Column({ nullable: true })
+    displayOrder: number;
+
     @Column({ type: 'boolean', default: true })
     isActive: boolean;
 }

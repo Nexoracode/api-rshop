@@ -7,10 +7,10 @@ export class CreateAttributeDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ required: false, default: 0, example: 0 })
     @IsOptional()
     @IsNumber()
-    groupId?: number;
+    groupId?: number | null;
 
     @ApiProperty({ required: false, default: false })
     @IsOptional()
@@ -22,10 +22,10 @@ export class CreateAttributeDto {
     @IsOptional()
     slug?: string;
 
-    @ApiProperty({ enum: AttributeUnit, default: AttributeUnit.TEXT, required: false })
+    @ApiProperty({ enum: AttributeUnit, default: AttributeUnit.TEXT })
     @IsEnum(AttributeUnit)
     @IsOptional()
-    attributeUnit: AttributeUnit;
+    type: AttributeUnit;
 
     @ApiProperty({ required: false, default: null })
     @IsInt()

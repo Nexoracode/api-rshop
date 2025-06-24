@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { AttributeService } from './attribute.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
@@ -14,8 +14,13 @@ export class AttributeController {
   }
 
   @Get()
-  findAll() {
-    return this.attributeService.findAll();
+  findAll(@Query('grouped') grouped: string = 'true') {
+    return this.attributeService.findAll(grouped === 'true');
+  }
+
+  @Get('group/:id')
+  findByGroup(@Param('id', ParseIntPipe) id: number) {
+    return this.attributeService.findByGroup(id);
   }
 
   @Patch(':id')

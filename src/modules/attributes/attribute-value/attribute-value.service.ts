@@ -20,7 +20,7 @@ export class AttributeValueService implements IAttributeValueService {
   ) { }
 
   async findByAttribute(attributeId: number): Promise<IAttributeValueResponse[]> {
-    const values = await this.valueRepo.find({ where: { attributeId } })
+    const values = await this.valueRepo.find({ where: { attributeId }, order: { displayOrder: 'ASC' } })
     return values.map((value) => AttributeValueMapper.toResponse(value));
   }
 
@@ -40,7 +40,6 @@ export class AttributeValueService implements IAttributeValueService {
       if (!attr) throw new NotFoundException('ویژگی یافت نشد.');
       value.attribute = attr;
     }
-    Object.assign(value, data);
     const saved = await this.attrRepo.save(value);
     return AttributeValueMapper.toResponse(saved);
   }
