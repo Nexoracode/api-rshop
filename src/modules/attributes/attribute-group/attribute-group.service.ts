@@ -1,61 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAttributeGroupDto } from './dto/create-attribute-group.dto';
-import { UpdateAttributeGroupDto } from './dto/update-attribute-group.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AttributeGroup } from './entities/attribute-group.entity';
 import { Repository } from 'typeorm';
-import { CategoryService } from 'src/modules/category/category.service';
+import { IAttributeGroupService } from './interfaces/attribute-group.service';
+import { UpdateAttributeGroupDto } from './dto/update-attribute-group.dto';
+import { IAttributeGroupResponse } from './interfaces/attribute-group.response.interface';
+import { AttributeGroupMapper } from './mappers/attribute-group.mapper';
 
 @Injectable()
-export class AttributeGroupService {
+export class AttributeGroupService implements IAttributeGroupService {
   constructor(
     @InjectRepository(AttributeGroup)
-    private readonly repo: Repository<AttributeGroup>,
-    private readonly categoryService: CategoryService,
+    private readonly attrGroupRepo: Repository<AttributeGroup>,
   ) { }
-
-  async create(dto: CreateAttributeGroupDto) {
-    // const category = await this.categoryService.findOne(dto.categoryId);
-    // let group = await this.repo.findOneBy({ name: dto.name });
-    // if (group) {
-    //   throw new Error(`Attribute group with name ${dto.name} already exists.`);
-    // }
-    // group = this.repo.create({
-    //   name: dto.name,
-    // });
-    // return await this.repo.save(group);
+  async create(data: CreateAttributeGroupDto): Promise<IAttributeGroupResponse> {
+    const existsName = await this.attrGroupRepo.findOne({ where: { name: data.name } });
+    if (existsName) throw new BadRequestException('نام "گروه ویژگی" تکراری می باشد..')
+    const existsSlug = await this.attrGroupRepo.findOne({ where: { slug: data.slug } });
+    if (existsSlug) throw new BadRequestException('نامک "گروه ویژگی" تکراری می باشد..')
+    const attrGroup = this.attrGroupRepo.create(data);
+    const savedGroup = await this.attrGroupRepo.save(attrGroup);
+    return AttributeGroupMapper.toResponse(savedGroup);
   }
-
-  async findAll() {
-    return await this.repo.find();
+  async update(id: number, data: UpdateAttributeGroupDto): Promise<IAttributeGroupResponse> {
+    const attrGroup = await this.attrGroupRepo.findOne({ where: { id } });
+    if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
+    const updatedGroup = this.attrGroupRepo.merge(attrGroup, data);
+    const savedGroup = await this.attrGroupRepo.save(updatedGroup);
+    return AttributeGroupMapper.toResponse(savedGroup);
   }
-
-  async findOne(id: number) {
-    //   const group = await this.repo.findOne({
-    //     where: { id },
-    //     relations: ['attributes'],
-    //   });
-    //   if (!group) {
-    //     throw new Error(`Attribute group with id ${id} not found.`);
-    //   }
-    //   const { id: groupId, ...result } = group;
-    //   return result;
-    // }
-
-    // async update(id: number, updateAttributeGroupDto: UpdateAttributeGroupDto) {
-    //   const group = await this.repo.findOneBy({ id });
-    //   if (!group) {
-    //     throw new NotFoundException(`Attribute group with id ${id} not found.`);
-    //   }
-    //   const updatedGroup = Object.assign(group, updateAttributeGroupDto);
-    //   return await this.repo.save(updatedGroup);
-    // }
-
-    // async remove(id: number) {
-    //   const group = await this.repo.findOneBy({ id });
-    //   if (!group) {
-    //     throw new NotFoundException(`Attribute group with id ${id} not found.`);
-    //   }
-    //   return await this.repo.remove(group);
+  async findOne(id: number): Promise<IAttributeGroupResponse> {
+    const attrGroup = await this.attrGroupRepo.findOne({ where: { id }, relations: ['attributes'] });
+    if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
+    return AttributeGroupMapper.toResponse(attrGroup);
+  }
+  async findAll(): Promise<IAttributeGroupResponse[]> {
+    const attributeGroups = await this.attrGroupRepo.find({ relations: ['attributes'] });
+    return attributeGroups.map((attr) => AttributeGroupMapper.toResponse(attr));
   }
 }

@@ -4,14 +4,14 @@ import { CreateAttributeGroupDto } from './dto/create-attribute-group.dto';
 import { UpdateAttributeGroupDto } from './dto/update-attribute-group.dto';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('06 - 📁 Attribute Groups')
+@ApiTags('04 - 📁 Attribute Groups')
 @Controller('attribute-group')
 export class AttributeGroupController {
   constructor(private readonly attributeGroupService: AttributeGroupService) { }
 
   @Post()
-  create(@Body() createAttributeGroupDto: CreateAttributeGroupDto) {
-    return this.attributeGroupService.create(createAttributeGroupDto);
+  create(@Body() data: CreateAttributeGroupDto) {
+    return this.attributeGroupService.create(data);
   }
 
   @Get()
@@ -24,13 +24,9 @@ export class AttributeGroupController {
     return this.attributeGroupService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id', ParseIntPipe) id: number, @Body() updateAttributeGroupDto: UpdateAttributeGroupDto) {
-  //   return this.attributeGroupService.update(+id, updateAttributeGroupDto);
-  // }
 
-  // @Delete(':id')
-  // remove(@Param('id', ParseIntPipe) id: number) {
-  //   return this.attributeGroupService.remove(+id);
-  // }
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeGroupDto) {
+    return this.attributeGroupService.update(id, data);
+  }
 }

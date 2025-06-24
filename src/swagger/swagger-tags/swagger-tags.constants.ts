@@ -14,16 +14,16 @@ export const _SWAGGER_TAGS: SwaggerTag[] = [
     description: 'دسته‌بندی‌ها',
   },
   {
-    name: '04 - 🧬 Attributes',
+    name: '04 - 📁 Attribute Groups',
+    description: 'گروه‌بندی ویژگی‌ها',
+  },
+  {
+    name: '05 - 🧬 Attributes',
     description: 'ویژگی‌ها',
   },
   {
-    name: '05 - 🔠 Attribute Values',
+    name: '06 - 🔠 Attribute Values',
     description: 'مقدارهای ویژگی',
-  },
-  {
-    name: '06 - 📁 Attribute Groups',
-    description: 'گروه‌بندی ویژگی‌ها',
   },
   {
     name: '07 - 🧩 Category Attributes',

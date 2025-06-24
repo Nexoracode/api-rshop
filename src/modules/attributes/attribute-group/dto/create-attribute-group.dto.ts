@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class CreateAttributeGroupDto {
 
@@ -9,6 +9,11 @@ export class CreateAttributeGroupDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsNumber()
-    attributeId: number;
+    @IsOptional()
+    slug: string;
+
+    @ApiProperty()
+    @IsInt()
+    @IsOptional()
+    displayOrder: number;
 }

@@ -21,8 +21,7 @@ export class SwaggerUI {
       background-color: #fefefe;
     }
 
-    .swagger-ui .opblock.opblock-post opblock-summary-method {
-      outline : none
+    .swagger-ui .opblock.opblock-post{
       border-left: 5px solid #4CAF50;
     }
 

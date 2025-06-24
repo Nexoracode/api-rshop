@@ -3,7 +3,7 @@ import { AttributeValueService } from './attribute-value.service';
 import { CreateAttributeValueDto } from './dto/create-attribute-value.dto';
 import { UpdateAttributeValueDto } from './dto/update-attribute-value.dto';
 import { ApiTags } from '@nestjs/swagger';
-@ApiTags('05 - 🔠 Attribute Values')
+@ApiTags('06 - 🔠 Attribute Values')
 @Controller('attribute-value')
 export class AttributeValueController {
   constructor(private readonly attributeValueService: AttributeValueService) { }
