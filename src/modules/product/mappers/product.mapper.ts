@@ -1,0 +1,28 @@
+import { Media } from "src/modules/media/entities/image.entity";
+import { IProduct } from "../interfaces/product.interface";
+import { IProductResponse } from "../interfaces/product.response";
+
+export class ProductMapper {
+    static toResponse(product: IProduct): IProductResponse {
+        return {
+            id: product.id,
+            category: product.category,
+            variants: product.variants,
+            media: product.media,
+            categoryId: product.categoryId,
+            isFeatured: product.isFeatured,
+            isLimitedStock: product.isLimitedStock,
+            isVisible: product.isVisible,
+            name: product.name,
+            price: product.price,
+            stock: product.stock,
+            weight: product.weight,
+            weightUnit: product.weightUnit,
+            description: product.description,
+            discountType: {
+                discountAmount: product.discountAmount,
+                discountPercent: product.discountPercent
+            }
+        }
+    }
+}

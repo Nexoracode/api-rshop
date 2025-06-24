@@ -1,20 +1,6 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api": {
-      "get": {
-        "operationId": "AppController_getHello",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "App"
-        ]
-      }
-    },
     "/api/auth/request-otp": {
       "post": {
         "operationId": "AuthController_requestOtp",
@@ -35,7 +21,7 @@
           }
         },
         "tags": [
-          "Auth"
+          "01-🛡️ Auth"
         ]
       }
     },
@@ -59,7 +45,7 @@
           }
         },
         "tags": [
-          "Auth"
+          "01-🛡️ Auth"
         ]
       }
     },
@@ -73,7 +59,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       },
       "post": {
@@ -101,7 +87,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -115,7 +101,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -138,7 +124,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       },
       "patch": {
@@ -169,7 +155,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       },
       "delete": {
@@ -190,7 +176,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -213,7 +199,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -227,7 +213,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       },
       "post": {
@@ -249,7 +235,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -282,7 +268,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -315,7 +301,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       },
       "delete": {
@@ -336,7 +322,7 @@
           }
         },
         "tags": [
-          "Users"
+          "02-👤 Users"
         ]
       }
     },
@@ -361,7 +347,7 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
         ]
       }
     },
@@ -385,7 +371,7 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
         ]
       },
       "get": {
@@ -397,7 +383,7 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
         ]
       }
     },
@@ -420,7 +406,7 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
         ]
       },
       "patch": {
@@ -451,7 +437,7 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
         ]
       },
       "delete": {
@@ -472,7 +458,32 @@
           }
         },
         "tags": [
-          "Category"
+          "03-🗂️ Categories"
+        ]
+      }
+    },
+    "/api/product/upload": {
+      "post": {
+        "operationId": "ProductController_uploadImages",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "List of Category",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08-📦 Products"
         ]
       }
     },
@@ -496,7 +507,7 @@
           }
         },
         "tags": [
-          "Product"
+          "08-📦 Products"
         ]
       }
     },
@@ -529,56 +540,18 @@
           }
         },
         "tags": [
-          "Product"
-        ]
-      }
-    },
-    "/api/variant-attribute-value": {
-      "post": {
-        "operationId": "VariantAttributeValueController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateVariantAttributeValueDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "VariantAttributeValue"
+          "08-📦 Products"
         ]
       },
       "get": {
-        "operationId": "VariantAttributeValueController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "VariantAttributeValue"
-        ]
-      }
-    },
-    "/api/variant-attribute-value/{id}": {
-      "get": {
-        "operationId": "VariantAttributeValueController_findOne",
+        "operationId": "ProductController_findOne",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           }
         ],
@@ -588,59 +561,7 @@
           }
         },
         "tags": [
-          "VariantAttributeValue"
-        ]
-      },
-      "patch": {
-        "operationId": "VariantAttributeValueController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateVariantAttributeValueDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "VariantAttributeValue"
-        ]
-      },
-      "delete": {
-        "operationId": "VariantAttributeValueController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "VariantAttributeValue"
+          "08-📦 Products"
         ]
       }
     },
@@ -664,7 +585,7 @@
           }
         },
         "tags": [
-          "CategoryAttribute"
+          "07-🧩 Category Attributes"
         ]
       }
     },
@@ -687,7 +608,7 @@
           }
         },
         "tags": [
-          "CategoryAttribute"
+          "07-🧩 Category Attributes"
         ]
       }
     },
@@ -710,7 +631,7 @@
           }
         },
         "tags": [
-          "CategoryAttribute"
+          "07-🧩 Category Attributes"
         ]
       }
     },
@@ -734,7 +655,7 @@
           }
         },
         "tags": [
-          "Attribute"
+          "04-🧬 Attributes"
         ]
       },
       "get": {
@@ -746,7 +667,7 @@
           }
         },
         "tags": [
-          "Attribute"
+          "04-🧬 Attributes"
         ]
       }
     },
@@ -779,7 +700,7 @@
           }
         },
         "tags": [
-          "Attribute"
+          "04-🧬 Attributes"
         ]
       },
       "delete": {
@@ -800,7 +721,7 @@
           }
         },
         "tags": [
-          "Attribute"
+          "04-🧬 Attributes"
         ]
       }
     },
@@ -824,7 +745,7 @@
           }
         },
         "tags": [
-          "AttributeValue"
+          "05-🔠 Attribute Values"
         ]
       }
     },
@@ -847,7 +768,7 @@
           }
         },
         "tags": [
-          "AttributeValue"
+          "05-🔠 Attribute Values"
         ]
       }
     },
@@ -870,7 +791,7 @@
           }
         },
         "tags": [
-          "AttributeValue"
+          "05-🔠 Attribute Values"
         ]
       }
     },
@@ -894,7 +815,7 @@
           }
         },
         "tags": [
-          "AttributeGroup"
+          "06-📁 Attribute Groups"
         ]
       },
       "get": {
@@ -906,7 +827,7 @@
           }
         },
         "tags": [
-          "AttributeGroup"
+          "06-📁 Attribute Groups"
         ]
       }
     },
@@ -929,59 +850,7 @@
           }
         },
         "tags": [
-          "AttributeGroup"
-        ]
-      },
-      "patch": {
-        "operationId": "AttributeGroupController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAttributeGroupDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AttributeGroup"
-        ]
-      },
-      "delete": {
-        "operationId": "AttributeGroupController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AttributeGroup"
+          "06-📁 Attribute Groups"
         ]
       }
     },
@@ -1005,19 +874,38 @@
           }
         },
         "tags": [
-          "VariantProduct"
+          "09-🎭 Variant Products"
         ]
-      },
+      }
+    },
+    "/api/variant-product/product/{id}": {
       "get": {
-        "operationId": "VariantProductController_findAll",
-        "parameters": [],
+        "operationId": "VariantProductController_findByProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "grouped",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
           }
         },
         "tags": [
-          "VariantProduct"
+          "09-🎭 Variant Products"
         ]
       }
     },
@@ -1030,6 +918,14 @@
             "required": true,
             "in": "path",
             "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "grouped",
+            "required": true,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           }
@@ -1040,7 +936,7 @@
           }
         },
         "tags": [
-          "VariantProduct"
+          "09-🎭 Variant Products"
         ]
       },
       "patch": {
@@ -1051,7 +947,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           }
         ],
@@ -1071,7 +967,7 @@
           }
         },
         "tags": [
-          "VariantProduct"
+          "09-🎭 Variant Products"
         ]
       },
       "delete": {
@@ -1082,7 +978,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           }
         ],
@@ -1092,7 +988,7 @@
           }
         },
         "tags": [
-          "VariantProduct"
+          "09-🎭 Variant Products"
         ]
       }
     }
@@ -1105,8 +1001,40 @@
   },
   "tags": [
     {
-      "name": "RShop",
-      "description": ""
+      "name": "01-🛡️ Auth",
+      "description": "احراز هویت و ثبت‌نام"
+    },
+    {
+      "name": "02-👤 Users",
+      "description": "مدیریت کاربران"
+    },
+    {
+      "name": "03-🗂️ Categories",
+      "description": "دسته‌بندی‌ها"
+    },
+    {
+      "name": "04-🧬 Attributes",
+      "description": "ویژگی‌ها"
+    },
+    {
+      "name": "05-🔠 Attribute Values",
+      "description": "مقدارهای ویژگی"
+    },
+    {
+      "name": "06-📁 Attribute Groups",
+      "description": "گروه‌بندی ویژگی‌ها"
+    },
+    {
+      "name": "07-🧩 Category Attributes",
+      "description": "اتصال ویژگی‌ها به دسته‌بندی‌ها"
+    },
+    {
+      "name": "08-📦 Products",
+      "description": "محصولات"
+    },
+    {
+      "name": "09-🎭 Variant Products",
+      "description": "ویزگی محصولات"
     }
   ],
   "servers": [],
@@ -1412,29 +1340,6 @@
           }
         }
       },
-      "CreateVariantAttributeValueDto": {
-        "type": "object",
-        "properties": {
-          "variantId": {
-            "type": "number"
-          },
-          "attributeId": {
-            "type": "number"
-          },
-          "valueId": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "variantId",
-          "attributeId",
-          "valueId"
-        ]
-      },
-      "UpdateVariantAttributeValueDto": {
-        "type": "object",
-        "properties": {}
-      },
       "CreateCategoryAttributeDto": {
         "type": "object",
         "properties": {
@@ -1473,7 +1378,9 @@
               "text",
               "number",
               "boolean",
-              "color"
+              "color",
+              "checkBox",
+              "radioButton"
             ],
             "default": "text"
           },
@@ -1513,7 +1420,9 @@
               "text",
               "number",
               "boolean",
-              "color"
+              "color",
+              "checkBox",
+              "radioButton"
             ],
             "default": "text"
           },
@@ -1573,35 +1482,31 @@
           "name": {
             "type": "string"
           },
-          "categoryId": {
+          "attributeId": {
             "type": "number"
           }
         },
         "required": [
           "name",
-          "categoryId"
+          "attributeId"
         ]
-      },
-      "UpdateAttributeGroupDto": {
-        "type": "object",
-        "properties": {}
       },
       "VariantAttributeInput": {
         "type": "object",
         "properties": {
           "attributeId": {
             "type": "number",
-            "example": 2,
+            "example": 1,
             "description": "شناسه ویژگی"
           },
           "valueId": {
             "type": "number",
-            "example": 5,
+            "example": 1,
             "description": "شناسه مقدار ویژگی"
           },
           "label": {
             "type": "string",
-            "example": "قرمز",
+            "example": "آبی",
             "description": "برچسب نمایشی مقدار ویژگی"
           }
         },
@@ -1615,10 +1520,16 @@
         "type": "object",
         "properties": {
           "productId": {
-            "type": "number"
+            "type": "number",
+            "default": 1
           },
           "sku": {
-            "type": "string"
+            "type": "string",
+            "default": "DP-4e34"
+          },
+          "price": {
+            "type": "integer",
+            "example": "200000"
           },
           "stock": {
             "type": "number"
@@ -1627,9 +1538,9 @@
             "description": "لیست ویژگی‌ها و مقدارها",
             "example": [
               {
-                "attributeId": 2,
-                "valueId": 5,
-                "label": "قرمز"
+                "attributeId": 1,
+                "valueId": 1,
+                "label": "آبی"
               }
             ],
             "type": "array",
@@ -1641,6 +1552,7 @@
         "required": [
           "productId",
           "sku",
+          "price",
           "stock",
           "attributes"
         ]
@@ -1649,10 +1561,16 @@
         "type": "object",
         "properties": {
           "productId": {
-            "type": "number"
+            "type": "number",
+            "default": 1
           },
           "sku": {
-            "type": "string"
+            "type": "string",
+            "default": "DP-4e34"
+          },
+          "price": {
+            "type": "integer",
+            "example": "200000"
           },
           "stock": {
             "type": "number"
@@ -1661,9 +1579,9 @@
             "description": "لیست ویژگی‌ها و مقدارها",
             "example": [
               {
-                "attributeId": 2,
-                "valueId": 5,
-                "label": "قرمز"
+                "attributeId": 1,
+                "valueId": 1,
+                "label": "آبی"
               }
             ],
             "type": "array",

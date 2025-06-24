@@ -4,4 +4,6 @@ export enum AttributeUnit {
     NUMBER = 'number',
     BOOLEAN = 'boolean',
     COLOR = 'color',
+    CHECKBOX = 'checkBox',
+    RADIO = 'radioButton',
 }

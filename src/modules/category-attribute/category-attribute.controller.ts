@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { CategoryAttributeService } from './category-attribute.service';
 import { CreateCategoryAttributeDto } from './dto/create-category-attribute.dto';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('07 - 🧩 Category Attributes')
 @Controller('category-attribute')
 export class CategoryAttributeController {
   constructor(private readonly service: CategoryAttributeService) { }

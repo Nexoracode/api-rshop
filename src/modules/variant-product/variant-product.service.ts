@@ -1,23 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariantProductDto } from './dto/create-variant-product.dto';
 import { UpdateVariantProductDto } from './dto/update-variant-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VariantProduct } from './entities/variant-product.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { IVariantProductService } from './interfaces/variant-product.service.interface';
-import { IVariantProductGroupedResponse } from './interfaces/variant-product.response.interface';
 import { Product } from '../product/entities/product.entity';
 import { VariantAttributeValue } from '../attributes/variant-attribute-value/entities/variant-attribute-value.entity';
 import { VariantProductMapper } from './mappers/variant-product.mapper';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
+import { Attribute } from '../attributes/attribute/entities/attribute.entity';
+import { IGroupedVariantProductResponse, IVariantProductGroupedResponse } from './interfaces/variant-product.response.interface';
+import { AttributeValue } from '../attributes/attribute-value/entities/attribute-value.entity';
 
 @Injectable()
 export class VariantProductService implements IVariantProductService {
   constructor(
+    @InjectRepository(VariantProduct)
+    private readonly varRepo: Repository<VariantProduct>,
     private readonly dataSource: DataSource,
   ) { }
 
-  async create(data: CreateVariantProductDto) {
+  async create(data: CreateVariantProductDto): Promise<IGroupedVariantProductResponse> {
     return runInTransaction(this.dataSource, async (manager) => {
       const product = await manager.findOne(Product, { where: { id: data.productId } });
       if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد');
@@ -27,8 +31,14 @@ export class VariantProductService implements IVariantProductService {
         stock: data.stock,
         product,
       });
-      const savedVariant = await manager.save(VariantProduct, variant);
+      for (const attr of data.attributes) {
+        const attribute = await manager.findOne(Attribute, { where: { id: attr.attributeId } });
+        if (!attribute) throw new NotFoundException('attributeId یافت نشد');
 
+        const value = await manager.findOne(AttributeValue, { where: { id: attr.valueId } });
+        if (!value) throw new NotFoundException('valueId یافت نشد');
+      }
+      const savedVariant = await manager.save(VariantProduct, variant);
       const attributeValue = data.attributes.map((attr) =>
         manager.create(VariantAttributeValue, {
           variant: savedVariant,
@@ -41,46 +51,92 @@ export class VariantProductService implements IVariantProductService {
       await manager.save(VariantAttributeValue, attributeValue);
       const result = await manager.findOne(VariantProduct, {
         where: { id: savedVariant.id },
-        relations: ['attributes', 'attributes.attribute', 'attributes.value']
+        relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
       });
 
-      return VariantProductMapper.toGroupedResponse(result!);
+      return VariantProductMapper.toGroupedByGroupResponse(result!);
 
     })
   }
 
-  findAll(): Promise<IVariantProductGroupedResponse[]> {
-    throw new Error('Method not implemented.');
+  async findAllByProductId(productId: number, grouped: boolean = false): Promise<IGroupedVariantProductResponse[] | IVariantProductGroupedResponse[]> {
+    const variants = await this.varRepo.find({
+      where: { product: { id: productId } },
+      relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
+    })
+    if (!variants || variants.length === 0) throw new NotFoundException('ویژگی محصولی برای این محصول یافت نشد');
+    if (grouped) {
+      return variants.map((variant) => VariantProductMapper.toGroupedByGroupResponse(variant));
+    } else {
+      return variants.map((variant) => VariantProductMapper.toGroupedResponse(variant));
+
+    }
   }
 
-  findOne(id: number): Promise<IVariantProductGroupedResponse> {
-    throw new Error('Method not implemented.');
+  async findOne(id: number, grouped: boolean = false): Promise<IGroupedVariantProductResponse | IVariantProductGroupedResponse> {
+    const variant = await this.varRepo.findOne({
+      where: { id },
+      relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
+    })
+    if (!variant) throw new NotFoundException('ویژگی محصولی برای این محصول یافت نشد');
+    if (grouped) {
+      return VariantProductMapper.toGroupedResponse(variant);
+    } else {
+      return VariantProductMapper.toGroupedResponse(variant);
+
+    }
   }
 
-  remove(id: number): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-
-  update(id: number, data: UpdateVariantProductDto): Promise<IVariantProductGroupedResponse> {
+  remove(id: number): Promise<Object> {
     return runInTransaction(this.dataSource, async (manager) => {
       const variant = await manager.findOne(VariantProduct, { where: { id } });
+      if (!variant) throw new NotFoundException('ویژگی مورد نظر یافت نشد.');
+      await manager.remove(variant);
+      return {
+        message: 'حذف با موفقیت انجام شد',
+        data: null,
+      }
+    })
+  }
+
+  update(id: number, data: UpdateVariantProductDto): Promise<IGroupedVariantProductResponse> {
+    return runInTransaction(this.dataSource, async (manager) => {
+      let variant = await manager.findOne(VariantProduct, { where: { id } });
       if (!variant) throw new NotFoundException('ویژگی محصول یافت نشد');
-      manager.merge(VariantProduct, variant, data);
+      const product = await manager.findOne(Product, { where: { id: data.productId } });
+      if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد');
+      if (!data.attributes || !Array.isArray(data.attributes)) {
+        throw new BadRequestException('مقدار ویژگی ارسال نشده یا نامعتبر است');
+      }
+      for (const attr of data.attributes) {
+        const attribute = await manager.findOne(Attribute, { where: { id: attr.attributeId } });
+        if (!attribute) throw new NotFoundException('attributeId یافت نشد');
+
+        const value = await manager.findOne(AttributeValue, { where: { id: attr.valueId } });
+        if (!value) throw new NotFoundException('valueId یافت نشد');
+      }
+      manager.merge(VariantProduct, variant, {
+        sku: data.sku,
+        price: data.price,
+        stock: data.stock,
+        product,
+      });
+      await manager.save(VariantProduct, variant);
       await manager.delete(VariantAttributeValue, { variant: { id } });
-      const newAttributes = data.attributes?.map((attr) =>
+      const attributeValue = data.attributes.map((attr) =>
         manager.create(VariantAttributeValue, {
           variant,
           attributeId: attr.attributeId,
           valueId: attr.valueId,
-          label: attr.label
+          label: attr.label,
         })
       );
-      await manager.save(VariantAttributeValue, newAttributes!);
+      await manager.save(VariantAttributeValue, attributeValue);
       const result = await manager.findOne(VariantProduct, {
         where: { id },
-        relations: ['attributes', 'attributes.attribute', 'attribute.value']
-      })
-      return VariantProductMapper.toGroupedResponse(result!);
+        relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
+      });
+      return VariantProductMapper.toGroupedByGroupResponse(result!);
     })
   }
 }

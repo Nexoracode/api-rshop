@@ -12,12 +12,28 @@ import { Media } from '../media/entities/image.entity';
 import { AttributeValue } from '../attributes/attribute-value/entities/attribute-value.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Category } from '../category/entities/category.entity';
+import { ProductMapper } from './mappers/product.mapper';
 
 @Injectable()
 export class ProductService implements IProductService {
     constructor(
+        @InjectRepository(Product)
+        private readonly productRepo: Repository<Product>,
         private dataSource: DataSource,
     ) { }
+
+    async findOne(id: number): Promise<IProductResponse> {
+        const product = await this.productRepo.findOne({
+            where: { id },
+            relations: [
+                'category',
+                'media',
+                'variants',
+            ]
+        });
+        if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
+        return ProductMapper.toResponse(product);
+    }
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
@@ -36,13 +52,10 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             }
-            // if (data.attributeValueIds?.length) {
-            //     await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct })
-            // }
             if (data.variantIds?.length) {
                 await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct })
             }
-            return savedProduct;
+            return ProductMapper.toResponse(savedProduct);
         })
     }
 
@@ -64,16 +77,11 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
-
-            // if (data.attributeValueIds?.length) {
-            //     await manager.update(AttributeValue, { id: In(data.attributeValueIds) }, { product: savedProduct });
-            // }
-
             if (data.variantIds?.length) {
                 await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct });
             }
 
-            return savedProduct;
+            return ProductMapper.toResponse(savedProduct);
         });
     }
 }

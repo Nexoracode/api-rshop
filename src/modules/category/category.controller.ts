@@ -2,13 +2,14 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Upload
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { File } from 'buffer';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
+@ApiTags('03 - 🗂️ Categories')
 @Controller('category')
 export class CategoryController {
   constructor(

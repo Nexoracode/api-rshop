@@ -10,5 +10,5 @@ export class CreateAttributeGroupDto {
     @ApiProperty()
     @IsNotEmpty()
     @IsNumber()
-    categoryId: number;
+    attributeId: number;
 }

@@ -13,7 +13,7 @@ import { AddressService } from '../address/address.service';
 import { CustomRequest } from 'src/common/interfaces/request.interface';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { UpdateAddressDto } from '../address/dto/update-address.dto';
-@ApiTags('Users')
+@ApiTags('02 - 👤 Users')
 @Controller('users')
 @UseGuards(AccessGuard, RoleGuard)
 export class UserController {

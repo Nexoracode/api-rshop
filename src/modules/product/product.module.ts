@@ -5,14 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { CategoryModule } from '../category/category.module';
 import { VariantAttributeValueModule } from '../attributes/variant-attribute-value/variant-attribute-value.module';
+import { MediaModule } from '../media/media.module';
+import { UploadService } from 'src/common/services/upload.service';
 
 @Module({
   imports: [
     CategoryModule,
     VariantAttributeValueModule,
+    MediaModule,
     TypeOrmModule.forFeature([Product]),
   ],
-  providers: [ProductService],
+  providers: [ProductService, UploadService],
   controllers: [ProductController],
   exports: [ProductService],
 })

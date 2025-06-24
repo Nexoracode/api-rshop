@@ -1,46 +1,68 @@
+import { VariantAttributeValue } from "src/modules/attributes/variant-attribute-value/entities/variant-attribute-value.entity";
 import { VariantProduct } from "../entities/variant-product.entity";
-import { IVariantProductGroupedResponse, IVariantProductResponse, VariantGroupItem } from "../interfaces/variant-product.response.interface";
+import { IGroupedVariantProductResponse, IVariantAttributeValueResponse, IVariantProductGroupedResponse } from "../interfaces/variant-product.response.interface";
 
 export class VariantProductMapper {
-    static toGroupedResponse(variant: VariantProduct): IVariantProductGroupedResponse {
-        const grouped: Record<string, VariantGroupItem[]> = {};
-        for (const attr of variant.attributes || []) {
-            const groupName = attr.attribute?.group?.name || 'عمومی';
-            if (!grouped[groupName]) grouped[groupName] = [];
-            grouped[groupName].push({
-                attribute: attr.attribute?.name || "عمومی",
-                value: attr.value?.value || "عمومی",
+    static toGroupedByGroupResponse(entity: VariantProduct): IGroupedVariantProductResponse {
+        const grouped: Record<number | string, {
+            groupId: number | null;
+            groupName: string;
+            attributes: {
+                attributeId: number;
+                attributeName: string;
+                valueId: number;
+                value: string;
+                label: string;
+                isVariant: boolean;
+            }[];
+        }> = {};
+
+        for (const attr of entity.attributes || []) {
+            const groupId = attr.attribute?.group?.id ?? 'ungrouped';
+            const groupName = attr.attribute?.group?.name ?? 'بدون گروه';
+
+            if (!grouped[groupId]) {
+                grouped[groupId] = {
+                    groupId: attr.attribute?.group?.id ?? null,
+                    groupName: groupName ?? 'بدون گروه',
+                    attributes: [],
+                };
+            }
+
+            grouped[groupId].attributes.push({
+                attributeId: attr.attribute?.id,
+                attributeName: attr.attribute?.name,
+                valueId: attr.value?.id,
+                value: attr.value?.value,
                 label: attr.label,
+                isVariant: attr.attribute.isVariant,
             });
         }
 
         return {
-            id: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            stock: variant.stock,
-            productId: variant.productId,
-            variants: Object.entries(grouped).map(([groupName, items]) => ({ groupName, items }))
+            id: entity.id,
+            sku: entity.sku,
+            stock: entity.stock,
+            price: entity.price,
+            groups: Object.values(grouped),
         };
     }
 
-
-    static toGroupResponseList(variants: VariantProduct[]): IVariantProductGroupedResponse[] {
-        return variants.map(variant => this.toGroupedResponse(variant))
-    }
-
-    static toFlatResponse(variant: VariantProduct): IVariantProductResponse {
+    static toGroupedResponse(entity: VariantProduct): IVariantProductGroupedResponse {
         return {
-            id: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            stock: variant.stock,
-            productId: variant.productId,
-            attributes: (variant.attributes || []).map(attr => ({
-                attributeId: attr.attribute?.id || 0,
-                valueId: attr.value?.id || 0,
-                label: attr.label
+            id: entity.id,
+            sku: entity.sku,
+            stock: entity.stock,
+            price: entity.price,
+            attributes: (entity.attributes || []).map((attr: VariantAttributeValue): IVariantAttributeValueResponse => ({
+                attributeId: attr.attribute?.id,
+                attributeName: attr.attribute?.name,
+                valueId: attr.value?.id,
+                value: attr.value?.value,
+                label: attr.label,
+                isVariant: attr.attribute?.isVariant,
             })),
         };
     }
+
 }

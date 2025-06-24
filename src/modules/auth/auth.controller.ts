@@ -4,6 +4,8 @@ import { RequestDto } from './dto/request.dto';
 import { VerifyOtpDto } from './dto/verify.dto';
 import { Response } from 'express';
 import { Public } from 'src/common/decorator/public.decorator';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('01 - 🛡️ Auth')
 @Controller('auth')
 export class AuthController {
     constructor(
