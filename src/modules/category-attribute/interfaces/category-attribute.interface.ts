@@ -3,5 +3,4 @@ export interface ICategoryAttribute {
     id: number;
     attribute: Attribute;
     attributeId: number;
-    isRequired: boolean | false;
 }

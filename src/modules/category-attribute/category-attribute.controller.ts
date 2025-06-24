@@ -8,18 +8,18 @@ export class CategoryAttributeController {
   constructor(private readonly service: CategoryAttributeService) { }
 
   @Post()
-  create(@Body() dto: CreateCategoryAttributeDto) {
-    return this.service.assign(dto);
+  assign(@Body() data: CreateCategoryAttributeDto) {
+    return this.service.assign(data);
   }
 
-  @Get(':categoryId')
-  findOne(@Param('categoryId', ParseIntPipe) categoryId: number) {
-    return this.service.generateAttributeForCategory(categoryId);
-  }
+  // @Get(':categoryId')
+  // findOne(@Param('categoryId', ParseIntPipe) categoryId: number) {
+  //   return this.service.generateAttributeForCategory(categoryId);
+  // }
 
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.service.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.service.remove(id);
+  // }
 }
