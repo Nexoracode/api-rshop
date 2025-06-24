@@ -7,7 +7,7 @@ export class AttributeMapper {
             id: attribute.id,
             isPublic: attribute.isPublic,
             group: attribute.group,
-            groupId: attribute.groupId,
+            groupId: attribute.groupId!,
             isVariant: attribute.isVariant
         }
     }

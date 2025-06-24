@@ -29,4 +29,9 @@ export class AttributeGroupController {
   update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeGroupDto) {
     return this.attributeGroupService.update(id, data);
   }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.attributeGroupService.remove(id);
+  }
 }

@@ -11,6 +11,7 @@ export interface IAttribute {
     slug?: string | null;
     isPublic: boolean;
     group: AttributeGroup;
+    groupid?: number | null;
     values: AttributeValue[],
     catAttribute: CategoryAttribute[];
     type: AttributeUnit,

@@ -7,4 +7,5 @@ export interface IAttributeGroupService {
     update(id: number, data: UpdateAttributeGroupDto): Promise<IAttributeGroupResponse>;
     findOne(id: number): Promise<IAttributeGroupResponse>;
     findAll(): Promise<IAttributeGroupResponse[]>;
+    remove(id: number): Promise<Object>;
 }
