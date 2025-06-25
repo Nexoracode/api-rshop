@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { CategoryAttributeService } from './category-attribute.service';
 import { CreateCategoryAttributeDto } from './dto/create-category-attribute.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { UpdateCategoryAttribute } from './dto/update-category-attribute.dto';
 @ApiTags('07 - 🧩 Category Attributes')
 @Controller('category-attribute')
 export class CategoryAttributeController {
@@ -12,14 +13,13 @@ export class CategoryAttributeController {
     return this.service.assign(data);
   }
 
-  // @Get(':categoryId')
-  // findOne(@Param('categoryId', ParseIntPipe) categoryId: number) {
-  //   return this.service.generateAttributeForCategory(categoryId);
-  // }
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateCategoryAttribute) {
+    return this.service.update(id, data);
+  }
 
-
-  // @Delete(':id')
-  // remove(@Param('id', ParseIntPipe) id: number) {
-  //   return this.service.remove(id);
-  // }
+  @Get('category/:id')
+  findByCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findByCategory(id);
+  }
 }
