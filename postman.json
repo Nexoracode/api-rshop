@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/auth/request-otp": {
+    "/auth/request-otp": {
       "post": {
         "operationId": "AuthController_requestOtp",
         "parameters": [],
@@ -21,11 +21,11 @@
           }
         },
         "tags": [
-          "01-🛡️ Auth"
+          "01 - 🛡️ Auth"
         ]
       }
     },
-    "/api/auth/verify-otp": {
+    "/auth/verify-otp": {
       "post": {
         "operationId": "AuthController_verifyDto",
         "parameters": [],
@@ -45,11 +45,11 @@
           }
         },
         "tags": [
-          "01-🛡️ Auth"
+          "01 - 🛡️ Auth"
         ]
       }
     },
-    "/api/users": {
+    "/users": {
       "get": {
         "operationId": "UserController_findAllUI",
         "parameters": [],
@@ -59,7 +59,7 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       },
       "post": {
@@ -87,11 +87,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/cms": {
+    "/users/cms": {
       "get": {
         "operationId": "UserController_findAllCMS",
         "parameters": [],
@@ -101,11 +101,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/{id}": {
+    "/users/{id}": {
       "get": {
         "operationId": "UserController_findOneUI",
         "parameters": [
@@ -124,7 +124,7 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       },
       "patch": {
@@ -155,7 +155,7 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       },
       "delete": {
@@ -176,11 +176,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/cms/{id}": {
+    "/users/cms/{id}": {
       "get": {
         "operationId": "UserController_findOneCMS",
         "parameters": [
@@ -199,11 +199,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/me/addresses": {
+    "/users/me/addresses": {
       "get": {
         "operationId": "UserController_findMeAddress",
         "parameters": [],
@@ -213,7 +213,7 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       },
       "post": {
@@ -235,11 +235,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/{id}/addresses": {
+    "/users/{id}/addresses": {
       "post": {
         "operationId": "UserController_createAddressForAdmin",
         "parameters": [
@@ -268,11 +268,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/users/me/addresses/{addressId}": {
+    "/users/me/addresses/{addressId}": {
       "patch": {
         "operationId": "UserController_updateUserAddress",
         "parameters": [
@@ -301,7 +301,7 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       },
       "delete": {
@@ -322,11 +322,11 @@
           }
         },
         "tags": [
-          "02-👤 Users"
+          "02 - 👤 Users"
         ]
       }
     },
-    "/api/category/upload": {
+    "/category/upload": {
       "post": {
         "operationId": "CategoryController_uploadImages",
         "parameters": [],
@@ -347,11 +347,11 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       }
     },
-    "/api/category": {
+    "/category": {
       "post": {
         "operationId": "CategoryController_createCategory",
         "parameters": [],
@@ -371,7 +371,7 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       },
       "get": {
@@ -383,11 +383,11 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       }
     },
-    "/api/category/{id}": {
+    "/category/{id}": {
       "get": {
         "operationId": "CategoryController_findByIdWithDescendants",
         "parameters": [
@@ -406,7 +406,7 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       },
       "patch": {
@@ -437,7 +437,7 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       },
       "delete": {
@@ -458,11 +458,11 @@
           }
         },
         "tags": [
-          "03-🗂️ Categories"
+          "03 - 🗂️ Categories"
         ]
       }
     },
-    "/api/product/upload": {
+    "/product/upload": {
       "post": {
         "operationId": "ProductController_uploadImages",
         "parameters": [],
@@ -483,11 +483,11 @@
           }
         },
         "tags": [
-          "08-📦 Products"
+          "08 - 📦 Products"
         ]
       }
     },
-    "/api/product": {
+    "/product": {
       "post": {
         "operationId": "ProductController_create",
         "parameters": [],
@@ -507,11 +507,11 @@
           }
         },
         "tags": [
-          "08-📦 Products"
+          "08 - 📦 Products"
         ]
       }
     },
-    "/api/product/{id}": {
+    "/product/{id}": {
       "patch": {
         "operationId": "ProductController_update",
         "parameters": [
@@ -540,7 +540,7 @@
           }
         },
         "tags": [
-          "08-📦 Products"
+          "08 - 📦 Products"
         ]
       },
       "get": {
@@ -561,13 +561,13 @@
           }
         },
         "tags": [
-          "08-📦 Products"
+          "08 - 📦 Products"
         ]
       }
     },
-    "/api/category-attribute": {
+    "/category-attribute": {
       "post": {
-        "operationId": "CategoryAttributeController_create",
+        "operationId": "CategoryAttributeController_assign",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -585,16 +585,16 @@
           }
         },
         "tags": [
-          "07-🧩 Category Attributes"
+          "07 - 🧩 Category Attributes"
         ]
       }
     },
-    "/api/category-attribute/{categoryId}": {
-      "get": {
-        "operationId": "CategoryAttributeController_findOne",
+    "/category-attribute/{id}": {
+      "patch": {
+        "operationId": "CategoryAttributeController_update",
         "parameters": [
           {
-            "name": "categoryId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -602,19 +602,29 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryAttribute"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
           }
         },
         "tags": [
-          "07-🧩 Category Attributes"
+          "07 - 🧩 Category Attributes"
         ]
       }
     },
-    "/api/category-attribute/{id}": {
-      "delete": {
-        "operationId": "CategoryAttributeController_remove",
+    "/category-attribute/category/{id}": {
+      "get": {
+        "operationId": "CategoryAttributeController_findByCategory",
         "parameters": [
           {
             "name": "id",
@@ -631,11 +641,11 @@
           }
         },
         "tags": [
-          "07-🧩 Category Attributes"
+          "07 - 🧩 Category Attributes"
         ]
       }
     },
-    "/api/attribute": {
+    "/attribute": {
       "post": {
         "operationId": "AttributeController_create",
         "parameters": [],
@@ -655,23 +665,55 @@
           }
         },
         "tags": [
-          "04-🧬 Attributes"
+          "05 - 🧬 Attributes"
         ]
       },
       "get": {
         "operationId": "AttributeController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "grouped",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
           }
         },
         "tags": [
-          "04-🧬 Attributes"
+          "05 - 🧬 Attributes"
         ]
       }
     },
-    "/api/attribute/{id}": {
+    "/attribute/group/{id}": {
+      "get": {
+        "operationId": "AttributeController_findByGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "05 - 🧬 Attributes"
+        ]
+      }
+    },
+    "/attribute/{id}": {
       "patch": {
         "operationId": "AttributeController_update",
         "parameters": [
@@ -700,7 +742,7 @@
           }
         },
         "tags": [
-          "04-🧬 Attributes"
+          "05 - 🧬 Attributes"
         ]
       },
       "delete": {
@@ -721,11 +763,11 @@
           }
         },
         "tags": [
-          "04-🧬 Attributes"
+          "05 - 🧬 Attributes"
         ]
       }
     },
-    "/api/attribute-value": {
+    "/attribute-value": {
       "post": {
         "operationId": "AttributeValueController_create",
         "parameters": [],
@@ -745,11 +787,11 @@
           }
         },
         "tags": [
-          "05-🔠 Attribute Values"
+          "06 - 🔠 Attribute Values"
         ]
       }
     },
-    "/api/attribute-value/attribute/{id}": {
+    "/attribute-value/attribute/{id}": {
       "get": {
         "operationId": "AttributeValueController_findByAttribute",
         "parameters": [
@@ -768,11 +810,11 @@
           }
         },
         "tags": [
-          "05-🔠 Attribute Values"
+          "06 - 🔠 Attribute Values"
         ]
       }
     },
-    "/api/attribute-value/{id}": {
+    "/attribute-value/{id}": {
       "delete": {
         "operationId": "AttributeValueController_remove",
         "parameters": [
@@ -791,11 +833,44 @@
           }
         },
         "tags": [
-          "05-🔠 Attribute Values"
+          "06 - 🔠 Attribute Values"
         ]
       }
     },
-    "/api/attribute-group": {
+    "/attribute-value/{id}/order": {
+      "patch": {
+        "operationId": "AttributeValueController_updateOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "06 - 🔠 Attribute Values"
+        ]
+      }
+    },
+    "/attribute-group": {
       "post": {
         "operationId": "AttributeGroupController_create",
         "parameters": [],
@@ -815,7 +890,7 @@
           }
         },
         "tags": [
-          "06-📁 Attribute Groups"
+          "04 - 📁 Attribute Groups"
         ]
       },
       "get": {
@@ -827,11 +902,11 @@
           }
         },
         "tags": [
-          "06-📁 Attribute Groups"
+          "04 - 📁 Attribute Groups"
         ]
       }
     },
-    "/api/attribute-group/{id}": {
+    "/attribute-group/{id}": {
       "get": {
         "operationId": "AttributeGroupController_findOne",
         "parameters": [
@@ -850,11 +925,63 @@
           }
         },
         "tags": [
-          "06-📁 Attribute Groups"
+          "04 - 📁 Attribute Groups"
+        ]
+      },
+      "patch": {
+        "operationId": "AttributeGroupController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "04 - 📁 Attribute Groups"
+        ]
+      },
+      "delete": {
+        "operationId": "AttributeGroupController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "04 - 📁 Attribute Groups"
         ]
       }
     },
-    "/api/variant-product": {
+    "/variant-product": {
       "post": {
         "operationId": "VariantProductController_create",
         "parameters": [],
@@ -874,11 +1001,11 @@
           }
         },
         "tags": [
-          "09-🎭 Variant Products"
+          "09 - 🎭 Variant Products"
         ]
       }
     },
-    "/api/variant-product/product/{id}": {
+    "/variant-product/product/{id}": {
       "get": {
         "operationId": "VariantProductController_findByProduct",
         "parameters": [
@@ -905,11 +1032,11 @@
           }
         },
         "tags": [
-          "09-🎭 Variant Products"
+          "09 - 🎭 Variant Products"
         ]
       }
     },
-    "/api/variant-product/{id}": {
+    "/variant-product/{id}": {
       "get": {
         "operationId": "VariantProductController_findOne",
         "parameters": [
@@ -936,7 +1063,7 @@
           }
         },
         "tags": [
-          "09-🎭 Variant Products"
+          "09 - 🎭 Variant Products"
         ]
       },
       "patch": {
@@ -967,7 +1094,7 @@
           }
         },
         "tags": [
-          "09-🎭 Variant Products"
+          "09 - 🎭 Variant Products"
         ]
       },
       "delete": {
@@ -988,52 +1115,52 @@
           }
         },
         "tags": [
-          "09-🎭 Variant Products"
+          "09 - 🎭 Variant Products"
         ]
       }
     }
   },
   "info": {
-    "title": "RShop Api",
-    "description": "the RShop API description",
+    "title": "RShop APi Document",
+    "description": "داکیومنت کامل جهت api ",
     "version": "1.0",
     "contact": {}
   },
   "tags": [
     {
-      "name": "01-🛡️ Auth",
+      "name": "01 - 🛡️ Auth",
       "description": "احراز هویت و ثبت‌نام"
     },
     {
-      "name": "02-👤 Users",
+      "name": "02 - 👤 Users",
       "description": "مدیریت کاربران"
     },
     {
-      "name": "03-🗂️ Categories",
+      "name": "03 - 🗂️ Categories",
       "description": "دسته‌بندی‌ها"
     },
     {
-      "name": "04-🧬 Attributes",
-      "description": "ویژگی‌ها"
-    },
-    {
-      "name": "05-🔠 Attribute Values",
-      "description": "مقدارهای ویژگی"
-    },
-    {
-      "name": "06-📁 Attribute Groups",
+      "name": "04 - 📁 Attribute Groups",
       "description": "گروه‌بندی ویژگی‌ها"
     },
     {
-      "name": "07-🧩 Category Attributes",
+      "name": "05 - 🧬 Attributes",
+      "description": "ویژگی‌ها"
+    },
+    {
+      "name": "06 - 🔠 Attribute Values",
+      "description": "مقدارهای ویژگی"
+    },
+    {
+      "name": "07 - 🧩 Category Attributes",
       "description": "اتصال ویژگی‌ها به دسته‌بندی‌ها"
     },
     {
-      "name": "08-📦 Products",
+      "name": "08 - 📦 Products",
       "description": "محصولات"
     },
     {
-      "name": "09-🎭 Variant Products",
+      "name": "09 - 🎭 Variant Products",
       "description": "ویزگی محصولات"
     }
   ],
@@ -1355,6 +1482,17 @@
           "attributeId"
         ]
       },
+      "UpdateCategoryAttribute": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "number"
+          },
+          "attributeId": {
+            "type": "number"
+          }
+        }
+      },
       "CreateAttributeDto": {
         "type": "object",
         "properties": {
@@ -1362,7 +1500,9 @@
             "type": "string"
           },
           "groupId": {
-            "type": "number"
+            "type": "object",
+            "default": 0,
+            "example": 0
           },
           "isPublic": {
             "type": "boolean",
@@ -1371,7 +1511,7 @@
           "slug": {
             "type": "string"
           },
-          "attributeUnit": {
+          "type": {
             "type": "string",
             "enum": [
               "select",
@@ -1394,7 +1534,8 @@
           }
         },
         "required": [
-          "name"
+          "name",
+          "type"
         ]
       },
       "UpdateAttributeDto": {
@@ -1404,7 +1545,9 @@
             "type": "string"
           },
           "groupId": {
-            "type": "number"
+            "type": "object",
+            "default": 0,
+            "example": 0
           },
           "isPublic": {
             "type": "boolean",
@@ -1413,7 +1556,7 @@
           "slug": {
             "type": "string"
           },
-          "attributeUnit": {
+          "type": {
             "type": "string",
             "enum": [
               "select",
@@ -1448,6 +1591,10 @@
           "displayColor": {
             "type": "string"
           },
+          "displayOrder": {
+            "type": "number",
+            "default": null
+          },
           "isActive": {
             "type": "boolean",
             "default": true
@@ -1455,7 +1602,8 @@
         },
         "required": [
           "value",
-          "attributeId"
+          "attributeId",
+          "displayOrder"
         ]
       },
       "UpdateAttributeValueDto": {
@@ -1470,6 +1618,10 @@
           "displayColor": {
             "type": "string"
           },
+          "displayOrder": {
+            "type": "number",
+            "default": null
+          },
           "isActive": {
             "type": "boolean",
             "default": true
@@ -1482,14 +1634,32 @@
           "name": {
             "type": "string"
           },
-          "attributeId": {
+          "slug": {
+            "type": "string"
+          },
+          "displayOrder": {
             "type": "number"
           }
         },
         "required": [
           "name",
-          "attributeId"
+          "slug",
+          "displayOrder"
         ]
+      },
+      "UpdateAttributeGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        }
       },
       "VariantAttributeInput": {
         "type": "object",

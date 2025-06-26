@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SwaggerUI } from './swagger-ui.class';
 import { _SWAGGER_TAGS } from './swagger-tags/swagger-tags.constants';
+import * as fs from 'fs'
 
 export class SwaggerDocumentBuilder {
   constructor(private readonly app: INestApplication<any>) { }
@@ -24,6 +25,7 @@ export class SwaggerDocumentBuilder {
 
   public setupSwagger() {
     const document = this.createDocument();
+    fs.writeFileSync('postman.json', JSON.stringify(document, null, 2));
     const swaggerUI = new SwaggerUI('http://localhost:3001/api');
     SwaggerModule.setup(
       'api/swagger',
@@ -33,3 +35,4 @@ export class SwaggerDocumentBuilder {
     );
   }
 }
+

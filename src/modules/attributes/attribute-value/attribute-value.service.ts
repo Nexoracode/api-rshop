@@ -19,6 +19,18 @@ export class AttributeValueService implements IAttributeValueService {
     private readonly attrRepo: Repository<Attribute>
   ) { }
 
+  async updateOrder(id: number, order: number): Promise<Object> {
+    const value = await this.valueRepo.findOne({ where: { id } });
+    if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
+    value.displayOrder = order;
+    const saved = await this.valueRepo.save(value);
+    console.log(saved)
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
+    }
+  }
+
   async findByAttribute(attributeId: number): Promise<IAttributeValueResponse[]> {
     const values = await this.valueRepo.find({ where: { attributeId }, order: { displayOrder: 'ASC' } })
     return values.map((value) => AttributeValueMapper.toResponse(value));

@@ -1,14 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { RequestMethod, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { HttpExceptionFilter } from './common/interceptors/http-exception';
 import { SnakeCaseInterceptor } from './common/interceptors/snake-case.interceptor';
-import * as fs from 'fs'
 import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
 
 async function bootstrap() {

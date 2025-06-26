@@ -7,4 +7,5 @@ export interface IAttributeValueService {
     create(data: CreateAttributeValueDto): Promise<IAttributeValueResponse>;
     update(id: number, data: UpdateAttributeValueDto): Promise<IAttributeValueResponse>;
     remove(id: number): Promise<Object>;
+    updateOrder(id: number, order: number): Promise<Object>;
 }

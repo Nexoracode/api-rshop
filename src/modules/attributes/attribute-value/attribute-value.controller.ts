@@ -26,4 +26,9 @@ export class AttributeValueController {
   remove(@Param('id') id: string) {
     return this.attributeValueService.remove(+id);
   }
+
+  @Patch(':id/order')
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeValueDto) {
+    return this.attributeValueService.updateOrder(id, data.displayOrder ?? 0);
+  }
 }
