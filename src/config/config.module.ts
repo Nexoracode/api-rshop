@@ -29,11 +29,11 @@ import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
         })
     ],
     providers: [
-        // {
-        //     provide: APP_GUARD,
-        //     useFactory: (configService: JwtUtil, authService: AuthService, reflector: Reflector) => new AutoRefreshGuard(configService, authService, reflector),
-        //     inject: [JwtUtil, AuthService, Reflector],
-        // },
+        {
+            provide: APP_GUARD,
+            useFactory: (configService: JwtUtil, authService: AuthService, reflector: Reflector) => new AutoRefreshGuard(configService, authService, reflector),
+            inject: [JwtUtil, AuthService, Reflector],
+        },
         JwtUtil,
         ConfigService,
         AccessStrategy,

@@ -14,6 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ResponseInterceptor(), new SnakeCaseInterceptor());
+  app.setGlobalPrefix('api')
   app.enableCors({
     credentials: true,
     origin: '*'

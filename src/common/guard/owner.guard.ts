@@ -10,6 +10,7 @@ export class OwnerGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest<CustomRequest>();
         const user = request.user;
+        console.log(user);
 
         const paramId = Number(request.params.id);
         if (!user) {

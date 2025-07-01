@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/auth/request-otp": {
+    "/api/auth/request-otp": {
       "post": {
         "operationId": "AuthController_requestOtp",
         "parameters": [],
@@ -25,7 +25,7 @@
         ]
       }
     },
-    "/auth/verify-otp": {
+    "/api/auth/verify-otp": {
       "post": {
         "operationId": "AuthController_verifyDto",
         "parameters": [],
@@ -49,7 +49,7 @@
         ]
       }
     },
-    "/users": {
+    "/api/users": {
       "get": {
         "operationId": "UserController_findAllUI",
         "parameters": [],
@@ -91,7 +91,7 @@
         ]
       }
     },
-    "/users/cms": {
+    "/api/users/cms": {
       "get": {
         "operationId": "UserController_findAllCMS",
         "parameters": [],
@@ -105,7 +105,7 @@
         ]
       }
     },
-    "/users/{id}": {
+    "/api/users/{id}": {
       "get": {
         "operationId": "UserController_findOneUI",
         "parameters": [
@@ -180,7 +180,7 @@
         ]
       }
     },
-    "/users/cms/{id}": {
+    "/api/users/cms/{id}": {
       "get": {
         "operationId": "UserController_findOneCMS",
         "parameters": [
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/users/me/addresses": {
+    "/api/users/me/addresses": {
       "get": {
         "operationId": "UserController_findMeAddress",
         "parameters": [],
@@ -239,7 +239,7 @@
         ]
       }
     },
-    "/users/{id}/addresses": {
+    "/api/users/{id}/addresses": {
       "post": {
         "operationId": "UserController_createAddressForAdmin",
         "parameters": [
@@ -272,7 +272,7 @@
         ]
       }
     },
-    "/users/me/addresses/{addressId}": {
+    "/api/users/me/addresses/{addressId}": {
       "patch": {
         "operationId": "UserController_updateUserAddress",
         "parameters": [
@@ -326,7 +326,7 @@
         ]
       }
     },
-    "/category/upload": {
+    "/api/category/upload": {
       "post": {
         "operationId": "CategoryController_uploadImages",
         "parameters": [],
@@ -351,7 +351,7 @@
         ]
       }
     },
-    "/category": {
+    "/api/category": {
       "post": {
         "operationId": "CategoryController_createCategory",
         "parameters": [],
@@ -387,7 +387,7 @@
         ]
       }
     },
-    "/category/{id}": {
+    "/api/category/{id}": {
       "get": {
         "operationId": "CategoryController_findByIdWithDescendants",
         "parameters": [
@@ -462,7 +462,7 @@
         ]
       }
     },
-    "/product/upload": {
+    "/api/product/upload": {
       "post": {
         "operationId": "ProductController_uploadImages",
         "parameters": [],
@@ -487,7 +487,7 @@
         ]
       }
     },
-    "/product": {
+    "/api/product": {
       "post": {
         "operationId": "ProductController_create",
         "parameters": [],
@@ -511,7 +511,7 @@
         ]
       }
     },
-    "/product/{id}": {
+    "/api/product/{id}": {
       "patch": {
         "operationId": "ProductController_update",
         "parameters": [
@@ -565,7 +565,7 @@
         ]
       }
     },
-    "/product/category/{title}": {
+    "/api/product/category/{title}": {
       "get": {
         "operationId": "ProductController_findByCategoryTitle",
         "parameters": [
@@ -588,7 +588,7 @@
         ]
       }
     },
-    "/category-attribute": {
+    "/api/category-attribute": {
       "post": {
         "operationId": "CategoryAttributeController_assign",
         "parameters": [],
@@ -612,7 +612,7 @@
         ]
       }
     },
-    "/category-attribute/{id}": {
+    "/api/category-attribute/{id}": {
       "patch": {
         "operationId": "CategoryAttributeController_update",
         "parameters": [
@@ -645,7 +645,7 @@
         ]
       }
     },
-    "/category-attribute/category/{id}": {
+    "/api/category-attribute/category/{id}": {
       "get": {
         "operationId": "CategoryAttributeController_findByCategory",
         "parameters": [
@@ -668,7 +668,7 @@
         ]
       }
     },
-    "/attribute": {
+    "/api/attribute": {
       "post": {
         "operationId": "AttributeController_create",
         "parameters": [],
@@ -713,7 +713,7 @@
         ]
       }
     },
-    "/attribute/group/{id}": {
+    "/api/attribute/group/{id}": {
       "get": {
         "operationId": "AttributeController_findByGroup",
         "parameters": [
@@ -736,7 +736,7 @@
         ]
       }
     },
-    "/attribute/{id}": {
+    "/api/attribute/{id}": {
       "patch": {
         "operationId": "AttributeController_update",
         "parameters": [
@@ -790,7 +790,7 @@
         ]
       }
     },
-    "/attribute-value": {
+    "/api/attribute-value": {
       "post": {
         "operationId": "AttributeValueController_create",
         "parameters": [],
@@ -814,7 +814,7 @@
         ]
       }
     },
-    "/attribute-value/attribute/{id}": {
+    "/api/attribute-value/attribute/{id}": {
       "get": {
         "operationId": "AttributeValueController_findByAttribute",
         "parameters": [
@@ -837,7 +837,7 @@
         ]
       }
     },
-    "/attribute-value/{id}": {
+    "/api/attribute-value/{id}": {
       "delete": {
         "operationId": "AttributeValueController_remove",
         "parameters": [
@@ -860,7 +860,7 @@
         ]
       }
     },
-    "/attribute-value/{id}/order": {
+    "/api/attribute-value/{id}/order": {
       "patch": {
         "operationId": "AttributeValueController_updateOrder",
         "parameters": [
@@ -893,7 +893,7 @@
         ]
       }
     },
-    "/attribute-group": {
+    "/api/attribute-group": {
       "post": {
         "operationId": "AttributeGroupController_create",
         "parameters": [],
@@ -929,7 +929,7 @@
         ]
       }
     },
-    "/attribute-group/{id}": {
+    "/api/attribute-group/{id}": {
       "get": {
         "operationId": "AttributeGroupController_findOne",
         "parameters": [
@@ -1004,7 +1004,7 @@
         ]
       }
     },
-    "/variant-product": {
+    "/api/variant-product": {
       "post": {
         "operationId": "VariantProductController_create",
         "parameters": [],
@@ -1028,7 +1028,7 @@
         ]
       }
     },
-    "/variant-product/product/{id}": {
+    "/api/variant-product/product/{id}": {
       "get": {
         "operationId": "VariantProductController_findByProduct",
         "parameters": [
@@ -1059,7 +1059,7 @@
         ]
       }
     },
-    "/variant-product/{id}": {
+    "/api/variant-product/{id}": {
       "get": {
         "operationId": "VariantProductController_findOne",
         "parameters": [
