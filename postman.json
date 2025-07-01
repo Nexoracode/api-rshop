@@ -565,6 +565,29 @@
         ]
       }
     },
+    "/product/category/{title}": {
+      "get": {
+        "operationId": "ProductController_findByCategoryTitle",
+        "parameters": [
+          {
+            "name": "title",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
+      }
+    },
     "/category-attribute": {
       "post": {
         "operationId": "CategoryAttributeController_assign",
@@ -1372,18 +1395,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "attributeValueIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "variantIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
         "required": [
@@ -1399,9 +1410,7 @@
           "weightUnit",
           "description",
           "isVisible",
-          "mediaIds",
-          "attributeValueIds",
-          "variantIds"
+          "mediaIds"
         ]
       },
       "UpdateProductDto": {
@@ -1448,18 +1457,6 @@
             "type": "boolean"
           },
           "mediaIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "attributeValueIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "variantIds": {
             "type": "array",
             "items": {
               "type": "string"

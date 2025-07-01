@@ -19,4 +19,4 @@ export class CategoryAttribute implements ICategoryAttribute {
 
     @Column()
     attributeId: number;
-} 
+}

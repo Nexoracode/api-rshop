@@ -79,17 +79,4 @@ export class CreateProductDto {
     @ArrayMaxSize(20)
     @IsInt({ each: true })
     mediaIds?: number[];
-
-    @ApiProperty()
-    @IsOptional()
-    @IsArray()
-    @IsInt({ each: true })
-    attributeValueIds?: number[];
-
-    @ApiProperty()
-    @IsOptional()
-    @IsArray()
-    @IsInt({ each: true })
-    variantIds?: number[];
-
 }

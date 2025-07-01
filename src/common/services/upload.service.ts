@@ -30,7 +30,7 @@ export class UploadService {
             await this.client.uploadFrom(Readable.from(buffer), filename);
             this.client.close();
 
-            return `https://dl.${process.env.FTP_HOST}/${remotePath}/${filename}`;
+            return `https://dl.${process.env.FTP_HOST}/Rshop/${remotePath}/${filename}`;
         } catch (error) {
             console.error('FTP upload error:', error);
             throw error;

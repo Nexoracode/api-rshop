@@ -2,17 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { DataSource, In, Repository } from 'typeorm';
-import { CategoryService } from '../category/category.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IProductService } from './interfaces/product.service.interface';
 import { IProductResponse } from './interfaces/product.response';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Media } from '../media/entities/image.entity';
-import { AttributeValue } from '../attributes/attribute-value/entities/attribute-value.entity';
-import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductMapper } from './mappers/product.mapper';
+import { paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService implements IProductService {
@@ -21,6 +19,21 @@ export class ProductService implements IProductService {
         private readonly productRepo: Repository<Product>,
         private dataSource: DataSource,
     ) { }
+
+
+    async findByCategoryTitle(categoryTitle: string, query: PaginateQuery): Promise<Paginated<Product>> {
+        return paginate(query, this.productRepo, {
+            sortableColumns: [],
+            nullSort: 'last',
+            defaultSortBy: [],
+            searchableColumns: [],
+            select: [],
+            filterableColumns: {
+                name: [],
+                age: true,
+            }
+        })
+    }
 
     async findOne(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
@@ -52,9 +65,6 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             }
-            if (data.variantIds?.length) {
-                await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct })
-            }
             return ProductMapper.toResponse(savedProduct);
         })
     }
@@ -77,11 +87,8 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
-            if (data.variantIds?.length) {
-                await manager.update(VariantProduct, { id: In(data.variantIds) }, { product: savedProduct });
-            }
-
-            return ProductMapper.toResponse(savedProduct);
+            const productResult = await this.findOne(id);
+            return productResult;
         });
     }
 }

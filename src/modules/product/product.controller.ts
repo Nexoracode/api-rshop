@@ -7,6 +7,7 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { MediaType } from 'src/common/enums/media.enum';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -39,5 +40,10 @@ export class ProductController {
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productService.findOne(id);
+    }
+
+    @Get('category/:title')
+    findByCategoryTitle(@Param('title') title: string, @Paginate() query: PaginateQuery) {
+        return this.productService.findByCategoryTitle(title, query);
     }
 }
