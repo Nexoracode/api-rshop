@@ -469,6 +469,18 @@
       }
     },
     "/api/product": {
+      "get": {
+        "operationId": "ProductController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
+      },
       "post": {
         "operationId": "ProductController_create",
         "parameters": [],

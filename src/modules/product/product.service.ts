@@ -21,6 +21,31 @@ export class ProductService implements IProductService {
     ) { }
 
 
+    async findAll(query: PaginateQuery): Promise<Object> {
+        const products = await paginate(query, this.productRepo, {
+            sortableColumns: ['id', 'name', 'price', 'stock', 'media', 'mediaPinned'],
+            relations: [
+                'media',
+                'mediaPinned',
+                'category',
+                'variants',
+                'variants.attributes',
+                'variants.attributes.attribute',
+            ],
+            defaultSortBy: [['id', 'DESC']],
+            searchableColumns: ['name'],
+            select: ['id', 'name', 'price', 'stock', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+        });
+        return {
+            message: 'محصولات با موفقیت دریافت شد.',
+            data: {
+                items: products.data.map(product => ProductMapper.toResponse(product)),
+                meta: products.meta,
+            }
+        };
+    }
+
+
     async findByCategoryTitle(categoryTitle: string, query: PaginateQuery): Promise<Paginated<Product>> {
         return paginate(query, this.productRepo, {
             sortableColumns: [],
@@ -43,6 +68,8 @@ export class ProductService implements IProductService {
                 'mediaPinned',
                 'category',
                 'variants',
+                'variants.attributes',
+                'variants.attributes.attribute',
             ]
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
@@ -72,7 +99,9 @@ export class ProductService implements IProductService {
             await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
-                relations: ['media', 'mediaPinned', 'category', 'variants']
+                relations: ['media', 'mediaPinned', 'category', 'variants',
+                    'variants.attributes',
+                    'variants.attributes.attribute',]
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result);
@@ -106,11 +135,17 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const product = await manager.findOne(Product, {
                 where: { id },
-                relations: ['media', 'mediaPinned', 'category', 'variants']
+                relations: ['media', 'mediaPinned', 'category', 'variants',
+                    'variants.attributes',
+                    'variants.attributes.attribute',]
             });
             if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
-            console.log(product);
-            return {}
+            await manager.remove(Product, product);
+            await manager.update(Media, { productId: id }, { product: null });
+            return {
+                message: 'محصول با موفقیت حذف شد.',
+                data: null
+            }
         })
     }
 

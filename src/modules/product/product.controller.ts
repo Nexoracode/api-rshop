@@ -27,6 +27,11 @@ export class ProductController {
         return this.uploadService.uploadFile(files, MediaType.PRODUCT);
     }
 
+    @Get()
+    findAll(@Paginate() query: PaginateQuery) {
+        return this.productService.findAll(query);
+    }
+
     @Post()
     create(@Body() data: CreateProductDto) {
         return this.productService.create(data);

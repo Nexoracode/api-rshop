@@ -9,10 +9,8 @@ export interface IProductResponse {
     price: number;
     stock: number;
     isLimitedStock: boolean;
-    discountType: {
-        discountAmount?: number | null;
-        discountPercent?: number | null;
-    }
+    discountAmount?: number | null;
+    discountPercent?: number | null;
     isFeatured: boolean;
     weight: number;
     weightUnit: WeightUnit,

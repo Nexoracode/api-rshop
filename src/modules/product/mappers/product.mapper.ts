@@ -13,11 +13,7 @@ export class ProductMapper {
                 type: m.type,
                 url: m.url,
             })),
-            mediaPinned: {
-                id: product.mediaPinned.id ?? 0,
-                type: product.mediaPinned.type ?? 'image',
-                url: product.mediaPinned.url ?? '',
-            },
+            mediaPinned: null,
             categoryId: product.categoryId,
             isFeatured: product.isFeatured,
             isLimitedStock: product.isLimitedStock,
@@ -28,10 +24,8 @@ export class ProductMapper {
             weight: product.weight,
             weightUnit: product.weightUnit,
             description: product.description,
-            discountType: {
-                discountAmount: product.discountAmount,
-                discountPercent: product.discountPercent
-            }
+            discountAmount: product.discountAmount,
+            discountPercent: product.discountPercent,
         }
     }
 }
