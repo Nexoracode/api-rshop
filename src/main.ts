@@ -5,7 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { SnakeCaseInterceptor } from './common/interceptors/snake-case.interceptor';
+import { SnakeCaseInterceptor, SnakeToCamelInterceptor } from './common/interceptors/snake-case.interceptor';
 import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
 
 async function bootstrap() {
@@ -13,15 +13,20 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new ResponseInterceptor(), new SnakeCaseInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor(), new SnakeCaseInterceptor(), new SnakeToCamelInterceptor());
   app.setGlobalPrefix('api')
   app.enableCors({
     credentials: true,
-    origin: '*'
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'http://172.18.100.42:3001',
+      'http://172.18.100.42:3002',
+    ]
   })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(process.env.PORT ?? 3002);
 }
 
 bootstrap();

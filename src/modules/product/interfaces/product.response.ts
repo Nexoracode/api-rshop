@@ -20,6 +20,14 @@ export interface IProductResponse {
     isVisible: boolean;
     category: ICategory;
     categoryId: number;
-    media: Media[];
+    medias: IMediaResponse[];
+    mediaPinned?: IMediaResponse | null,
+    mediaPinnedId?: number;
     variants: VariantProduct[];
+}
+
+interface IMediaResponse {
+    id: number;
+    url: string;
+    type: string;
 }

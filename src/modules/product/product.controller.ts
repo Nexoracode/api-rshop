@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -45,5 +45,10 @@ export class ProductController {
     @Get('category/:title')
     findByCategoryTitle(@Param('title') title: string, @Paginate() query: PaginateQuery) {
         return this.productService.findByCategoryTitle(title, query);
+    }
+
+    @Delete(':id')
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.productService.remove(id);
     }
 }

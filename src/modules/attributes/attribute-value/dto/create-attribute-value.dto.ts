@@ -7,22 +7,22 @@ export class CreateAttributeValueDto {
     @IsNotEmpty()
     value: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'attribute_id', default: 1 })
     @IsOptional()
     @IsNumber()
     attributeId: number;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ name: 'display_color', required: false })
     @ValidateIf((o) => o.isColor === true)
     @IsString()
     displayColor?: string;
 
-    @ApiProperty({ default: null })
+    @ApiProperty({ name: 'display_order', default: null })
     @IsNumber()
     @IsOptional()
     displayOrder: number;
 
-    @ApiProperty({ required: false, default: true })
+    @ApiProperty({ name: 'is_active', required: false, default: true })
     @IsOptional()
     @IsBoolean()
     isActive?: boolean | true;

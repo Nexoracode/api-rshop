@@ -7,8 +7,17 @@ export class ProductMapper {
         return {
             id: product.id,
             category: product.category,
-            variants: product.variants,
-            media: product.media,
+            variants: !product.variants || product.variants.length === 0 ? [] : product.variants,
+            medias: !product.media || product.media.length === 0 ? [] : product.media.map((m) => ({
+                id: m.id,
+                type: m.type,
+                url: m.url,
+            })),
+            mediaPinned: {
+                id: product.mediaPinned.id ?? 0,
+                type: product.mediaPinned.type ?? 'image',
+                url: product.mediaPinned.url ?? '',
+            },
             categoryId: product.categoryId,
             isFeatured: product.isFeatured,
             isLimitedStock: product.isLimitedStock,

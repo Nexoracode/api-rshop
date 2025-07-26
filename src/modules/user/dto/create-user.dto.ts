@@ -1,56 +1,57 @@
 import { Role } from "src/common/enums/role.enum";
-import { IsArray, IsBoolean, IsEmail, IsOptional, IsString, Length, Matches } from "class-validator";
+import { IsArray, IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, Length, Matches } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateUserDto {
 
-    @ApiProperty()
+    @ApiProperty({ name: 'first_name', default: 'john' })
     @IsString()
     @IsOptional()
     firstName: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'last_name', default: 'doe' })
     @IsString()
     @IsOptional()
     lastName: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'phone', default: '09150553208' })
     @IsString()
     @Length(11, 11)
     @Matches(/^09\d{9}$/, { message: 'Phone number must be a valid Iranian mobile number' })
     @IsOptional()
     phone: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'is_phone_verified', default: false })
     @IsBoolean()
     @IsOptional()
     isPhoneVerified: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'email', default: 'example@gmail.com' })
     @IsEmail()
     @IsOptional()
     email: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'password' })
+    @IsNotEmpty()
     @IsString()
     @Length(6, 100)
     password: string;
 
-    @ApiProperty({ enum: Role })
+    @ApiProperty({ enum: Role, default: Role.USER })
     @IsOptional()
     role: Role;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'is_active', default: true })
     @IsBoolean()
     @IsOptional()
     isActive: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'avatar_url', default: '' })
     @IsString()
     @IsOptional()
     avatarUrl: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'addresses', type: [Number], default: [] })
     @IsArray()
     @IsOptional()
     addresses: number[];

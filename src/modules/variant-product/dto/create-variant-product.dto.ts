@@ -4,11 +4,11 @@ import { IsArray, IsIn, IsInt, IsNotEmpty, IsNumber, IsString, Min, ValidateNest
 
 class VariantAttributeInput {
 
-    @ApiProperty({ example: 1, description: 'شناسه ویژگی' })
+    @ApiProperty({ name: 'attribute_id', example: 1, description: 'شناسه ویژگی' })
     @IsInt()
     attributeId: number;
 
-    @ApiProperty({ example: 1, description: 'شناسه مقدار ویژگی' })
+    @ApiProperty({ name: 'value_id', example: 1, description: 'شناسه مقدار ویژگی' })
     @IsInt()
     valueId: number;
 
@@ -18,7 +18,7 @@ class VariantAttributeInput {
 }
 export class CreateVariantProductDto {
 
-    @ApiProperty({ default: 1 })
+    @ApiProperty({ name: 'product_id', default: 1 })
     @IsInt()
     productId: number;
 
@@ -47,7 +47,7 @@ export class CreateVariantProductDto {
         type: [VariantAttributeInput],
         description: 'لیست ویژگی‌ها و مقدارها',
         example: [
-            { attributeId: 1, valueId: 1, label: 'آبی' },
+            { attribute_id: 1, value_id: 1, label: 'آبی' },
         ],
     })
     @IsArray()

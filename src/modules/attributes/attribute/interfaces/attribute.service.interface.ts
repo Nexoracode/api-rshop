@@ -6,6 +6,7 @@ import { IAttributeResponse, IAttributeResponseGrouped } from "./attribute.respo
 
 export interface IAttributeService {
     findAll(grouped: boolean): Promise<IAttributeResponse[] | IAttributeResponseGrouped[]>;
+    findById(id: number): Promise<IAttributeResponse>;
     findByGroup(groupId: number): Promise<IAttributeResponseGrouped[]>
     create(data: CreateAttributeDto): Promise<IAttributeResponse>;
     update(id: number, data: UpdateAttributeDto): Promise<IAttributeResponse>;

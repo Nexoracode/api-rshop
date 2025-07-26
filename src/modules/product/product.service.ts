@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { DataSource, In, Repository } from 'typeorm';
@@ -39,8 +39,9 @@ export class ProductService implements IProductService {
         const product = await this.productRepo.findOne({
             where: { id },
             relations: [
-                'category',
                 'media',
+                'mediaPinned',
+                'category',
                 'variants',
             ]
         });
@@ -54,18 +55,27 @@ export class ProductService implements IProductService {
             if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = await manager.findOne(Category, { where: { id: data.categoryId } });
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
+            if (!data.mediaIds) throw new BadRequestException('تصویر محصول خود را مشخص کنید.');
             const product = manager.create(Product, data);
             if (!data.requiresPreparation) {
                 product.preparationDays = null;
+            }
+            const media = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
+            if (media) {
+                product.mediaPinned = media;
+                product.mediaPinnedId = media.id;
             }
             const savedProduct = await manager.save(Product, {
                 ...product,
                 category,
             });
-            if (data.mediaIds?.length) {
-                await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
-            }
-            return ProductMapper.toResponse(savedProduct);
+            await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
+            const result = await manager.findOne(Product, {
+                where: { id: savedProduct.id },
+                relations: ['media', 'mediaPinned', 'category', 'variants']
+            });
+            if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+            return ProductMapper.toResponse(result);
         })
     }
 
@@ -91,4 +101,17 @@ export class ProductService implements IProductService {
             return productResult;
         });
     }
+
+    async remove(id: number): Promise<Object> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const product = await manager.findOne(Product, {
+                where: { id },
+                relations: ['media', 'mediaPinned', 'category', 'variants']
+            });
+            if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
+            console.log(product);
+            return {}
+        })
+    }
+
 }

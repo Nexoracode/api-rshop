@@ -9,4 +9,5 @@ export interface IProductService {
     update(id: number, data: UpdateProductDto): Promise<IProductResponse>
     findOne(id: number): Promise<IProductResponse>;
     findByCategoryTitle(categoryTitle: string, query: PaginateQuery): Promise<Paginated<Product>>;
+    remove(id: number): Promise<Object>;
 }

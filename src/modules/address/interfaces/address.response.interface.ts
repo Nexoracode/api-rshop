@@ -7,5 +7,4 @@ export interface IAddressResponse {
     addressLine: string;
     isPrimary: boolean;
     postalCode: string;
-    user: User,
 }

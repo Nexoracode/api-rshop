@@ -15,7 +15,7 @@ export class AttributeGroup implements IAttributeGroup {
     slug?: string;
 
     @Column({ type: 'int', nullable: true })
-    displayOrder?: number;
+    displayOrder: number;
 
     @OneToMany(() => Attribute, attribute => attribute.group)
     attributes: Attribute[]

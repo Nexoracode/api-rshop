@@ -34,12 +34,12 @@ export class CategoryService implements ICategoryService {
     }
 
     async findAllTree(): Promise<ICategoryResponse[]> {
-        const categories = await this.treeCatRepo.findTrees({ relations: ['media'] });
+        const categories = await this.treeCatRepo.findTrees({ relations: ['media', 'products', 'products.media', 'products.mediaPinned'] });
         return categories.map((category) => CategoryMapper.toResponse(category));
     }
 
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
-        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['media'] })
+        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['media', 'products', 'products.media', 'products.mediaPinned'] })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
         const category = await this.treeCatRepo.findDescendantsTree(node);
         return CategoryMapper.toResponse(category);
@@ -104,7 +104,7 @@ export class CategoryService implements ICategoryService {
         });
     }
 
-    async remove(id: number): Promise<Record<string, string | null>> {
+    async remove(id: number): Promise<Object> {
         return runInTransaction(this.dataSource, async (manager) => {
             const node = await this.treeCatRepo.findOne({ where: { id } })
             if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);

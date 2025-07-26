@@ -10,7 +10,6 @@ export class AddressMapper {
             addressLine: address.addressLine,
             postalCode: address.postalCode,
             isPrimary: address.isPrimary,
-            user: address.user,
         }
     }
 }

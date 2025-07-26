@@ -16,7 +16,6 @@ export class IsEmailOrMobileConstraint implements ValidatorConstraintInterface {
     }
 
     defaultMessage(args: ValidationArguments) {
-        console.log(args);
         const value = args.value;
         if (value.includes('@')) {
             return 'Invalid email format';

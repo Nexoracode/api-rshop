@@ -1,10 +1,11 @@
 import { User } from "../entities/user.entity";
-import { IUserCMSResponse, IUserUIResponse } from "../interfaces/user.response.interface";
+import { IUserResponse } from "../interfaces/user.response.interface";
 
 export class UserMapper {
-    static toCMSResponse(user: User): IUserCMSResponse {
+    static toResponse(user: User): IUserResponse {
         return {
             id: user.id,
+            avatar_url: user.avatarUrl || "",
             firstName: user.firstName,
             lastName: user.lastName,
             phone: user.phone,
@@ -14,15 +15,6 @@ export class UserMapper {
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
-        }
-    }
-
-    static toUIResponse(user: User): IUserUIResponse {
-        return {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatarUrl: user.avatarUrl,
         }
     }
 }

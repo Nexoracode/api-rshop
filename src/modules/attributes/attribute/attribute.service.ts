@@ -20,6 +20,13 @@ export class AttributeService implements IAttributeService {
     private readonly groupRepo: Repository<AttributeGroup>,
 
   ) { }
+
+  async findById(id: number): Promise<IAttributeResponse> {
+    const attribute = await this.attributeRepo.findOne({ where: { id }, relations: ['group'] });
+    if (!attribute) throw new NotFoundException('ویژگی مورد نظر یافت نشد');
+    return AttributeMapper.toResponseGrouped(attribute);
+  }
+
   async findAll(grouped: boolean): Promise<IAttributeResponse[] | IAttributeResponseGrouped[]> {
     const attributes = await this.attributeRepo.find({ relations: ['group'] });
     if (grouped) {
@@ -38,12 +45,11 @@ export class AttributeService implements IAttributeService {
 
   async create(data: CreateAttributeDto): Promise<IAttributeResponse> {
     const group = data.groupId ? await this.groupRepo.findOne({ where: { id: data.groupId } }) : null;
+    const duplicateAttribute = await this.attributeRepo.findOne({ where: { slug: data.slug } });
+    const duplicateAttributeByName = await this.attributeRepo.findOne({ where: { name: data.name } });
+    if (duplicateAttribute || duplicateAttributeByName) throw new NotFoundException('ویژگی با این نام یا اسلاگ وجود دارد');
     const attribute = this.attributeRepo.create({
-      name: data.name,
-      slug: data.slug,
-      isPublic: data.isPublic ?? false,
-      type: data.type,
-      displayOrder: data.displayOrder ?? undefined,
+      ...data,
       group: group ?? undefined,
     })
     const saved = await this.attributeRepo.save(attribute);

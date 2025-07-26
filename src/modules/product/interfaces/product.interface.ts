@@ -24,5 +24,7 @@ export interface IProduct {
     category: ICategory;
     categoryId: number;
     media: Media[],
+    mediaPinned: Media;
+    mediaPinnedId: number;
     variants: VariantProduct[]
 }

@@ -49,9 +49,33 @@
         ]
       }
     },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "01 - 🛡️ Auth"
+        ]
+      }
+    },
     "/api/users": {
       "get": {
-        "operationId": "UserController_findAllUI",
+        "operationId": "UserController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -70,33 +94,13 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/CreateUserDto"
-                }
+                "$ref": "#/components/schemas/CreateUserDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "User created successfully"
-          },
-          "400": {
-            "description": "phone/email already exists"
-          }
-        },
-        "tags": [
-          "02 - 👤 Users"
-        ]
-      }
-    },
-    "/api/users/cms": {
-      "get": {
-        "operationId": "UserController_findAllCMS",
-        "parameters": [],
-        "responses": {
-          "200": {
             "description": ""
           }
         },
@@ -107,7 +111,7 @@
     },
     "/api/users/{id}": {
       "get": {
-        "operationId": "UserController_findOneUI",
+        "operationId": "UserController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -160,29 +164,6 @@
       },
       "delete": {
         "operationId": "UserController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "02 - 👤 Users"
-        ]
-      }
-    },
-    "/api/users/cms/{id}": {
-      "get": {
-        "operationId": "UserController_findOneCMS",
         "parameters": [
           {
             "name": "id",
@@ -563,6 +544,27 @@
         "tags": [
           "08 - 📦 Products"
         ]
+      },
+      "delete": {
+        "operationId": "ProductController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
       }
     },
     "/api/product/category/{title}": {
@@ -713,9 +715,9 @@
         ]
       }
     },
-    "/api/attribute/group/{id}": {
+    "/api/attribute/{id}": {
       "get": {
-        "operationId": "AttributeController_findByGroup",
+        "operationId": "AttributeController_findById",
         "parameters": [
           {
             "name": "id",
@@ -734,9 +736,7 @@
         "tags": [
           "05 - 🧬 Attributes"
         ]
-      }
-    },
-    "/api/attribute/{id}": {
+      },
       "patch": {
         "operationId": "AttributeController_update",
         "parameters": [
@@ -770,6 +770,29 @@
       },
       "delete": {
         "operationId": "AttributeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "05 - 🧬 Attributes"
+        ]
+      }
+    },
+    "/api/attribute/group/{id}": {
+      "get": {
+        "operationId": "AttributeController_findByGroup",
         "parameters": [
           {
             "name": "id",
@@ -1218,23 +1241,44 @@
           "code"
         ]
       },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "email or phone"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier",
+          "password"
+        ]
+      },
       "CreateUserDto": {
         "type": "object",
         "properties": {
-          "firstName": {
-            "type": "string"
+          "first_name": {
+            "type": "string",
+            "default": "john"
           },
-          "lastName": {
-            "type": "string"
+          "last_name": {
+            "type": "string",
+            "default": "doe"
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "default": "09150553208"
           },
-          "isPhoneVerified": {
-            "type": "boolean"
+          "is_phone_verified": {
+            "type": "boolean",
+            "default": false
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "default": "example@gmail.com"
           },
           "password": {
             "type": "string"
@@ -1245,45 +1289,144 @@
               "super_admin",
               "admin",
               "user"
-            ]
+            ],
+            "default": "user"
           },
-          "isActive": {
-            "type": "boolean"
+          "is_active": {
+            "type": "boolean",
+            "default": true
           },
-          "avatarUrl": {
-            "type": "string"
+          "avatar_url": {
+            "type": "string",
+            "default": ""
           },
           "addresses": {
+            "default": [],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         },
         "required": [
-          "firstName",
-          "lastName",
+          "first_name",
+          "last_name",
           "phone",
-          "isPhoneVerified",
+          "is_phone_verified",
           "email",
           "password",
           "role",
-          "isActive",
-          "avatarUrl",
+          "is_active",
+          "avatar_url",
           "addresses"
         ]
       },
       "UpdateUserDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "default": "john"
+          },
+          "last_name": {
+            "type": "string",
+            "default": "doe"
+          },
+          "phone": {
+            "type": "string",
+            "default": "09150553208"
+          },
+          "is_phone_verified": {
+            "type": "boolean",
+            "default": false
+          },
+          "email": {
+            "type": "string",
+            "default": "example@gmail.com"
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "default": ""
+          },
+          "addresses": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "phone",
+          "is_phone_verified",
+          "email",
+          "is_active",
+          "avatar_url",
+          "addresses"
+        ]
       },
       "CreateAddressDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "city": {
+            "type": "string",
+            "default": "tehran"
+          },
+          "province": {
+            "type": "string",
+            "default": "خراسان رضوی"
+          },
+          "address_line": {
+            "type": "string",
+            "default": "آدرس کامل"
+          },
+          "postal_code": {
+            "type": "string",
+            "default": "9952365214"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "city",
+          "province",
+          "address_line",
+          "postal_code",
+          "is_primary"
+        ]
       },
       "UpdateAddressDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "city": {
+            "type": "string",
+            "default": "tehran"
+          },
+          "province": {
+            "type": "string",
+            "default": "خراسان رضوی"
+          },
+          "address_line": {
+            "type": "string",
+            "default": "آدرس کامل"
+          },
+          "postal_code": {
+            "type": "string",
+            "default": "9952365214"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "default": false
+          }
+        }
       },
       "UploadFilesDto": {
         "type": "object",
@@ -1359,58 +1502,87 @@
           "stock": {
             "type": "number"
           },
-          "isLimitedStock": {
-            "type": "boolean"
+          "is_limited_stock": {
+            "type": "boolean",
+            "default": false
           },
-          "categoryId": {
-            "type": "number"
+          "category_id": {
+            "type": "number",
+            "default": 0
           },
-          "discountAmount": {
-            "type": "number"
+          "discount_amount": {
+            "type": "number",
+            "default": 0
           },
-          "discountPercent": {
-            "type": "number"
+          "discount_percent": {
+            "type": "number",
+            "default": 0
           },
-          "isFeatured": {
-            "type": "boolean"
+          "is_featured": {
+            "type": "boolean",
+            "default": false
           },
           "weight": {
             "type": "number"
           },
-          "weightUnit": {
+          "weight_unit": {
             "type": "string",
             "enum": [
               "کیلوگرم",
               "گرم"
-            ]
+            ],
+            "default": "کیلوگرم"
+          },
+          "is_some_day_shipping": {
+            "type": "boolean",
+            "default": false
+          },
+          "required_preparation": {
+            "type": "boolean",
+            "default": false
+          },
+          "preparation_days": {
+            "type": "number",
+            "default": 0
           },
           "description": {
             "type": "string"
           },
-          "isVisible": {
-            "type": "boolean"
+          "is_visible": {
+            "type": "boolean",
+            "default": false
           },
-          "mediaIds": {
+          "media_ids": {
+            "default": [],
+            "example": [],
             "type": "array",
             "items": {
               "type": "string"
             }
+          },
+          "media_pinned_id": {
+            "type": "number",
+            "default": 0
           }
         },
         "required": [
           "name",
           "price",
           "stock",
-          "isLimitedStock",
-          "categoryId",
-          "discountAmount",
-          "discountPercent",
-          "isFeatured",
+          "is_limited_stock",
+          "category_id",
+          "discount_amount",
+          "discount_percent",
+          "is_featured",
           "weight",
-          "weightUnit",
+          "weight_unit",
+          "is_some_day_shipping",
+          "required_preparation",
+          "preparation_days",
           "description",
-          "isVisible",
-          "mediaIds"
+          "is_visible",
+          "media_ids",
+          "media_pinned_id"
         ]
       },
       "UpdateProductDto": {
@@ -1425,42 +1597,67 @@
           "stock": {
             "type": "number"
           },
-          "isLimitedStock": {
-            "type": "boolean"
+          "is_limited_stock": {
+            "type": "boolean",
+            "default": false
           },
-          "categoryId": {
-            "type": "number"
+          "category_id": {
+            "type": "number",
+            "default": 0
           },
-          "discountAmount": {
-            "type": "number"
+          "discount_amount": {
+            "type": "number",
+            "default": 0
           },
-          "discountPercent": {
-            "type": "number"
+          "discount_percent": {
+            "type": "number",
+            "default": 0
           },
-          "isFeatured": {
-            "type": "boolean"
+          "is_featured": {
+            "type": "boolean",
+            "default": false
           },
           "weight": {
             "type": "number"
           },
-          "weightUnit": {
+          "weight_unit": {
             "type": "string",
             "enum": [
               "کیلوگرم",
               "گرم"
-            ]
+            ],
+            "default": "کیلوگرم"
+          },
+          "is_some_day_shipping": {
+            "type": "boolean",
+            "default": false
+          },
+          "required_preparation": {
+            "type": "boolean",
+            "default": false
+          },
+          "preparation_days": {
+            "type": "number",
+            "default": 0
           },
           "description": {
             "type": "string"
           },
-          "isVisible": {
-            "type": "boolean"
+          "is_visible": {
+            "type": "boolean",
+            "default": false
           },
-          "mediaIds": {
+          "media_ids": {
+            "default": [],
+            "example": [],
             "type": "array",
             "items": {
               "type": "string"
             }
+          },
+          "media_pinned_id": {
+            "type": "number",
+            "default": 0
           }
         }
       },
@@ -1496,12 +1693,12 @@
           "name": {
             "type": "string"
           },
-          "groupId": {
+          "group_id": {
             "type": "object",
             "default": 0,
             "example": 0
           },
-          "isPublic": {
+          "is_public": {
             "type": "boolean",
             "default": false
           },
@@ -1521,11 +1718,11 @@
             ],
             "default": "text"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "object",
             "default": null
           },
-          "isVariant": {
+          "is_variant": {
             "type": "boolean",
             "default": false
           }
@@ -1541,12 +1738,12 @@
           "name": {
             "type": "string"
           },
-          "groupId": {
+          "group_id": {
             "type": "object",
             "default": 0,
             "example": 0
           },
-          "isPublic": {
+          "is_public": {
             "type": "boolean",
             "default": false
           },
@@ -1566,11 +1763,11 @@
             ],
             "default": "text"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "object",
             "default": null
           },
-          "isVariant": {
+          "is_variant": {
             "type": "boolean",
             "default": false
           }
@@ -1582,25 +1779,26 @@
           "value": {
             "type": "string"
           },
-          "attributeId": {
-            "type": "number"
+          "attribute_id": {
+            "type": "number",
+            "default": 1
           },
-          "displayColor": {
+          "display_color": {
             "type": "string"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "number",
             "default": null
           },
-          "isActive": {
+          "is_active": {
             "type": "boolean",
             "default": true
           }
         },
         "required": [
           "value",
-          "attributeId",
-          "displayOrder"
+          "attribute_id",
+          "display_order"
         ]
       },
       "UpdateAttributeValueDto": {
@@ -1609,17 +1807,18 @@
           "value": {
             "type": "string"
           },
-          "attributeId": {
-            "type": "number"
+          "attribute_id": {
+            "type": "number",
+            "default": 1
           },
-          "displayColor": {
+          "display_color": {
             "type": "string"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "number",
             "default": null
           },
-          "isActive": {
+          "is_active": {
             "type": "boolean",
             "default": true
           }
@@ -1634,14 +1833,15 @@
           "slug": {
             "type": "string"
           },
-          "displayOrder": {
-            "type": "number"
+          "display_order": {
+            "type": "number",
+            "default": null
           }
         },
         "required": [
           "name",
           "slug",
-          "displayOrder"
+          "display_order"
         ]
       },
       "UpdateAttributeGroupDto": {
@@ -1653,20 +1853,21 @@
           "slug": {
             "type": "string"
           },
-          "displayOrder": {
-            "type": "number"
+          "display_order": {
+            "type": "number",
+            "default": null
           }
         }
       },
       "VariantAttributeInput": {
         "type": "object",
         "properties": {
-          "attributeId": {
+          "attribute_id": {
             "type": "number",
             "example": 1,
             "description": "شناسه ویژگی"
           },
-          "valueId": {
+          "value_id": {
             "type": "number",
             "example": 1,
             "description": "شناسه مقدار ویژگی"
@@ -1678,15 +1879,15 @@
           }
         },
         "required": [
-          "attributeId",
-          "valueId",
+          "attribute_id",
+          "value_id",
           "label"
         ]
       },
       "CreateVariantProductDto": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "number",
             "default": 1
           },
@@ -1705,8 +1906,8 @@
             "description": "لیست ویژگی‌ها و مقدارها",
             "example": [
               {
-                "attributeId": 1,
-                "valueId": 1,
+                "attribute_id": 1,
+                "value_id": 1,
                 "label": "آبی"
               }
             ],
@@ -1717,7 +1918,7 @@
           }
         },
         "required": [
-          "productId",
+          "product_id",
           "sku",
           "price",
           "stock",
@@ -1727,7 +1928,7 @@
       "UpdateVariantProductDto": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "number",
             "default": 1
           },
@@ -1746,8 +1947,8 @@
             "description": "لیست ویژگی‌ها و مقدارها",
             "example": [
               {
-                "attributeId": 1,
-                "valueId": 1,
+                "attribute_id": 1,
+                "value_id": 1,
                 "label": "آبی"
               }
             ],

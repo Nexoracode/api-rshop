@@ -7,15 +7,15 @@ export class CreateAttributeDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty({ required: false, default: 0, example: 0 })
+    @ApiProperty({ name: 'group_id', required: false, default: 0, example: 0 })
     @IsOptional()
     @IsNumber()
     groupId?: number | null;
 
-    @ApiProperty({ required: false, default: false })
+    @ApiProperty({ name: 'is_public', required: false, default: false })
     @IsOptional()
     @IsBoolean()
-    isPublic: boolean;
+    isPublic: boolean | false;
 
     @ApiProperty({ required: false })
     @IsString()
@@ -27,12 +27,12 @@ export class CreateAttributeDto {
     @IsOptional()
     type: AttributeUnit;
 
-    @ApiProperty({ required: false, default: null })
+    @ApiProperty({ name: 'display_order', required: false, default: null })
     @IsInt()
     @IsOptional()
-    displayOrder?: number | null;
+    displayOrder?: number | undefined;
 
-    @ApiProperty({ required: false, default: false })
+    @ApiProperty({ name: 'is_variant', required: false, default: false })
     @IsBoolean()
     @IsOptional()
     isVariant?: boolean | false;

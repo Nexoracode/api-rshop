@@ -1,7 +1,7 @@
 import { Category } from "src/modules/category/entities/category.entity";
 import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { IProduct } from "../interfaces/product.interface";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 import { WeightUnit } from "src/common/enums/product.enum";
@@ -62,6 +62,12 @@ export class Product implements IProduct {
 
     @OneToMany(() => Media, media => media.product, { cascade: true })
     media: Media[];
+
+    @ManyToOne(() => Media, media => media.product)
+    mediaPinned: Media;
+
+    @Column({ nullable: true })
+    mediaPinnedId: number;
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];

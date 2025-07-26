@@ -18,6 +18,11 @@ export class AttributeController {
     return this.attributeService.findAll(grouped === 'true');
   }
 
+  @Get(':id')
+  findById(@Param('id', ParseIntPipe) id: number) {
+    return this.attributeService.findById(id);
+  }
+
   @Get('group/:id')
   findByGroup(@Param('id', ParseIntPipe) id: number) {
     return this.attributeService.findByGroup(id);

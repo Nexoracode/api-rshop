@@ -41,7 +41,8 @@ export class JwtUtil {
             secure: false,
             sameSite: 'lax',
             maxAge: type === JwtTypeToken.ACCESS ?
-                15 * 60 * 1000 : // 15 minutes
+                // 15 * 60 * 1000 : // 15 minutes
+                7 * 24 * 60 * 60 * 1000 : // 15 minutes
                 7 * 24 * 60 * 60 * 1000, // 7 days
         });
     }

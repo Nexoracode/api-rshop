@@ -1,7 +1,8 @@
 import { Role } from "src/common/enums/role.enum";
 
-export interface IUserCMSResponse {
+export interface IUserResponse {
     id: number;
+    avatar_url: string;
     firstName: string;
     lastName: string;
     phone: string;
@@ -12,18 +13,4 @@ export interface IUserCMSResponse {
     avatarUrl?: string;
     createdAt: Date;
     updatedAt: Date;
-}
-
-export interface IUserUIResponse {
-    id: number;
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string;
-}
-
-export interface IUserResponse {
-    id: number;
-    firstName: string;
-    lastName: string;
-    avatarUrl: string;
 }

@@ -26,8 +26,9 @@ export class CategoryAttributeService implements ICategoryAttributeService {
     await this.repo.save(categoryAttr);
     const returnCat = await this.repo.findOne({
       where: { categoryId: data.categoryId, attributeId: data.attributeId },
-      relations: ['attribute', 'attribute.group', 'category'],
+      relations: ['attribute', 'attribute.group', 'attribute.values', 'category'],
     })
+    console.log('returnCat', returnCat);
     return CategoryAttributeMapper.toResponse(returnCat!);
   }
 

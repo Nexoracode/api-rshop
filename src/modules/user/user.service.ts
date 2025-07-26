@@ -4,7 +4,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { BaseService } from 'src/common/bases/base.service';
 import { UserMapper } from './mappers/user.mapper';
-import { IUserCMSResponse, IUserUIResponse } from './interfaces/user.response.interface';
+import { IUserResponse } from './interfaces/user.response.interface';
 import { IUserService } from './interfaces/user.service.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -16,63 +16,55 @@ export class UserService extends BaseService<User> implements IUserService {
         private readonly userRepo: Repository<User>,
     ) { super(userRepo) }
 
-    async create(data: CreateUserDto): Promise<IUserCMSResponse> {
+    async create(data: CreateUserDto): Promise<IUserResponse> {
         const existing = await this.userRepo.findOne({ where: { phone: data.phone } })
         if (existing) {
-            throw new BadRequestException('user already exists with this phone number');
+            throw new BadRequestException('این شماره قبلا ثبت شده است.');
         }
+        const duplicateEmail = await this.userRepo.findOne({ where: { email: data.email } });
+        if (duplicateEmail) throw new BadRequestException('این ایمیل از قبل ثبت شده است.');
         const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
         const user = this.userRepo.create({
             ...data,
             addresses: addressEntities,
         });
         const saved = await this.userRepo.save(user);
-        return UserMapper.toCMSResponse(saved);
+        return UserMapper.toResponse(saved);
     }
 
-    async update(id: number, data: UpdateUserDto): Promise<IUserCMSResponse> {
-        const exists = await this.userRepo.findOne({ where: { id } })
-        if (!exists) {
+    async update(id: number, data: UpdateUserDto): Promise<IUserResponse> {
+        const user = await this.userRepo.findOne({ where: { id } })
+        if (!user) {
             throw new NotFoundException('users not found');
         }
         const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
-        if (data.phone && data.phone !== exists.phone) {
-            const duplicate = await this.userRepo.findOne({ where: { phone: data.phone } });
-            if (duplicate) {
-                throw new BadRequestException('Another user already has this phone number');
-            }
-        }
-        const updated = this.userRepo.merge(exists, {
+        const existsPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
+        if (existsPhone && existsPhone.id !== id) throw new BadRequestException('این شماره قبلا ثبت شده است');
+        const existsEmail = await this.userRepo.findOne({ where: { email: data.email } });
+        if (existsEmail && existsEmail.id !== id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
+        const updated = this.userRepo.merge(user, {
             ...data,
             addresses: addressEntities,
         });
         const saved = await this.userRepo.save(updated);
-        return UserMapper.toCMSResponse(saved);
+        return UserMapper.toResponse(saved);
     }
 
-    async remove(id: number): Promise<string> {
+    async remove(id: number): Promise<Object> {
         const user = await this.userRepo.delete(id);
         if (user.affected === 0) {
-            throw new NotFoundException('users not found');
+            throw new NotFoundException('کاربر مورد نظر یافت نشد.');
         }
-        return 'remove user successfully';
+        return { message: 'کاربر با موفقیت حذف شد.', data: null };
     }
 
-    async findOneCMS(id: number): Promise<IUserCMSResponse> {
-        return this.findOneWithMapper(id, [], UserMapper.toCMSResponse);
-    }
-
-    async findOneUI(id: number): Promise<IUserUIResponse> {
-        return this.findOneWithMapper(id, ['addresses'], UserMapper.toUIResponse);
-    }
-
-    async findAllCMS(): Promise<IUserCMSResponse[]> {
-        return this.findAllWithMapper(['addresses'], users => users.map(UserMapper.toCMSResponse));
+    async findOneUser(id: number): Promise<IUserResponse> {
+        return this.findOneWithMapper(id, ['addresses'], UserMapper.toResponse);
     }
 
 
-    async findAllUI(): Promise<IUserUIResponse[]> {
-        return this.findAllWithMapper(['addresses'], (users) => users.map(UserMapper.toUIResponse));
+    async findAllUser(): Promise<IUserResponse[]> {
+        return this.findAllWithMapper(['addresses'], (users) => users.map(UserMapper.toResponse));
     }
 
 }

@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateIf } from "class-validator";
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateIf } from "class-validator";
 import { WeightUnit } from "src/common/enums/product.enum";
+import { Media } from "src/modules/media/entities/image.entity";
 
 export class CreateProductDto {
 
@@ -16,26 +17,26 @@ export class CreateProductDto {
     @IsInt()
     stock: number;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'is_limited_stock', default: false })
     @IsOptional()
     @IsBoolean()
     isLimitedStock?: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'category_id', default: 0 })
     @IsInt()
     categoryId: number;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'discount_amount', default: 0 })
     @IsOptional()
     @IsNumber()
     discountAmount?: number;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'discount_percent', default: 0 })
     @IsOptional()
     @IsNumber()
     discountPercent?: number;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'is_featured', default: false })
     @IsOptional()
     @IsBoolean()
     isFeatured?: boolean;
@@ -45,38 +46,46 @@ export class CreateProductDto {
     @IsNumber()
     weight?: number;
 
-    @ApiProperty({ enum: WeightUnit })
+    @ApiProperty({ name: 'weight_unit', enum: WeightUnit, default: WeightUnit.KG })
     @IsEnum(WeightUnit)
     weightUnit: WeightUnit
 
+    @ApiProperty({ name: 'is_some_day_shipping', default: false })
     @IsOptional()
     @IsBoolean()
-    isSameDayShipping?: boolean;
+    isSameDayShipping: boolean;
 
+    @ApiProperty({ name: 'required_preparation', default: false })
     @IsOptional()
     @IsBoolean()
-    requiresPreparation?: boolean;
+    requiresPreparation: boolean;
 
+    @ApiProperty({ name: 'preparation_days', default: 0 })
     @IsOptional()
     @ValidateIf(o => o.requiresPreparation === true)
     @IsInt()
     @Min(1)
-    preparationDays?: number;
+    preparationDays: number;
 
     @ApiProperty()
     @IsOptional()
     @IsString()
     description?: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'is_visible', default: false })
     @IsOptional()
     @IsBoolean()
     isVisible?: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'media_ids', default: [], example: [] })
     @IsOptional()
     @IsArray()
     @ArrayMaxSize(20)
     @IsInt({ each: true })
     mediaIds?: number[];
+
+    @ApiProperty({ name: 'media_pinned_id', default: 0 })
+    @IsOptional()
+    @IsInt()
+    mediaPinnedId?: number;
 }

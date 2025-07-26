@@ -57,7 +57,6 @@ export class AddressService implements IAddressService {
     async update(id: number, data: UpdateAddressDto): Promise<IAddressResponse> {
         const address = await this.addressRepo.findOne({
             where: { id },
-            relations: ['user'],
         })
         if (!address) {
             throw new NotFoundException('address not found');
@@ -73,14 +72,13 @@ export class AddressService implements IAddressService {
         return AddressMapper.toResponse(saved);
     }
 
-    async remove(id: number): Promise<string> {
+    async remove(id: number): Promise<Object> {
         const exists = await this.addressRepo.findOne({
             where: { id },
-            relations: ['user']
         })
-        if (!exists) throw new BadRequestException('Address not found');
+        if (!exists) throw new BadRequestException('آدرس یافت نشد');
         await this.addressRepo.delete(id);
-        return 'Address deleted successfully';
+        return { message: 'آدرس با موفقیت حذف شد', data: null };
     }
 
     async findByUserId(userId: number): Promise<IAddressResponse[]> {
@@ -90,7 +88,6 @@ export class AddressService implements IAddressService {
         }
         const address = await this.addressRepo.find({
             where: { user: { id: userId } },
-            relations: ['user']
         })
         return address.map((a) => AddressMapper.toResponse(a))
     }
