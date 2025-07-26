@@ -11,10 +11,6 @@ class VariantAttributeInput {
     @ApiProperty({ name: 'value_id', example: 1, description: 'شناسه مقدار ویژگی' })
     @IsInt()
     valueId: number;
-
-    @ApiProperty({ example: 'آبی', description: 'برچسب نمایشی مقدار ویژگی' })
-    @IsString()
-    label: string;
 }
 export class CreateVariantProductDto {
 

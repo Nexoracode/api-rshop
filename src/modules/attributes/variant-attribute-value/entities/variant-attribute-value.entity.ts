@@ -26,7 +26,4 @@ export class VariantAttributeValue implements IVariantAttributeValue {
 
     @Column()
     valueId: number;
-
-    @Column({ nullable: true })
-    label: string;
 }

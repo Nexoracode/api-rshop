@@ -11,7 +11,6 @@ export interface IGroupedVariantProductResponse {
             attributeName: string,
             valueId: number,
             value: string,
-            label: string,
         }[];
     }[];
 }
@@ -21,7 +20,6 @@ export interface IVariantAttributeValueResponse {
     attributeName: string;
     valueId: number;
     value: string;
-    label: string;
     isVariant: boolean;
 }
 

@@ -12,7 +12,6 @@ export class VariantProductMapper {
                 attributeName: string;
                 valueId: number;
                 value: string;
-                label: string;
                 isVariant: boolean;
             }[];
         }> = {};
@@ -34,7 +33,6 @@ export class VariantProductMapper {
                 attributeName: attr.attribute?.name,
                 valueId: attr.value?.id,
                 value: attr.value?.value,
-                label: attr.label,
                 isVariant: attr.attribute.isVariant,
             });
         }
@@ -59,7 +57,6 @@ export class VariantProductMapper {
                 attributeName: attr.attribute?.name,
                 valueId: attr.value?.id,
                 value: attr.value?.value,
-                label: attr.label,
                 isVariant: attr.attribute?.isVariant,
             })),
         };

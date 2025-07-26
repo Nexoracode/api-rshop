@@ -1871,17 +1871,11 @@
             "type": "number",
             "example": 1,
             "description": "شناسه مقدار ویژگی"
-          },
-          "label": {
-            "type": "string",
-            "example": "آبی",
-            "description": "برچسب نمایشی مقدار ویژگی"
           }
         },
         "required": [
           "attribute_id",
-          "value_id",
-          "label"
+          "value_id"
         ]
       },
       "CreateVariantProductDto": {

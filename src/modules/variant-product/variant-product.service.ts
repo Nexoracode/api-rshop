@@ -44,7 +44,6 @@ export class VariantProductService implements IVariantProductService {
           variant: savedVariant,
           attributeId: attr.attributeId,
           valueId: attr.valueId,
-          label: attr.label,
         })
       );
 
@@ -128,7 +127,6 @@ export class VariantProductService implements IVariantProductService {
           variant,
           attributeId: attr.attributeId,
           valueId: attr.valueId,
-          label: attr.label,
         })
       );
       await manager.save(VariantAttributeValue, attributeValue);
