@@ -10,4 +10,5 @@ export interface IProductService {
     findAll(query: PaginateQuery): Promise<Object>;
     findOne(id: number): Promise<IProductResponse>;
     remove(id: number): Promise<Object>;
+    sepidar(): Promise<Object>;
 }

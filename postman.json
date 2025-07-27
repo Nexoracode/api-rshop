@@ -539,6 +539,20 @@
         ]
       }
     },
+    "/api/product/sepidar": {
+      "get": {
+        "operationId": "ProductController_sepidar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
+      }
+    },
     "/api/product": {
       "get": {
         "operationId": "ProductController_findAll",

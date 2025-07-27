@@ -28,6 +28,11 @@ export class ProductController {
         return this.uploadService.uploadFile(files, MediaType.PRODUCT);
     }
 
+    @Get('sepidar')
+    sepidar() {
+        return this.productService.sepidar();
+    }
+
     @Get()
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,

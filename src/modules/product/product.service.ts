@@ -11,8 +11,7 @@ import { Media } from '../media/entities/image.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductMapper } from './mappers/product.mapper';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
-import { link } from 'fs';
-
+import axios from 'axios';
 @Injectable()
 export class ProductService implements IProductService {
     constructor(
@@ -20,6 +19,21 @@ export class ProductService implements IProductService {
         private readonly productRepo: Repository<Product>,
         private dataSource: DataSource,
     ) { }
+
+    async sepidar(): Promise<Object> {
+        try {
+            const result = await axios.post('https://sepidar.roohbakhshac.ir', {
+                Cypher: '',
+                IV: '',
+                integrationID: 0,
+            })
+            console.log(result.data);
+            return {}
+        } catch (e) {
+            console.error('Error in sepidar:', e);
+            throw new BadRequestException('خطا در ارتباط با Sepidar');
+        }
+    }
 
 
     async findAll(query: PaginateQuery): Promise<Object> {
@@ -35,7 +49,7 @@ export class ProductService implements IProductService {
             ],
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'stock', 'createdAt', 'isVisible', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+            select: ['id', 'name', 'price', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
