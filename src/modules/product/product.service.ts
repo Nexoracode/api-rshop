@@ -10,7 +10,8 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Media } from '../media/entities/image.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductMapper } from './mappers/product.mapper';
-import { paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { link } from 'fs';
 
 @Injectable()
 export class ProductService implements IProductService {
@@ -34,30 +35,16 @@ export class ProductService implements IProductService {
             ],
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'stock', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+            select: ['id', 'name', 'price', 'stock', 'createdAt', 'isVisible', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
             data: {
-                items: products.data.map(product => ProductMapper.toResponse(product)),
+                items: products.data,
                 meta: products.meta,
+                links: products.links,
             }
         };
-    }
-
-
-    async findByCategoryTitle(categoryTitle: string, query: PaginateQuery): Promise<Paginated<Product>> {
-        return paginate(query, this.productRepo, {
-            sortableColumns: [],
-            nullSort: 'last',
-            defaultSortBy: [],
-            searchableColumns: [],
-            select: [],
-            filterableColumns: {
-                name: [],
-                age: true,
-            }
-        })
     }
 
     async findOne(id: number): Promise<IProductResponse> {
@@ -70,7 +57,7 @@ export class ProductService implements IProductService {
                 'variants',
                 'variants.attributes',
                 'variants.attributes.attribute',
-            ]
+            ],
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
         return ProductMapper.toResponse(product);
@@ -126,8 +113,14 @@ export class ProductService implements IProductService {
             if (data.mediaIds?.length) {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
-            const productResult = await this.findOne(id);
-            return productResult;
+            const result = await manager.findOne(Product, {
+                where: { id: savedProduct.id },
+                relations: ['media', 'mediaPinned', 'category', 'variants',
+                    'variants.attributes',
+                    'variants.attributes.attribute',]
+            });
+            if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+            return ProductMapper.toResponse(result);
         });
     }
 

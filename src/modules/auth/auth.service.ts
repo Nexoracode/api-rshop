@@ -121,6 +121,7 @@ export class AuthService implements IAuthService {
         return {
             user: savedUser,
             token,
+            refreshToken,
         };
     }
 }

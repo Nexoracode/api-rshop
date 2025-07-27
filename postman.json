@@ -76,7 +76,78 @@
     "/api/users": {
       "get": {
         "operationId": "UserController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> id:DESC\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>firstName</li>\n<li>email</li>\n<li>phone</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC",
+                  "firstName:ASC",
+                  "firstName:DESC",
+                  "email:ASC",
+                  "email:DESC",
+                  "phone:ASC",
+                  "phone:DESC"
+                ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> firstName,email,phone\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>firstName</li>\n<li>email</li>\n<li>phone</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "select",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to select.\n      <p>\n             <b>Example: </b> id,firstName,lastName,avatarUrl,phone\n          </p>\n      <p>\n             <b>Default Value: </b> By default all fields returns. If you want to select only some fields, provide them in query param\n          </p>\n      ",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -471,7 +542,174 @@
     "/api/product": {
       "get": {
         "operationId": "ProductController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter.isVisible",
+            "required": false,
+            "in": "query",
+            "description": "Filter by isVisible query param.\n          <p>\n             <b>Format: </b> filter.isVisible={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.isVisible=$not:$like:John Doe&filter.isVisible=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.stock",
+            "required": false,
+            "in": "query",
+            "description": "Filter by stock query param.\n          <p>\n             <b>Format: </b> filter.stock={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.stock=$not:$like:John Doe&filter.stock=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.categoryId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by categoryId query param.\n          <p>\n             <b>Format: </b> filter.categoryId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.categoryId=$not:$like:John Doe&filter.categoryId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.price",
+            "required": false,
+            "in": "query",
+            "description": "Filter by price query param.\n          <p>\n             <b>Format: </b> filter.price={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.price=$not:$like:John Doe&filter.price=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.discount",
+            "required": false,
+            "in": "query",
+            "description": "Filter by discount query param.\n          <p>\n             <b>Format: </b> filter.discount={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.discount=$not:$like:John Doe&filter.discount=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.createdAt",
+            "required": false,
+            "in": "query",
+            "description": "Filter by createdAt query param.\n          <p>\n             <b>Format: </b> filter.createdAt={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.createdAt=$not:$like:John Doe&filter.createdAt=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.weight",
+            "required": false,
+            "in": "query",
+            "description": "Filter by weight query param.\n          <p>\n             <b>Format: </b> filter.weight={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.weight=$not:$like:John Doe&filter.weight=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.requiresPreparation",
+            "required": false,
+            "in": "query",
+            "description": "Filter by requiresPreparation query param.\n          <p>\n             <b>Format: </b> filter.requiresPreparation={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.requiresPreparation=$not:$like:John Doe&filter.requiresPreparation=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> id:DESC\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>name</li>\n<li>price</li>\n<li>stock</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC",
+                  "name:ASC",
+                  "name:DESC",
+                  "price:ASC",
+                  "price:DESC",
+                  "stock:ASC",
+                  "stock:DESC"
+                ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> name,category\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>name</li>\n<li>category</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "select",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to select.\n      <p>\n             <b>Example: </b> id,name,price,stock,isVisible\n          </p>\n      <p>\n             <b>Default Value: </b> By default all fields returns. If you want to select only some fields, provide them in query param\n          </p>\n      ",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -566,29 +804,6 @@
             "in": "path",
             "schema": {
               "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "08 - 📦 Products"
-        ]
-      }
-    },
-    "/api/product/category/{title}": {
-      "get": {
-        "operationId": "ProductController_findByCategoryTitle",
-        "parameters": [
-          {
-            "name": "title",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
             }
           }
         ],

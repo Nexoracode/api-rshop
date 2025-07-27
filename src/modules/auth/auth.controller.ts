@@ -24,9 +24,9 @@ export class AuthController {
     @Post('verify-otp')
     @Public()
     async verifyDto(@Body() dto: VerifyOtpDto, @Res({ passthrough: true }) res: Response) {
-        const { token, user } = await this.authService.verifyOtp(dto);
+        const { token, refreshToken, user } = await this.authService.verifyOtp(dto);
         this.jwtUtil.setTokenInCookie(res, token, JwtTypeToken.ACCESS);
-        this.jwtUtil.setTokenInCookie(res, token, JwtTypeToken.REFRESH);
+        this.jwtUtil.setTokenInCookie(res, refreshToken, JwtTypeToken.REFRESH);
         const { password, role, ...result } = user;
         return { user: result }
     }

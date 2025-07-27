@@ -32,7 +32,7 @@ export class AutoRefreshGuard implements CanActivate {
         } catch (error) {
             if (!refreshToken) throw new UnauthorizedException('refresh token not found');
             try {
-                const decode = this.tokenService.verifyToken(refreshToken, JwtTypeToken.REFRESH);
+                const decode = await this.tokenService.verifyToken(refreshToken, JwtTypeToken.REFRESH);
                 const user = await this.authService.getUserById(decode.sub);
                 const isMatch = await bcrypt.compare(refreshToken, user.apiToken);
                 if (!isMatch) throw new UnauthorizedException('refresh token not match');
@@ -48,7 +48,6 @@ export class AutoRefreshGuard implements CanActivate {
                 this.tokenService.setTokenInCookie(res, newAccessToken, JwtTypeToken.ACCESS);
 
                 //update request object for future access
-                console.log('generate new access token');
                 req.cookies[JwtTypeToken.ACCESS] = newAccessToken;
                 return true;
 

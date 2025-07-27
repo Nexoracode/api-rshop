@@ -7,7 +7,8 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { MediaType } from 'src/common/enums/media.enum';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
-import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { create } from 'lodash';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -28,6 +29,24 @@ export class ProductController {
     }
 
     @Get()
+    @ApiPaginationQuery({
+        paginationType: PaginationType.CURSOR,
+        sortableColumns: ['id', 'name', 'price', 'stock'],
+        defaultSortBy: [['id', 'DESC']],
+        searchableColumns: ['name', 'category'],
+        relations: ['media', 'mediaPinned', 'category.title'],
+        select: ['id', 'name', 'price', 'stock', 'isVisible', 'media', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+        filterableColumns: {
+            isVisible: [FilterOperator.EQ],
+            stock: [FilterOperator.GT, FilterOperator.LT],
+            categoryId: [FilterOperator.EQ],
+            price: [FilterOperator.GT, FilterOperator.LT],
+            discount: [FilterOperator.GT, FilterOperator.LT],
+            createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+            weight: [FilterOperator.GT, FilterOperator.LT],
+            requiresPreparation: [FilterOperator.EQ],
+        }
+    })
     findAll(@Paginate() query: PaginateQuery) {
         return this.productService.findAll(query);
     }
@@ -45,11 +64,6 @@ export class ProductController {
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productService.findOne(id);
-    }
-
-    @Get('category/:title')
-    findByCategoryTitle(@Param('title') title: string, @Paginate() query: PaginateQuery) {
-        return this.productService.findByCategoryTitle(title, query);
     }
 
     @Delete(':id')
