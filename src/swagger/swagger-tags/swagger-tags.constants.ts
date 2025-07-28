@@ -37,4 +37,8 @@ export const _SWAGGER_TAGS: SwaggerTag[] = [
     name: '09 - 🎭 Variant Products',
     description: 'ویزگی محصولات',
   },
+  {
+    name: '10 - 📦 Helpers',
+    description: 'راهنمای تصاویر',
+  },
 ];

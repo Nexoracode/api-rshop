@@ -72,6 +72,11 @@ export class CreateProductDto {
     @IsString()
     description?: string;
 
+    @ApiProperty({ name: 'order_limit', default: 0 })
+    @IsOptional()
+    @IsInt()
+    orderLimit?: number;
+
     @ApiProperty({ name: 'is_visible', default: false })
     @IsOptional()
     @IsBoolean()
@@ -88,4 +93,9 @@ export class CreateProductDto {
     @IsOptional()
     @IsInt()
     mediaPinnedId?: number;
+
+    @ApiProperty({ name: 'helper_id' })
+    @IsOptional()
+    @IsInt()
+    helperId?: number;
 }

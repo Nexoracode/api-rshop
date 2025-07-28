@@ -14,6 +14,8 @@ import { AttributeValueModule } from './modules/attributes/attribute-value/attri
 import { AttributeGroupModule } from './modules/attributes/attribute-group/attribute-group.module';
 import { VariantAttributeValueModule } from './modules/attributes/variant-attribute-value/variant-attribute-value.module';
 import { VariantProductModule } from './modules/variant-product/variant-product.module';
+import { HelperController } from './modules/helper/helper.controller';
+import { HelperModule } from './modules/helper/helper.module';
 
 
 @Module({
@@ -31,8 +33,9 @@ import { VariantProductModule } from './modules/variant-product/variant-product.
     AttributeGroupModule,
     VariantAttributeValueModule,
     VariantProductModule,
+    HelperModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HelperController],
   providers: [AppService],
 })
 export class AppModule { }

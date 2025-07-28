@@ -1,6 +1,30 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/helpers": {
+      "post": {
+        "operationId": "HelperController_addHelper",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelperDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 📦 Helpers"
+        ]
+      }
+    },
     "/api/auth/request-otp": {
       "post": {
         "operationId": "AuthController_requestOtp",
@@ -1449,11 +1473,37 @@
     {
       "name": "09 - 🎭 Variant Products",
       "description": "ویزگی محصولات"
+    },
+    {
+      "name": "10 - 📦 Helpers",
+      "description": "راهنمای تصاویر"
     }
   ],
   "servers": [],
   "components": {
     "schemas": {
+      "CreateHelperDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Helper Name"
+          },
+          "description": {
+            "type": "string",
+            "example": "Helper description"
+          },
+          "image": {
+            "type": "string",
+            "example": "Helper url image"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "image"
+        ]
+      },
       "RequestDto": {
         "type": "object",
         "properties": {
@@ -1789,6 +1839,10 @@
           "description": {
             "type": "string"
           },
+          "order_limit": {
+            "type": "number",
+            "default": 0
+          },
           "is_visible": {
             "type": "boolean",
             "default": false
@@ -1804,6 +1858,9 @@
           "media_pinned_id": {
             "type": "number",
             "default": 0
+          },
+          "helper_id": {
+            "type": "number"
           }
         },
         "required": [
@@ -1821,9 +1878,11 @@
           "required_preparation",
           "preparation_days",
           "description",
+          "order_limit",
           "is_visible",
           "media_ids",
-          "media_pinned_id"
+          "media_pinned_id",
+          "helper_id"
         ]
       },
       "UpdateProductDto": {
@@ -1884,6 +1943,10 @@
           "description": {
             "type": "string"
           },
+          "order_limit": {
+            "type": "number",
+            "default": 0
+          },
           "is_visible": {
             "type": "boolean",
             "default": false
@@ -1899,6 +1962,9 @@
           "media_pinned_id": {
             "type": "number",
             "default": 0
+          },
+          "helper_id": {
+            "type": "number"
           }
         }
       },

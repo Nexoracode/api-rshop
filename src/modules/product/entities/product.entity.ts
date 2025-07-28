@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, One
 import { IProduct } from "../interfaces/product.interface";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 import { WeightUnit } from "src/common/enums/product.enum";
+import { HelperEntity } from "src/modules/helper/entites/helper.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -54,6 +55,9 @@ export class Product implements IProduct {
     @Column({ default: false })
     isVisible: boolean;
 
+    @Column({ nullable: true })
+    orderLimit: number
+
     @ManyToOne(() => Category, category => category.products)
     category: Category;
 
@@ -68,6 +72,12 @@ export class Product implements IProduct {
 
     @Column({ nullable: true })
     mediaPinnedId: number;
+
+    @ManyToOne(() => HelperEntity, helper => helper.product, { nullable: true, cascade: true })
+    helper: HelperEntity;
+
+    @Column({ nullable: true })
+    helperId: number;
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];

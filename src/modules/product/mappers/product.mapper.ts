@@ -18,10 +18,13 @@ export class ProductMapper {
                 type: product.mediaPinned.type ?? 'image',
                 url: product.mediaPinned.url ?? '',
             },
+            mediaPinnedId: product.mediaPinnedId ?? 0,
+            helper: product.helper,
             categoryId: product.categoryId,
             isFeatured: product.isFeatured,
             isLimitedStock: product.isLimitedStock,
             isVisible: product.isVisible,
+            orderLimit: product.orderLimit,
             name: product.name,
             price: product.price,
             stock: product.stock,
@@ -29,7 +32,9 @@ export class ProductMapper {
             weightUnit: product.weightUnit,
             description: product.description,
             discountAmount: product.discountAmount,
-            discountPercent: product.discountPercent
+            discountPercent: product.discountPercent,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
         }
     }
 }
