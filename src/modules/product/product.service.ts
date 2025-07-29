@@ -12,7 +12,8 @@ import { Category } from '../category/entities/category.entity';
 import { ProductMapper } from './mappers/product.mapper';
 import { paginate, PaginateQuery } from 'nestjs-paginate';
 import axios from 'axios';
-import { HelperEntity } from '../helper/entites/helper.entity';
+import { HelperEntity } from '../helper/entities/helper.entity';
+import { Brand } from '../brand/entities/brand.entity';
 @Injectable()
 export class ProductService implements IProductService {
     constructor(
@@ -21,31 +22,18 @@ export class ProductService implements IProductService {
         private dataSource: DataSource,
     ) { }
 
-    async sepidar(): Promise<Object> {
-        try {
-            const result = await axios.post('https://sepidar.roohbakhshac.ir/api/Devices/Register', {
-                Cypher: '',
-                IV: '',
-                integrationID: 0,
-            })
-            console.log(result.data);
-            return {}
-        } catch (e) {
-            console.error('Error in sepidar:', e);
-            throw new BadRequestException('خطا در ارتباط با Sepidar');
-        }
-    }
-
 
     async findAll(query: PaginateQuery): Promise<Object> {
         const products = await paginate(query, this.productRepo, {
             sortableColumns: ['id', 'name', 'price', 'stock', 'media', 'mediaPinned'],
             relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
+                'brand',
                 'variants.attributes',
                 'variants.attributes.attribute',],
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'helper.id', 'helper.title', 'helper.image', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+            select: ['id', 'name', 'price', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
+                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
@@ -60,7 +48,8 @@ export class ProductService implements IProductService {
     async findOne(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
             where: { id },
-            relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
+            relations: ['media', 'mediaPinned', 'category', 'brand', 'variants', 'helper',
+                'brand',
                 'variants.attributes',
                 'variants.attributes.attribute',]
         });
@@ -70,13 +59,15 @@ export class ProductService implements IProductService {
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
+            if (!data.mediaIds) throw new BadRequestException('تصویر محصول خود را مشخص کنید.');
             const duplicate = await manager.findOne(Product, { where: { name: data.name } });
             if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = await manager.findOne(Category, { where: { id: data.categoryId } });
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
-            if (!data.mediaIds) throw new BadRequestException('تصویر محصول خود را مشخص کنید.');
             if (!helper) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
+            if (!brand) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
             const product = manager.create(Product, data);
             if (!data.requiresPreparation) {
                 product.preparationDays = null;
@@ -94,6 +85,7 @@ export class ProductService implements IProductService {
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
                 relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
+                    'brand',
                     'variants.attributes',
                     'variants.attributes.attribute',]
             });
@@ -113,6 +105,8 @@ export class ProductService implements IProductService {
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
             if (!helper) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
+            if (!brand) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
             const updated = manager.merge(Product, product, data);
             if (!data.requiresPreparation) {
                 updated.preparationDays = null;
@@ -124,6 +118,7 @@ export class ProductService implements IProductService {
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
                 relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
+                    'brand',
                     'variants.attributes',
                     'variants.attributes.attribute',]
             });
@@ -137,6 +132,7 @@ export class ProductService implements IProductService {
             const product = await manager.findOne(Product, {
                 where: { id },
                 relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
+                    'brand',
                     'variants.attributes',
                     'variants.attributes.attribute',]
             });

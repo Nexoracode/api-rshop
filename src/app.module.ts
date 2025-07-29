@@ -16,6 +16,8 @@ import { VariantAttributeValueModule } from './modules/attributes/variant-attrib
 import { VariantProductModule } from './modules/variant-product/variant-product.module';
 import { HelperController } from './modules/helper/helper.controller';
 import { HelperModule } from './modules/helper/helper.module';
+import { BrandModule } from './modules/brand/brand.module';
+import { SepidarModule } from './modules/sepidar/sepidar.module';
 
 
 @Module({
@@ -34,6 +36,8 @@ import { HelperModule } from './modules/helper/helper.module';
     VariantAttributeValueModule,
     VariantProductModule,
     HelperModule,
+    BrandModule,
+    SepidarModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService],

@@ -25,6 +25,39 @@
         ]
       }
     },
+    "/api/helpers/{id}": {
+      "patch": {
+        "operationId": "HelperController_updateHelper",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHelperDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 📦 Helpers"
+        ]
+      }
+    },
     "/api/auth/request-otp": {
       "post": {
         "operationId": "AuthController_requestOtp",
@@ -555,20 +588,6 @@
         },
         "responses": {
           "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "08 - 📦 Products"
-        ]
-      }
-    },
-    "/api/product/sepidar": {
-      "get": {
-        "operationId": "ProductController_sepidar",
-        "parameters": [],
-        "responses": {
-          "200": {
             "description": ""
           }
         },
@@ -1429,6 +1448,228 @@
           "09 - 🎭 Variant Products"
         ]
       }
+    },
+    "/api/brand": {
+      "post": {
+        "operationId": "BrandController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBrandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      },
+      "get": {
+        "operationId": "BrandController_findAllPaginate",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> id:DESC\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>name</li>\n<li>logo</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC",
+                  "name:ASC",
+                  "name:DESC",
+                  "logo:ASC",
+                  "logo:DESC"
+                ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> name\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>name</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "select",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to select.\n      <p>\n             <b>Example: </b> id,name,logo\n          </p>\n      <p>\n             <b>Default Value: </b> By default all fields returns. If you want to select only some fields, provide them in query param\n          </p>\n      ",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      }
+    },
+    "/api/brand/all": {
+      "get": {
+        "operationId": "BrandController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      }
+    },
+    "/api/brand/{id}": {
+      "get": {
+        "operationId": "BrandController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      },
+      "patch": {
+        "operationId": "BrandController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      },
+      "delete": {
+        "operationId": "BrandController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🌿 Brands"
+        ]
+      }
+    },
+    "/api/sepidar": {
+      "get": {
+        "operationId": "SepidarController_register",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sepidar"
+        ]
+      }
+    },
+    "/api/sepidar/login": {
+      "get": {
+        "operationId": "SepidarController_login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sepidar"
+        ]
+      }
     }
   },
   "info": {
@@ -1861,6 +2102,9 @@
           },
           "helper_id": {
             "type": "number"
+          },
+          "brand_id": {
+            "type": "number"
           }
         },
         "required": [
@@ -1882,7 +2126,8 @@
           "is_visible",
           "media_ids",
           "media_pinned_id",
-          "helper_id"
+          "helper_id",
+          "brand_id"
         ]
       },
       "UpdateProductDto": {
@@ -1964,6 +2209,9 @@
             "default": 0
           },
           "helper_id": {
+            "type": "number"
+          },
+          "brand_id": {
             "type": "number"
           }
         }
@@ -2257,6 +2505,39 @@
             "items": {
               "$ref": "#/components/schemas/VariantAttributeInput"
             }
+          }
+        }
+      },
+      "CreateBrandDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "logo"
+        ]
+      },
+      "UpdateBrandDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string"
           }
         }
       }

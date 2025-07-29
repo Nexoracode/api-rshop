@@ -98,4 +98,9 @@ export class CreateProductDto {
     @IsOptional()
     @IsInt()
     helperId?: number;
+
+    @ApiProperty({ name: 'brand_id' })
+    @IsOptional()
+    @IsInt()
+    brandId?: number;
 }

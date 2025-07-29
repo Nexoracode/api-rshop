@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HelperService } from './helper.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HelperEntity } from './entites/helper.entity';
+import { HelperEntity } from './entities/helper.entity';
 import { HelperController } from './helper.controller';
 
 @Module({

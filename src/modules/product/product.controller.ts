@@ -8,7 +8,6 @@ import { MediaType } from 'src/common/enums/media.enum';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
-import { create } from 'lodash';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -26,11 +25,6 @@ export class ProductController {
     })
     uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
         return this.uploadService.uploadFile(files, MediaType.PRODUCT);
-    }
-
-    @Get('sepidar')
-    sepidar() {
-        return this.productService.sepidar();
     }
 
     @Get()

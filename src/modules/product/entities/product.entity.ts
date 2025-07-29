@@ -5,7 +5,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, One
 import { IProduct } from "../interfaces/product.interface";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 import { WeightUnit } from "src/common/enums/product.enum";
-import { HelperEntity } from "src/modules/helper/entites/helper.entity";
+import { HelperEntity } from "src/modules/helper/entities/helper.entity";
+import { Brand } from "src/modules/brand/entities/brand.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -81,6 +82,12 @@ export class Product implements IProduct {
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];
+
+    @ManyToOne(() => Brand, brand => brand.products, { cascade: true, nullable: true })
+    brand: Brand;
+
+    @Column({ nullable: true })
+    brandId: number;
 
     @CreateDateColumn()
     createdAt: Date;

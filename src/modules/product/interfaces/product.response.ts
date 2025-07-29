@@ -2,7 +2,8 @@ import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { WeightUnit } from "src/common/enums/product.enum";
 import { ICategory } from "src/modules/category/interfaces/category.interface";
-import { HelperEntity } from "src/modules/helper/entites/helper.entity";
+import { HelperEntity } from "src/modules/helper/entities/helper.entity";
+import { Brand } from "src/modules/brand/entities/brand.entity";
 
 export interface IProductResponse {
     id: number;
@@ -23,7 +24,10 @@ export interface IProductResponse {
     mediaPinned?: IMediaResponse | null,
     mediaPinnedId?: number;
     variants: VariantProduct[];
+    brand: Brand | null;
+    brandId: number;
     helper: HelperEntity | null;
+    helperId: number;
     createdAt?: Date;
     orderLimit?: number;
     updatedAt?: Date;

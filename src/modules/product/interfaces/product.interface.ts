@@ -1,8 +1,9 @@
 import { WeightUnit } from "src/common/enums/product.enum";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
+import { Brand } from "src/modules/brand/entities/brand.entity";
 import { Category } from "src/modules/category/entities/category.entity";
 import { ICategory } from "src/modules/category/interfaces/category.interface";
-import { HelperEntity } from "src/modules/helper/entites/helper.entity";
+import { HelperEntity } from "src/modules/helper/entities/helper.entity";
 import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 
@@ -28,7 +29,10 @@ export interface IProduct {
     mediaPinned: Media;
     mediaPinnedId: number;
     variants: VariantProduct[]
-    helper: HelperEntity | null
+    brand: Brand | null;
+    brandId: number;
+    helper: HelperEntity | null;
+    helperId: number;
     orderLimit: number;
     createdAt?: Date;
     updatedAt?: Date;
