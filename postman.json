@@ -1097,6 +1097,39 @@
         ]
       }
     },
+    "/api/attribute/{id}/order": {
+      "patch": {
+        "operationId": "AttributeController_updateOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "05 - 🧬 Attributes"
+        ]
+      }
+    },
     "/api/attribute-value": {
       "post": {
         "operationId": "AttributeValueController_create",
@@ -1145,6 +1178,37 @@
       }
     },
     "/api/attribute-value/{id}": {
+      "patch": {
+        "operationId": "AttributeValueController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "06 - 🔠 Attribute Values"
+        ]
+      },
       "delete": {
         "operationId": "AttributeValueController_remove",
         "parameters": [
@@ -1643,12 +1707,12 @@
         ]
       }
     },
-    "/api/sepidar": {
-      "get": {
+    "/api/sepidar/register": {
+      "post": {
         "operationId": "SepidarController_register",
         "parameters": [],
         "responses": {
-          "200": {
+          "201": {
             "description": ""
           }
         },
@@ -1658,8 +1722,22 @@
       }
     },
     "/api/sepidar/login": {
-      "get": {
+      "post": {
         "operationId": "SepidarController_login",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Sepidar"
+        ]
+      }
+    },
+    "/api/card/me": {
+      "get": {
+        "operationId": "CardController_getMyCard",
         "parameters": [],
         "responses": {
           "200": {
@@ -1667,7 +1745,107 @@
           }
         },
         "tags": [
-          "Sepidar"
+          "Card"
+        ]
+      }
+    },
+    "/api/card/add": {
+      "post": {
+        "operationId": "CardController_addItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Card"
+        ]
+      }
+    },
+    "/api/card/update": {
+      "patch": {
+        "operationId": "CardController_updateItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Card"
+        ]
+      }
+    },
+    "/api/card/remove": {
+      "post": {
+        "operationId": "CardController_removeItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Card"
+        ]
+      }
+    },
+    "/api/card/clear": {
+      "post": {
+        "operationId": "CardController_clear",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Card"
+        ]
+      }
+    },
+    "/api/card/lock": {
+      "post": {
+        "operationId": "CardController_lock",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Card"
         ]
       }
     }
@@ -2448,6 +2626,14 @@
             "type": "integer",
             "example": "200000"
           },
+          "discount_amount": {
+            "type": "number",
+            "default": 0
+          },
+          "discount_percent": {
+            "type": "number",
+            "default": 0
+          },
           "stock": {
             "type": "number"
           },
@@ -2470,6 +2656,8 @@
           "product_id",
           "sku",
           "price",
+          "discount_amount",
+          "discount_percent",
           "stock",
           "attributes"
         ]
@@ -2488,6 +2676,14 @@
           "price": {
             "type": "integer",
             "example": "200000"
+          },
+          "discount_amount": {
+            "type": "number",
+            "default": 0
+          },
+          "discount_percent": {
+            "type": "number",
+            "default": 0
           },
           "stock": {
             "type": "number"
@@ -2540,6 +2736,36 @@
             "type": "string"
           }
         }
+      },
+      "AddItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "example": 1
+          },
+          "variantId": {
+            "type": "number",
+            "example": 1
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "RemoveItemDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

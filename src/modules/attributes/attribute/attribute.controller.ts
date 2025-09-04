@@ -33,6 +33,11 @@ export class AttributeController {
     return this.attributeService.update(id, data);
   }
 
+  @Patch(':id/order')
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeDto) {
+    return this.attributeService.updateOrder(id, data.displayOrder ?? 0);
+  }
+
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.attributeService.remove(id);

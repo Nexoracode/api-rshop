@@ -18,6 +18,7 @@ export class AttributeValueController {
     return this.attributeValueService.findByAttribute(id);
   }
 
+  @Patch(':id')
   update(@Param('id') id: string, @Body() updateAttributeValueDto: UpdateAttributeValueDto) {
     return this.attributeValueService.update(+id, updateAttributeValueDto);
   }

@@ -34,17 +34,29 @@ export class AttributeGroupService implements IAttributeGroupService {
     return AttributeGroupMapper.toResponse(savedGroup);
   }
   async findOne(id: number): Promise<IAttributeGroupResponse> {
-    const attrGroup = await this.attrGroupRepo.findOne({ where: { id }, relations: ['attributes'] });
+    const attrGroup = await this.attrGroupRepo.findOne({
+      where: { id }, relations: ['attributes'], order: {
+        displayOrder: 'ASC'
+      }
+    });
     if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
     return AttributeGroupMapper.toResponse(attrGroup);
   }
   async findAll(): Promise<IAttributeGroupResponse[]> {
-    const attributeGroups = await this.attrGroupRepo.find({ relations: ['attributes'] });
+    const attributeGroups = await this.attrGroupRepo.find({
+      relations: ['attributes'], order: {
+        displayOrder: 'ASC'
+      }
+    });
     return attributeGroups.map((attr) => AttributeGroupMapper.toResponse(attr));
   }
   async remove(id: number): Promise<Object> {
     return runInTransaction(this.dataSource, async (manager) => {
-      const attrGroup = await this.attrGroupRepo.findOne({ where: { id }, relations: ['attributes'] });
+      const attrGroup = await this.attrGroupRepo.findOne({
+        where: { id }, relations: ['attributes'], order: {
+          displayOrder: 'ASC'
+        }
+      });
       if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
       for (const attr of attrGroup.attributes) {
         const updateAttribute = manager.merge(Attribute, attr, { groupId: null })

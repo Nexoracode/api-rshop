@@ -10,6 +10,7 @@ export interface IAttributeResponseGrouped {
     group: AttributeGroup,
     groupId?: number;
     isVariant: boolean | false;
+    displayOrder?: number;
 }
 
 export interface IAttributeResponse {
@@ -20,4 +21,5 @@ export interface IAttributeResponse {
     isPublic?: boolean;
     groupId?: number;
     isVariant: boolean | false;
+    displayOrder?: number;
 }

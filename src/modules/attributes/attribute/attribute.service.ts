@@ -22,13 +22,21 @@ export class AttributeService implements IAttributeService {
   ) { }
 
   async findById(id: number): Promise<IAttributeResponse> {
-    const attribute = await this.attributeRepo.findOne({ where: { id }, relations: ['group'] });
+    const attribute = await this.attributeRepo.findOne({
+      where: { id }, relations: ['group'], order: {
+        displayOrder: 'ASC'
+      }
+    },);
     if (!attribute) throw new NotFoundException('ویژگی مورد نظر یافت نشد');
     return AttributeMapper.toResponseGrouped(attribute);
   }
 
   async findAll(grouped: boolean): Promise<IAttributeResponse[] | IAttributeResponseGrouped[]> {
-    const attributes = await this.attributeRepo.find({ relations: ['group'] });
+    const attributes = await this.attributeRepo.find({
+      relations: ['group'], order: {
+        displayOrder: 'ASC'
+      }
+    });
     if (grouped) {
       return attributes.map((attribute) => AttributeMapper.toResponseGrouped(attribute));
     }
@@ -37,7 +45,7 @@ export class AttributeService implements IAttributeService {
 
   async findByGroup(groupId: number): Promise<IAttributeResponseGrouped[]> {
     const attributeGroups = await this.attributeRepo.find(
-      { where: { groupId }, relations: ['group'] }
+      { where: { groupId }, relations: ['group'], order: { displayOrder: 'ASC' } }
     );
     if (!attributeGroups || attributeGroups.length === 0) throw new NotFoundException('گروهی برای این ویژگی یافت نشد');
     return attributeGroups.map((attr) => AttributeMapper.toResponseGrouped(attr));
@@ -84,4 +92,18 @@ export class AttributeService implements IAttributeService {
       data: null,
     }
   }
+
+  async updateOrder(id: number, order: number): Promise<Object> {
+    const value = await this.attributeRepo.findOne({ where: { id } });
+    if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
+    value.displayOrder = order;
+    const saved = await this.attributeRepo.save(value);
+    console.log(saved)
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
+    }
+
+  }
+
 }

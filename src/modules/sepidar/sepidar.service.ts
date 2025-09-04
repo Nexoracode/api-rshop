@@ -82,40 +82,59 @@ export class SepidarService {
   }
 
   async login() {
-    const serial = process.env.SEPIDAR_SERIAL || "100000d8";
-    const cypher = process.env.SEPIDAR_CYPHER || "your-cypher";
-    const iv = process.env.SEPIDAR_IV || "your-iv";
-    const username = process.env.SEPIDAR_USERNAME || "your-username";
-    const password = process.env.SEPIDAR_PASSWORD || "your-password";
+    const serial = "100000d8";
+    const cypher = '4RcSMW4AEZdeYJrwBty86YTSK9DfWQFPgTj5IRvQxnp5je2oXyn7xKWNug5pJVzY0wXFC34mJ6co3ilTJWGS+ujVQhREe4UdBEqT9DPVz/pSV1niQnVhHjNBR/iQvO28ll2yxPQya0p3nCEhDpdt6LkV9F7ap8ddEE+i45Y7wKC+ZDdQjLBfDcTyR6Qi18nO3ku38+HKqCVuhUAWznnDCw==';
+    const iv = "KDhhXQ5dvDNJ18tuZL7yhg==";
+    const username = 'admin11';
+    const password = 'Admin1122';
     const integrationId = serial.match(/\d{4}/)?.[0] ?? '';
-    const generationVersion = '6.0.1';
+    const generationVersion = '110';
     const arbitraryCode = uuidv4();
     const publicKeyXml = this.decryptPublicKey(cypher, iv, serial);
     const encArbitraryCode = await this.encryptArbitraryCode(publicKeyXml, arbitraryCode);
     const passwordHash = crypto.createHash('md5').update(password).digest('hex');
+    console.log(passwordHash);
     const headers = {
       GenerationVersion: generationVersion,
       IntegrationID: integrationId,
       ArbitraryCode: arbitraryCode,
       EncArbitraryCode: encArbitraryCode,
     };
-
     const body = {
       UserName: username,
       PasswordHash: passwordHash,
     };
+    console.log(headers);
 
-    const { data } = await firstValueFrom(
-      this.httpService.post(
-        'https://sepidar.roohbakhshac.ir/api/users/login',
-        body,
-        { headers },
-      ),
-    );
+    const url = 'https://sepidar.roohbakhshac.ir/api/users/Login';
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.post(url, body, { headers }),
+      );
+      console.log(data);
+      return {
+        message: 'ورود به سپیدار موفقیت آمیز بود',
+        data: data,
+      };
+    } catch (e) {
+      console.error('Error in sepidar login:', e.response?.data, e.status);
+      throw new BadRequestException('خطا در ورود به Sepidar');
+    }
 
-    return {
-      message: 'ورود به سپیدار موفقیت آمیز بود',
-      data,
-    };
+    // const url = 'https://sepidar.roohbakhshac.ir/api/General/GenerationVersion';
+    // try {
+    //   console.log(url);
+    //   const { data } = await firstValueFrom(
+    //     this.httpService.get(url),
+    //   );
+    //   console.log(data);
+    // }
+    // catch (e) {
+    //   console.error(e);
+    //   throw new BadRequestException('خطا در ورود به Sepidar');
+    // }
+
+
+    // console.log(data);
   }
 }

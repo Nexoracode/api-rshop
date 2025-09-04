@@ -4,6 +4,7 @@ import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany
 import * as bcrypt from 'bcrypt';
 import { IUser } from "../interfaces/user.interface";
 import { Media } from "src/modules/media/entities/image.entity";
+import { Card } from "src/modules/card/entities/card.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -47,6 +48,12 @@ export class User implements IUser {
             this.apiToken = await bcrypt.hash(this.apiToken, 10);
         }
     }
+
+    @OneToMany(() => Card, (c) => c.user)
+    cards: Card[];
+
+    // @OneToMany(() => Order, (0) => 0.user)
+    // orders: Order[];
 
     @Column({ default: true })
     isActive: boolean;

@@ -17,6 +17,12 @@ export class VariantProduct implements IVariantProduct {
     @Column()
     sku: string;
 
+    @Column({ nullable: true, type: 'decimal' })
+    discountAmount?: number | null | undefined;
+
+    @Column({ nullable: true, type: 'float' })
+    discountPercent?: number | null | undefined;
+
     @ManyToOne(() => Product, product => product.variants, { onDelete: 'CASCADE' })
     product: Product
 

@@ -26,9 +26,7 @@ export class VariantProductService implements IVariantProductService {
       const product = await manager.findOne(Product, { where: { id: data.productId } });
       if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد');
       const variant = manager.create(VariantProduct, {
-        sku: data.sku,
-        price: data.price,
-        stock: data.stock,
+        ...data,
         product,
       });
       for (const attr of data.attributes) {

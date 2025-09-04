@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsIn, IsInt, IsNotEmpty, IsNumber, IsString, Min, ValidateNested } from "class-validator";
+import { IsArray, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { Column } from "typeorm";
 
 class VariantAttributeInput {
 
@@ -33,6 +34,16 @@ export class CreateVariantProductDto {
     @IsInt()
     @Min(0)
     price: number;
+
+    @ApiProperty({ name: 'discount_amount', default: 0 })
+    @IsOptional()
+    @IsNumber()
+    discountAmount?: number;
+
+    @ApiProperty({ name: 'discount_percent', default: 0 })
+    @IsOptional()
+    @IsNumber()
+    discountPercent?: number;
 
     @ApiProperty()
     @IsInt()

@@ -11,7 +11,8 @@ export class AttributeMapper {
             type: attribute.type,
             group: attribute.group,
             groupId: attribute.groupId!,
-            isVariant: attribute.isVariant
+            isVariant: attribute.isVariant,
+            displayOrder: attribute.displayOrder,
         }
     }
 
@@ -23,7 +24,8 @@ export class AttributeMapper {
             slug: attribute.slug ?? null,
             type: attribute.type,
             groupId: attribute.groupId!,
-            isVariant: attribute.isVariant
+            isVariant: attribute.isVariant,
+            displayOrder: attribute.displayOrder,
         }
     }
 }
