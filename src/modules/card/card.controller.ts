@@ -14,14 +14,13 @@ export class CardController {
 
   @Get('me')
   getMyCard(@Req() req: CustomRequest) {
-    console.log('User:', req.user.sub);
-    return this.cardService.getMyCard(req.user.sub as any);
+    return this.cardService.getMyCard(req.user as any);
   }
 
 
   @Post('add')
   addItem(@Req() req: CustomRequest, @Body() dto: AddItemDto) {
-    return this.cardService.addItem(req.user.sub as any, dto);
+    return this.cardService.addItem(req.user as any, dto);
   }
 
 
@@ -31,13 +30,13 @@ export class CardController {
   }
 
 
-  @Post('remove')
+  @Patch('remove')
   removeItem(@Req() req: CustomRequest, @Body() dto: RemoveItemDto) {
     return this.cardService.removeItem(req.user.sub as any, dto);
   }
 
 
-  @Post('clear')
+  @Delete('clear')
   clear(@Req() req: CustomRequest) {
     return this.cardService.clear(req.user.sub as any);
   }

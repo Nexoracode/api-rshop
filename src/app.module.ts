@@ -19,6 +19,7 @@ import { HelperModule } from './modules/helper/helper.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { SepidarModule } from './modules/sepidar/sepidar.module';
 import { CardModule } from './modules/card/card.module';
+import { OrderModule } from './modules/order/order.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { CardModule } from './modules/card/card.module';
     BrandModule,
     SepidarModule,
     CardModule,
+    OrderModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService],

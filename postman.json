@@ -1798,7 +1798,7 @@
       }
     },
     "/api/card/remove": {
-      "post": {
+      "patch": {
         "operationId": "CardController_removeItem",
         "parameters": [],
         "requestBody": {
@@ -1812,7 +1812,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
@@ -1822,11 +1822,11 @@
       }
     },
     "/api/card/clear": {
-      "post": {
+      "delete": {
         "operationId": "CardController_clear",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
@@ -1846,6 +1846,117 @@
         },
         "tags": [
           "Card"
+        ]
+      }
+    },
+    "/api/order": {
+      "post": {
+        "operationId": "OrderController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Order"
+        ]
+      },
+      "get": {
+        "operationId": "OrderController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Order"
+        ]
+      }
+    },
+    "/api/order/{id}": {
+      "get": {
+        "operationId": "OrderController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Order"
+        ]
+      },
+      "patch": {
+        "operationId": "OrderController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Order"
+        ]
+      },
+      "delete": {
+        "operationId": "OrderController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Order"
         ]
       }
     }
@@ -2779,6 +2890,22 @@
         ]
       },
       "RemoveItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "number",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "itemId"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateOrderDto": {
         "type": "object",
         "properties": {}
       }
