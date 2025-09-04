@@ -2761,7 +2761,22 @@
       },
       "UpdateItemDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "itemId": {
+            "type": "number",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 5,
+            "description": "تعداد محصول در کارت"
+          }
+        },
+        "required": [
+          "itemId",
+          "quantity"
+        ]
       },
       "RemoveItemDto": {
         "type": "object",

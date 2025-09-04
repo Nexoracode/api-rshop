@@ -88,15 +88,15 @@ export class CardService {
 
   async addItem(user: User, dto: AddItemDto) {
     const card = await this.getOrCreateUserCard(user);
-    if (card.status !== CardStatus.OPEN) throw new BadRequestException('cart-locked');
+    if (card.status !== CardStatus.OPEN) throw new BadRequestException('این سبد خرید بسته شده است.');
 
     const product = await this.productRepo.findOne({ where: { id: dto.productId } });
-    if (!product) throw new NotFoundException('product-not-found');
+    if (!product) throw new NotFoundException('محصولی یافت نشد');
 
     let variant: VariantProduct | null = null;
     if (dto.variantId) {
       variant = await this.variantRepo.findOne({ where: { id: dto.variantId } });
-      if (!variant) throw new NotFoundException('variant-not-found');
+      if (!variant) throw new NotFoundException('نوعی برای این محصول یافت نشد.');
     }
     const basePrice = (variant?.price ?? (product as any).price) as number | string;
     const dAmount = (variant?.discountAmount ?? (product as any).discountAmount) as number | string | null | undefined;
@@ -144,7 +144,7 @@ export class CardService {
   async updateItem(user: User, dto: UpdateItemDto) {
     const card = await this.getOrCreateUserCard(user);
     const item = await this.cardItemRepo.findOne({ where: { id: dto.itemId }, relations: ['card'] });
-    if (!item || item.card.id !== card.id) throw new NotFoundException('item-not-found');
+    if (!item || item.card.id !== card.id) throw new NotFoundException('آیتمی برای سبد خرید یافت نشد.');
 
 
     if (dto.quantity === 0) {
@@ -159,7 +159,10 @@ export class CardService {
 
     card.items = await this.cardItemRepo.find({ where: { card: { id: card.id } } });
     await this.cardRepo.save(this.compute(card));
-    return card;
+    return {
+      message: 'آیتم سبد خرید با موفقیت بروزرسانی شد',
+      data: item || null,
+    };
   }
 
 
