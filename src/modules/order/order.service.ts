@@ -56,27 +56,17 @@ export class OrderService {
             await cardRepo.save(card);
 
 
-            return {
-                message: 'عملیات با موفقیت انجام شد',
-                order
-            };
+            return order;
         });
     }
     async getMyOrders(user: User) {
-        const order = await this.dataSource.getRepository(Order).find({ where: { user: { id: user.id } }, order: { createdAt: 'DESC' } as any });
-        return {
-            message: 'سفارش با موفقیت بازیابی شد.',
-            data: order,
-        }
+        return await this.dataSource.getRepository(Order).find({ where: { user: { id: user.id } }, order: { createdAt: 'DESC' } as any });
     }
 
 
     async getOne(user: User, id: string) {
         const order = await this.dataSource.getRepository(Order).findOne({ where: { id, user: { id: user.id } }, relations: ['items'] });
         if (!order) throw new NotFoundException('سفارش یافت نشد.');
-        return {
-            message: 'عملیات با موفقیت انجام شد',
-            order
-        };
+        return order;
     }
 }

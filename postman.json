@@ -1909,6 +1909,76 @@
           "Order"
         ]
       }
+    },
+    "/api/invoices": {
+      "post": {
+        "operationId": "InvoiceController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Invoice"
+        ]
+      }
+    },
+    "/api/invoices/{id}/paid": {
+      "post": {
+        "operationId": "InvoiceController_paid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Invoice"
+        ]
+      }
+    },
+    "/api/invoices/by-order/{orderId}": {
+      "get": {
+        "operationId": "InvoiceController_getByOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Invoice"
+        ]
+      }
     }
   },
   "info": {
@@ -2854,6 +2924,18 @@
       "CreateOrderFromCardDto": {
         "type": "object",
         "properties": {}
+      },
+      "CreateInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "number",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
       }
     }
   }

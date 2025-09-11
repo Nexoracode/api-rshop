@@ -1,17 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
-import { map, Observable } from "rxjs";
+import { from, map, Observable, switchMap } from "rxjs";
 import * as snakecaseKeys from 'snakecase-keys';
 import { mapKeys, camelCase } from 'lodash'
-
-@Injectable()
-export class SnakeCaseInterceptor implements NestInterceptor {
-    intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> | Promise<Observable<any>> {
-        return next.handle().pipe(
-            map((data) => snakecaseKeys(data, { deep: true }))
-        )
-    }
-}
-
+import { instanceToPlain } from "class-transformer";
 @Injectable()
 export class SnakeToCamelInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

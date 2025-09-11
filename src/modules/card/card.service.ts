@@ -135,10 +135,7 @@ export class CardService {
         discountTotal: snapshot.discountTotal,
         total: snapshot.total,
       });
-      return {
-        message: 'ایتم با موفقیت به سبد خرید اضافه شد',
-        cart: { ...card, ...snapshot, items }
-      }
+      return { ...card, ...snapshot, items }
     });
   }
 
@@ -170,27 +167,18 @@ export class CardService {
 
       const items = await itemRepo.find({ where: { card: { id: card.id } } });
       await cardRepo.save(this.computeSnapshot(items, card));
-      return {
-        message: 'مقدار ایتم با موفقیت به روز رسانی شد',
-        cart: { ...card, items },
-      };
+      return { ...card, items };
     });
   }
 
   async removeItem(user: User, dto: RemoveItemDto) {
-    return {
-      message: 'ایتم با موفقیت از سبد خرید حذف شد',
-      cart: await this.updateItem(user, { itemId: dto.itemId, quantity: 0 }),
-    };
+    return await this.updateItem(user, { itemId: dto.itemId, quantity: 0 });
   }
 
   async getMyCard(user: User) {
     const card = await this.getOrCreateUserCard(user);
     const items = await this.dataSource.getRepository(CardItem).find({ where: { card: { id: card.id } } });
-    return {
-      message: 'سبد خرید با موفقیت دریافت شد',
-      cart: this.computeSnapshot(items, card)
-    };
+    return this.computeSnapshot(items, card);
   }
 
   async clear(user: User) {
@@ -203,7 +191,7 @@ export class CardService {
       await itemRepo.delete({ card: { id: card.id } as any });
       card.itemsCount = 0; card.totalQuantity = 0; card.subtotal = 0; card.discountTotal = 0; card.total = 0;
       await cardRepo.save(card);
-      return { message: 'سبد خرید با موفقیت خالی شد', card };
+      return card;
     });
   }
 
@@ -217,7 +205,7 @@ export class CardService {
       if (!card.items?.length) throw new BadRequestException('سبد خرید خالی می باشد.');
       card.status = CardStatus.LOCKED;
       await cardRepo.save(card);
-      return { message: 'سبد خرید با موفقیت قفل شد', card };
+      return card;
     });
   }
 }

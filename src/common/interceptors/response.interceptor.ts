@@ -1,36 +1,55 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from 'rxjs/operators';
+import { Observable, from } from "rxjs";
+import { switchMap, map } from "rxjs/operators";
+import * as snakecaseKeys from "snakecase-keys";
+import { instanceToPlain } from "class-transformer";
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+export class ResponseSnakeCaseInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
         return next.handle().pipe(
-            map((data) => {
+            switchMap((data) => from(Promise.resolve(data))),
+            map((resolvedData) => {
                 const res = context.switchToHttp().getResponse();
                 const statusCode = res.statusCode || 200;
 
+                // اگر Entity یا کلاس باشه → تبدیل به plain object
+                const plainData =
+                    typeof resolvedData === "object" && resolvedData !== null
+                        ? instanceToPlain(resolvedData)
+                        : resolvedData;
+
+                // اگر خروجی قبلاً خودش message + data داشته باشه
+                let responseBody: any;
                 if (
-                    typeof data === 'object' &&
-                    data !== null &&
-                    'data' in data &&
-                    'message' in data
+                    typeof plainData === "object" &&
+                    plainData !== null &&
+                    "data" in plainData &&
+                    "message" in plainData
                 ) {
-                    return {
+                    responseBody = {
                         success: true,
-                        statusCode,
-                        message: data.message,
-                        data: data.data,
-                    }
+                        status_code: statusCode,
+                        message: plainData.message,
+                        data: plainData.data,
+                    };
+                } else {
+                    // حالت پیش‌فرض
+                    responseBody = {
+                        success: true,
+                        status_code: statusCode,
+                        message: "عملیات با موفقیت انجام شد",
+                        data: plainData,
+                    };
                 }
 
-                return {
-                    success: true,
-                    statusCode,
-                    message: 'عملیات با موفقیت انجام شد',
-                    data: data,
+                // در نهایت → snake_case روی کل خروجی
+                if (typeof responseBody === "object" && responseBody !== null) {
+                    return snakecaseKeys(responseBody, { deep: true });
                 }
+
+                return responseBody;
             })
-        )
+        );
     }
 }
