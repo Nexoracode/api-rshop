@@ -14,13 +14,13 @@ export class CardController {
 
   @Get('me')
   getMyCard(@Req() req: CustomRequest) {
-    return this.cardService.getMyCard(req.user as any);
+    return this.cardService.getMyCard(req.user.sub as any);
   }
 
 
   @Post('add')
   addItem(@Req() req: CustomRequest, @Body() dto: AddItemDto) {
-    return this.cardService.addItem(req.user as any, dto);
+    return this.cardService.addItem(req.user.sub as any, dto);
   }
 
 

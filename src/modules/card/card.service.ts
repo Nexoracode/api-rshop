@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Card, CardStatus } from './entities/card.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CardItem } from './entities/card-item.entity';
 import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
@@ -9,190 +9,235 @@ import { User } from '../user/entities/user.entity';
 import { AddItemDto } from './dto/add-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { RemoveItemDto } from './dto/remove-item.dto';
+import { runInTransaction } from 'src/common/helpers/transaction.helper';
+
+function clampPercent(p?: number | null): number {
+  if (p == null || Number.isNaN(p)) return 0;
+  return Math.min(100, Math.max(0, p));
+}
+
+
+function toInt(n: number | string): number {
+  const num = typeof n === 'string' ? Number(n) : n;
+  return Math.round(num || 0);
+}
+
+
+function resolveUnitDiscount(basePrice: number | string, discountAmount?: number | string | null, discountPercent?: number | null) {
+  const price = toInt(basePrice);
+  let perUnitDiscount = 0;
+  const amt = discountAmount == null ? 0 : toInt(discountAmount as any);
+  const pct = clampPercent(discountPercent ?? 0);
+  if (amt > 0) perUnitDiscount = amt; else if (pct > 0) perUnitDiscount = Math.floor((price * pct) / 100);
+  const finalUnit = Math.max(0, price - perUnitDiscount);
+  return { unitPriceSnapshot: price, perUnitDiscount, finalUnit };
+}
 
 @Injectable()
 export class CardService {
   constructor(
-    @InjectRepository(Card) private readonly cardRepo: Repository<Card>,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
-    @InjectRepository(CardItem) private readonly cardItemRepo: Repository<CardItem>,
-    @InjectRepository(Product) private readonly productRepo: Repository<Product>,
-    @InjectRepository(VariantProduct) private readonly variantRepo: Repository<VariantProduct>,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) { }
 
-  private async getUser(userId: number) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('user-not-found');
-    return user;
+  private computeSnapshot(items: CardItem[], card: Card) {
+    card.itemsCount = items.length;
+    card.totalQuantity = items.reduce((s, it) => s + it.quantity, 0);
+    card.subtotal = items.reduce((s, it) => s + it.unitPrice * it.quantity, 0);
+    card.discountTotal = items.reduce((s, it) => s + it.discount * it.quantity, 0);
+    card.total = card.subtotal - card.discountTotal;
+    return card;
   }
 
-  async getOrCreateUserCard(userId: User): Promise<Card> {
-    let card = await this.cardRepo.findOne({ where: { user: { id: userId.id } }, relations: ['items'] });
+  async getOrCreateUserCard(userId: number): Promise<Card> {
+    const cardRepo = this.dataSource.getRepository(Card);
+    const userRepo = this.dataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('کاربر یافت نشد.');
+    let card = await cardRepo.findOne({ where: { user: { id: user?.id } }, relations: ['items'] });
     if (!card) {
-      const user = await this.getUser(userId.id);
-      card = this.cardRepo.create({ user, status: CardStatus.OPEN });
-      await this.cardRepo.save(card);
-      card.items = [];
+      card = cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
+      await cardRepo.save(card);
     }
     return card;
   }
 
-  clampPercent(p?: number | null): number {
-    if (p == null || Number.isNaN(p)) return 0;
-    return Math.min(100, Math.max(0, p));
-  }
 
-  toInt(n: number | string): number {
-    const num = typeof n === 'string' ? Number(n) : n;
-    return Math.round(num || 0);
-  }
-
-  resolveUnitDiscount(basePrice: number | string, discountAmount?: number | string | null, discountPercent?: number | null) {
-    const price = this.toInt(basePrice);
-    let perUnitDiscount = 0;
+  async addItem(userId: number, dto: AddItemDto) {
+    return runInTransaction(this.dataSource, async (m) => {
+      const cardRepo = m.getRepository(Card);
+      const itemRepo = m.getRepository(CardItem);
+      const productRepo = m.getRepository(Product);
+      const variantRepo = m.getRepository(VariantProduct);
+      const userRepo = m.getRepository(User);
 
 
-    const amt = discountAmount == null ? 0 : this.toInt(discountAmount as any);
-    const pct = this.clampPercent(discountPercent ?? 0);
+      const user = await userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('کاربر یافت نشد');
 
-
-    if (amt > 0) perUnitDiscount = amt;
-    else if (pct > 0) perUnitDiscount = Math.floor((price * pct) / 100);
-
-
-    const finalUnit = Math.max(0, price - perUnitDiscount);
-    return { unitPriceSnapshot: price, perUnitDiscount, finalUnit };
-  }
-
-  private compute(card: Card) {
-    let itemsCount = 0;
-    let totalQuantity = 0;
-    let subtotal = 0;
-    let discountTotal = 0;
-
-
-    for (const item of card.items || []) {
-      itemsCount += 1;
-      totalQuantity += item.quantity;
-      subtotal += item.unitPrice * item.quantity;
-      discountTotal += item.discount * item.quantity;
-    }
-
-    card.itemsCount = itemsCount;
-    card.totalQuantity = totalQuantity;
-    card.subtotal = subtotal;
-    card.discountTotal = discountTotal;
-    card.total = subtotal - discountTotal;
-    return card;
-  }
-
-  async addItem(user: User, dto: AddItemDto) {
-    const card = await this.getOrCreateUserCard(user);
-    if (card.status !== CardStatus.OPEN) throw new BadRequestException('این سبد خرید بسته شده است.');
-
-    const product = await this.productRepo.findOne({ where: { id: dto.productId } });
-    if (!product) throw new NotFoundException('محصولی یافت نشد');
-
-    let variant: VariantProduct | null = null;
-    if (dto.variantId) {
-      variant = await this.variantRepo.findOne({ where: { id: dto.variantId } });
-      if (!variant) throw new NotFoundException('نوعی برای این محصول یافت نشد.');
-    }
-    const basePrice = (variant?.price ?? (product as any).price) as number | string;
-    const dAmount = (variant?.discountAmount ?? (product as any).discountAmount) as number | string | null | undefined;
-    const dPercent = (variant?.discountPercent ?? (product as any).discountPercent) as number | null | undefined;
-
-    const { unitPriceSnapshot, perUnitDiscount, finalUnit } =
-      this.resolveUnitDiscount(basePrice, dAmount ?? null, dPercent ?? null);
-
-    let item = await this.cardItemRepo.findOne({
-      where: {
-        card: { id: card.id },
-        product: { id: product.id },
-        variant: variant ? ({ id: variant.id } as any) : (null as any),
-      } as any,
-    });
-
-
-    if (item) {
-      item.quantity += dto.quantity;
-      item.unitPrice = unitPriceSnapshot;
-      item.discount = perUnitDiscount;
-      item.lineTotal = finalUnit * item.quantity;
-      await this.cardItemRepo.save(item);
-    } else {
-      item = this.cardItemRepo.create({
-        card,
-        product,
-        variant: variant || null,
-        quantity: dto.quantity,
-        unitPrice: unitPriceSnapshot, // قبل از تخفیف (snapshot)
-        discount: perUnitDiscount, // تخفیف هر واحد
-        lineTotal: finalUnit * dto.quantity,
+      let card = await cardRepo.findOne({
+        where: { user: { id: user.id } },
+        relations: ['items'],
+        lock: { mode: 'pessimistic_write' },
       });
-      await this.cardItemRepo.save(item);
-    }
+
+      if (!card) {
+        card = await cardRepo.save(cardRepo.create({ user, status: CardStatus.OPEN }));
+        card.items = [];
+      }
+
+      if (card.status !== CardStatus.OPEN) throw new BadRequestException('سبد خرید بسته شده است.');
+
+      const product = await productRepo.findOne({ where: { id: dto.productId } });
+      if (!product) throw new NotFoundException('محصول یافت نشد.');
 
 
-    card.items = await this.cardItemRepo.find({ where: { card: { id: card.id } } });
-    await this.cardRepo.save(this.compute(card));
+      let variant: VariantProduct | null = null;
+      if (dto.variantId) {
+        variant = await variantRepo.findOne({ where: { id: dto.variantId } });
+        if (!variant) throw new NotFoundException('نوع محصول یافت نشد.');
+      }
+
+
+      const basePrice = variant?.price ?? (product as any).price;
+      const dAmount = variant?.discountAmount ?? (product as any).discountAmount;
+      const dPercent = variant?.discountPercent ?? (product as any).discountPercent;
+      const { unitPriceSnapshot, perUnitDiscount, finalUnit } = resolveUnitDiscount(basePrice, dAmount ?? null, dPercent ?? null);
+
+
+      let item = await itemRepo.findOne({
+        where: {
+          card: { id: card.id },
+          product: { id: product.id },
+          variant: variant ? ({ id: variant.id } as any) : (null as any),
+        } as any,
+        lock: { mode: 'pessimistic_write' },
+      });
+
+
+      if (item) {
+        item.quantity += dto.quantity;
+        item.unitPrice = unitPriceSnapshot;
+        item.discount = perUnitDiscount;
+        item.lineTotal = finalUnit * item.quantity;
+        await itemRepo.save(item);
+      } else {
+        item = itemRepo.create({
+          card: { id: card.id } as any,
+          product: { id: product.id } as any,
+          variant: variant ? ({ id: variant.id } as any) : null,
+          quantity: dto.quantity,
+          unitPrice: unitPriceSnapshot,
+          discount: perUnitDiscount,
+          lineTotal: finalUnit * dto.quantity,
+        });
+        await itemRepo.save(item);
+      }
+
+
+      const items = await itemRepo.find({ where: { card: { id: card.id } } });
+      const snapshot = this.computeSnapshot(items, card);
+      await cardRepo.update(card.id, {
+        itemsCount: snapshot.itemsCount,
+        totalQuantity: snapshot.totalQuantity,
+        subtotal: snapshot.subtotal,
+        discountTotal: snapshot.discountTotal,
+        total: snapshot.total,
+      });
+      return {
+        message: 'ایتم با موفقیت به سبد خرید اضافه شد',
+        cart: { ...card, ...snapshot, items }
+      }
+    });
+  }
+
+  async updateItem(userId: number, dto: UpdateItemDto) {
+    return runInTransaction(this.dataSource, async (m) => {
+      const cardRepo = m.getRepository(Card);
+      const itemRepo = m.getRepository(CardItem);
+      const userRepo = m.getRepository(User);
+
+      const user = await userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('کاربر یافت نشد');
+
+      const card = await cardRepo.findOne({
+        where: { user: { id: user.id } },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!card) throw new NotFoundException('سبد خرید یافت نشد.');
+
+
+      const item = await itemRepo.findOne({ where: { id: dto.itemId }, relations: ['card'], lock: { mode: 'pessimistic_write' } });
+      if (!item || item.card.id !== card.id) throw new NotFoundException('موردی برای سبد خرید یافت نشد.');
+
+
+      if (dto.quantity === 0) {
+        await itemRepo.remove(item);
+      } else {
+        item.quantity = dto.quantity;
+        const finalUnit = Math.max(0, item.unitPrice - item.discount);
+        item.lineTotal = finalUnit * item.quantity;
+        await itemRepo.save(item);
+      }
+
+
+      const items = await itemRepo.find({ where: { card: { id: card.id } } });
+      await cardRepo.save(this.computeSnapshot(items, card));
+      return {
+        message: 'مقدار ایتم با موفقیت به روز رسانی شد',
+        cart: { ...card, items },
+      };
+    });
+  }
+
+  async removeItem(userId: number, dto: RemoveItemDto) {
     return {
-      message: 'محصول با موفقیت به سبد خرید اضافه شد',
-      data: item,
+      message: 'ایتم با موفقیت از سبد خرید حذف شد',
+      cart: await this.updateItem(userId, { itemId: dto.itemId, quantity: 0 }),
     };
   }
-  async updateItem(user: User, dto: UpdateItemDto) {
-    const card = await this.getOrCreateUserCard(user);
-    const item = await this.cardItemRepo.findOne({ where: { id: dto.itemId }, relations: ['card'] });
-    if (!item || item.card.id !== card.id) throw new NotFoundException('آیتمی برای سبد خرید یافت نشد.');
 
-
-    if (dto.quantity === 0) {
-      await this.cardItemRepo.remove(item);
-    } else {
-      item.quantity = dto.quantity;
-      const finalUnit = Math.max(0, item.unitPrice - item.discount);
-      item.lineTotal = finalUnit * item.quantity;
-      await this.cardItemRepo.save(item);
-    }
-
-
-    card.items = await this.cardItemRepo.find({ where: { card: { id: card.id } } });
-    await this.cardRepo.save(this.compute(card));
+  async getMyCard(userId: number) {
+    const card = await this.getOrCreateUserCard(userId);
+    const items = await this.dataSource.getRepository(CardItem).find({ where: { card: { id: card.id } } });
     return {
-      message: 'آیتم سبد خرید با موفقیت بروزرسانی شد',
-      data: item || null,
+      message: 'سبد خرید با موفقیت دریافت شد',
+      cart: this.computeSnapshot(items, card)
     };
   }
 
+  async clear(userId: number) {
+    return runInTransaction(this.dataSource, async (m) => {
+      const cardRepo = m.getRepository(Card);
+      const itemRepo = m.getRepository(CardItem);
+      const userRepo = m.getRepository(User);
 
-  async removeItem(user: User, dto: RemoveItemDto) {
-    return this.updateItem(user, { itemId: dto.itemId, quantity: 0 });
+      const user = await userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('کاربر یافت نشد');
+      const card = await cardRepo.findOne({ where: { user: { id: user.id } }, lock: { mode: 'pessimistic_write' } });
+      if (!card) throw new NotFoundException('cart-not-found');
+      await itemRepo.delete({ card: { id: card.id } as any });
+      card.itemsCount = 0; card.totalQuantity = 0; card.subtotal = 0; card.discountTotal = 0; card.total = 0;
+      await cardRepo.save(card);
+      return { message: 'سبد خرید با موفقیت خالی شد', card };
+    });
   }
 
+  async lock(userId: number) {
+    return runInTransaction(this.dataSource, async (m) => {
+      const cardRepo = m.getRepository(Card);
+      const itemRepo = m.getRepository(CardItem);
+      const userRepo = m.getRepository(User);
 
-  async getMyCard(user: User) {
-    const card = await this.getOrCreateUserCard(user);
-    card.items = await this.cardItemRepo.find({ where: { card: { id: card.id } } });
-    return {
-      message: 'سبد خرید کاربر با موفقیت بازیابی شد',
-      data: this.compute(card)
-    };
-  }
+      const user = await userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new NotFoundException('کاربر یافت نشد.');
 
-
-  async clear(user: User) {
-    const card = await this.getOrCreateUserCard(user);
-    await this.cardItemRepo.delete({ card: { id: card.id } as any });
-    card.items = [];
-    return this.compute(await this.cardRepo.save(card));
-  }
-
-
-  async lock(user: User) {
-    const card = await this.getOrCreateUserCard(user);
-    if (!card.items?.length) throw new BadRequestException('سبد خرید شما خالی می باشد.');
-    card.status = CardStatus.LOCKED;
-    return this.cardRepo.save(card);
+      const card = await cardRepo.findOne({ where: { user: { id: user.id } }, relations: ['items'], lock: { mode: 'pessimistic_write' } });
+      if (!card) throw new NotFoundException('سبد خرید یافت نشد.');
+      if (!card.items?.length) throw new BadRequestException('سبد خرید خالی می باشد.');
+      card.status = CardStatus.LOCKED;
+      await cardRepo.save(card);
+      return { message: 'سبد خرید با موفقیت قفل شد', card };
+    });
   }
 }
+

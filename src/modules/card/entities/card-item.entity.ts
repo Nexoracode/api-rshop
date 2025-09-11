@@ -1,26 +1,31 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Card } from "./card.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 
 @Entity('card_items')
-@Unique(['card', 'product', 'variant'])
+@Unique('UQ_card_items__card_product_variant', ['card', 'product', 'variant'])
 export class CardItem {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
 
-    @ManyToOne(() => Card, (c) => c.items, { onDelete: 'CASCADE' })
-    @Index()
+    @ManyToOne(() => Card, (c) => c.items, { onDelete: 'CASCADE', nullable: false })
+    @JoinColumn({ name: 'card_id' })
+    @Index('IDX_card_items__card_id')
     card: Card;
 
 
     @ManyToOne(() => Product, { eager: true, nullable: false })
+    @JoinColumn({ name: 'product_id' })
+    @Index('IDX_card_items__product_id')
     product: Product;
 
 
     @ManyToOne(() => VariantProduct, { eager: true, nullable: true })
-    variant?: VariantProduct | null; // ممکن است محصول ساده باشد
+    @Index('IDX_card_items__variant_id')
+    @JoinColumn({ name: 'variant_id' })
+    variant?: VariantProduct | null;
 
 
     @Column({ type: 'int' })
@@ -28,15 +33,15 @@ export class CardItem {
 
 
     @Column({ type: 'bigint' })
-    unitPrice: number; // قیمت واحد در لحظه اضافه شدن
+    unitPrice: number;
 
 
     @Column({ type: 'bigint', default: 0 })
-    discount: number; // تخفیف واحد (در صورت وجود)
+    discount: number;
 
 
     @Column({ type: 'bigint' })
-    lineTotal: number; // (unitPrice - discount) * quantity
+    lineTotal: number;
 
 
     @CreateDateColumn()
