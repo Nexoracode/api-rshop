@@ -1849,16 +1849,16 @@
         ]
       }
     },
-    "/api/order": {
+    "/api/orders/from-card": {
       "post": {
-        "operationId": "OrderController_create",
+        "operationId": "OrderController_createFromCard",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateOrderDto"
+                "$ref": "#/components/schemas/CreateOrderFromCardDto"
               }
             }
           }
@@ -1871,9 +1871,11 @@
         "tags": [
           "Order"
         ]
-      },
+      }
+    },
+    "/api/orders/me": {
       "get": {
-        "operationId": "OrderController_findAll",
+        "operationId": "OrderController_myOrders",
         "parameters": [],
         "responses": {
           "200": {
@@ -1885,61 +1887,9 @@
         ]
       }
     },
-    "/api/order/{id}": {
+    "/api/orders/{id}": {
       "get": {
-        "operationId": "OrderController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Order"
-        ]
-      },
-      "patch": {
-        "operationId": "OrderController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOrderDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Order"
-        ]
-      },
-      "delete": {
-        "operationId": "OrderController_remove",
+        "operationId": "OrderController_getOne",
         "parameters": [
           {
             "name": "id",
@@ -2901,11 +2851,7 @@
           "itemId"
         ]
       },
-      "CreateOrderDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateOrderDto": {
+      "CreateOrderFromCardDto": {
         "type": "object",
         "properties": {}
       }

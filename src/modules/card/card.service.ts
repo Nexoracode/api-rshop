@@ -48,11 +48,8 @@ export class CardService {
     return card;
   }
 
-  async getOrCreateUserCard(userId: number): Promise<Card> {
+  async getOrCreateUserCard(user: User): Promise<Card> {
     const cardRepo = this.dataSource.getRepository(Card);
-    const userRepo = this.dataSource.getRepository(User);
-    const user = await userRepo.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('کاربر یافت نشد.');
     let card = await cardRepo.findOne({ where: { user: { id: user?.id } }, relations: ['items'] });
     if (!card) {
       card = cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
@@ -62,17 +59,12 @@ export class CardService {
   }
 
 
-  async addItem(userId: number, dto: AddItemDto) {
+  async addItem(user: User, dto: AddItemDto) {
     return runInTransaction(this.dataSource, async (m) => {
       const cardRepo = m.getRepository(Card);
       const itemRepo = m.getRepository(CardItem);
       const productRepo = m.getRepository(Product);
       const variantRepo = m.getRepository(VariantProduct);
-      const userRepo = m.getRepository(User);
-
-
-      const user = await userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('کاربر یافت نشد');
 
       let card = await cardRepo.findOne({
         where: { user: { id: user.id } },
@@ -150,14 +142,10 @@ export class CardService {
     });
   }
 
-  async updateItem(userId: number, dto: UpdateItemDto) {
+  async updateItem(user: User, dto: UpdateItemDto) {
     return runInTransaction(this.dataSource, async (m) => {
       const cardRepo = m.getRepository(Card);
       const itemRepo = m.getRepository(CardItem);
-      const userRepo = m.getRepository(User);
-
-      const user = await userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('کاربر یافت نشد');
 
       const card = await cardRepo.findOne({
         where: { user: { id: user.id } },
@@ -189,15 +177,15 @@ export class CardService {
     });
   }
 
-  async removeItem(userId: number, dto: RemoveItemDto) {
+  async removeItem(user: User, dto: RemoveItemDto) {
     return {
       message: 'ایتم با موفقیت از سبد خرید حذف شد',
-      cart: await this.updateItem(userId, { itemId: dto.itemId, quantity: 0 }),
+      cart: await this.updateItem(user, { itemId: dto.itemId, quantity: 0 }),
     };
   }
 
-  async getMyCard(userId: number) {
-    const card = await this.getOrCreateUserCard(userId);
+  async getMyCard(user: User) {
+    const card = await this.getOrCreateUserCard(user);
     const items = await this.dataSource.getRepository(CardItem).find({ where: { card: { id: card.id } } });
     return {
       message: 'سبد خرید با موفقیت دریافت شد',
@@ -205,14 +193,11 @@ export class CardService {
     };
   }
 
-  async clear(userId: number) {
+  async clear(user: User) {
     return runInTransaction(this.dataSource, async (m) => {
       const cardRepo = m.getRepository(Card);
       const itemRepo = m.getRepository(CardItem);
-      const userRepo = m.getRepository(User);
 
-      const user = await userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('کاربر یافت نشد');
       const card = await cardRepo.findOne({ where: { user: { id: user.id } }, lock: { mode: 'pessimistic_write' } });
       if (!card) throw new NotFoundException('cart-not-found');
       await itemRepo.delete({ card: { id: card.id } as any });
@@ -222,14 +207,10 @@ export class CardService {
     });
   }
 
-  async lock(userId: number) {
+  async lock(user: User) {
     return runInTransaction(this.dataSource, async (m) => {
       const cardRepo = m.getRepository(Card);
       const itemRepo = m.getRepository(CardItem);
-      const userRepo = m.getRepository(User);
-
-      const user = await userRepo.findOne({ where: { id: userId } });
-      if (!user) throw new NotFoundException('کاربر یافت نشد.');
 
       const card = await cardRepo.findOne({ where: { user: { id: user.id } }, relations: ['items'], lock: { mode: 'pessimistic_write' } });
       if (!card) throw new NotFoundException('سبد خرید یافت نشد.');

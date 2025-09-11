@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { AccessGuard } from '../../common/guard/access.guard';
+import { CreateOrderFromCardDto } from './dto/create-from-card.dto';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
-@Controller('order')
+
+@UseGuards(AccessGuard)
+@Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
-  @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+
+  @Post('from-card')
+  createFromCard(@CurrentUser() user: RequestUser, @Body() dto: CreateOrderFromCardDto) {
+    return this.orderService.createFromCard(user as any, dto);
   }
 
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+
+  @Get('me')
+  myOrders(@CurrentUser() user: RequestUser) {
+    return this.orderService.getMyOrders(user as any);
   }
+
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  getOne(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.orderService.getOne(user as any, id);
   }
 }

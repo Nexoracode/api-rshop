@@ -5,6 +5,8 @@ import { CustomRequest } from 'src/common/interfaces/request.interface';
 import { AddItemDto } from './dto/add-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { RemoveItemDto } from './dto/remove-item.dto';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
 @UseGuards(AccessGuard)
 @Controller('card')
@@ -13,37 +15,37 @@ export class CardController {
 
 
   @Get('me')
-  getMyCard(@Req() req: CustomRequest) {
-    return this.cardService.getMyCard(req.user.sub as any);
+  getMyCard(@CurrentUser() user: RequestUser) {
+    return this.cardService.getMyCard(user as any);
   }
 
 
   @Post('add')
-  addItem(@Req() req: CustomRequest, @Body() dto: AddItemDto) {
-    return this.cardService.addItem(req.user.sub as any, dto);
+  addItem(@CurrentUser() user: RequestUser, @Body() dto: AddItemDto) {
+    return this.cardService.addItem(user as any, dto);
   }
 
 
   @Patch('update')
-  updateItem(@Req() req: CustomRequest, @Body() dto: UpdateItemDto) {
-    return this.cardService.updateItem(req.user.sub as any, dto);
+  updateItem(@CurrentUser() user: RequestUser, @Body() dto: UpdateItemDto) {
+    return this.cardService.updateItem(user as any, dto);
   }
 
 
   @Patch('remove')
-  removeItem(@Req() req: CustomRequest, @Body() dto: RemoveItemDto) {
-    return this.cardService.removeItem(req.user.sub as any, dto);
+  removeItem(@CurrentUser() user: RequestUser, @Body() dto: RemoveItemDto) {
+    return this.cardService.removeItem(user as any, dto);
   }
 
 
   @Delete('clear')
-  clear(@Req() req: CustomRequest) {
-    return this.cardService.clear(req.user.sub as any);
+  clear(@CurrentUser() user: RequestUser) {
+    return this.cardService.clear(user as any);
   }
 
 
   @Post('lock')
-  lock(@Req() req: CustomRequest) {
-    return this.cardService.lock(req.user.sub as any);
+  lock(@CurrentUser() user: RequestUser) {
+    return this.cardService.lock(user as any);
   }
 }
