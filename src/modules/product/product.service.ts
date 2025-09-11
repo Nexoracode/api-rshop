@@ -51,7 +51,7 @@ export class ProductService implements IProductService {
             relations: ['media', 'mediaPinned', 'category', 'brand', 'variants', 'helper',
                 'brand',
                 'variants.attributes',
-                'variants.attributes.attribute',]
+                'variants.attributes.attribute', 'variants.attributes.value', 'variants.attributes.attribute.values',]
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
         return ProductMapper.toResponse(product);
@@ -87,7 +87,7 @@ export class ProductService implements IProductService {
                 relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
                     'brand',
                     'variants.attributes',
-                    'variants.attributes.attribute',]
+                    'variants.attributes.attribute', 'variants.attributes.attribute.values',]
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result);
