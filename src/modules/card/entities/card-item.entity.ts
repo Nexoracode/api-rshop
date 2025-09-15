@@ -6,7 +6,7 @@ import { VariantProduct } from "src/modules/variant-product/entities/variant-pro
 @Entity('card_items')
 @Unique('UQ_card_items__card_product_variant', ['card', 'product', 'variant'])
 export class CardItem {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string;
 
 

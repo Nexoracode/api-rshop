@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAttributeValueDto } from './dto/update-attribute-value.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AttributeValue } from './entities/attribute-value.entity';
@@ -39,7 +39,18 @@ export class AttributeValueService implements IAttributeValueService {
   async create(data: CreateAttributeValueDto): Promise<IAttributeValueResponse> {
     const attr = await this.attrRepo.findOne({ where: { id: data.attributeId } });
     if (!attr) throw new NotFoundException('ویژگی یافت نشد');
-    const value = this.valueRepo.create(data);
+    const existsValue = await this.valueRepo.findOne({ where: { value: data.value } })
+    if (existsValue) throw new BadRequestException('این ویژگی از قبل ثبت شده است.');
+    const lastAttrValue = await this.valueRepo.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    })
+    console.log(lastAttrValue);
+    const nextOrder = lastAttrValue.length ? lastAttrValue[0].displayOrder + 1 : 1;
+    const value = this.valueRepo.create({
+      ...data,
+      displayOrder: nextOrder,
+    });
     const saved = await this.valueRepo.save(value);
     return AttributeValueMapper.toResponse(saved);
   }
@@ -52,7 +63,12 @@ export class AttributeValueService implements IAttributeValueService {
       if (!attr) throw new NotFoundException('ویژگی یافت نشد.');
       value.attribute = attr;
     }
-    const saved = await this.attrRepo.save(value);
+    const existValue = await this.valueRepo.findOne({ where: { value: data.value } });
+    if (existValue && existValue.id != id) {
+      throw new BadRequestException('این ویژگی از قبل ثبت شده است.');
+    }
+    const saved = await this.valueRepo.save(value);
+    console.log(saved);
     return AttributeValueMapper.toResponse(saved);
   }
 

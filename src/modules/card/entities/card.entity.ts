@@ -13,7 +13,7 @@ export enum CardStatus {
 @Unique(['user'])
 export class Card {
 
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string;
 
     @ManyToOne(() => User, (u) => u.cards, { nullable: false, onDelete: 'CASCADE' })

@@ -12,8 +12,8 @@ export class CreateAttributeGroupDto {
     @IsOptional()
     slug: string;
 
-    @ApiProperty({ name: 'display_order', default: null })
+    @ApiProperty({ name: 'display_order', default: 0 })
     @IsInt()
     @IsOptional()
-    displayOrder?: number;
+    displayOrder: number;
 }

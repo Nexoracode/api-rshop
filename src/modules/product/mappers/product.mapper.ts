@@ -1,101 +1,206 @@
-import { AttributeUnit } from "src/common/enums/attribute.enum";
-import { IProduct } from "../interfaces/product.interface";
-import { IProductResponse } from "../interfaces/product.response";
-import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
-import { VariantAttributeValue } from "src/modules/attributes/variant-attribute-value/entities/variant-attribute-value.entity";
-
 export class ProductMapper {
-
-    private static uniqVariantAttributes(variant: VariantProduct): VariantAttributeValue[] {
-        const map = new Map<string, VariantAttributeValue>();
-        for (const va of (variant.attributes || [])) {
+    private static uniqVariantAttributes(variant: any) {
+        const map = new Map<string, any>();
+        for (const va of variant.attributes || []) {
             const key = `${va.attributeId}:${va.valueId}`;
             if (!map.has(key)) map.set(key, va);
         }
         return [...map.values()];
     }
 
-    private static buildVariantName(productName: string, variant: VariantProduct): string {
-        const uniqAttrs = ProductMapper.uniqVariantAttributes(variant);
-        const values = uniqAttrs
-            .map((a) => a?.value?.value)
-            .filter((v): v is string => !!v);
-        return [productName, ...values].join(" ، ");
+    private static cartesian<T>(arr: T[][]): T[][] {
+        if (!arr.length) return [];
+        return arr.reduce(
+            (a, b) => a.flatMap((x) => b.map((y) => [...x, y])),
+            [[]] as T[][]
+        );
     }
 
-    private static mapVariants(product: IProduct) {
-        return (product.variants || []).map((v) => ({
-            name: ProductMapper.buildVariantName(product.name, v),
-            id: v.id,
-            stock: v.stock,
-            price: v.price,
-            sku: v.sku || "",
-            discount_amount: v.discountAmount ?? null,
-            discount_percent: v.discountPercent ?? null,
-            product_id: v.productId,
+    private static buildVariantName(productName: string, attrs: any[]): string {
+        const values = attrs
+            .map((a) => (a.values ? a.values.value : null))
+            .filter((v) => !!v);
+        return [productName, ...values].join(" , ");
+    }
 
-            attributes: (v.attributes || []).map((va) => ({
-                id: va.id,
-                variant_id: va.variantId,
-                attribute_id: va.attributeId,
-                value_id: va.valueId,
-                attribute: va.attribute ? {
-                    id: va.attribute.id,
-                    name: va.attribute.name,
-                    slug: (va.attribute as any).slug ?? null,
-                    is_public: (va.attribute as any).isPublic ?? true,
-                    group_id: va.attribute.group ? (va.attribute.group as any).id : null,
-                    type: va.attribute.type,
-                    display_order: va.attribute.displayOrder ?? null,
-                    is_variant: va.attribute.isVariant ?? false,
-                    values: (va.attribute.values || []).map((val) => ({
-                        id: val.id,
-                        value: val.value,
-                        attribute_id: val.attributeId,
-                        display_color: val.displayColor ?? null,
-                        display_order: val.displayOrder ?? null,
-                        is_active: val.isActive ?? true,
-                    })),
-                } : null,
-            })),
+    // attribute_nodes از روی variants
+    private static mapAttributeNodes(product: any) {
+        const groupMap = new Map<number | string, any>();
+
+        for (const v of product.variants || []) {
+            for (const va of v.attributes || []) {
+                const attr = va.attribute;
+                if (!attr) continue;
+
+                const groupId = attr.group?.id ?? `ungrouped-${attr.id}`;
+                if (!groupMap.has(groupId)) {
+                    groupMap.set(groupId, {
+                        id: attr.group?.id ?? null,
+                        name: attr.group?.name ?? "بدون گروه",
+                        slug: attr.group?.slug ?? null,
+                        display_order: attr.group?.displayOrder ?? null,
+                        attributes: new Map<number, any>(),
+                    });
+                }
+
+                const groupNode = groupMap.get(groupId);
+                if (!groupNode.attributes.has(attr.id)) {
+                    groupNode.attributes.set(attr.id, {
+                        id: attr.id,
+                        name: attr.name,
+                        slug: attr.slug ?? null,
+                        is_public: attr.isPublic ?? true,
+                        group_id: attr.group?.id ?? null,
+                        type: attr.type,
+                        display_order: attr.displayOrder ?? null,
+                        is_variant: attr.isVariant ?? false,
+                        values: [] as any[],
+                    });
+                }
+
+                const attrNode = groupNode.attributes.get(attr.id);
+
+                // همه‌ی مقادیر attribute
+                if (Array.isArray(attr.values)) {
+                    for (const val of attr.values) {
+                        if (!attrNode.values.some((x: any) => x.id === val.id)) {
+                            attrNode.values.push({
+                                id: val.id,
+                                value: val.value,
+                                attribute_id: val.attributeId,
+                                display_color: val.displayColor ?? "",
+                                display_order: val.displayOrder ?? null,
+                                is_active: val.isActive ?? true,
+                            });
+                        }
+                    }
+                }
+
+                // مقدار انتخاب‌شده هم حتماً اضافه شود
+                if (va.value && !attrNode.values.some((x: any) => x.id === va.value.id)) {
+                    attrNode.values.push({
+                        id: va.value.id,
+                        value: va.value.value,
+                        attribute_id: va.value.attributeId,
+                        display_color: va.value.displayColor ?? "",
+                        display_order: va.value.displayOrder ?? null,
+                        is_active: va.value.isActive ?? true,
+                    });
+                }
+            }
+        }
+
+        return [...groupMap.values()].map((g) => ({
+            id: g.id,
+            name: g.name,
+            slug: g.slug,
+            display_order: g.display_order,
+            attributes: [...g.attributes.values()],
         }));
     }
 
-    static toResponse(product: IProduct): IProductResponse {
+    private static mapVariantsFromDb(product: any) {
+        return (product.variants || []).map((v: any) => {
+            const attrs = (ProductMapper.uniqVariantAttributes(v) || []).map((va: any) => {
+                const attr = va.attribute;
+                return {
+                    id: attr?.id,
+                    name: attr?.name,
+                    slug: attr?.slug ?? null,
+                    is_public: attr?.isPublic ?? true,
+                    group_id: attr?.group ? attr.group.id : null,
+                    type: attr?.type,
+                    display_order: attr?.displayOrder ?? null,
+                    is_variant: attr?.isVariant ?? false,
+                    values: va.value
+                        ? {
+                            id: va.value.id,
+                            value: va.value.value,
+                            attribute_id: va.value.attributeId,
+                            display_color: va.value.displayColor ?? "",
+                            is_active: va.value.isActive ?? true,
+                            display_order: va.value.displayOrder ?? null,
+                        }
+                        : null,
+                };
+            });
+
+            return {
+                name: ProductMapper.buildVariantName(product.name, attrs), // 👈 اضافه شد
+                product_id: v.productId,
+                sku: v.sku || "",
+                price: v.price,
+                discount_amount: v.discountAmount ?? 0,
+                discount_percent: v.discountPercent ?? 0,
+                stock: v.stock,
+                attributes: attrs,
+            };
+        });
+    }
+
+    private static mapVariantsFromAttributeNodes(product: any, attributeNodes: any[]) {
+        const perAttribute: any[][] = [];
+
+        for (const group of attributeNodes || []) {
+            for (const attr of group.attributes || []) {
+                const list = (attr.values || []).map((val: any) => ({
+                    attribute: {
+                        id: attr.id,
+                        name: attr.name,
+                        slug: attr.slug,
+                        is_public: attr.is_public,
+                        group_id: attr.group_id,
+                        type: attr.type,
+                        display_order: attr.display_order,
+                        is_variant: attr.is_variant,
+                    },
+                    value: {
+                        id: val.id,
+                        value: val.value,
+                        attribute_id: val.attribute_id,
+                        display_color: val.display_color ?? "",
+                        is_active: val.is_active ?? true,
+                        display_order: val.display_order ?? null,
+                    },
+                }));
+                if (list.length > 0) perAttribute.push(list);
+            }
+        }
+
+        if (perAttribute.length === 0) return [];
+
+        const combos = ProductMapper.cartesian(perAttribute);
+
+        return combos.map((combo, idx) => {
+            const attrs = combo.map((c: any) => ({
+                ...c.attribute,
+                values: c.value,
+            }));
+
+            return {
+                name: ProductMapper.buildVariantName(product.name, attrs), // 👈 اضافه شد
+                product_id: product.id,
+                sku: `AUTO-${product.id}-${idx + 1}`,
+                price: product.price,
+                discount_amount: product.discountAmount ?? 0,
+                discount_percent: product.discountPercent ?? 0,
+                stock: product.stock ?? 0,
+                attributes: attrs,
+            };
+        });
+    }
+
+    static toResponse(product: any, opts: { cartesian?: boolean } = {}): any {
+        const attribute_nodes = ProductMapper.mapAttributeNodes(product);
+
+        const variants = opts.cartesian
+            ? ProductMapper.mapVariantsFromAttributeNodes(product, attribute_nodes)
+            : ProductMapper.mapVariantsFromDb(product);
+
         return {
-            id: product.id,
-            category: product.category,
-            medias: !product.media || product.media.length === 0 ? [] : product.media.map((m) => ({
-                id: m.id,
-                type: m.type,
-                url: m.url,
-            })),
-            mediaPinned: {
-                id: product.mediaPinned.id ?? 0,
-                type: product.mediaPinned.type ?? 'image',
-                url: product.mediaPinned.url ?? '',
-            },
-            name: product.name,
-            mediaPinnedId: product.mediaPinnedId ?? 0,
-            helper: product.helper,
-            helperId: product.helperId,
-            categoryId: product.categoryId,
-            isFeatured: product.isFeatured,
-            isLimitedStock: product.isLimitedStock,
-            isVisible: product.isVisible,
-            orderLimit: product.orderLimit,
-            price: product.price,
-            stock: product.stock,
-            weight: product.weight,
-            brand: product.brand,
-            brandId: product.brandId,
-            weightUnit: product.weightUnit,
-            description: product.description,
-            discountAmount: product.discountAmount,
-            discountPercent: product.discountPercent,
-            createdAt: product.createdAt,
-            updatedAt: product.updatedAt,
-            variants: ProductMapper.mapVariants(product),
-        } as any;
+            ...product,
+            variants,
+            attribute_nodes,
+        };
     }
 }

@@ -56,9 +56,15 @@ export class AttributeService implements IAttributeService {
     const duplicateAttribute = await this.attributeRepo.findOne({ where: { slug: data.slug } });
     const duplicateAttributeByName = await this.attributeRepo.findOne({ where: { name: data.name } });
     if (duplicateAttribute || duplicateAttributeByName) throw new NotFoundException('ویژگی با این نام یا اسلاگ وجود دارد');
+    const lastAttribute = await this.attributeRepo.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    })
+    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
     const attribute = this.attributeRepo.create({
       ...data,
       group: group ?? undefined,
+      displayOrder: nextOrder
     })
     const saved = await this.attributeRepo.save(attribute);
     return AttributeMapper.toResponse(saved);
@@ -77,7 +83,7 @@ export class AttributeService implements IAttributeService {
       slug: data.slug,
       isPublic: data.isPublic ?? false,
       type: data.type,
-      displayOrder: data.displayOrder ?? undefined,
+      displayOrder: attribute.displayOrder,
     });
     const saved = await this.attributeRepo.save(attribute);
     return AttributeMapper.toResponse(saved);

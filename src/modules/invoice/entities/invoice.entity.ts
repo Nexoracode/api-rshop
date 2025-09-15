@@ -13,7 +13,7 @@ export enum InvoiceStatus {
 @Entity('invoices')
 @Unique(['number'])
 export class Invoice {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string;
 
 

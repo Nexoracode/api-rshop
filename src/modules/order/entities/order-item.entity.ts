@@ -6,7 +6,7 @@ import { VariantProduct } from '../../variant-product/entities/variant-product.e
 
 @Entity('order_items')
 export class OrderItem {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string;
 
 

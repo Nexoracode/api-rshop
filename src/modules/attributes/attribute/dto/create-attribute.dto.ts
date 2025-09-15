@@ -30,7 +30,7 @@ export class CreateAttributeDto {
     @ApiProperty({ name: 'display_order', required: false, default: null })
     @IsInt()
     @IsOptional()
-    displayOrder?: number | undefined;
+    displayOrder: number
 
     @ApiProperty({ name: 'is_variant', required: false, default: false })
     @IsBoolean()

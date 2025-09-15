@@ -28,13 +28,20 @@ export class VariantProductMapper {
                 };
             }
 
-            grouped[groupId].attributes.push({
-                attributeId: attr.attribute?.id,
-                attributeName: attr.attribute?.name,
-                valueId: attr.value?.id,
-                value: attr.value?.value,
-                isVariant: attr.attribute.isVariant,
-            });
+            // جلوگیری از دابلیکیت
+            const exists = grouped[groupId].attributes.some(
+                (a) => a.attributeId === attr.attribute?.id && a.valueId === attr.value?.id
+            );
+
+            if (!exists) {
+                grouped[groupId].attributes.push({
+                    attributeId: attr.attribute?.id,
+                    attributeName: attr.attribute?.name,
+                    valueId: attr.value?.id,
+                    value: attr.value?.value,
+                    isVariant: attr.attribute.isVariant,
+                });
+            }
         }
 
         return {
@@ -45,6 +52,7 @@ export class VariantProductMapper {
             groups: Object.values(grouped),
         };
     }
+
 
     static toGroupedResponse(entity: VariantProduct): IVariantProductGroupedResponse {
         return {
@@ -61,5 +69,4 @@ export class VariantProductMapper {
             })),
         };
     }
-
 }

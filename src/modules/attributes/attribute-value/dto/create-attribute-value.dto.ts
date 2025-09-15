@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
+import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
 
 export class CreateAttributeValueDto {
 
@@ -17,8 +17,7 @@ export class CreateAttributeValueDto {
     @IsString()
     displayColor?: string;
 
-    @ApiProperty({ name: 'display_order', default: null })
-    @IsNumber()
+    @IsInt()
     @IsOptional()
     displayOrder: number;
 

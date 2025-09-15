@@ -41,8 +41,8 @@ export class Attribute implements IAttribute {
     @Column({ type: 'enum', enum: AttributeUnit, default: AttributeUnit.TEXT })
     type: AttributeUnit;
 
-    @Column({ type: 'int', nullable: true })
-    displayOrder?: number | undefined;
+    @Column({ type: 'int' })
+    displayOrder: number;
 
     @Column({ type: 'boolean', default: false })
     isVariant: boolean;

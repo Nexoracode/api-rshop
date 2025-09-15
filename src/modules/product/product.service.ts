@@ -48,13 +48,22 @@ export class ProductService implements IProductService {
     async findOne(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
             where: { id },
-            relations: ['media', 'mediaPinned', 'category', 'brand', 'variants', 'helper',
-                'brand',
+            relations: [
+                'variants',
                 'variants.attributes',
-                'variants.attributes.attribute', 'variants.attributes.value', 'variants.attributes.attribute.values',]
+                'variants.attributes.attribute',
+                'variants.attributes.attribute.group',
+                'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
+                'variants.attributes.value',
+                'media',
+                'mediaPinned',
+                'category',
+                'brand',
+                'helper',
+            ]
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
-        return ProductMapper.toResponse(product);
+        return ProductMapper.toResponse(product, { cartesian: true });
     }
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
@@ -86,8 +95,11 @@ export class ProductService implements IProductService {
                 where: { id: savedProduct.id },
                 relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
                     'brand',
+                    'variants',
                     'variants.attributes',
-                    'variants.attributes.attribute', 'variants.attributes.attribute.values',]
+                    'variants.attributes.attribute',
+                    'variants.attributes.attribute.group', // 👈 خیلی مهم
+                    'variants.attributes.value',]
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result);

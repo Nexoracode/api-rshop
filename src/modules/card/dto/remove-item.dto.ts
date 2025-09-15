@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsInt, IsUUID } from 'class-validator';
 
 
 export class RemoveItemDto {
 
-    @ApiProperty({ type: 'number', format: 'uuid' })
-    @IsUUID()
+    @ApiProperty({ type: 'number' })
+    @IsInt()
     itemId: string;
 }

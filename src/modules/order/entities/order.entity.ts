@@ -13,7 +13,7 @@ export enum OrderStatus {
 
 @Entity('orders')
 export class Order {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: string;
 
 

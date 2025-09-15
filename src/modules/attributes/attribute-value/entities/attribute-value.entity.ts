@@ -21,7 +21,7 @@ export class AttributeValue implements IAttributeValue {
     @Column({ nullable: true })
     displayColor?: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'int' })
     displayOrder: number;
 
     @Column({ type: 'boolean', default: true })

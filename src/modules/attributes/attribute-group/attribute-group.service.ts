@@ -17,15 +17,29 @@ export class AttributeGroupService implements IAttributeGroupService {
     private readonly attrGroupRepo: Repository<AttributeGroup>,
     private readonly dataSource: DataSource,
   ) { }
+
   async create(data: CreateAttributeGroupDto): Promise<IAttributeGroupResponse> {
     const existsName = await this.attrGroupRepo.findOne({ where: { name: data.name } });
-    if (existsName) throw new BadRequestException('نام "گروه ویژگی" تکراری می باشد..')
+    if (existsName) throw new BadRequestException('نام "گروه ویژگی" تکراری می‌باشد.');
+
     const existsSlug = await this.attrGroupRepo.findOne({ where: { slug: data.slug } });
-    if (existsSlug) throw new BadRequestException('نامک "گروه ویژگی" تکراری می باشد..')
-    const attrGroup = this.attrGroupRepo.create(data);
+    if (existsSlug) throw new BadRequestException('نامک "گروه ویژگی" تکراری می‌باشد.');
+
+    const lastGroup = await this.attrGroupRepo.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    });
+    const nextOrder = lastGroup.length ? lastGroup[0].displayOrder + 1 : 1;
+
+    const attrGroup = this.attrGroupRepo.create({
+      ...data,
+      displayOrder: nextOrder,
+    });
+
     const savedGroup = await this.attrGroupRepo.save(attrGroup);
     return AttributeGroupMapper.toResponse(savedGroup);
   }
+
   async update(id: number, data: UpdateAttributeGroupDto): Promise<IAttributeGroupResponse> {
     const attrGroup = await this.attrGroupRepo.findOne({ where: { id } });
     if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
@@ -33,6 +47,7 @@ export class AttributeGroupService implements IAttributeGroupService {
     const savedGroup = await this.attrGroupRepo.save(updatedGroup);
     return AttributeGroupMapper.toResponse(savedGroup);
   }
+
   async findOne(id: number): Promise<IAttributeGroupResponse> {
     const attrGroup = await this.attrGroupRepo.findOne({
       where: { id }, relations: ['attributes'], order: {
@@ -42,6 +57,7 @@ export class AttributeGroupService implements IAttributeGroupService {
     if (!attrGroup) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
     return AttributeGroupMapper.toResponse(attrGroup);
   }
+
   async findAll(): Promise<IAttributeGroupResponse[]> {
     const attributeGroups = await this.attrGroupRepo.find({
       relations: ['attributes'], order: {
@@ -50,6 +66,7 @@ export class AttributeGroupService implements IAttributeGroupService {
     });
     return attributeGroups.map((attr) => AttributeGroupMapper.toResponse(attr));
   }
+
   async remove(id: number): Promise<Object> {
     return runInTransaction(this.dataSource, async (manager) => {
       const attrGroup = await this.attrGroupRepo.findOne({
