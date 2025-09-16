@@ -67,6 +67,19 @@ export class AttributeGroupService implements IAttributeGroupService {
     return attributeGroups.map((attr) => AttributeGroupMapper.toResponse(attr));
   }
 
+  async updateOrder(id: number, order: number): Promise<Object> {
+    const value = await this.attrGroupRepo.findOne({ where: { id } });
+    if (!value) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
+    value.displayOrder = order;
+    const saved = await this.attrGroupRepo.save(value);
+    console.log(saved)
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
+    }
+
+  }
+
   async remove(id: number): Promise<Object> {
     return runInTransaction(this.dataSource, async (manager) => {
       const attrGroup = await this.attrGroupRepo.findOne({

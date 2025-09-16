@@ -1,3 +1,5 @@
+import { Product } from "../entities/product.entity";
+
 export class ProductMapper {
     private static uniqVariantAttributes(variant: any) {
         const map = new Map<string, any>();
@@ -16,14 +18,18 @@ export class ProductMapper {
         );
     }
 
+    private static variantKeyFromAttrs(attrs: Array<{ attributeId: number; valueId: number }>): string {
+        const pairs = attrs.map((a) => `${a.attributeId}:${a.valueId}`);
+        return pairs.sort().join("|");
+    }
+
     private static buildVariantName(productName: string, attrs: any[]): string {
         const values = attrs
             .map((a) => (a.values ? a.values.value : null))
-            .filter((v) => !!v);
+            .filter(Boolean);
         return [productName, ...values].join(" , ");
     }
 
-    // attribute_nodes از روی variants
     private static mapAttributeNodes(product: any) {
         const groupMap = new Map<number | string, any>();
 
@@ -60,7 +66,6 @@ export class ProductMapper {
 
                 const attrNode = groupNode.attributes.get(attr.id);
 
-                // همه‌ی مقادیر attribute
                 if (Array.isArray(attr.values)) {
                     for (const val of attr.values) {
                         if (!attrNode.values.some((x: any) => x.id === val.id)) {
@@ -76,7 +81,6 @@ export class ProductMapper {
                     }
                 }
 
-                // مقدار انتخاب‌شده هم حتماً اضافه شود
                 if (va.value && !attrNode.values.some((x: any) => x.id === va.value.id)) {
                     attrNode.values.push({
                         id: va.value.id,
@@ -126,7 +130,7 @@ export class ProductMapper {
             });
 
             return {
-                name: ProductMapper.buildVariantName(product.name, attrs), // 👈 اضافه شد
+                id: v.id,
                 product_id: v.productId,
                 sku: v.sku || "",
                 price: v.price,
@@ -134,13 +138,23 @@ export class ProductMapper {
                 discount_percent: v.discountPercent ?? 0,
                 stock: v.stock,
                 attributes: attrs,
+                name: ProductMapper.buildVariantName(product.name, attrs),
             };
         });
     }
 
     private static mapVariantsFromAttributeNodes(product: any, attributeNodes: any[]) {
-        const perAttribute: any[][] = [];
+        const dbIndex = new Map<string, any>();
+        for (const v of product.variants || []) {
+            const uniq = ProductMapper.uniqVariantAttributes(v);
+            const key = ProductMapper.variantKeyFromAttrs(
+                uniq.map((va: any) => ({ attributeId: va.attribute.id, valueId: va.value.id }))
+            );
+            console.log('DB variant id =', v.id, ' -> key = ', key);
+            dbIndex.set(key, v);
+        }
 
+        const perAttribute: any[][] = [];
         for (const group of attributeNodes || []) {
             for (const attr of group.attributes || []) {
                 const list = (attr.values || []).map((val: any) => ({
@@ -148,49 +162,57 @@ export class ProductMapper {
                         id: attr.id,
                         name: attr.name,
                         slug: attr.slug,
-                        is_public: attr.is_public,
-                        group_id: attr.group_id,
+                        is_public: attr.isPublic,
+                        group_id: attr.groupId,
                         type: attr.type,
-                        display_order: attr.display_order,
-                        is_variant: attr.is_variant,
+                        display_order: attr.displayOrder,
+                        is_variant: attr.isVariant,
                     },
                     value: {
                         id: val.id,
                         value: val.value,
-                        attribute_id: val.attribute_id,
-                        display_color: val.display_color ?? "",
-                        is_active: val.is_active ?? true,
-                        display_order: val.display_order ?? null,
+                        attribute_id: val.attributeId,
+                        display_color: val.displayColor ?? "",
+                        is_active: val.isActive ?? true,
+                        display_order: val.displayOrder ?? null,
                     },
                 }));
-                if (list.length > 0) perAttribute.push(list);
+                if (list.length) perAttribute.push(list);
             }
         }
 
-        if (perAttribute.length === 0) return [];
+        if (!perAttribute.length) return [];
 
         const combos = ProductMapper.cartesian(perAttribute);
 
-        return combos.map((combo, idx) => {
-            const attrs = combo.map((c: any) => ({
+        return combos.map((combo: any[], idx: number) => {
+            const attrs = combo.map((c) => ({
                 ...c.attribute,
                 values: c.value,
             }));
 
+            const key = ProductMapper.variantKeyFromAttrs(
+                combo.map((c) => ({ attributeId: c.attribute.id, valueId: c.value.id }))
+            );
+
+            console.log("Combo idx=", idx, " -> key=", key);
+
+            const matched = dbIndex.get(key);
             return {
-                name: ProductMapper.buildVariantName(product.name, attrs), // 👈 اضافه شد
+                name: ProductMapper.buildVariantName(product.name, attrs),
+                id: matched?.id ?? null,
                 product_id: product.id,
-                sku: `AUTO-${product.id}-${idx + 1}`,
-                price: product.price,
-                discount_amount: product.discountAmount ?? 0,
-                discount_percent: product.discountPercent ?? 0,
-                stock: product.stock ?? 0,
+                sku: matched?.sku ?? `AUTO-${product.id}-${idx + 1}`,
+                price: matched?.price ?? product.price,
+                discountAmount: matched?.discountAmount ?? 0,
+                discountPercent: matched?.discountPercent ?? 0,
+                stock: matched?.stock ?? 0,
                 attributes: attrs,
             };
         });
     }
 
-    static toResponse(product: any, opts: { cartesian?: boolean } = {}): any {
+    static toResponse(product: Product, opts: { cartesian?: boolean } = {}): any {
         const attribute_nodes = ProductMapper.mapAttributeNodes(product);
 
         const variants = opts.cartesian
@@ -198,9 +220,24 @@ export class ProductMapper {
             : ProductMapper.mapVariantsFromDb(product);
 
         return {
-            ...product,
+            id: product.id,
+            name: product.name,
+            description: product.description || "",
+            price: product.price,
+            stock: product.stock,
+            order_limit: product.orderLimit || null,
+            requires_preparation: product.requiresPreparation || false,
+            preparation_days: product.preparationDays || null,
+            media_pinned: product.mediaPinned || null,
+            category: product.category || null,
+            brand: product.brand || null,
+            helper: product.helper || null,
+            is_visible: product.isVisible || false,
+            medias: product.media || [],
             variants,
             attribute_nodes,
+            created_at: product.createdAt,
+            updated_at: product.updatedAt,
         };
     }
 }

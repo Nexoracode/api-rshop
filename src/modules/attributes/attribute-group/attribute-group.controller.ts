@@ -34,4 +34,9 @@ export class AttributeGroupController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.attributeGroupService.remove(id);
   }
+
+  @Patch(':id/order')
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeGroupDto) {
+    return this.attributeGroupService.updateOrder(id, data.displayOrder ?? 0);
+  }
 }

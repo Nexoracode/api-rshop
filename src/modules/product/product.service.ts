@@ -93,16 +93,20 @@ export class ProductService implements IProductService {
             await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
-                relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
-                    'brand',
-                    'variants',
+                relations: ['variants',
                     'variants.attributes',
                     'variants.attributes.attribute',
-                    'variants.attributes.attribute.group', // 👈 خیلی مهم
-                    'variants.attributes.value',]
+                    'variants.attributes.attribute.group',
+                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
+                    'variants.attributes.value',
+                    'media',
+                    'mediaPinned',
+                    'category',
+                    'brand',
+                    'helper',]
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
-            return ProductMapper.toResponse(result);
+            return ProductMapper.toResponse(result, { cartesian: true });
         })
     }
 
@@ -129,13 +133,20 @@ export class ProductService implements IProductService {
             }
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
-                relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
-                    'brand',
+                relations: ['variants',
                     'variants.attributes',
-                    'variants.attributes.attribute',]
+                    'variants.attributes.attribute',
+                    'variants.attributes.attribute.group',
+                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
+                    'variants.attributes.value',
+                    'media',
+                    'mediaPinned',
+                    'category',
+                    'brand',
+                    'helper',]
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
-            return ProductMapper.toResponse(result);
+            return ProductMapper.toResponse(result, { cartesian: true });
         });
     }
 
@@ -143,10 +154,17 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const product = await manager.findOne(Product, {
                 where: { id },
-                relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
-                    'brand',
+                relations: ['variants',
                     'variants.attributes',
-                    'variants.attributes.attribute',]
+                    'variants.attributes.attribute',
+                    'variants.attributes.attribute.group',
+                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
+                    'variants.attributes.value',
+                    'media',
+                    'mediaPinned',
+                    'category',
+                    'brand',
+                    'helper',]
             });
             if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
             await manager.remove(Product, product);
