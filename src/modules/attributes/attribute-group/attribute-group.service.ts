@@ -71,8 +71,7 @@ export class AttributeGroupService implements IAttributeGroupService {
     const value = await this.attrGroupRepo.findOne({ where: { id } });
     if (!value) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
     value.displayOrder = order;
-    const saved = await this.attrGroupRepo.save(value);
-    console.log(saved)
+    await this.attrGroupRepo.save(value);
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,

@@ -1,156 +1,151 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateVariantProductDto } from './dto/create-variant-product.dto';
-import { UpdateVariantProductDto } from './dto/update-variant-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { VariantProduct } from './entities/variant-product.entity';
-import { DataSource, In, Repository } from 'typeorm';
-import { IVariantProductService } from './interfaces/variant-product.service.interface';
-import { Product } from '../product/entities/product.entity';
-import { VariantAttributeValue } from '../attributes/variant-attribute-value/entities/variant-attribute-value.entity';
-import { VariantProductMapper } from './mappers/variant-product.mapper';
-import { runInTransaction } from 'src/common/helpers/transaction.helper';
-import { Attribute } from '../attributes/attribute/entities/attribute.entity';
-import { IGroupedVariantProductResponse, IVariantProductGroupedResponse } from './interfaces/variant-product.response.interface';
-import { AttributeValue } from '../attributes/attribute-value/entities/attribute-value.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DataSource, In } from "typeorm";
+import { CreateVariantProductDto } from "./dto/create-variant-product.dto";
+import { UpdateVariantProductDto } from "./dto/update-variant-product.dto";
+import { VariantProduct } from "./entities/variant-product.entity";
+import { Product } from "../product/entities/product.entity";
+import { VariantAttributeValue } from "../attributes/variant-attribute-value/entities/variant-attribute-value.entity";
+import { VariantProductMapper } from "./mappers/variant-product.mapper";
+
+function cartesian<T>(arr: T[][]): T[][] {
+  return arr.reduce(
+    (a, b) => a.flatMap((x) => b.map((y) => [...x, y])),
+    [[]] as T[][]
+  );
+}
 
 @Injectable()
-export class VariantProductService implements IVariantProductService {
+export class VariantProductService {
   constructor(
     @InjectRepository(VariantProduct)
     private readonly varRepo: Repository<VariantProduct>,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) { }
 
-  async create(data: CreateVariantProductDto): Promise<IGroupedVariantProductResponse> {
-    return runInTransaction(this.dataSource, async (manager) => {
-      const product = await manager.findOne(Product, { where: { id: data.productId } });
-      if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد');
+  async create(dto: CreateVariantProductDto) {
+    return this.dataSource.transaction(async (manager) => {
+      const product = await manager.findOne(Product, { where: { id: dto.productId } });
+      if (!product) throw new NotFoundException("محصول یافت نشد");
 
-      if (!data.attributes?.length) {
-        throw new BadRequestException('حداقل یک ویژگی باید ارسال شود');
-      }
-
-      // بررسی attributeId ها و valueId ها به صورت یکجا
-      const attrIds = data.attributes.map(a => a.attributeId);
-      const valIds = data.attributes.map(a => a.valueId);
-
-      const attributes = await manager.find(Attribute, { where: { id: In(attrIds) } });
-      if (attributes.length !== attrIds.length) throw new NotFoundException('بعضی attributeId معتبر نیست');
-
-      const values = await manager.find(AttributeValue, { where: { id: In(valIds) } });
-      if (values.length !== valIds.length) throw new NotFoundException('بعضی valueId معتبر نیست');
-
-      // جلوگیری از ثبت دابلیکیت
-      const existingVariant = await manager.findOne(VariantProduct, {
-        where: { product: { id: product.id } },
-        relations: ['attributes'],
-      });
-
-      if (existingVariant) {
-        const existingPairs = existingVariant.attributes.map(av => `${av.attributeId}:${av.valueId}`);
-        const newPairs = data.attributes.map(av => `${av.attributeId}:${av.valueId}`);
-
-        const isDuplicate = newPairs.every(p => existingPairs.includes(p));
-        if (isDuplicate) throw new BadRequestException('این ترکیب ویژگی قبلاً ثبت شده است');
-      }
-
-      // ساخت و ذخیره variant
-      const variant = manager.create(VariantProduct, { ...data, product });
-      const savedVariant = await manager.save(variant);
-
-      const attributeValueEntities = data.attributes.map((attr) =>
-        manager.create(VariantAttributeValue, {
-          variant: savedVariant,
-          attributeId: attr.attributeId,
-          valueId: attr.valueId,
-        })
+      // آماده‌سازی لیست valueها برای هر attribute
+      const perAttribute = dto.attributes.map((a) =>
+        a.valueIds.map((vid) => ({ attributeId: a.attributeId, valueId: vid }))
       );
-      await manager.save(VariantAttributeValue, attributeValueEntities);
 
-      const result = await manager.findOne(VariantProduct, {
-        where: { id: savedVariant.id },
-        relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
-      });
+      // تولید همه ترکیب‌ها
+      const combos = cartesian(perAttribute);
 
-      return VariantProductMapper.toGroupedByGroupResponse(result!);
+      const createdVariants: VariantProduct[] = [];
+
+      for (const combo of combos) {
+        // ساخت Variant
+        const variant = manager.create(VariantProduct, {
+          sku: `${dto.sku}-${combo.map((c) => c.valueId).join("-")}`, // مثال SKU
+          price: dto.price,
+          stock: dto.stock,
+          discountAmount: dto.discountAmount,
+          discountPercent: dto.discountPercent,
+          product,
+        });
+        const savedVariant = await manager.save(variant);
+
+        // ذخیره attribute/valueهای مربوطه
+        const vavs = combo.map((c) =>
+          manager.create(VariantAttributeValue, {
+            variant: savedVariant,
+            attributeId: c.attributeId,
+            valueId: c.valueId,
+          })
+        );
+        await manager.save(vavs);
+
+        createdVariants.push(savedVariant);
+      }
+
+      return createdVariants;
     });
   }
 
-  async findAllByProductId(productId: number, grouped = false): Promise<IGroupedVariantProductResponse[] | IVariantProductGroupedResponse[]> {
-    const variants = await this.varRepo.find({
-      where: { product: { id: productId } },
-      relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
-    });
-    if (!variants.length) throw new NotFoundException('ویژگی محصولی برای این محصول یافت نشد');
-    return grouped
-      ? variants.map((variant) => VariantProductMapper.toGroupedByGroupResponse(variant))
-      : variants.map((variant) => VariantProductMapper.toGroupedResponse(variant));
-  }
 
-  async findOne(id: number, grouped = false): Promise<IGroupedVariantProductResponse | IVariantProductGroupedResponse> {
+  async findOne(id: number) {
     const variant = await this.varRepo.findOne({
       where: { id },
-      relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
+      relations: ["product", "attributes", "attributes.attribute", "attributes.value", "attributes.attribute.group"],
     });
-    if (!variant) throw new NotFoundException('ویژگی محصول یافت نشد');
-    return grouped
-      ? VariantProductMapper.toGroupedByGroupResponse(variant)
-      : VariantProductMapper.toGroupedResponse(variant);
+    if (!variant) throw new NotFoundException("Variant یافت نشد");
+    return VariantProductMapper.toResponse(variant, variant.product);
   }
 
-  async remove(id: number): Promise<Object> {
-    return runInTransaction(this.dataSource, async (manager) => {
-      const variant = await manager.findOne(VariantProduct, { where: { id } });
-      if (!variant) throw new NotFoundException('ویژگی مورد نظر یافت نشد');
-      await manager.remove(variant);
-      return { message: 'حذف با موفقیت انجام شد', data: null };
-    });
-  }
+  async update(productId: number, dto: UpdateVariantProductDto) {
+    return this.dataSource.transaction(async (manager) => {
+      const product = await manager.findOne(Product, { where: { id: productId } });
+      if (!product) throw new NotFoundException("محصول یافت نشد");
 
-  async update(id: number, data: UpdateVariantProductDto): Promise<IGroupedVariantProductResponse> {
-    return runInTransaction(this.dataSource, async (manager) => {
-      const variant = await manager.findOne(VariantProduct, { where: { id } });
-      if (!variant) throw new NotFoundException('ویژگی محصول یافت نشد');
-
-      const product = await manager.findOne(Product, { where: { id: data.productId } });
-      if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد');
-
-      if (!data.attributes?.length) throw new BadRequestException('ویژگی‌ها ارسال نشده یا نامعتبر است');
-
-      const attrIds = data.attributes.map(a => a.attributeId);
-      const valIds = data.attributes.map(a => a.valueId);
-
-      const attributes = await manager.find(Attribute, { where: { id: In(attrIds) } });
-      if (attributes.length !== attrIds.length) throw new NotFoundException('بعضی attributeId معتبر نیست');
-
-      const values = await manager.find(AttributeValue, { where: { id: In(valIds) } });
-      if (values.length !== valIds.length) throw new NotFoundException('بعضی valueId معتبر نیست');
-
-      manager.merge(VariantProduct, variant, {
-        sku: data.sku,
-        price: data.price,
-        stock: data.stock,
-        product,
+      // 1. حذف همه variantهای قدیمی محصول
+      const oldVariants = await manager.find(VariantProduct, {
+        where: { product: { id: productId } },
       });
-      await manager.save(variant);
+      if (oldVariants.length > 0) {
+        const oldIds = oldVariants.map((v) => v.id);
+        await manager.delete(VariantAttributeValue, { variant: { id: In(oldIds) } });
+        await manager.delete(VariantProduct, { id: In(oldIds) });
+      }
 
-      await manager.delete(VariantAttributeValue, { variant: { id } });
-
-      const attributeValueEntities = data.attributes.map((attr) =>
-        manager.create(VariantAttributeValue, {
-          variant,
-          attributeId: attr.attributeId,
-          valueId: attr.valueId,
-        })
+      // 2. ساخت combos از attributes
+      const perAttribute = dto.attributes?.map((a) =>
+        a.valueIds.map((vid) => ({ attributeId: a.attributeId, valueId: vid }))
       );
-      await manager.save(VariantAttributeValue, attributeValueEntities);
+      const combos = cartesian(perAttribute!);
 
-      const result = await manager.findOne(VariantProduct, {
+      const createdVariants: VariantProduct[] = [];
+
+      // 3. ذخیره Variantها و attribute/valueهایشان
+      for (const combo of combos) {
+        const variant = manager.create(VariantProduct, {
+          sku: `${dto.sku}-${combo.map((c) => c.valueId).join("-")}`,
+          price: dto.price,
+          stock: dto.stock,
+          discountAmount: dto.discountAmount,
+          discountPercent: dto.discountPercent,
+          product,
+        });
+        const savedVariant = await manager.save(variant);
+
+        const vavs = combo.map((c) =>
+          manager.create(VariantAttributeValue, {
+            variant: savedVariant,
+            attributeId: c.attributeId,
+            valueId: c.valueId,
+          })
+        );
+        await manager.save(vavs);
+
+        createdVariants.push(savedVariant);
+      }
+
+      return createdVariants;
+    });
+  }
+
+
+  async remove(id: number) {
+    return this.dataSource.transaction(async (manager) => {
+      const variant = await manager.findOne(VariantProduct, {
         where: { id },
-        relations: ['attributes', 'attributes.attribute', 'attributes.attribute.group', 'attributes.value']
+        relations: ["attributes"], // 👈 برای اطمینان از لود شدن روابط
       });
 
-      return VariantProductMapper.toGroupedByGroupResponse(result!);
+      if (!variant) throw new NotFoundException("Variant یافت نشد");
+
+      // اگر cascade کامل داری:
+      await manager.remove(VariantProduct, variant);
+
+      // اگر cascade نداری باید این کارو بکنی:
+      // await manager.delete(VariantAttributeValue, { variant: { id } });
+      // await manager.delete(VariantProduct, { id });
+
+      return { success: true, message: "Variant با موفقیت حذف شد" };
     });
   }
 }

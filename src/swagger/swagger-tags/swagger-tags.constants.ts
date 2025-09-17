@@ -38,7 +38,27 @@ export const _SWAGGER_TAGS: SwaggerTag[] = [
     description: 'ویزگی محصولات',
   },
   {
-    name: '10 - 📦 Helpers',
-    description: 'راهنمای تصاویر',
+    name: '10 - 🆘 Helpers',
+    description: 'تصاویر کمکی',
+  },
+  {
+    name: '11 - 🎟 Brands',
+    description: 'مدیریت برندها',
+  },
+  {
+    name: '12 - 🌿 Sepidar',
+    description: 'اتصال به Sepidar',
+  },
+  {
+    name: '13 - 🛒 Cards',
+    description: 'سبد خرید',
+  },
+  {
+    name: '14 - 📑 Orders',
+    description: 'مدیریت سفارشات',
+  },
+  {
+    name: '15 - 🔖 Invoices',
+    description: 'فاکتورها',
   },
 ];

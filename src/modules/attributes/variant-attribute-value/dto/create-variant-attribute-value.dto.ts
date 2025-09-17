@@ -1,20 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsInt, IsNotEmpty, IsNumber } from "class-validator";
 
 export class CreateVariantAttributeValueDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsNumber()
+    @IsInt()
     variantId: number;
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsNumber()
+    @IsInt()
     attributeId: number;
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsNumber()
+    @IsInt()
     valueId: number;
 }

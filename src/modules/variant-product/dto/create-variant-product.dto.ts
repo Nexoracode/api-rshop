@@ -1,17 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
-import { Column } from "typeorm";
-
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
 class VariantAttributeInput {
 
     @ApiProperty({ name: 'attribute_id', example: 1, description: 'شناسه ویژگی' })
     @IsInt()
     attributeId: number;
 
-    @ApiProperty({ name: 'value_id', example: 1, description: 'شناسه مقدار ویژگی' })
-    @IsInt()
-    valueId: number;
+    @ApiProperty({ type: 'array', name: 'value_ids', example: [1, 2] })
+    @IsArray()
+    @IsInt({ each: true })
+    valueIds: number[];
 }
 export class CreateVariantProductDto {
 
@@ -54,7 +53,7 @@ export class CreateVariantProductDto {
         type: [VariantAttributeInput],
         description: 'لیست ویژگی‌ها و مقدارها',
         example: [
-            { attribute_id: 1, value_id: 1, label: 'آبی' },
+            { attribute_id: 1, value_ids: [] },
         ],
     })
     @IsArray()

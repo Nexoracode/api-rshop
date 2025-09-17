@@ -49,17 +49,15 @@ export class ProductService implements IProductService {
         const product = await this.productRepo.findOne({
             where: { id },
             relations: [
-                'variants',
-                'variants.attributes',
-                'variants.attributes.attribute',
-                'variants.attributes.attribute.group',
-                'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
-                'variants.attributes.value',
-                'media',
-                'mediaPinned',
-                'category',
-                'brand',
-                'helper',
+                "variants",
+                "variants.attributes",
+                "variants.attributes.attribute",
+                "variants.attributes.value",
+                "variants.attributes.attribute.group",
+                "category",
+                "brand",
+                "media",
+                "mediaPinned",
             ]
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');

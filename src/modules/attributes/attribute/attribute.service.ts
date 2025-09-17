@@ -103,8 +103,7 @@ export class AttributeService implements IAttributeService {
     const value = await this.attributeRepo.findOne({ where: { id } });
     if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
     value.displayOrder = order;
-    const saved = await this.attributeRepo.save(value);
-    console.log(saved)
+    await this.attributeRepo.save(value);
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,

@@ -22,8 +22,6 @@ export class OrderService {
             const orderRepo = m.getRepository(Order);
             const orderItemRepo = m.getRepository(OrderItem);
 
-
-            // کارت کاربر با قفل
             const card = await cardRepo.findOne({ where: { user: { id: user.id } }, relations: ['items'], lock: { mode: 'pessimistic_write' } });
             if (!card || !card.items?.length) throw new BadRequestException('سبد خرید خالی است.');
             if (card.status === CardStatus.ABANDONED) throw new BadRequestException('سبد خرید بسته شده است.');

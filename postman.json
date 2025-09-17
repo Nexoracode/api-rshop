@@ -21,7 +21,7 @@
           }
         },
         "tags": [
-          "10 - 📦 Helpers"
+          "10 - 🆘 Helpers"
         ]
       }
     },
@@ -54,7 +54,7 @@
           }
         },
         "tags": [
-          "10 - 📦 Helpers"
+          "10 - 🆘 Helpers"
         ]
       }
     },
@@ -1566,7 +1566,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       },
       "get": {
@@ -1647,7 +1647,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       }
     },
@@ -1661,7 +1661,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       }
     },
@@ -1684,7 +1684,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       },
       "patch": {
@@ -1715,7 +1715,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       },
       "delete": {
@@ -1736,7 +1736,7 @@
           }
         },
         "tags": [
-          "11 - 🌿 Brands"
+          "11 - 🎟 Brands"
         ]
       }
     },
@@ -1750,7 +1750,7 @@
           }
         },
         "tags": [
-          "Sepidar"
+          "12 - 🌿 Sepidar"
         ]
       }
     },
@@ -1764,7 +1764,7 @@
           }
         },
         "tags": [
-          "Sepidar"
+          "12 - 🌿 Sepidar"
         ]
       }
     },
@@ -1778,7 +1778,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1802,7 +1802,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1826,7 +1826,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1850,7 +1850,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1864,7 +1864,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1878,7 +1878,7 @@
           }
         },
         "tags": [
-          "Card"
+          "13 - 🛒 Cards"
         ]
       }
     },
@@ -1902,7 +1902,7 @@
           }
         },
         "tags": [
-          "Order"
+          "14 - 📑 Orders"
         ]
       }
     },
@@ -1916,7 +1916,7 @@
           }
         },
         "tags": [
-          "Order"
+          "14 - 📑 Orders"
         ]
       }
     },
@@ -1939,7 +1939,7 @@
           }
         },
         "tags": [
-          "Order"
+          "14 - 📑 Orders"
         ]
       }
     },
@@ -1963,7 +1963,7 @@
           }
         },
         "tags": [
-          "Invoice"
+          "15 - 🔖 Invoices"
         ]
       }
     },
@@ -1986,7 +1986,7 @@
           }
         },
         "tags": [
-          "Invoice"
+          "15 - 🔖 Invoices"
         ]
       }
     },
@@ -2009,7 +2009,7 @@
           }
         },
         "tags": [
-          "Invoice"
+          "15 - 🔖 Invoices"
         ]
       }
     }
@@ -2058,8 +2058,28 @@
       "description": "ویزگی محصولات"
     },
     {
-      "name": "10 - 📦 Helpers",
-      "description": "راهنمای تصاویر"
+      "name": "10 - 🆘 Helpers",
+      "description": "تصاویر کمکی"
+    },
+    {
+      "name": "11 - 🎟 Brands",
+      "description": "مدیریت برندها"
+    },
+    {
+      "name": "12 - 🌿 Sepidar",
+      "description": "اتصال به Sepidar"
+    },
+    {
+      "name": "13 - 🛒 Cards",
+      "description": "سبد خرید"
+    },
+    {
+      "name": "14 - 📑 Orders",
+      "description": "مدیریت سفارشات"
+    },
+    {
+      "name": "15 - 🔖 Invoices",
+      "description": "فاکتورها"
     }
   ],
   "servers": [],
@@ -2755,15 +2775,17 @@
             "example": 1,
             "description": "شناسه ویژگی"
           },
-          "value_id": {
-            "type": "number",
-            "example": 1,
-            "description": "شناسه مقدار ویژگی"
+          "value_ids": {
+            "type": "array",
+            "example": [
+              1,
+              2
+            ]
           }
         },
         "required": [
           "attribute_id",
-          "value_id"
+          "value_ids"
         ]
       },
       "CreateVariantProductDto": {
@@ -2797,8 +2819,7 @@
             "example": [
               {
                 "attribute_id": 1,
-                "value_id": 1,
-                "label": "آبی"
+                "value_ids": []
               }
             ],
             "type": "array",
@@ -2848,8 +2869,7 @@
             "example": [
               {
                 "attribute_id": 1,
-                "value_id": 1,
-                "label": "آبی"
+                "value_ids": []
               }
             ],
             "type": "array",

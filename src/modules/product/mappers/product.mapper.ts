@@ -1,3 +1,4 @@
+import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Product } from "../entities/product.entity";
 
 export class ProductMapper {
@@ -144,13 +145,16 @@ export class ProductMapper {
     }
 
     private static mapVariantsFromAttributeNodes(product: any, attributeNodes: any[]) {
-        const dbIndex = new Map<string, any>();
+        const dbIndex = new Map<string, VariantProduct>();
+
         for (const v of product.variants || []) {
             const uniq = ProductMapper.uniqVariantAttributes(v);
             const key = ProductMapper.variantKeyFromAttrs(
-                uniq.map((va: any) => ({ attributeId: va.attribute.id, valueId: va.value.id }))
+                uniq.map((va) => ({
+                    attributeId: va.attribute.id,  // 👈 از relation
+                    valueId: va.value.id,          // 👈 از relation
+                }))
             );
-            console.log('DB variant id =', v.id, ' -> key = ', key);
             dbIndex.set(key, v);
         }
 
@@ -192,12 +196,15 @@ export class ProductMapper {
             }));
 
             const key = ProductMapper.variantKeyFromAttrs(
-                combo.map((c) => ({ attributeId: c.attribute.id, valueId: c.value.id }))
+                combo.map((c) => ({
+                    attributeId: c.attribute.id,
+                    valueId: c.value.id,
+                }))
             );
 
-            console.log("Combo idx=", idx, " -> key=", key);
 
             const matched = dbIndex.get(key);
+
             return {
                 name: ProductMapper.buildVariantName(product.name, attrs),
                 id: matched?.id ?? null,
@@ -229,11 +236,17 @@ export class ProductMapper {
             requires_preparation: product.requiresPreparation || false,
             preparation_days: product.preparationDays || null,
             media_pinned: product.mediaPinned || null,
+            mediaPinnedId: product.mediaPinnedId || null,
             category: product.category || null,
+            categoryId: product.categoryId || null,
             brand: product.brand || null,
             helper: product.helper || null,
             is_visible: product.isVisible || false,
-            medias: product.media || [],
+            medias: product.media ? product.media.map((m) => ({
+                id: m.id,
+                url: m.url,
+                alt: m.altText,
+            })) : [],
             variants,
             attribute_nodes,
             created_at: product.createdAt,

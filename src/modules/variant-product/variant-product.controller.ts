@@ -15,12 +15,12 @@ export class VariantProductController {
 
   @Get('product/:id')
   findByProduct(@Param('id', ParseIntPipe) id: number, @Query('grouped') grouped?: 'true') {
-    return this.variantProductService.findAllByProductId(id, grouped === 'true');
+    return this.variantProductService.findOne(id);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number, @Query('grouped') grouped?: 'true') {
-    return this.variantProductService.findOne(id, grouped === 'true');
+    return this.variantProductService.findOne(id);
   }
 
   @Patch(':id')
