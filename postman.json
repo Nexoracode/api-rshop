@@ -631,10 +631,10 @@
             }
           },
           {
-            "name": "filter.stock",
+            "name": "filter.requiresPreparation",
             "required": false,
             "in": "query",
-            "description": "Filter by stock query param.\n          <p>\n             <b>Format: </b> filter.stock={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.stock=$not:$like:John Doe&filter.stock=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "description": "Filter by requiresPreparation query param.\n          <p>\n             <b>Format: </b> filter.requiresPreparation={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.requiresPreparation=$not:$like:John Doe&filter.requiresPreparation=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -655,10 +655,34 @@
             }
           },
           {
+            "name": "filter.brandId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by brandId query param.\n          <p>\n             <b>Format: </b> filter.brandId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.brandId=$not:$like:John Doe&filter.brandId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.helperId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by helperId query param.\n          <p>\n             <b>Format: </b> filter.helperId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.helperId=$not:$like:John Doe&filter.helperId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "filter.price",
             "required": false,
             "in": "query",
-            "description": "Filter by price query param.\n          <p>\n             <b>Format: </b> filter.price={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.price=$not:$like:John Doe&filter.price=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "description": "Filter by price query param.\n          <p>\n             <b>Format: </b> filter.price={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.price=$not:$like:John Doe&filter.price=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -667,10 +691,10 @@
             }
           },
           {
-            "name": "filter.discount",
+            "name": "filter.stock",
             "required": false,
             "in": "query",
-            "description": "Filter by discount query param.\n          <p>\n             <b>Format: </b> filter.discount={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.discount=$not:$like:John Doe&filter.discount=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
+            "description": "Filter by stock query param.\n          <p>\n             <b>Format: </b> filter.stock={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.stock=$not:$like:John Doe&filter.stock=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -679,10 +703,10 @@
             }
           },
           {
-            "name": "filter.createdAt",
+            "name": "filter.name",
             "required": false,
             "in": "query",
-            "description": "Filter by createdAt query param.\n          <p>\n             <b>Format: </b> filter.createdAt={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.createdAt=$not:$like:John Doe&filter.createdAt=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "description": "Filter by name query param.\n          <p>\n             <b>Format: </b> filter.name={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.name=$not:$like:John Doe&filter.name=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li>\n<li>$ilike</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -691,22 +715,10 @@
             }
           },
           {
-            "name": "filter.weight",
+            "name": "filter.id",
             "required": false,
             "in": "query",
-            "description": "Filter by weight query param.\n          <p>\n             <b>Format: </b> filter.weight={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.weight=$not:$like:John Doe&filter.weight=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gt</li>\n<li>$lt</li></ul>",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "filter.requiresPreparation",
-            "required": false,
-            "in": "query",
-            "description": "Filter by requiresPreparation query param.\n          <p>\n             <b>Format: </b> filter.requiresPreparation={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.requiresPreparation=$not:$like:John Doe&filter.requiresPreparation=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "description": "Filter by id query param.\n          <p>\n             <b>Format: </b> filter.id={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.id=$not:$like:John Doe&filter.id=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li>\n<li>$in</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -864,6 +876,30 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
+      }
+    },
+    "/api/product/bulk": {
+      "delete": {
+        "operationId": "ProductController_removeBulk",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteProductsDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -1529,6 +1565,45 @@
         "parameters": [
           {
             "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "09 - 🎭 Variant Products"
+        ]
+      }
+    },
+    "/api/variant-product/product/{productId}/attributes/{attributeId}/values/{valueId}": {
+      "delete": {
+        "operationId": "VariantProductController_removeByValue",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "attributeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "valueId",
             "required": true,
             "in": "path",
             "schema": {
@@ -2577,6 +2652,26 @@
             "type": "number"
           }
         }
+      },
+      "DeleteProductsDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "آیدی محصولات برای حذف",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "ids"
+        ]
       },
       "CreateCategoryAttributeDto": {
         "type": "object",

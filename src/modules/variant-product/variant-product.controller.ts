@@ -32,4 +32,13 @@ export class VariantProductController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.variantProductService.remove(id);
   }
+
+  @Delete("product/:productId/attributes/:attributeId/values/:valueId")
+  async removeByValue(
+    @Param("productId", ParseIntPipe) productId: number,
+    @Param("attributeId", ParseIntPipe) attributeId: number,
+    @Param("valueId", ParseIntPipe) valueId: number,
+  ) {
+    return this.variantProductService.removeByVariant(productId, attributeId, valueId);
+  }
 }

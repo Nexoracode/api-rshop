@@ -10,7 +10,7 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Media } from '../media/entities/image.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductMapper } from './mappers/product.mapper';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import axios from 'axios';
 import { HelperEntity } from '../helper/entities/helper.entity';
 import { Brand } from '../brand/entities/brand.entity';
@@ -25,14 +25,25 @@ export class ProductService implements IProductService {
 
     async findAll(query: PaginateQuery): Promise<Object> {
         const products = await paginate(query, this.productRepo, {
-            sortableColumns: ['id', 'name', 'price', 'stock', 'media', 'mediaPinned'],
+            sortableColumns: ['id', 'name', 'price', 'stock'],
             relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
                 'brand',
                 'variants.attributes',
                 'variants.attributes.attribute',],
+            filterableColumns: {
+                isVisible: [FilterOperator.EQ],
+                requiresPreparation: [FilterOperator.EQ],
+                categoryId: [FilterOperator.EQ],
+                brandId: [FilterOperator.EQ],
+                helperId: [FilterOperator.EQ],
+                price: [FilterOperator.GTE, FilterOperator.LTE],
+                stock: [FilterOperator.GTE, FilterOperator.LTE],
+                name: [FilterOperator.EQ, FilterOperator.ILIKE],
+                id: [FilterOperator.EQ, FilterOperator.IN],
+            },
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
+            select: ['id', 'name', 'price', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
                 'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
@@ -152,6 +163,34 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const product = await manager.findOne(Product, {
                 where: { id },
+                relations: [
+                    'variants',
+                    'variants.attributes',
+                    'variants.attributes.attribute',
+                    'variants.attributes.attribute.group',
+                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
+                    'variants.attributes.value',
+                    'media',
+                    'mediaPinned',
+                    'category',
+                    'brand',
+                    'helper',
+                ]
+            });
+            if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
+            await manager.remove(Product, product);
+            await manager.update(Media, { productId: id }, { product: null });
+            return {
+                message: 'محصول با موفقیت حذف شد.',
+                data: null
+            }
+        })
+    }
+
+    async removeBulk(ids: number[]): Promise<Object> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const products = await manager.find(Product, {
+                where: { id: In(ids) },
                 relations: ['variants',
                     'variants.attributes',
                     'variants.attributes.attribute',
@@ -164,9 +203,12 @@ export class ProductService implements IProductService {
                     'brand',
                     'helper',]
             });
-            if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
-            await manager.remove(Product, product);
-            await manager.update(Media, { productId: id }, { product: null });
+            if (!products.length) {
+                throw new NotFoundException('هیچ محصولی یافت نشد.');
+            }
+            if (!products) throw new NotFoundException("محصول مورد نظر یافت نشد.");
+            await manager.remove(Product, products);
+            await manager.update(Media, { productId: In(ids) }, { product: null });
             return {
                 message: 'محصول با موفقیت حذف شد.',
                 data: null

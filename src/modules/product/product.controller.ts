@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseArrayPipe, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -8,6 +8,7 @@ import { MediaType } from 'src/common/enums/media.enum';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { DeleteProductsDto } from './dto/delete-product.dto';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -37,13 +38,15 @@ export class ProductController {
         select: ['id', 'name', 'price', 'stock', 'isVisible', 'media', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         filterableColumns: {
             isVisible: [FilterOperator.EQ],
-            stock: [FilterOperator.GT, FilterOperator.LT],
-            categoryId: [FilterOperator.EQ],
-            price: [FilterOperator.GT, FilterOperator.LT],
-            discount: [FilterOperator.GT, FilterOperator.LT],
-            createdAt: [FilterOperator.GTE, FilterOperator.LTE],
-            weight: [FilterOperator.GT, FilterOperator.LT],
             requiresPreparation: [FilterOperator.EQ],
+            categoryId: [FilterOperator.EQ],
+            brandId: [FilterOperator.EQ],
+            helperId: [FilterOperator.EQ],
+            price: [FilterOperator.GTE, FilterOperator.LTE],
+            stock: [FilterOperator.GTE, FilterOperator.LTE],
+            name: [FilterOperator.EQ, FilterOperator.ILIKE],
+            id: [FilterOperator.EQ, FilterOperator.IN],
+
         }
     })
     findAll(@Paginate() query: PaginateQuery) {
@@ -68,5 +71,10 @@ export class ProductController {
     @Delete(':id')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productService.remove(id);
+    }
+
+    @Delete('bulk')
+    removeBulk(@Body() dto: DeleteProductsDto) {
+        return this.productService.removeBulk(dto.ids);
     }
 }
