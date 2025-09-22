@@ -4,7 +4,7 @@ import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { AccessGuard } from '../../common/guard/access.guard';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('15 - 🔖 Invoices')
+@ApiTags('16 - 🔖 Invoices')
 @UseGuards(AccessGuard)
 @Controller('invoices')
 export class InvoiceController {

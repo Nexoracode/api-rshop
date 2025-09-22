@@ -2,7 +2,7 @@ import { Body, Controller, Param, ParseIntPipe, Patch, Post } from '@nestjs/comm
 import { HelperService } from './helper.service';
 import { CreateHelperDto } from './dto/create-helper.dto';
 import { ApiTags } from '@nestjs/swagger';
-@ApiTags('10 - 🆘 Helpers')
+@ApiTags('11 - 🆘 Helpers')
 @Controller('helpers')
 export class HelperController {
     constructor(

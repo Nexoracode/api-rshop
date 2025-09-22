@@ -7,6 +7,7 @@ import { AttributeValue } from "src/modules/attributes/attribute-value/entities/
 import { WeightUnit } from "src/common/enums/product.enum";
 import { HelperEntity } from "src/modules/helper/entities/helper.entity";
 import { Brand } from "src/modules/brand/entities/brand.entity";
+import { ProductAttributeValue } from "src/modules/product-attribute-value/entities/product-attribute-value.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -82,6 +83,9 @@ export class Product implements IProduct {
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];
+
+    @OneToMany(() => ProductAttributeValue, (pav) => pav.product, { cascade: true })
+    attributeValues: ProductAttributeValue[];
 
     @ManyToOne(() => Brand, brand => brand.products, { cascade: true, nullable: true })
     brand: Brand;

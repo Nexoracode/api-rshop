@@ -6,7 +6,7 @@ import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('14 - 📑 Orders')
+@ApiTags('15 - 📑 Orders')
 @UseGuards(AccessGuard)
 @Controller('orders')
 export class OrderController {

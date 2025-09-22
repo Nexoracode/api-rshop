@@ -21,6 +21,7 @@ import { SepidarModule } from './modules/sepidar/sepidar.module';
 import { CardModule } from './modules/card/card.module';
 import { OrderModule } from './modules/order/order.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
+import { ProductAttributeValueModule } from './modules/product-attribute-value/product-attribute-value.module';
 
 
 @Module({
@@ -44,6 +45,7 @@ import { InvoiceModule } from './modules/invoice/invoice.module';
     CardModule,
     OrderModule,
     InvoiceModule,
+    ProductAttributeValueModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService],

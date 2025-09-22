@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ApiPaginationQuery, Paginate } from 'nestjs-paginate';
 import { PaginateQuery } from 'nestjs-paginate';
 
-@ApiTags('11 - 🎟 Brands')
+@ApiTags('12 - 🎟 Brands')
 @Controller('brand')
 export class BrandController {
   constructor(private readonly brandService: BrandService) { }

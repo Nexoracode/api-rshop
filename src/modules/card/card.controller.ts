@@ -8,9 +8,9 @@ import { RemoveItemDto } from './dto/remove-item.dto';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { ApiTags } from '@nestjs/swagger';
-@ApiTags('13 - 🛒 Cards')
+@ApiTags('14 - 🛒 Cards')
 @UseGuards(AccessGuard)
-@Controller('card')
+@Controller('cards')
 export class CardController {
   constructor(private readonly cardService: CardService) { }
 

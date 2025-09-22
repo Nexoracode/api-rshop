@@ -24,7 +24,8 @@ export class HelperService {
     async updateHelper(id: number, data: UpdateHelperDto) {
         const helper = await this.helperRepository.findOneBy({ id });
         if (!helper) throw new NotFoundException('راهنما یافت نشد');
-        const updateHelper = await this.helperRepository.merge(helper, data);
+        const updateHelper = this.helperRepository.merge(helper, data);
+        await this.helperRepository.save(updateHelper);
         const result = await this.helperRepository.findOneBy({ id: updateHelper.id });
         if (!result) throw new NotFoundException('راهنما یافت نشد');
         return HelperMapper.toResponse(updateHelper);

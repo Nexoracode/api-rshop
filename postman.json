@@ -21,7 +21,7 @@
           }
         },
         "tags": [
-          "10 - 🆘 Helpers"
+          "11 - 🆘 Helpers"
         ]
       }
     },
@@ -54,7 +54,7 @@
           }
         },
         "tags": [
-          "10 - 🆘 Helpers"
+          "11 - 🆘 Helpers"
         ]
       }
     },
@@ -1641,7 +1641,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       },
       "get": {
@@ -1722,7 +1722,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       }
     },
@@ -1736,7 +1736,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       }
     },
@@ -1759,7 +1759,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       },
       "patch": {
@@ -1790,7 +1790,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       },
       "delete": {
@@ -1811,7 +1811,7 @@
           }
         },
         "tags": [
-          "11 - 🎟 Brands"
+          "12 - 🎟 Brands"
         ]
       }
     },
@@ -1825,7 +1825,7 @@
           }
         },
         "tags": [
-          "12 - 🌿 Sepidar"
+          "13 - 🌿 Sepidar"
         ]
       }
     },
@@ -1839,11 +1839,11 @@
           }
         },
         "tags": [
-          "12 - 🌿 Sepidar"
+          "13 - 🌿 Sepidar"
         ]
       }
     },
-    "/api/card/me": {
+    "/api/cards/me": {
       "get": {
         "operationId": "CardController_getMyCard",
         "parameters": [],
@@ -1853,11 +1853,11 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
-    "/api/card/add": {
+    "/api/cards/add": {
       "post": {
         "operationId": "CardController_addItem",
         "parameters": [],
@@ -1877,11 +1877,11 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
-    "/api/card/update": {
+    "/api/cards/update": {
       "patch": {
         "operationId": "CardController_updateItem",
         "parameters": [],
@@ -1901,11 +1901,11 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
-    "/api/card/remove": {
+    "/api/cards/remove": {
       "patch": {
         "operationId": "CardController_removeItem",
         "parameters": [],
@@ -1925,11 +1925,11 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
-    "/api/card/clear": {
+    "/api/cards/clear": {
       "delete": {
         "operationId": "CardController_clear",
         "parameters": [],
@@ -1939,11 +1939,11 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
-    "/api/card/lock": {
+    "/api/cards/lock": {
       "post": {
         "operationId": "CardController_lock",
         "parameters": [],
@@ -1953,7 +1953,7 @@
           }
         },
         "tags": [
-          "13 - 🛒 Cards"
+          "14 - 🛒 Cards"
         ]
       }
     },
@@ -1977,7 +1977,7 @@
           }
         },
         "tags": [
-          "14 - 📑 Orders"
+          "15 - 📑 Orders"
         ]
       }
     },
@@ -1991,7 +1991,7 @@
           }
         },
         "tags": [
-          "14 - 📑 Orders"
+          "15 - 📑 Orders"
         ]
       }
     },
@@ -2014,7 +2014,7 @@
           }
         },
         "tags": [
-          "14 - 📑 Orders"
+          "15 - 📑 Orders"
         ]
       }
     },
@@ -2038,7 +2038,7 @@
           }
         },
         "tags": [
-          "15 - 🔖 Invoices"
+          "16 - 🔖 Invoices"
         ]
       }
     },
@@ -2061,7 +2061,7 @@
           }
         },
         "tags": [
-          "15 - 🔖 Invoices"
+          "16 - 🔖 Invoices"
         ]
       }
     },
@@ -2084,7 +2084,116 @@
           }
         },
         "tags": [
-          "15 - 🔖 Invoices"
+          "16 - 🔖 Invoices"
+        ]
+      }
+    },
+    "/api/product-attributes": {
+      "post": {
+        "operationId": "ProductAttributeValueController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
+    "/api/product-attributes/product/{productId}": {
+      "get": {
+        "operationId": "ProductAttributeValueController_findByProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
+    "/api/product-attributes/{id}": {
+      "patch": {
+        "operationId": "ProductAttributeValueController_update",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "attributeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductAttributeValueController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
         ]
       }
     }
@@ -2133,27 +2242,31 @@
       "description": "ویزگی محصولات"
     },
     {
-      "name": "10 - 🆘 Helpers",
+      "name": "10 - 🧲 Product Attributes",
+      "description": "اتصال ویژگی‌ها به محصولات"
+    },
+    {
+      "name": "11 - 🆘 Helpers",
       "description": "تصاویر کمکی"
     },
     {
-      "name": "11 - 🎟 Brands",
+      "name": "12 - 🎟 Brands",
       "description": "مدیریت برندها"
     },
     {
-      "name": "12 - 🌿 Sepidar",
+      "name": "13 - 🌿 Sepidar",
       "description": "اتصال به Sepidar"
     },
     {
-      "name": "13 - 🛒 Cards",
+      "name": "14 - 🛒 Cards",
       "description": "سبد خرید"
     },
     {
-      "name": "14 - 📑 Orders",
+      "name": "15 - 📑 Orders",
       "description": "مدیریت سفارشات"
     },
     {
-      "name": "15 - 🔖 Invoices",
+      "name": "16 - 🔖 Invoices",
       "description": "فاکتورها"
     }
   ],
@@ -3071,6 +3184,64 @@
         "required": [
           "orderId"
         ]
+      },
+      "CreateProductAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "attributeId": {
+            "type": "integer",
+            "example": 1
+          },
+          "valueIds": {
+            "type": "array",
+            "example": [
+              1,
+              2,
+              3
+            ]
+          },
+          "customValues": {
+            "type": "array",
+            "example": [
+              "Custom Value"
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "attributeId"
+        ]
+      },
+      "UpdateProductAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "attributeId": {
+            "type": "integer",
+            "example": 1
+          },
+          "valueIds": {
+            "type": "array",
+            "example": [
+              1,
+              2,
+              3
+            ]
+          },
+          "customValues": {
+            "type": "array",
+            "example": [
+              "Custom Value"
+            ]
+          }
+        }
       }
     }
   }

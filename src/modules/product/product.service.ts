@@ -22,7 +22,6 @@ export class ProductService implements IProductService {
         private dataSource: DataSource,
     ) { }
 
-
     async findAll(query: PaginateQuery): Promise<Object> {
         const products = await paginate(query, this.productRepo, {
             sortableColumns: ['id', 'name', 'price', 'stock'],
@@ -43,7 +42,7 @@ export class ProductService implements IProductService {
             },
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
+            select: ['id', 'name', 'price', 'isFeatured', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
                 'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
@@ -65,6 +64,7 @@ export class ProductService implements IProductService {
                 "variants.attributes.attribute",
                 "variants.attributes.value",
                 "variants.attributes.attribute.group",
+                "helper",
                 "category",
                 "brand",
                 "media",
@@ -108,7 +108,7 @@ export class ProductService implements IProductService {
                     'variants.attributes.attribute.group',
                     'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
                     'variants.attributes.value',
-                    'media',
+                    'media', "helper",
                     'mediaPinned',
                     'category',
                     'brand',
@@ -148,7 +148,7 @@ export class ProductService implements IProductService {
                     'variants.attributes.attribute.group',
                     'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
                     'variants.attributes.value',
-                    'media',
+                    'media', "helper",
                     'mediaPinned',
                     'category',
                     'brand',
@@ -170,7 +170,7 @@ export class ProductService implements IProductService {
                     'variants.attributes.attribute.group',
                     'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
                     'variants.attributes.value',
-                    'media',
+                    'media', "helper",
                     'mediaPinned',
                     'category',
                     'brand',
@@ -197,7 +197,7 @@ export class ProductService implements IProductService {
                     'variants.attributes.attribute.group',
                     'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
                     'variants.attributes.value',
-                    'media',
+                    'media', "helper",
                     'mediaPinned',
                     'category',
                     'brand',
