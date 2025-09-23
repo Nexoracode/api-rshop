@@ -36,16 +36,16 @@ export class Product implements IProduct {
     @Column({ default: false })
     isLimitedStock: boolean;
 
-    @Column({ nullable: true, type: 'decimal' })
-    discountAmount?: number | null | undefined;
+    @Column({ type: 'float', default: 0 })
+    discountAmount?: number;
 
-    @Column({ nullable: true, type: 'float' })
-    discountPercent?: number | null | undefined;
+    @Column({ type: 'float', default: 0 })
+    discountPercent?: number;
 
     @Column({ default: false })
     isFeatured: boolean;
 
-    @Column({ type: 'decimal', nullable: true })
+    @Column({ type: 'float', default: 0 })
     weight: number;
 
     @Column({ type: 'enum', enum: WeightUnit, default: WeightUnit.KG })

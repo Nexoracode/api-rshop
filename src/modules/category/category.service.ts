@@ -34,7 +34,7 @@ export class CategoryService implements ICategoryService {
     }
 
     async findAllTree(): Promise<ICategoryResponse[]> {
-        const categories = await this.treeCatRepo.findTrees({ relations: ['media', 'products', 'products.media', 'products.mediaPinned'] });
+        const categories = await this.treeCatRepo.findTrees({ relations: ['parent', 'media', 'products', 'products.media', 'products.mediaPinned'] });
         return categories.map((category) => CategoryMapper.toResponse(category));
     }
 

@@ -7,7 +7,7 @@ export interface ICategoryResponse {
     discount: string;
     id: number;
     level: number;
-    parent?: number | null;
+    parentId?: number;
     isDelete: boolean;
     title: string;
     slug: string;

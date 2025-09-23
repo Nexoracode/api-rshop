@@ -14,6 +14,23 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import axios from 'axios';
 import { HelperEntity } from '../helper/entities/helper.entity';
 import { Brand } from '../brand/entities/brand.entity';
+
+const relations = [
+    "variants",
+    "variants.attributes",
+    "variants.attributes.attribute",
+    "variants.attributes.value",
+    "variants.attributes.attribute.group",
+    'attributeValues',
+    'attributeValues.attribute',
+    'attributeValues.attribute.group',
+    "helper",
+    "category",
+    "brand",
+    "media",
+    "mediaPinned",
+];
+
 @Injectable()
 export class ProductService implements IProductService {
     constructor(
@@ -25,25 +42,23 @@ export class ProductService implements IProductService {
     async findAll(query: PaginateQuery): Promise<Object> {
         const products = await paginate(query, this.productRepo, {
             sortableColumns: ['id', 'name', 'price', 'stock'],
-            relations: ['media', 'mediaPinned', 'category', 'variants', 'helper',
-                'brand',
-                'variants.attributes',
-                'variants.attributes.attribute',],
+            relations,
             filterableColumns: {
-                isVisible: [FilterOperator.EQ],
-                requiresPreparation: [FilterOperator.EQ],
-                categoryId: [FilterOperator.EQ],
-                brandId: [FilterOperator.EQ],
-                helperId: [FilterOperator.EQ],
+                'is_visible': [FilterOperator.EQ],
+                'requires_preparation': [FilterOperator.EQ],
+                'category_id': [FilterOperator.EQ],
+                'brand_id': [FilterOperator.EQ],
+                'created_at': [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
+                'weight': [FilterOperator.GTE, FilterOperator.LTE],
+                'discount_amount': [FilterOperator.GTE, FilterOperator.LTE],
+                'discount_percent': [FilterOperator.GTE, FilterOperator.LTE],
                 price: [FilterOperator.GTE, FilterOperator.LTE],
                 stock: [FilterOperator.GTE, FilterOperator.LTE],
-                name: [FilterOperator.EQ, FilterOperator.ILIKE],
-                id: [FilterOperator.EQ, FilterOperator.IN],
             },
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'isFeatured', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
-                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'isVisible', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+            select: ['id', 'name', 'price', 'weight', 'isFeatured', 'isVisible', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
+                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
@@ -58,18 +73,7 @@ export class ProductService implements IProductService {
     async findOne(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
             where: { id },
-            relations: [
-                "variants",
-                "variants.attributes",
-                "variants.attributes.attribute",
-                "variants.attributes.value",
-                "variants.attributes.attribute.group",
-                "helper",
-                "category",
-                "brand",
-                "media",
-                "mediaPinned",
-            ]
+            relations
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
         return ProductMapper.toResponse(product, { cartesian: true });
@@ -102,17 +106,7 @@ export class ProductService implements IProductService {
             await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
-                relations: ['variants',
-                    'variants.attributes',
-                    'variants.attributes.attribute',
-                    'variants.attributes.attribute.group',
-                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
-                    'variants.attributes.value',
-                    'media', "helper",
-                    'mediaPinned',
-                    'category',
-                    'brand',
-                    'helper',]
+                relations
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result, { cartesian: true });
@@ -142,17 +136,7 @@ export class ProductService implements IProductService {
             }
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
-                relations: ['variants',
-                    'variants.attributes',
-                    'variants.attributes.attribute',
-                    'variants.attributes.attribute.group',
-                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
-                    'variants.attributes.value',
-                    'media', "helper",
-                    'mediaPinned',
-                    'category',
-                    'brand',
-                    'helper',]
+                relations
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result, { cartesian: true });
@@ -163,19 +147,7 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const product = await manager.findOne(Product, {
                 where: { id },
-                relations: [
-                    'variants',
-                    'variants.attributes',
-                    'variants.attributes.attribute',
-                    'variants.attributes.attribute.group',
-                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
-                    'variants.attributes.value',
-                    'media', "helper",
-                    'mediaPinned',
-                    'category',
-                    'brand',
-                    'helper',
-                ]
+                relations
             });
             if (!product) throw new NotFoundException("محصول مورد نظر یافت نشد.");
             await manager.remove(Product, product);
@@ -191,17 +163,7 @@ export class ProductService implements IProductService {
         return runInTransaction(this.dataSource, async (manager) => {
             const products = await manager.find(Product, {
                 where: { id: In(ids) },
-                relations: ['variants',
-                    'variants.attributes',
-                    'variants.attributes.attribute',
-                    'variants.attributes.attribute.group',
-                    'variants.attributes.attribute.values', // برای پر شدن values در attribute_nodes
-                    'variants.attributes.value',
-                    'media', "helper",
-                    'mediaPinned',
-                    'category',
-                    'brand',
-                    'helper',]
+                relations
             });
             if (!products.length) {
                 throw new NotFoundException('هیچ محصولی یافت نشد.');

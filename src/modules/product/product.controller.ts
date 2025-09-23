@@ -32,20 +32,17 @@ export class ProductController {
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,
         sortableColumns: ['id', 'name', 'price', 'stock'],
-        defaultSortBy: [['id', 'DESC']],
-        searchableColumns: ['name', 'category'],
-        relations: ['media', 'mediaPinned', 'category.title'],
-        select: ['id', 'name', 'price', 'stock', 'isVisible', 'media', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         filterableColumns: {
-            isVisible: [FilterOperator.EQ],
-            requiresPreparation: [FilterOperator.EQ],
-            categoryId: [FilterOperator.EQ],
-            brandId: [FilterOperator.EQ],
-            helperId: [FilterOperator.EQ],
+            'is_visible': [FilterOperator.EQ],
+            'requires_preparation': [FilterOperator.EQ],
+            'category_id': [FilterOperator.EQ],
+            'brand_id': [FilterOperator.EQ],
+            'created_at': [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
+            'weight': [FilterOperator.GTE, FilterOperator.LTE],
+            'discount_amount': [FilterOperator.GTE, FilterOperator.LTE],
+            'discount_percent': [FilterOperator.GTE, FilterOperator.LTE],
             price: [FilterOperator.GTE, FilterOperator.LTE],
             stock: [FilterOperator.GTE, FilterOperator.LTE],
-            name: [FilterOperator.EQ, FilterOperator.ILIKE],
-            id: [FilterOperator.EQ, FilterOperator.IN],
 
         }
     })

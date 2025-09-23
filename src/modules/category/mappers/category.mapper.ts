@@ -9,7 +9,7 @@ export class CategoryMapper {
             slug: category.slug,
             discount: category.discount,
             level: category.level,
-            parent: category.parent?.id,
+            parentId: category.parent ? category.parent.id : 0,
             children: category.children?.map((child) => this.toResponse(child)) ?? [],
             isDelete: !category.children || category.children.length === 0,
             media: category.media,
