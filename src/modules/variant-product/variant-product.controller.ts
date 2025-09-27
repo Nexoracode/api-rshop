@@ -41,4 +41,5 @@ export class VariantProductController {
   ) {
     return this.variantProductService.removeByVariant(productId, attributeId, valueId);
   }
+
 }

@@ -16,18 +16,9 @@ export class ProductAttributeValueService {
   constructor(
     @InjectRepository(ProductAttributeValue)
     private readonly pavRepo: Repository<ProductAttributeValue>,
-    @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
-    @InjectRepository(Attribute)
-    private readonly attrRepo: Repository<Attribute>,
-    @InjectRepository(AttributeValue)
-    private readonly valRepo: Repository<AttributeValue>,
     private readonly dataSource: DataSource,
   ) { }
 
-  /**
-   * ایجاد ویژگی برای یک محصول (multi-value پشتیبانی می‌شود)
-   */
   async create(dto: CreateProductAttributeValueDto) {
     return runInTransaction(this.dataSource, async (manager) => {
       const product = await manager.findOne(Product, { where: { id: dto.productId } });
@@ -36,46 +27,30 @@ export class ProductAttributeValueService {
       const attribute = await manager.findOne(Attribute, { where: { id: dto.attributeId } });
       if (!attribute) throw new NotFoundException("ویژگی یافت نشد");
 
-      if ((!dto.valueIds || dto.valueIds.length === 0) && (!dto.customValues || dto.customValues.length === 0)) {
-        throw new BadRequestException("حداقل یک مقدار باید ارسال شود");
-      }
-
       const created: ProductAttributeValue[] = [];
 
-      // valueIds
       if (dto.valueIds && dto.valueIds.length > 0) {
         for (const valueId of dto.valueIds) {
           const value = await manager.findOne(AttributeValue, { where: { id: valueId } });
           if (!value) throw new NotFoundException(`مقدار ${valueId} یافت نشد`);
-
+          const lastProductAttributeValue = await manager.find(ProductAttributeValue, {
+            order: { displayOrder: 'DESC' },
+            take: 1,
+          });
+          const nextOrder = lastProductAttributeValue.length > 0 ? lastProductAttributeValue[0].displayOrder + 1 : 1;
           const pav = manager.create(ProductAttributeValue, {
             product,
             attribute,
             value,
+            displayOrder: nextOrder,
           });
           created.push(await manager.save(pav));
         }
       }
-
-      // customValues
-      if (dto.customValues && dto.customValues.length > 0) {
-        for (const custom of dto.customValues) {
-          const pav = manager.create(ProductAttributeValue, {
-            product,
-            attribute,
-            customValue: custom,
-          });
-          created.push(await manager.save(pav));
-        }
-      }
-
       return ProductAttributeValueMapper.toResponses(created);
     });
   }
 
-  /**
-   * دریافت همه ویژگی‌های توصیفی محصول
-   */
   async findByProduct(productId: number) {
     const values = await this.pavRepo.find({
       where: { product: { id: productId } },
@@ -84,9 +59,6 @@ export class ProductAttributeValueService {
     return ProductAttributeValueMapper.toGroupedByAttribute(values);
   }
 
-  /**
-   * بروزرسانی همه مقادیر یک attribute برای یک محصول
-   */
   async update(productId: number, attributeId: number, dto: UpdateProductAttributeValueDto) {
     return runInTransaction(this.dataSource, async (manager) => {
       const product = await manager.findOne(Product, { where: { id: productId } });
@@ -95,15 +67,10 @@ export class ProductAttributeValueService {
       const attribute = await manager.findOne(Attribute, { where: { id: attributeId } });
       if (!attribute) throw new NotFoundException("ویژگی یافت نشد");
 
-      // پاک کردن همه مقادیر قبلی
       await manager.delete(ProductAttributeValue, {
         product: { id: productId },
         attribute: { id: attributeId },
       });
-
-      if ((!dto.valueIds || dto.valueIds.length === 0) && (!dto.customValues || dto.customValues.length === 0)) {
-        return []; // یعنی خالی شد
-      }
 
       const created: ProductAttributeValue[] = [];
 
@@ -121,26 +88,10 @@ export class ProductAttributeValueService {
           created.push(await manager.save(pav));
         }
       }
-
-      // customValues
-      if (dto.customValues && dto.customValues.length > 0) {
-        for (const custom of dto.customValues) {
-          const pav = manager.create(ProductAttributeValue, {
-            product,
-            attribute,
-            customValue: custom,
-          });
-          created.push(await manager.save(pav));
-        }
-      }
-
       return ProductAttributeValueMapper.toResponses(created);
     });
   }
 
-  /**
-   * حذف یک ویژگی محصول
-   */
   async remove(id: number) {
     return runInTransaction(this.dataSource, async (manager) => {
       const pav = await manager.findOne(ProductAttributeValue, { where: { id } });
@@ -148,6 +99,58 @@ export class ProductAttributeValueService {
 
       await manager.remove(pav);
       return { success: true, message: "ویژگی محصول حذف شد" };
+    });
+  }
+
+  async updateOrder(id: number, order: number): Promise<Object> {
+    const value = await this.pavRepo.findOne({ where: { id } });
+    if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
+    value.displayOrder = order;
+    await this.pavRepo.save(value);
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
+    }
+  }
+
+  async removeByProductAttribute(
+    productId: number,
+    attributeId: number,
+    valueId?: number,
+  ) {
+    return this.dataSource.transaction(async (manager) => {
+      const specs = await manager.find(ProductAttributeValue, {
+        where: { product: { id: productId }, attribute: { id: attributeId } },
+        relations: ["attribute", "value"],
+      });
+
+      if (!specs || specs.length === 0) {
+        throw new NotFoundException("هیچ مشخصه‌ای برای این محصول یافت نشد");
+      }
+
+      const affected = specs.filter((spec) => {
+        if (valueId && spec.value?.id === valueId) return true;
+        return false;
+      });
+
+      if (!affected.length) {
+        throw new NotFoundException("هیچ مقدار مطابق با شرایط یافت نشد");
+      }
+
+      for (const spec of affected) {
+        await manager.delete(ProductAttributeValue, { id: spec.id });
+      }
+
+      const updatedSpecs = await manager.find(ProductAttributeValue, {
+        where: { product: { id: productId } },
+        relations: ["attribute", "attribute.group", "value"],
+      });
+
+      return {
+        success: true,
+        message: "مقدار از مشخصات محصول حذف شد",
+        updatedSpecifications: updatedSpecs,
+      };
     });
   }
 }

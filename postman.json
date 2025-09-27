@@ -2178,6 +2178,78 @@
           "10 - 🧲 Product Attributes"
         ]
       }
+    },
+    "/api/product-attributes/{id}/order": {
+      "patch": {
+        "operationId": "ProductAttributeValueController_updateOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
+    "/api/product-attributes/product/{productId}/attributes/{attributeId}/values/{valueId}": {
+      "delete": {
+        "operationId": "ProductAttributeValueController_removeByValue",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "attributeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "valueId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
     }
   },
   "info": {
@@ -3186,11 +3258,9 @@
               3
             ]
           },
-          "customValues": {
-            "type": "array",
-            "example": [
-              "Custom Value"
-            ]
+          "display_order": {
+            "type": "number",
+            "default": null
           }
         },
         "required": [
@@ -3217,11 +3287,9 @@
               3
             ]
           },
-          "customValues": {
-            "type": "array",
-            "example": [
-              "Custom Value"
-            ]
+          "display_order": {
+            "type": "number",
+            "default": null
           }
         }
       }

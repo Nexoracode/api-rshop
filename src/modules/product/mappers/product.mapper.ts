@@ -1,6 +1,7 @@
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Product } from "../entities/product.entity";
 import { ProductAttributeValue } from "src/modules/product-attribute-value/entities/product-attribute-value.entity";
+import { mapSpecificationsGrouped } from "./spec.mapper";
 
 export class ProductMapper {
     private static uniqVariantAttributes(variant: any) {
@@ -220,40 +221,6 @@ export class ProductMapper {
         });
     }
 
-    // product.mapper.ts
-    private static mapSpecifications(specs: ProductAttributeValue[]) {
-        const groups: Record<number, { title: string; attributes: { title: string; values: string[] }[] }> = {};
-
-        for (const spec of specs || []) {
-            const groupId = spec.attribute.group?.id ?? 0;
-            const groupName = spec.attribute.group?.name ?? "سایر مشخصات";
-
-            if (!groups[groupId]) {
-                groups[groupId] = {
-                    title: groupName,
-                    attributes: [],
-                };
-            }
-
-            let attr = groups[groupId].attributes.find((a) => a.title === spec.attribute.name);
-            if (!attr) {
-                attr = { title: spec.attribute.name, values: [] };
-                groups[groupId].attributes.push(attr);
-            }
-
-            if (spec.value) {
-                attr.values.push(spec.value.value);
-            }
-
-            if (spec.customValue) {
-                attr.values.push(spec.customValue);
-            }
-        }
-
-        return Object.values(groups);
-    }
-
-
     static toResponse(product: Product, opts: { cartesian?: boolean } = {}): any {
         const attribute_nodes = ProductMapper.mapAttributeNodes(product);
 
@@ -291,7 +258,7 @@ export class ProductMapper {
                 type: m.type,
             })) : [],
             variants,
-            specifications: ProductMapper.mapSpecifications(product.attributeValues || []),
+            specifications: mapSpecificationsGrouped(product.attributeValues || []),
             attribute_nodes,
             created_at: product.createdAt,
             updated_at: product.updatedAt,

@@ -7,7 +7,6 @@ export class ProductAttributeValueMapper {
         const grouped: Record<number, {
             attribute: any,
             values: any[],
-            customValues: string[]
         }> = {};
 
         for (const e of entities) {
@@ -21,7 +20,6 @@ export class ProductAttributeValueMapper {
                         isVariant: e.attribute.isVariant,
                     },
                     values: [],
-                    customValues: [],
                 };
             }
 
@@ -31,9 +29,6 @@ export class ProductAttributeValueMapper {
                     value: e.value.value,
                     displayColor: e.value.displayColor ?? null,
                 });
-            }
-            if (e.customValue) {
-                grouped[e.attribute.id].customValues.push(e.customValue);
             }
         }
 
@@ -58,7 +53,6 @@ export class ProductAttributeValueMapper {
                     displayColor: entity.value.displayColor ?? null,
                 }
                 : null,
-            customValue: entity.customValue ?? null,
         };
     }
 

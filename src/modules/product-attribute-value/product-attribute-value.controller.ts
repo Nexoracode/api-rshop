@@ -29,8 +29,22 @@ export class ProductAttributeValueController {
     return this.pavService.update(productId, attributeId, dto);
   }
 
+  @Patch(':id/order')
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductAttributeValueDto) {
+    return this.pavService.updateOrder(id, data.displayOrder ?? 0);
+  }
+
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.pavService.remove(id);
+  }
+
+  @Delete("product/:productId/attributes/:attributeId/values/:valueId")
+  async removeByValue(
+    @Param("productId", ParseIntPipe) productId: number,
+    @Param("attributeId", ParseIntPipe) attributeId: number,
+    @Param("valueId", ParseIntPipe) valueId: number,
+  ) {
+    return this.pavService.removeByProductAttribute(productId, attributeId, valueId);
   }
 }

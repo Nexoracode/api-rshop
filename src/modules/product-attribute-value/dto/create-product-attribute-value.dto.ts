@@ -17,9 +17,8 @@ export class CreateProductAttributeValueDto {
     @ArrayNotEmpty()
     valueIds?: number[];
 
-    @ApiProperty({ type: 'array', example: ['Custom Value'], required: false })
+    @ApiProperty({ name: 'display_order', required: false, default: null })
+    @IsInt()
     @IsOptional()
-    @IsArray()
-    @ArrayNotEmpty()
-    customValues?: string[];
+    displayOrder: number
 }

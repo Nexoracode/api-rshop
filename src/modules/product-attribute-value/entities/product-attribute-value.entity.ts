@@ -21,6 +21,6 @@ export class ProductAttributeValue {
     @JoinColumn({ name: "value_id" })
     value: AttributeValue | null;
 
-    @Column({ name: "custom_value", type: "varchar", nullable: true })
-    customValue: string | null;
+    @Column({ type: 'int' })
+    displayOrder: number;
 }
