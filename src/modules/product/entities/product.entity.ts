@@ -24,61 +24,65 @@ export class Product implements IProduct {
     @Column('int')
     stock: number;
 
-    @Column({ default: false })
+    @Column({ name: 'is_some_day_shipping', default: false })
     isSameDayShipping: boolean;
 
-    @Column({ default: false })
+    @Column({ name: 'requires_preparation', default: false })
     requiresPreparation: boolean;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ name: 'preparation_days', type: 'int', nullable: true })
     preparationDays?: number | null;
 
-    @Column({ default: false })
+    @Column({ name: 'is_limited_stock', default: false })
     isLimitedStock: boolean;
 
-    @Column({ type: 'float', default: 0 })
+    @Column({ name: 'discount_amount', type: 'float', default: 0 })
     discountAmount?: number;
 
-    @Column({ type: 'float', default: 0 })
+    @Column({ name: 'discount_percent', type: 'float', default: 0 })
     discountPercent?: number;
 
-    @Column({ default: false })
+    @Column({ name: 'is_featured', default: false })
     isFeatured: boolean;
 
     @Column({ type: 'float', default: 0 })
     weight: number;
 
-    @Column({ type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
+    @Column({ name: 'widget_unit', type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
     weightUnit: WeightUnit;
 
     @Column({ type: 'text', nullable: true })
     description?: string | null | undefined;
 
-    @Column({ default: false })
+    @Column({ name: 'is_visible', default: false })
     isVisible: boolean;
 
-    @Column({ nullable: true })
+    @Column({ name: 'order_limit', nullable: true })
     orderLimit: number
 
     @ManyToOne(() => Category, category => category.products)
+
+    @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    @Column()
+    @Column({ name: 'category_id' })
     categoryId: number;
 
     @OneToMany(() => Media, media => media.product, { cascade: true })
     media: Media[];
 
     @ManyToOne(() => Media, media => media.product)
+    @JoinColumn({ name: 'media_pinned_id' })
     mediaPinned: Media;
 
-    @Column({ nullable: true })
+    @Column({ name: 'media_pinned_id', nullable: true })
     mediaPinnedId: number;
 
     @ManyToOne(() => HelperEntity, helper => helper.product, { nullable: true, cascade: true })
+    @JoinColumn({ name: 'helper_id' })
     helper: HelperEntity;
 
-    @Column({ nullable: true })
+    @Column({ name: 'helper_id', nullable: true })
     helperId: number;
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
@@ -88,15 +92,16 @@ export class Product implements IProduct {
     attributeValues: ProductAttributeValue[];
 
     @ManyToOne(() => Brand, brand => brand.products, { cascade: true, nullable: true })
+    @JoinColumn({ name: 'brand_id' })
     brand: Brand;
 
-    @Column({ nullable: true })
+    @Column({ name: 'brand_id', nullable: true })
     brandId: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 
 }

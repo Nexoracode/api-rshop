@@ -7,6 +7,7 @@ import { AttributeUnit } from "src/common/enums/attribute.enum";
 
 @Entity({ name: 'attributes' })
 export class Attribute implements IAttribute {
+    catAttribute: CategoryAttribute[];
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -16,16 +17,17 @@ export class Attribute implements IAttribute {
     @Column()
     slug: string;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({ name: 'is_public', type: 'boolean', default: false })
     isPublic: boolean;
 
     @ManyToOne(() => AttributeGroup, (group) => group.attributes, {
         nullable: true,
         onDelete: 'SET NULL'
     })
+    @JoinColumn({ name: 'group_id' })
     group: AttributeGroup;
 
-    @Column({ nullable: true })
+    @Column({ name: 'group_id', nullable: true })
     groupId?: number | null;
 
     @OneToMany(() => AttributeValue, (values) => values.attribute, {
@@ -36,14 +38,14 @@ export class Attribute implements IAttribute {
     @OneToMany(() => CategoryAttribute, (catAttr) => catAttr.attribute, {
         cascade: true
     })
-    catAttribute: CategoryAttribute[];
+    categoryAttribute: CategoryAttribute[];
 
     @Column({ type: 'enum', enum: AttributeUnit, default: AttributeUnit.TEXT })
     type: AttributeUnit;
 
-    @Column({ type: 'int' })
+    @Column({ name: 'display_order', type: 'int' })
     displayOrder: number;
 
-    @Column({ type: 'boolean', default: false })
+    @Column({ name: 'is_variant', type: 'boolean', default: false })
     isVariant: boolean;
 }

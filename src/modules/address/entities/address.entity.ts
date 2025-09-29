@@ -13,10 +13,10 @@ export class Address implements IAddress {
     @Column()
     province: string;
 
-    @Column()
+    @Column({ name: 'address_line' })
     addressLine: string;
 
-    @Column({ unique: true })
+    @Column({ unique: true, name: 'postal_code' })
     postalCode: string;
 
     @Column({ name: 'is_primary', default: true })
@@ -26,9 +26,9 @@ export class Address implements IAddress {
     @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 }

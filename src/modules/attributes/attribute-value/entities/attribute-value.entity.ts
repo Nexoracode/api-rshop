@@ -13,17 +13,18 @@ export class AttributeValue implements IAttributeValue {
     value: string;
 
     @ManyToOne(() => Attribute, attribute => attribute.values, { nullable: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'attribute_id' })
     attribute: Attribute;
 
-    @Column()
+    @Column({ name: 'attribute_id' })
     attributeId: number;
 
-    @Column({ nullable: true })
+    @Column({ name: 'display_color', nullable: true })
     displayColor?: string;
 
-    @Column({ type: 'int' })
+    @Column({ name: 'display_order', type: 'int' })
     displayOrder: number;
 
-    @Column({ type: 'boolean', default: true })
+    @Column({ name: 'is_active', type: 'boolean', default: true })
     isActive: boolean;
 }

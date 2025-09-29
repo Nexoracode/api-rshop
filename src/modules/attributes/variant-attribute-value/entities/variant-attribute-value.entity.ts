@@ -10,20 +10,23 @@ export class VariantAttributeValue implements IVariantAttributeValue {
     id: number;
 
     @ManyToOne(() => VariantProduct, variant => variant.attributes, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'variant_id' })
     variant: VariantProduct;
 
-    @Column()
+    @Column({ name: 'variant_id' })
     variantId: number;
 
     @ManyToOne(() => Attribute, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'attribute_id' })
     attribute: Attribute;
 
-    @Column()
+    @Column({ name: 'attribute_id' })
     attributeId: number;
 
     @ManyToOne(() => AttributeValue, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'value_id' })
     value: AttributeValue;
 
-    @Column()
+    @Column({ name: 'value_id' })
     valueId: number;
 }

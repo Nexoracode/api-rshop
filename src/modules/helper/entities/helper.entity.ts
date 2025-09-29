@@ -1,5 +1,5 @@
 import { Product } from "src/modules/product/entities/product.entity";
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm"
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity('helpers')
 export class HelperEntity {
@@ -16,5 +16,6 @@ export class HelperEntity {
     image: string;
 
     @OneToOne(() => Product, product => product.helper, { nullable: true })
+    @JoinColumn({ name: 'product_id' })
     product: Product;
 }

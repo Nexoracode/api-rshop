@@ -33,18 +33,18 @@ export class Invoice {
     total: number;
 
 
-    @Column({ type: 'bigint', default: 0 })
+    @Column({ name: 'paid_amount', type: 'bigint', default: 0 })
     paidAmount: number;
 
 
-    @Column({ type: 'timestamp', nullable: true })
+    @Column({ name: 'paid_at', type: 'timestamp', nullable: true })
     paidAt?: Date | null;
 
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 }

@@ -32,7 +32,7 @@ export class CardItem {
     quantity: number;
 
 
-    @Column({ type: 'bigint' })
+    @Column({ name: 'unit_price', type: 'bigint' })
     unitPrice: number;
 
 
@@ -40,14 +40,14 @@ export class CardItem {
     discount: number;
 
 
-    @Column({ type: 'bigint' })
+    @Column({ name: 'line_total', type: 'bigint' })
     lineTotal: number;
 
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 }

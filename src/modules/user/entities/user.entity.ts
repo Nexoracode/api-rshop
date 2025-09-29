@@ -1,6 +1,6 @@
 import { Role } from "src/common/enums/role.enum";
 import { Address } from "src/modules/address/entities/address.entity";
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { IUser } from "../interfaces/user.interface";
 import { Media } from "src/modules/media/entities/image.entity";
@@ -12,16 +12,16 @@ export class User implements IUser {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'varchar', length: 100, nullable: true })
+    @Column({ name: 'first_name', type: 'varchar', length: 100, nullable: true })
     firstName: string;
 
-    @Column({ type: 'varchar', length: 100, nullable: true })
+    @Column({ name: 'last_name', type: 'varchar', length: 100, nullable: true })
     lastName: string;
 
     @Column({ type: 'varchar', length: 11, unique: true, nullable: true })
     phone: string;
 
-    @Column({ default: false })
+    @Column({ name: 'is_phone_verified', default: false })
     isPhoneVerified: boolean;
 
     @Column({ type: 'varchar', length: 100, nullable: true, unique: true })
@@ -40,7 +40,7 @@ export class User implements IUser {
     @Column({ type: 'enum', enum: Role, default: Role.USER, select: false })
     role: Role;
 
-    @Column({ type: 'varchar', nullable: true, select: false })
+    @Column({ name: 'api_token', type: 'varchar', nullable: true, select: false })
     apiToken: string;
     @BeforeInsert()
     @BeforeUpdate()
@@ -56,28 +56,29 @@ export class User implements IUser {
     @OneToMany(() => Order, (c) => c.user)
     orders: Order[];
 
-    // @OneToMany(() => Order, (0) => 0.user)
-    // orders: Order[];
-
-    @Column({ default: true })
+    @Column({ name: 'is_active', default: true })
     isActive: boolean;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'email_verified_at', nullable: true })
     lastLoginAt: Date;
 
-    @Column({ nullable: true })
+    @Column({ name: 'avatar_url', nullable: true })
     avatarUrl?: string;
 
     @OneToMany(() => Address, (address) => address.user, { cascade: true })
     addresses: Address[];
 
     @OneToOne(() => Media, (media) => media.user)
+    @JoinColumn({ name: 'media_id' })
     media: Media;
 
-    @CreateDateColumn()
+    @Column({ name: 'media_id', nullable: true })
+    mediaId: number;
+
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 
 }

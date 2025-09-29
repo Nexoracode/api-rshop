@@ -9,14 +9,16 @@ export class CategoryAttribute implements ICategoryAttribute {
     id: number;
 
     @ManyToOne(() => Category, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    @Column()
+    @Column({ name: 'category_id' })
     categoryId: number;
 
     @ManyToOne(() => Attribute, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'attribute_id' })
     attribute: Attribute;
 
-    @Column()
+    @Column({ name: 'attribute_id' })
     attributeId: number;
 }

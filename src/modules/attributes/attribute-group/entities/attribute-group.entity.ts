@@ -14,7 +14,7 @@ export class AttributeGroup implements IAttributeGroup {
     @Column({ nullable: true })
     slug?: string;
 
-    @Column({ type: 'int' })
+    @Column({ name: 'display_order', type: 'int' })
     displayOrder: number;
 
     @OneToMany(() => Attribute, attribute => attribute.group)

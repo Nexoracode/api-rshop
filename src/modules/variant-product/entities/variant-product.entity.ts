@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Product } from "src/modules/product/entities/product.entity";
 import { VariantAttributeValue } from "src/modules/attributes/variant-attribute-value/entities/variant-attribute-value.entity";
 import { IVariantProduct } from "../interfaces/variant-product.interface";
@@ -17,16 +17,17 @@ export class VariantProduct implements IVariantProduct {
     @Column()
     sku: string;
 
-    @Column({ type: 'decimal', default: 0 })
+    @Column({ name: 'discount_amount', type: 'decimal', default: 0 })
     discountAmount?: number | null | undefined;
 
-    @Column({ type: 'float', default: 0 })
+    @Column({ name: 'discount_percent', type: 'float', default: 0 })
     discountPercent?: number | null | undefined;
 
     @ManyToOne(() => Product, product => product.variants, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'product_id' })
     product: Product
 
-    @Column()
+    @Column({ name: 'product_id' })
     productId: number;
 
     @OneToMany(() => VariantAttributeValue, value => value.variant, { cascade: true, eager: true })
