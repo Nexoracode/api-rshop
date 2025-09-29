@@ -4,7 +4,7 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryMapper } from './mappers/category.mapper';
-import { ICategoryResponse } from './interfaces/category.response.interface';
+import { ICategoryResponse, ICategoryResponseSite } from './interfaces/category.response.interface';
 import { ICategoryService } from './interfaces/category.service.interface';
 import { MediaService } from '../media/media.service';
 import { Media } from '../media/entities/image.entity';
@@ -38,10 +38,15 @@ export class CategoryService implements ICategoryService {
         return categories.map((category) => CategoryMapper.toResponse(category));
     }
 
+    async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
+        const categories = await this.treeCatRepo.findTrees({ relations: ['parent'] });
+        return categories.map((category) => CategoryMapper.toResponseSite(category));
+    }
+
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
-        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['media', 'products', 'products.media', 'products.mediaPinned'] })
+        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['parent', 'children.parent', 'media', 'products', 'products.media', 'products.mediaPinned'] })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
-        const category = await this.treeCatRepo.findDescendantsTree(node);
+        const category = await this.treeCatRepo.findDescendantsTree(node, { relations: ['parent', 'media', 'products', 'products.media', 'products.mediaPinned'] });
         return CategoryMapper.toResponse(category);
     }
 

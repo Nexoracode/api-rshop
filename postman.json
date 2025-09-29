@@ -496,6 +496,20 @@
         ]
       }
     },
+    "/api/category/site": {
+      "get": {
+        "operationId": "CategoryController_findAllTreeSite",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "03 - 🗂️ Categories"
+        ]
+      }
+    },
     "/api/category/{id}": {
       "get": {
         "operationId": "CategoryController_findByIdWithDescendants",
@@ -505,7 +519,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           }
         ],
@@ -568,6 +582,109 @@
         },
         "tags": [
           "03 - 🗂️ Categories"
+        ]
+      }
+    },
+    "/api/catalog/{category}": {
+      "get": {
+        "operationId": "CatalogController_list",
+        "parameters": [
+          {
+            "name": "category",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[color]",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "55,56",
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[brand]",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "3,7",
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[max_price]",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 5000000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter[min_price]",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1000000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter[special_offer]",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "price:ASC",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 12,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست محصولات و فیلترهای مرتبط"
+          }
+        },
+        "tags": [
+          "Catalog"
         ]
       }
     },

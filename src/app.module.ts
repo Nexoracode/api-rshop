@@ -22,6 +22,7 @@ import { CardModule } from './modules/card/card.module';
 import { OrderModule } from './modules/order/order.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { ProductAttributeValueModule } from './modules/product-attribute-value/product-attribute-value.module';
+import { CatalogModule } from './modules/catalogs/catalog.module';
 
 
 @Module({
@@ -32,6 +33,7 @@ import { ProductAttributeValueModule } from './modules/product-attribute-value/p
     AuthModule,
     MediaModule,
     CategoryModule,
+    CatalogModule,
     ProductModule,
     CategoryAttributeModule,
     AttributeModule,

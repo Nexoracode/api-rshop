@@ -11,6 +11,15 @@ export interface ICategoryResponse {
     isDelete: boolean;
     title: string;
     slug: string;
-    media: Media,
+    media: Media | Object,
     products: Product[]
+}
+
+export interface ICategoryResponseSite {
+    children: ICategoryResponseSite[];
+    id: number;
+    level: number;
+    parentId?: number;
+    title: string;
+    slug: string;
 }

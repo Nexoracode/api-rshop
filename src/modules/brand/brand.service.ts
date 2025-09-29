@@ -29,7 +29,7 @@ export class BrandService {
   async findAllPaginate(query: PaginateQuery) {
     const result = await paginate(query, this.brandRepo, {
       sortableColumns: ['id', 'name', 'logo'],
-      select: ['id', 'name', 'logo'],
+      select: ['id', 'name', 'slug', 'logo'],
       defaultSortBy: [['id', 'DESC']],
       relations: [],
       searchableColumns: ['name'],

@@ -13,8 +13,8 @@ export class Attribute implements IAttribute {
     @Column({ unique: true })
     name: string;
 
-    @Column({ nullable: true })
-    slug?: string;
+    @Column()
+    slug: string;
 
     @Column({ type: 'boolean', default: false })
     isPublic: boolean;

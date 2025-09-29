@@ -8,6 +8,7 @@ import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('03 - 🗂️ Categories')
 @Controller('category')
@@ -38,9 +39,15 @@ export class CategoryController {
     return this.categoryService.findAllTree();
   }
 
+  @Public()
+  @Get('site')
+  async findAllTreeSite() {
+    return this.categoryService.findAllTreeForSite();
+  }
+
   @Get(':id')
-  async findByIdWithDescendants(@Param('id') id: string) {
-    return this.categoryService.findByIdWithDescendants(+id);
+  async findByIdWithDescendants(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.findByIdWithDescendants(id);
   }
 
 
