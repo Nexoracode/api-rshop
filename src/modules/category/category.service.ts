@@ -80,6 +80,7 @@ export class CategoryService implements ICategoryService {
     }
 
     async update(id: number, data: UpdateCategoryDto) {
+        console.log(id, data);
         return runInTransaction(this.dataSource, async (manager) => {
             const existsCategory = await manager.findOne(Category, { where: { id } });
             if (!existsCategory) throw new NotFoundException('دسته مورد نظر یافت نشد');
@@ -95,16 +96,24 @@ export class CategoryService implements ICategoryService {
             const category = manager.merge(Category, existsCategory, data);
             const savedCategory = await manager.save(Category, category);
 
+            const mediaDeleted = await manager.findOne(Media, { where: { category: { id } } });
             if (data.mediaId) {
-                const mediaDeleted = await manager.findOne(Media, { where: { category: { id } } });
-                if (mediaDeleted) await manager.remove(Media, mediaDeleted);
-                const media = await manager.findOne(Media, { where: { id: data.mediaId } });
+                if (mediaDeleted) {
+                    mediaDeleted.category = null;
+                    await manager.save(Media, mediaDeleted);
+                }
+                const media = await manager.findOne(Media, { where: { id: category.media?.id } });
+                console.log(media, data.mediaId)
                 if (!media) throw new NotFoundException('فایل مدیا یافت نشد.');
                 await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
             } else {
                 const media = await manager.findOne(Media, { where: { category: { id } } })
-                if (media) await manager.remove(Media, media);
+                if (media) {
+                    media.category = null;
+                    await manager.save(Media, media);
+                }
             }
+            console.log(category);
             return CategoryMapper.toResponse(savedCategory);
         });
     }

@@ -61,13 +61,17 @@ export class AttributeValueService implements IAttributeValueService {
       const attr = await this.attrRepo.findOne({ where: { id: data.attributeId } });
       if (!attr) throw new NotFoundException('ویژگی یافت نشد.');
       value.attribute = attr;
+      value.attributeId = data.attributeId;
     }
-    const existValue = await this.valueRepo.findOne({ where: { value: data.value } });
-    if (existValue && existValue.id != id) {
-      throw new BadRequestException('این ویژگی از قبل ثبت شده است.');
+    if (data.value !== undefined) {
+      const existValue = await this.valueRepo.findOne({ where: { value: data.value } });
+      if (existValue && existValue.id != id) {
+        throw new BadRequestException('این ویژگی از قبل ثبت شده است.');
+      }
+      value.value = data.value;
     }
+    // Add other fields from UpdateAttributeValueDto as needed
     const saved = await this.valueRepo.save(value);
-    console.log(saved);
     return AttributeValueMapper.toResponse(saved);
   }
 

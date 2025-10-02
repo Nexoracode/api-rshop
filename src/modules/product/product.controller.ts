@@ -9,6 +9,7 @@ import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { DeleteProductsDto } from './dto/delete-product.dto';
+import { Public } from 'src/common/decorator/public.decorator';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -63,6 +64,12 @@ export class ProductController {
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productService.findOne(id);
+    }
+
+    @Public()
+    @Get('site/:id')
+    findOneForSite(@Param('id', ParseIntPipe) id: number) {
+        return this.productService.findOneForSite(id);
     }
 
     @Delete(':id')

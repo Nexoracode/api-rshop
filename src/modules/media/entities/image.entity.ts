@@ -30,7 +30,7 @@ export class Media {
     category?: Category | null;
 
     @Column({ name: 'category_id', nullable: true })
-    categoryId: number;
+    categoryId?: number;
 
     @ManyToOne(() => User, (user) => user.media, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'user_id' })

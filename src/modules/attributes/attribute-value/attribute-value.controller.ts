@@ -19,13 +19,13 @@ export class AttributeValueController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAttributeValueDto: UpdateAttributeValueDto) {
-    return this.attributeValueService.update(+id, updateAttributeValueDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateAttributeValueDto: UpdateAttributeValueDto) {
+    return this.attributeValueService.update(id, updateAttributeValueDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.attributeValueService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.attributeValueService.remove(id);
   }
 
   @Patch(':id/order')
