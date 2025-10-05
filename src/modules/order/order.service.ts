@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Card, CardStatus } from '../card/entities/card.entity';
@@ -12,8 +12,16 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 @Injectable()
 export class OrderService {
     constructor(
-        @InjectDataSource() private readonly dataSource: DataSource
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
+        @InjectRepository(Order)
+        private readonly orderRepo: Repository<Order>
     ) { }
+
+    async getAllOrder() {
+        const orders = await this.orderRepo.find();
+
+    }
 
     async createFromCard(user: User, _dto: CreateOrderFromCardDto) {
         return runInTransaction(this.dataSource, async (m) => {

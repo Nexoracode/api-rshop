@@ -31,14 +31,21 @@ export class UserController {
         defaultSortBy: [['id', 'DESC']],
         searchableColumns: ['firstName', 'email', 'phone'],
     })
+
     findAll(@Paginate() query: PaginateQuery) {
         return this.userService.findAllUser(query);
+    }
+
+    @Get('me')
+    findMe(@Req() req: CustomRequest) {
+        return this.userService.findOneUser(req.user.sub);
     }
 
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.userService.findOneUser(id);
     }
+
 
     @Post()
     @HttpCode(201)
@@ -82,5 +89,6 @@ export class UserController {
     deleteUserAddress(@Param('addressId', ParseIntPipe) addressId: number) {
         return this.addressService.remove(addressId);
     }
+
 
 }

@@ -1,6 +1,5 @@
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Product } from "../entities/product.entity";
-import { ProductAttributeValue } from "src/modules/product-attribute-value/entities/product-attribute-value.entity";
 import { mapSpecificationsGrouped } from "./spec.mapper";
 
 export class ProductMapper {
@@ -251,7 +250,7 @@ export class ProductMapper {
             weightUnit: product.weightUnit || null,
             helper: product.helper || null,
             isVisible: product.isVisible || false,
-            medias: product.media ? product.media.map((m) => ({
+            medias: product.medias ? product.medias.map((m) => ({
                 id: m.id,
                 url: m.url,
                 alt: m.altText,

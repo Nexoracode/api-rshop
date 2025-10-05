@@ -215,7 +215,6 @@ export class VariantProductService {
       return {
         success: true,
         message: "Variant با موفقیت حذف شد",
-        variants, // حالا لیست جدید درست میاد
       };
     });
   }
@@ -255,11 +254,9 @@ export class VariantProductService {
 
       return {
         success: true,
-        message: "مقدار از Variantها حذف شد",
+        message: "مقدار از Variant ها حذف شد",
         updatedVariants,
       };
     });
   }
-
-
 }

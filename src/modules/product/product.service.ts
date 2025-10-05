@@ -27,7 +27,7 @@ const relations = [
     "helper",
     "category",
     "brand",
-    "media",
+    "medias",
     "mediaPinned",
 ];
 
@@ -58,7 +58,7 @@ export class ProductService implements IProductService {
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
             select: ['id', 'name', 'price', 'weight', 'isFeatured', 'isVisible', 'isLimitedStock', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
-                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'orderLimit', 'media.id', 'media.url', 'media.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
+                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'orderLimit', 'medias.id', 'medias.url', 'medias.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',

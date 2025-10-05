@@ -54,7 +54,7 @@ export class CatalogService {
 
         // 3) paginate برای فیلترهای ساده
         let products = await paginate(query, this.productRepo, {
-            relations: ['brand', 'category', 'media', 'mediaPinned'],
+            relations: ['brand', 'category', 'medias', 'mediaPinned'],
             sortableColumns: ['id', 'price', 'createdAt'],
             defaultSortBy: [['createdAt', 'DESC']],
             searchableColumns: ['name', 'description'],

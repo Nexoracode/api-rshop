@@ -22,7 +22,7 @@ export class ProductController {
     @UseInterceptors(FilesInterceptor('files', 10))
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'List of Category',
+        description: 'List of Products',
         type: UploadFilesDto
     })
     uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
@@ -72,13 +72,14 @@ export class ProductController {
         return this.productService.findOneForSite(id);
     }
 
+    @Delete('bulk')
+    removeBulk(@Body() dto: DeleteProductsDto) {
+        return this.productService.removeBulk(dto.ids);
+    }
+
     @Delete(':id')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productService.remove(id);
     }
 
-    @Delete('bulk')
-    removeBulk(@Body() dto: DeleteProductsDto) {
-        return this.productService.removeBulk(dto.ids);
-    }
 }

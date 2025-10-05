@@ -237,6 +237,20 @@
         ]
       }
     },
+    "/api/users/me": {
+      "get": {
+        "operationId": "UserController_findMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "02 - 👤 Users"
+        ]
+      }
+    },
     "/api/users/{id}": {
       "get": {
         "operationId": "UserController_findOne",
@@ -724,7 +738,7 @@
         "parameters": [],
         "requestBody": {
           "required": true,
-          "description": "List of Category",
+          "description": "List of Products",
           "content": {
             "multipart/form-data": {
               "schema": {

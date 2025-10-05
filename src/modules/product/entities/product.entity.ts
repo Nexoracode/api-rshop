@@ -11,6 +11,7 @@ import { ProductAttributeValue } from "src/modules/product-attribute-value/entit
 
 @Entity('products')
 export class Product implements IProduct {
+    media: Media[];
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -51,7 +52,7 @@ export class Product implements IProduct {
     @Column({ name: 'widget_unit', type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
     weightUnit: WeightUnit;
 
-    @Column({ type: 'text', nullable: true })
+    @Column({ type: 'longtext', nullable: true })
     description?: string | null | undefined;
 
     @Column({ name: 'is_visible', default: false })
@@ -69,7 +70,7 @@ export class Product implements IProduct {
     categoryId: number;
 
     @OneToMany(() => Media, media => media.product, { cascade: true })
-    media: Media[];
+    medias: Media[];
 
     @ManyToOne(() => Media, media => media.product)
     @JoinColumn({ name: 'media_pinned_id' })

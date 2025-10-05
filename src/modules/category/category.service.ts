@@ -34,7 +34,7 @@ export class CategoryService implements ICategoryService {
     }
 
     async findAllTree(): Promise<ICategoryResponse[]> {
-        const categories = await this.treeCatRepo.findTrees({ relations: ['parent', 'media', 'products', 'products.media', 'products.mediaPinned'] });
+        const categories = await this.treeCatRepo.findTrees({ relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned'] });
         return categories.map((category) => CategoryMapper.toResponse(category));
     }
 
@@ -44,9 +44,9 @@ export class CategoryService implements ICategoryService {
     }
 
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
-        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['parent', 'children.parent', 'media', 'products', 'products.media', 'products.mediaPinned'] })
+        const node = await this.treeCatRepo.findOne({ where: { id }, relations: ['parent', 'children.parent', 'media', 'products', 'products.medias', 'products.mediaPinned'] })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
-        const category = await this.treeCatRepo.findDescendantsTree(node, { relations: ['parent', 'media', 'products', 'products.media', 'products.mediaPinned'] });
+        const category = await this.treeCatRepo.findDescendantsTree(node, { relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned'] });
         return CategoryMapper.toResponse(category);
     }
 
@@ -80,20 +80,22 @@ export class CategoryService implements ICategoryService {
     }
 
     async update(id: number, data: UpdateCategoryDto) {
-        console.log(id, data);
         return runInTransaction(this.dataSource, async (manager) => {
-            const existsCategory = await manager.findOne(Category, { where: { id } });
+            const existsCategory = await manager.findOne(Category, { where: { id }, relations: ['parent'] });
             if (!existsCategory) throw new NotFoundException('دسته مورد نظر یافت نشد');
 
-            const existingTitle = await this.catRepo.findOne({ where: { title: data.title } });
+            const existingTitle = await this.catRepo.findOne({ where: { title: existsCategory.title } });
             if (existingTitle && existingTitle.id !== id)
                 throw new BadRequestException('عنوان دسته بندی تکراری است.');
 
-            const existingSlug = await this.catRepo.findOne({ where: { slug: data.slug } });
+            const existingSlug = await this.catRepo.findOne({ where: { slug: existsCategory.slug } });
             if (existingSlug && existingSlug.id !== id)
                 throw new BadRequestException('نامک دسته بندی تکراری است.');
 
-            const category = manager.merge(Category, existsCategory, data);
+            const category = manager.merge(Category, existsCategory, {
+                ...data,
+                parent: data.parentId ? { id: data.parentId } : existsCategory.parent,
+            });
             const savedCategory = await manager.save(Category, category);
 
             const mediaDeleted = await manager.findOne(Media, { where: { category: { id } } });

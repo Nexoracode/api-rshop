@@ -80,5 +80,4 @@ export class UserService extends BaseService<User> implements IUserService {
             }
         }
     }
-
 }

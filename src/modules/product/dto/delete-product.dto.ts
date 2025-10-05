@@ -8,9 +8,9 @@ export class DeleteProductsDto {
         example: [1, 2, 3],
         description: 'آیدی محصولات برای حذف',
     })
-    @IsArray()
+    @IsArray({ message: 'آیدی محصولات باید به صورت آرایه باشد' })
     @ArrayNotEmpty()
-    @IsInt({ each: true })
+    @IsInt({ each: true, message: 'هر آیدی باید از نوع عدد صحیح باشد' })
     @Type(() => Number)
     ids: number[];
 }

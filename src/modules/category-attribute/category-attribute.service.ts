@@ -6,8 +6,6 @@ import { Repository } from 'typeorm';
 import { ICategoryAttributeService } from './interfaces/category-attribute.service';
 import { ICategoryAttributeResponse } from './interfaces/category-attribute.response.interface';
 import { CategoryAttributeMapper } from './mappers/category-attribute.mapper';
-import { Category } from '../category/entities/category.entity';
-import { Attribute } from '../attributes/attribute/entities/attribute.entity';
 import { UpdateCategoryAttribute } from './dto/update-category-attribute.dto';
 
 @Injectable()
