@@ -1052,7 +1052,31 @@
         ]
       }
     },
-    "/api/product/bulk": {
+    "/api/product/update/bulk": {
+      "patch": {
+        "operationId": "ProductController_updateBulk",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBulkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "08 - 📦 Products"
+        ]
+      }
+    },
+    "/api/product/delete/bulk": {
       "delete": {
         "operationId": "ProductController_removeBulk",
         "parameters": [],
@@ -3036,6 +3060,46 @@
             "type": "number"
           }
         }
+      },
+      "UpdateBulkDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "آیدی محصولات برای حذف",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "is_visible": {
+            "type": "boolean",
+            "default": false
+          },
+          "is_featured": {
+            "type": "boolean",
+            "default": false
+          },
+          "is_same_day_shipping": {
+            "type": "boolean",
+            "default": false
+          },
+          "is_limited_stock": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "ids",
+          "is_visible",
+          "is_featured",
+          "is_same_day_shipping",
+          "is_limited_stock"
+        ]
       },
       "DeleteProductsDto": {
         "type": "object",

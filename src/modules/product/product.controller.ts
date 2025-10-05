@@ -10,6 +10,7 @@ import { MediaService } from '../media/media.service';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { DeleteProductsDto } from './dto/delete-product.dto';
 import { Public } from 'src/common/decorator/public.decorator';
+import { UpdateBulkDto } from './dto/update-bulk.dto';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -72,7 +73,12 @@ export class ProductController {
         return this.productService.findOneForSite(id);
     }
 
-    @Delete('bulk')
+    @Patch('update/bulk')
+    updateBulk(@Body() dto: UpdateBulkDto) {
+        return this.productService.updateBulk(dto.ids, dto);
+    }
+
+    @Delete('delete/bulk')
     removeBulk(@Body() dto: DeleteProductsDto) {
         return this.productService.removeBulk(dto.ids);
     }

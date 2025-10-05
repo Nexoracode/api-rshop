@@ -14,6 +14,7 @@ import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import axios from 'axios';
 import { HelperEntity } from '../helper/entities/helper.entity';
 import { Brand } from '../brand/entities/brand.entity';
+import { UpdateBulkDto } from './dto/update-bulk.dto';
 
 const relations = [
     "variants",
@@ -150,6 +151,28 @@ export class ProductService implements IProductService {
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
             return ProductMapper.toResponse(result, { cartesian: true });
         });
+    }
+
+    async updateBulk(ids: number[], dto: UpdateBulkDto) {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const products = await manager.find(Product, { where: { id: In(ids) }, relations });
+            if (!products.length) throw new NotFoundException('محصولات مورد نظر یافت نشدند.');
+            const updatedProductsData = products.map(product => {
+                return manager.merge(Product, product, {
+                    isVisible: dto.isVisible ?? product.isVisible,
+                    isFeatured: dto.isFeatured ?? product.isFeatured,
+                    isSameDayShipping: dto.isSameDayShipping ?? product.isSameDayShipping,
+                    isLimitedStock: dto.isLimitedStock ?? product.isLimitedStock,
+                    stock: dto.isLimitedStock === false ? 0 : product.stock,
+                });
+            });
+            await manager.save(Product, updatedProductsData);
+            const updatedProducts = await manager.find(Product, { where: { id: In(ids) }, relations });
+            return {
+                message: 'محصولات با موفقیت ویرایش شدند.',
+                data: updatedProducts
+            }
+        })
     }
 
     async remove(id: number): Promise<Object> {

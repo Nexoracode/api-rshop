@@ -3,9 +3,9 @@ import { ProductAttributeValue } from "src/modules/product-attribute-value/entit
 type SpecValueOut = {
     id: number | null;
     value: string;
-    display_color: string | null;
-    is_active: boolean;
-    display_order: number | null;
+    displayColor: string | null;
+    isActive: boolean;
+    displayOrder: number | null;
 };
 
 type SpecAttributeOut = {
@@ -13,9 +13,9 @@ type SpecAttributeOut = {
     name: string;
     slug: string;
     type: string;
-    is_public: boolean;
-    is_variant: boolean;
-    display_order: number | null;
+    isPublic: boolean;
+    isVariant: boolean;
+    displayOrder: number | null;
     values: SpecValueOut[];
 };
 
@@ -23,7 +23,8 @@ type SpecGroupOut = {
     id: number | null;           // اگه گروه نداشته باشه
     name: string;               // نام گروه
     slug: string | null;
-    display_order: number | null;
+    isImportant?: boolean; // برای آینده
+    displayOrder: number | null;
     attributes: SpecAttributeOut[];
 };
 
@@ -33,7 +34,8 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
         id: number | null;
         title: string;
         slug: string | null;
-        display_order: number | null;
+        displayOrder: number | null;
+        isImportant?: boolean;
         attrMap: Map<number, SpecAttributeOut>;
     }>();
 
@@ -46,7 +48,8 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
                 id: group?.id ?? null,
                 title: group?.name ?? "سایر مشخصات",
                 slug: (group as any)?.slug ?? null,
-                display_order: (group as any)?.displayOrder ?? null,
+                isImportant: (group as any)?.isImportant ?? false,
+                displayOrder: (group as any)?.displayOrder ?? null,
                 attrMap: new Map<number, SpecAttributeOut>(),
             });
         }
@@ -61,9 +64,9 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
                 name: spec.attribute.name,
                 slug: (spec.attribute as any).slug ?? "",
                 type: spec.attribute.type,
-                is_public: (spec.attribute as any).isPublic ?? true,
-                is_variant: spec.attribute.isVariant ?? false,
-                display_order: (spec.attribute as any).displayOrder ?? null,
+                isPublic: (spec.attribute as any).isPublic ?? true,
+                isVariant: spec.attribute.isVariant ?? false,
+                displayOrder: (spec.attribute as any).displayOrder ?? null,
                 values: [],
             });
         }
@@ -75,9 +78,9 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
             a.values.push({
                 id: spec.value.id,
                 value: spec.value.value,
-                display_color: spec.value.displayColor ?? null,
-                is_active: (spec.value as any).isActive ?? true,
-                display_order: (spec.value as any).displayOrder ?? null,
+                displayColor: spec.value.displayColor ?? null,
+                isActive: (spec.value as any).isActive ?? true,
+                displayOrder: (spec.value as any).displayOrder ?? null,
             });
         }
     }
@@ -95,8 +98,8 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
 
             // مرتب‌سازی اختیاری
             attr.values.sort((x, y) => {
-                const dx = x.display_order ?? Number.MAX_SAFE_INTEGER;
-                const dy = y.display_order ?? Number.MAX_SAFE_INTEGER;
+                const dx = x.displayOrder ?? Number.MAX_SAFE_INTEGER;
+                const dy = y.displayOrder ?? Number.MAX_SAFE_INTEGER;
                 if (dx !== dy) return dx - dy;
                 return String(x.value).localeCompare(String(y.value), 'fa');
             });
@@ -108,8 +111,8 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
     for (const g of groupMap.values()) {
         const attributes = Array.from(g.attrMap.values())
             .sort((a, b) => {
-                const da = a.display_order ?? Number.MAX_SAFE_INTEGER;
-                const db = b.display_order ?? Number.MAX_SAFE_INTEGER;
+                const da = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+                const db = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
                 if (da !== db) return da - db;
                 return a.name.localeCompare(b.name, 'fa');
             });
@@ -118,15 +121,16 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
             id: g.id,
             name: g.title,
             slug: g.slug,
-            display_order: g.display_order,
+            displayOrder: g.displayOrder,
+            isImportant: g.isImportant,
             attributes,
         });
     }
 
     // مرتب‌سازی گروه‌ها
     groups.sort((a, b) => {
-        const da = a.display_order ?? Number.MAX_SAFE_INTEGER;
-        const db = b.display_order ?? Number.MAX_SAFE_INTEGER;
+        const da = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+        const db = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
         if (da !== db) return da - db;
         return a.name.localeCompare(b.name, 'fa');
     });
