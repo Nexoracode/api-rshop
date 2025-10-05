@@ -92,6 +92,17 @@ export class ProductAttributeValueService {
     });
   }
 
+  async addedImportant(id: number, isImportant: boolean) {
+    const pav = await this.pavRepo.findOne({ where: { id } });
+    if (!pav) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
+    pav.isImportant = isImportant;
+    await this.pavRepo.save(pav);
+    return {
+      message: 'ویژگی با موفقیت به عنوان ویژگی مهم تنظیم شد',
+      data: null,
+    }
+  }
+
   async remove(id: number) {
     return runInTransaction(this.dataSource, async (manager) => {
       const pav = await manager.findOne(ProductAttributeValue, { where: { id } });

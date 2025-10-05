@@ -1,6 +1,6 @@
 // dto/create-product-attribute-value.dto.ts
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayNotEmpty, IsArray, IsInt, IsOptional, IsString } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsInt, IsOptional, IsString } from "class-validator";
 
 export class CreateProductAttributeValueDto {
     @ApiProperty({ type: 'integer', example: 1 })
@@ -11,13 +11,17 @@ export class CreateProductAttributeValueDto {
     @IsInt()
     attributeId: number;
 
-    @ApiProperty({ type: 'array', example: [1, 2, 3], required: false })
+    @ApiProperty({ type: 'array', example: [], required: false })
     @IsOptional()
     @IsArray()
     @ArrayNotEmpty()
     valueIds?: number[];
 
-    @ApiProperty({ name: 'display_order', required: false, default: null })
+    @ApiProperty({ type: 'boolean', example: false })
+    @IsOptional()
+    @IsBoolean()
+    isImportant: boolean;
+
     @IsInt()
     @IsOptional()
     displayOrder: number

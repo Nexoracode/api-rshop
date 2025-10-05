@@ -15,6 +15,7 @@ export class ProductAttributeValueController {
     return this.pavService.create(dto);
   }
 
+
   @Get("product/:productId")
   findByProduct(@Param("productId", ParseIntPipe) productId: number) {
     return this.pavService.findByProduct(productId);
@@ -29,14 +30,17 @@ export class ProductAttributeValueController {
     return this.pavService.update(productId, attributeId, dto);
   }
 
+  @Patch(":id/important")
+  updateImportant(@Param("id", ParseIntPipe) id: number, @Body() data: UpdateProductAttributeValueDto) {
+    console.log(data);
+    return this.pavService.addedImportant(id, data.isImportant ?? false);
+  }
+
+
+
   @Patch(':id/order')
   updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductAttributeValueDto) {
     return this.pavService.updateOrder(id, data.displayOrder ?? 0);
-  }
-
-  @Delete(":id")
-  remove(@Param("id", ParseIntPipe) id: number) {
-    return this.pavService.remove(id);
   }
 
   @Delete("product/:productId/attributes/:attributeId/values/:valueId")
@@ -47,4 +51,10 @@ export class ProductAttributeValueController {
   ) {
     return this.pavService.removeByProductAttribute(productId, attributeId, valueId);
   }
+
+  @Delete(":id")
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.pavService.remove(id);
+  }
+
 }

@@ -21,6 +21,9 @@ export class ProductAttributeValue {
     @JoinColumn({ name: "value_id" })
     value: AttributeValue | null;
 
+    @Column({ name: 'is_important', type: 'boolean', default: false })
+    isImportant: boolean;
+
     @Column({ name: 'display_order', type: 'int' })
     displayOrder: number;
 }

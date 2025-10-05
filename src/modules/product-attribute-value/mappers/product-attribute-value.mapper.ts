@@ -38,6 +38,7 @@ export class ProductAttributeValueMapper {
     static toResponse(entity: ProductAttributeValue): IProductAttributeValueResponse {
         return {
             id: entity.id,
+            isImportant: entity.isImportant,
             attribute: {
                 id: entity.attribute.id,
                 name: entity.attribute.name,

@@ -1,6 +1,7 @@
 // interfaces/product-attribute-value.response.ts
 export interface IProductAttributeValueResponse {
     id: number;
+    isImportant: boolean;
     attribute: {
         id: number;
         name: string;
@@ -14,5 +15,4 @@ export interface IProductAttributeValueResponse {
         value: string | null;
         displayColor?: string | null;
     } | null;
-    customValue?: string | null;
 }

@@ -2363,6 +2363,39 @@
         ]
       }
     },
+    "/api/product-attributes/{id}/important": {
+      "patch": {
+        "operationId": "ProductAttributeValueController_updateImportant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductAttributeValueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
     "/api/product-attributes/{id}/order": {
       "patch": {
         "operationId": "ProductAttributeValueController_updateOrder",
@@ -3436,20 +3469,17 @@
           },
           "valueIds": {
             "type": "array",
-            "example": [
-              1,
-              2,
-              3
-            ]
+            "example": []
           },
-          "display_order": {
-            "type": "number",
-            "default": null
+          "isImportant": {
+            "type": "boolean",
+            "example": false
           }
         },
         "required": [
           "productId",
-          "attributeId"
+          "attributeId",
+          "isImportant"
         ]
       },
       "UpdateProductAttributeValueDto": {
@@ -3465,15 +3495,11 @@
           },
           "valueIds": {
             "type": "array",
-            "example": [
-              1,
-              2,
-              3
-            ]
+            "example": []
           },
-          "display_order": {
-            "type": "number",
-            "default": null
+          "isImportant": {
+            "type": "boolean",
+            "example": false
           }
         }
       }
