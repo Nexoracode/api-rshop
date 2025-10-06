@@ -1,7 +1,7 @@
 // product-attribute-value.service.ts
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DataSource } from "typeorm";
+import { Repository, DataSource, In } from "typeorm";
 import { ProductAttributeValue } from "./entities/product-attribute-value.entity";
 import { CreateProductAttributeValueDto } from "./dto/create-product-attribute-value.dto";
 import { UpdateProductAttributeValueDto } from "./dto/update-product-attribute-value.dto";
@@ -10,6 +10,8 @@ import { Attribute } from "../attributes/attribute/entities/attribute.entity";
 import { AttributeValue } from "../attributes/attribute-value/entities/attribute-value.entity";
 import { ProductAttributeValueMapper } from "./mappers/product-attribute-value.mapper";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
+import { CategoryAttribute } from "../category-attribute/entities/category-attribute.entity";
+import { AddedImportantDto } from "./dto/added-important.dto";
 
 @Injectable()
 export class ProductAttributeValueService {
@@ -26,6 +28,61 @@ export class ProductAttributeValueService {
 
       const attribute = await manager.findOne(Attribute, { where: { id: dto.attributeId } });
       if (!attribute) throw new NotFoundException("ویژگی یافت نشد");
+
+      const existsAttributeProduct = await manager.findOne(ProductAttributeValue, {
+        where: {
+          value: { id: In(dto.valueIds ?? []) },
+          attribute: { id: dto.attributeId },
+          product: { id: dto.productId }
+        },
+        select: ['id'],
+      })
+
+      if (existsAttributeProduct) {
+        throw new BadRequestException('برای این محصول، این ویژگی با این مقدار قبلا ثبت شده است.');
+      }
+
+      const equalValue = await manager.findOne(AttributeValue, {
+        where: {
+          id: In(dto.valueIds ?? []),
+          attribute: { id: dto.attributeId },
+        },
+        select: ['id'],
+      })
+
+      if (!equalValue) {
+        throw new BadRequestException('مقادیر ارسالی با ویژگی انتخاب شده همخوانی ندارد.');
+      }
+
+      const isVariantAttribute = await manager.findOne(Attribute, {
+        where: {
+          id: dto.attributeId,
+          isVariant: true,
+        },
+        select: ['id', 'isVariant'],
+      })
+
+      if (isVariantAttribute) {
+        throw new BadRequestException('تنوع محصول را نمی شود به ویژگی محصول اختصاص داد.');
+      }
+
+      const existsCategoryAttr = await manager.findOne(CategoryAttribute, {
+        where: {
+          attribute: { id: dto.attributeId },
+          category: { id: product.categoryId },
+        },
+        select: ['id'],
+      });
+
+      if (!existsCategoryAttr) {
+        const createCat = manager.create(CategoryAttribute, {
+          attribute,
+          category: product.category,
+          categoryId: product.categoryId,
+        });
+        await manager.save(CategoryAttribute, createCat);
+      }
+
 
       const created: ProductAttributeValue[] = [];
 
@@ -92,10 +149,10 @@ export class ProductAttributeValueService {
     });
   }
 
-  async addedImportant(id: number, isImportant: boolean) {
-    const pav = await this.pavRepo.findOne({ where: { id } });
-    if (!pav) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
-    pav.isImportant = isImportant;
+  async addedImportant(dto: AddedImportantDto) {
+    const pav = await this.pavRepo.find({ where: { attributeId: dto.attributeId, productId: dto.productId } });
+    if (!pav.length) throw new NotFoundException('مقدار ویژگی یافت نشد یا این ویژگی به این محصول اختصاص ندارد.');
+    pav.forEach(p => p.isImportant = dto.important);
     await this.pavRepo.save(pav);
     return {
       message: 'ویژگی با موفقیت به عنوان ویژگی مهم تنظیم شد',

@@ -7,4 +7,10 @@ export interface IAddressResponse {
     addressLine: string;
     isPrimary: boolean;
     postalCode: string;
+    addressName: string;
+    recipientName: string;
+    recipientPhone: string;
+    plaque?: string;
+    unit?: string;
+    isSelf: boolean;
 }

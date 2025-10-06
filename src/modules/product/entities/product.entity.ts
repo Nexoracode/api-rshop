@@ -72,7 +72,7 @@ export class Product implements IProduct {
     @OneToMany(() => Media, media => media.product, { cascade: true })
     medias: Media[];
 
-    @ManyToOne(() => Media, media => media.product)
+    @ManyToOne(() => Media, media => media.product, { eager: true })
     @JoinColumn({ name: 'media_pinned_id' })
     mediaPinned: Media;
 

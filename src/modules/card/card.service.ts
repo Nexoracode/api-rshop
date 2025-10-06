@@ -50,7 +50,7 @@ export class CardService {
 
   async getOrCreateUserCard(user: User): Promise<Card> {
     const cardRepo = this.dataSource.getRepository(Card);
-    let card = await cardRepo.findOne({ where: { user: { id: user?.id } }, relations: ['items'] });
+    let card = await cardRepo.findOne({ where: { user: { id: user?.id } }, relations: ['items', 'items.product', 'items.product.mediaPinned'] });
     if (!card) {
       card = cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
       await cardRepo.save(card);

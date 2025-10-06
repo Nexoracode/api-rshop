@@ -4,6 +4,7 @@ import { ProductAttributeValueService } from "./product-attribute-value.service"
 import { CreateProductAttributeValueDto } from "./dto/create-product-attribute-value.dto";
 import { UpdateProductAttributeValueDto } from "./dto/update-product-attribute-value.dto";
 import { ApiTags } from "@nestjs/swagger";
+import { AddedImportantDto } from "./dto/added-important.dto";
 
 @Controller("product-attributes")
 @ApiTags("10 - 🧲 Product Attributes")
@@ -21,6 +22,11 @@ export class ProductAttributeValueController {
     return this.pavService.findByProduct(productId);
   }
 
+  @Patch("important")
+  updateImportant(@Body() data: AddedImportantDto) {
+    return this.pavService.addedImportant(data);
+  }
+
   @Patch(":id")
   async update(
     @Param("productId", ParseIntPipe) productId: number,
@@ -29,13 +35,6 @@ export class ProductAttributeValueController {
   ) {
     return this.pavService.update(productId, attributeId, dto);
   }
-
-  @Patch(":id/important")
-  updateImportant(@Param("id", ParseIntPipe) id: number, @Body() data: UpdateProductAttributeValueDto) {
-    console.log(data);
-    return this.pavService.addedImportant(id, data.isImportant ?? false);
-  }
-
 
 
   @Patch(':id/order')

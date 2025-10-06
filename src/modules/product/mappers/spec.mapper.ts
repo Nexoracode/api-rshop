@@ -16,14 +16,14 @@ type SpecAttributeOut = {
     isPublic: boolean;
     isVariant: boolean;
     displayOrder: number | null;
+    isImportant: boolean | null;
     values: SpecValueOut[];
 };
 
 type SpecGroupOut = {
-    id: number | null;           // اگه گروه نداشته باشه
+    id: number | null;         // اگه گروه نداشته باشه
     name: string;               // نام گروه
     slug: string | null;
-    isImportant?: boolean; // برای آینده
     displayOrder: number | null;
     attributes: SpecAttributeOut[];
 };
@@ -35,7 +35,6 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
         title: string;
         slug: string | null;
         displayOrder: number | null;
-        isImportant?: boolean;
         attrMap: Map<number, SpecAttributeOut>;
     }>();
 
@@ -48,7 +47,6 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
                 id: group?.id ?? null,
                 title: group?.name ?? "سایر مشخصات",
                 slug: (group as any)?.slug ?? null,
-                isImportant: (group as any)?.isImportant ?? false,
                 displayOrder: (group as any)?.displayOrder ?? null,
                 attrMap: new Map<number, SpecAttributeOut>(),
             });
@@ -60,6 +58,7 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
         const attrId = spec.attribute.id;
         if (!g.attrMap.has(attrId)) {
             g.attrMap.set(attrId, {
+                isImportant: null,
                 id: attrId,
                 name: spec.attribute.name,
                 slug: (spec.attribute as any).slug ?? "",
@@ -75,6 +74,7 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
 
         // مقدارها: هم value از جدول و هم customValue
         if (spec.value) {
+            a.isImportant = (spec as any).isImportant ?? false;
             a.values.push({
                 id: spec.value.id,
                 value: spec.value.value,
@@ -122,7 +122,6 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
             name: g.title,
             slug: g.slug,
             displayOrder: g.displayOrder,
-            isImportant: g.isImportant,
             attributes,
         });
     }

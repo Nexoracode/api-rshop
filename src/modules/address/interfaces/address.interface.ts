@@ -10,4 +10,10 @@ export interface IAddress {
     user: User,
     createdAt: Date;
     updatedAt: Date;
+    addressName?: string;
+    recipientName?: string
+    recipientPhone?: string
+    plaque?: string;
+    unit?: string;
+    isSelf: boolean;
 }

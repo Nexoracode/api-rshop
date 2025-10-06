@@ -2325,6 +2325,30 @@
         ]
       }
     },
+    "/api/product-attributes/important": {
+      "patch": {
+        "operationId": "ProductAttributeValueController_updateImportant",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddedImportantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
     "/api/product-attributes/{id}": {
       "patch": {
         "operationId": "ProductAttributeValueController_update",
@@ -2377,39 +2401,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "10 - 🧲 Product Attributes"
-        ]
-      }
-    },
-    "/api/product-attributes/{id}/important": {
-      "patch": {
-        "operationId": "ProductAttributeValueController_updateImportant",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProductAttributeValueDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": ""
@@ -2753,7 +2744,7 @@
         "properties": {
           "city": {
             "type": "string",
-            "default": "tehran"
+            "default": "مشهد"
           },
           "province": {
             "type": "string",
@@ -2761,22 +2752,52 @@
           },
           "address_line": {
             "type": "string",
-            "default": "آدرس کامل"
+            "default": "بلوار الهیه، الهیه 22"
+          },
+          "plaque": {
+            "type": "string",
+            "default": "20"
+          },
+          "unit": {
+            "type": "string",
+            "default": "32"
+          },
+          "address_name": {
+            "type": "string",
+            "default": null
+          },
+          "recipient_name": {
+            "type": "string",
+            "default": null
+          },
+          "recipient_phone": {
+            "type": "string",
+            "default": null
           },
           "postal_code": {
             "type": "string",
             "default": "9952365214"
           },
+          "is_self": {
+            "type": "boolean",
+            "default": true
+          },
           "is_primary": {
             "type": "boolean",
-            "default": false
+            "default": true
           }
         },
         "required": [
           "city",
           "province",
           "address_line",
+          "plaque",
+          "unit",
+          "address_name",
+          "recipient_name",
+          "recipient_phone",
           "postal_code",
+          "is_self",
           "is_primary"
         ]
       },
@@ -2785,7 +2806,7 @@
         "properties": {
           "city": {
             "type": "string",
-            "default": "tehran"
+            "default": "مشهد"
           },
           "province": {
             "type": "string",
@@ -2793,15 +2814,39 @@
           },
           "address_line": {
             "type": "string",
-            "default": "آدرس کامل"
+            "default": "بلوار الهیه، الهیه 22"
+          },
+          "plaque": {
+            "type": "string",
+            "default": "20"
+          },
+          "unit": {
+            "type": "string",
+            "default": "32"
+          },
+          "address_name": {
+            "type": "string",
+            "default": null
+          },
+          "recipient_name": {
+            "type": "string",
+            "default": null
+          },
+          "recipient_phone": {
+            "type": "string",
+            "default": null
           },
           "postal_code": {
             "type": "string",
             "default": "9952365214"
           },
+          "is_self": {
+            "type": "boolean",
+            "default": true
+          },
           "is_primary": {
             "type": "boolean",
-            "default": false
+            "default": true
           }
         }
       },
@@ -3544,6 +3589,29 @@
           "productId",
           "attributeId",
           "isImportant"
+        ]
+      },
+      "AddedImportantDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "attribute_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "important": {
+            "type": "boolean",
+            "example": true,
+            "description": "وضعیت مهم بودن ویژگی"
+          }
+        },
+        "required": [
+          "product_id",
+          "attribute_id",
+          "important"
         ]
       },
       "UpdateProductAttributeValueDto": {

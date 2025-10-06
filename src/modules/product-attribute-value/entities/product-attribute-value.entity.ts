@@ -17,6 +17,12 @@ export class ProductAttributeValue {
     @JoinColumn({ name: "attribute_id" })
     attribute: Attribute;
 
+    @Column({ name: 'attribute_id' })
+    attributeId: number;
+
+    @Column({ name: 'product_id' })
+    productId: number;
+
     @ManyToOne(() => AttributeValue, { eager: true, nullable: true })
     @JoinColumn({ name: "value_id" })
     value: AttributeValue | null;

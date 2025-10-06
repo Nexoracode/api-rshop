@@ -13,8 +13,26 @@ export class Address implements IAddress {
     @Column()
     province: string;
 
-    @Column({ name: 'address_line' })
+    @Column({ nullable: true })
+    plaque?: string;
+
+    @Column({ nullable: true })
+    unit?: string;
+
+    @Column({ name: 'address_line', nullable: true })
     addressLine: string;
+
+    @Column({ name: 'address_name', nullable: true })
+    addressName: string;
+
+    @Column({ name: 'recipient_name', nullable: true })
+    recipientName: string
+
+    @Column({ name: 'recipient_phone', nullable: true })
+    recipientPhone: string
+
+    @Column({ name: 'is_self', default: true })
+    isSelf: boolean;
 
     @Column({ unique: true, name: 'postal_code' })
     postalCode: string;
@@ -25,6 +43,9 @@ export class Address implements IAddress {
     @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;
+
+    @Column({ type: 'int', name: 'user_id' })
+    userId: number;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
