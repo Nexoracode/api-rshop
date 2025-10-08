@@ -1079,6 +1079,7 @@
     },
     "/api/product/update/bulk": {
       "patch": {
+        "description": "با استفاده از این متد می‌توانید چند محصول را به‌صورت همزمان ویرایش کنید. می‌توانید وضعیت نمایش، ویژه بودن، قیمت، یا تخفیف درصدی/مبلغی را تغییر دهید.\n\n تغییر وضعیت قیمت : PriceMode\n\nset : قیمت جدید \n\n increase : افزایش قیمت\n\n decrease : کاهش قیمت",
         "operationId": "ProductController_updateBulk",
         "parameters": [],
         "requestBody": {
@@ -1096,6 +1097,7 @@
             "description": ""
           }
         },
+        "summary": "ویرایش گروهی محصولات (ادمین)",
         "tags": [
           "08 - 📦 Products"
         ]
@@ -3509,29 +3511,42 @@
               "type": "number"
             }
           },
-          "is_visible": {
+          "isVisible": {
             "type": "boolean",
-            "default": false
+            "example": true
           },
-          "is_featured": {
+          "isFeatured": {
             "type": "boolean",
-            "default": false
+            "example": false
           },
-          "is_same_day_shipping": {
-            "type": "boolean",
-            "default": false
+          "discountPercent": {
+            "type": "number",
+            "example": 10,
+            "description": "درصد تخفیف (مثلاً 10 برای 10٪)"
           },
-          "is_limited_stock": {
-            "type": "boolean",
-            "default": false
+          "discountAmount": {
+            "type": "number",
+            "example": 20000,
+            "description": "مبلغ تخفیف ثابت (به تومان)"
+          },
+          "priceMode": {
+            "type": "string",
+            "example": "increase",
+            "enum": [
+              "set",
+              "increase",
+              "decrease"
+            ],
+            "description": "نوع تغییر قیمت: set | increase | decrease"
+          },
+          "priceValue": {
+            "type": "number",
+            "example": 50000,
+            "description": "مقدار قیمت جدید یا تغییر قیمت"
           }
         },
         "required": [
-          "ids",
-          "is_visible",
-          "is_featured",
-          "is_same_day_shipping",
-          "is_limited_stock"
+          "ids"
         ]
       },
       "DeleteProductsDto": {

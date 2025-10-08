@@ -96,13 +96,12 @@ export class ProductService implements IProductService {
             if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = await manager.findOne(Category, { where: { id: data.categoryId } });
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-            console.log('helperId', data.helperId);
-            if (data.helperId) {
+            if (data.helperId && data.helperId !== 0) {
                 const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
                 if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
             }
             const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
-            if (!brand) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
             const product = manager.create(Product, data);
             if (!data.requiresPreparation) {
                 product.preparationDays = null;
@@ -135,10 +134,12 @@ export class ProductService implements IProductService {
             if (duplicate && duplicate.id !== id) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = manager.findOne(Category, { where: { id: data.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-            const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
-            if (!helper) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            if (data.helperId && data.helperId !== 0) {
+                const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
+                if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
+            }
             const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
-            if (!brand) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
             const updated = manager.merge(Product, product, data);
             if (!data.requiresPreparation) {
                 updated.preparationDays = null;
@@ -159,23 +160,65 @@ export class ProductService implements IProductService {
     async updateBulk(ids: number[], dto: UpdateBulkDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             const products = await manager.find(Product, { where: { id: In(ids) }, relations });
-            if (!products.length) throw new NotFoundException('محصولات مورد نظر یافت نشدند.');
-            const updatedProductsData = products.map(product => {
+            if (!products.length) throw new NotFoundException("محصولات مورد نظر یافت نشدند.");
+
+            const updatedProductsData = products.map((product) => {
+                const basePrice = Number(product.price) || 0;
+                const delta = Number(dto.priceValue) || 0;
+                let newPrice = basePrice;
+
+                // 🔹 تغییر قیمت
+                if (dto.priceValue != null && dto.priceMode) {
+                    switch (dto.priceMode) {
+                        case "set":
+                            newPrice = delta;
+                            break;
+                        case "increase":
+                            newPrice = basePrice + delta;
+                            break;
+                        case "decrease":
+                            newPrice = Math.max(0, basePrice - delta);
+                            break;
+                    }
+                }
+
+                if (Number.isNaN(newPrice)) {
+                    throw new BadRequestException("مقدار قیمت نامعتبر است.");
+                }
+
+                // 🔹 تخفیف‌ها (درصدی یا مبلغی)
+                let discountPercent = Number(product.discountPercent) || 0;
+                let discountAmount = Number(product.discountAmount) || 0;
+
+                if (dto.discountPercent != null) {
+                    discountPercent = dto.discountPercent;
+                    discountAmount = 0; // ✅ چون نوع درصدی انتخاب شده
+                } else if (dto.discountAmount != null) {
+                    discountAmount = dto.discountAmount;
+                    discountPercent = 0; // ✅ چون نوع مبلغی انتخاب شده
+                }
+
+                // ✅ جلوگیری از محدوده غیرمجاز قیمت
+                if (newPrice > 999999999.99)
+                    throw new BadRequestException("مقدار قیمت از محدوده مجاز بیشتر است.");
+
                 return manager.merge(Product, product, {
                     isVisible: dto.isVisible ?? product.isVisible,
                     isFeatured: dto.isFeatured ?? product.isFeatured,
-                    isSameDayShipping: dto.isSameDayShipping ?? product.isSameDayShipping,
-                    isLimitedStock: dto.isLimitedStock ?? product.isLimitedStock,
-                    stock: dto.isLimitedStock === false ? 0 : product.stock,
+                    price: newPrice,
+                    discountPercent,
+                    discountAmount,
                 });
             });
+
             await manager.save(Product, updatedProductsData);
             const updatedProducts = await manager.find(Product, { where: { id: In(ids) }, relations });
+
             return {
-                message: 'محصولات با موفقیت ویرایش شدند.',
-                data: updatedProducts
-            }
-        })
+                message: "محصولات با موفقیت ویرایش شدند.",
+                data: updatedProducts.map((p) => ProductMapper.toResponse(p, { cartesian: true })),
+            };
+        });
     }
 
     async remove(id: number): Promise<Object> {

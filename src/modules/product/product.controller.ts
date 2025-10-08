@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MediaType } from 'src/common/enums/media.enum';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaService } from '../media/media.service';
@@ -73,6 +73,12 @@ export class ProductController {
         return this.productService.findOneForSite(id);
     }
 
+    @ApiOperation({
+        summary: "ویرایش گروهی محصولات (ادمین)",
+        description:
+            "با استفاده از این متد می‌توانید چند محصول را به‌صورت همزمان ویرایش کنید. \
+می‌توانید وضعیت نمایش، ویژه بودن، قیمت، یا تخفیف درصدی/مبلغی را تغییر دهید.\n\n تغییر وضعیت قیمت : PriceMode\n\nset : قیمت جدید \n\n increase : افزایش قیمت\n\n decrease : کاهش قیمت",
+    })
     @Patch('update/bulk')
     updateBulk(@Body() dto: UpdateBulkDto) {
         return this.productService.updateBulk(dto.ids, dto);
