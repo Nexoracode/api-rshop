@@ -2,17 +2,7 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDat
 import { User } from '../../user/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 import { Invoice } from 'src/modules/invoice/entities/invoice.entity';
-
-
-export enum OrderStatus {
-    PENDING = "pending",      // در انتظار پرداخت
-    PAID = "paid",            // پرداخت‌شده
-    CANCELLED = "cancelled",  // لغوشده
-    SHIPPED = "shipped",      // ارسال‌شده
-    DELIVERED = "delivered",  // تحویل‌شده
-    REFUNDED = "refunded",    // بازگشت وجه
-}
-
+import { OrderStatus } from '../enums/order-status.enum';
 
 @Entity('orders')
 export class Order {
@@ -57,7 +47,6 @@ export class Order {
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     couponDiscountAmount?: number;
-
 
 
     @CreateDateColumn()

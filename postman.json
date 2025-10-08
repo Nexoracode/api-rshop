@@ -1,6 +1,31 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/helpers/upload": {
+      "post": {
+        "operationId": "HelperController_uploadImages",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "List of helpers",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "11 - 🆘 Helpers"
+        ]
+      }
+    },
     "/api/helpers": {
       "post": {
         "operationId": "HelperController_addHelper",
@@ -1811,6 +1836,31 @@
         ]
       }
     },
+    "/api/brand/upload": {
+      "post": {
+        "operationId": "BrandController_uploadImages",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "List of brands",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFilesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "12 - 🎟 Brands"
+        ]
+      }
+    },
     "/api/brand": {
       "post": {
         "operationId": "BrandController_create",
@@ -2751,6 +2801,71 @@
           "Coupon Management"
         ]
       }
+    },
+    "/api/payment/create": {
+      "post": {
+        "operationId": "PaymentController_createPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "ایجاد لینک پرداخت برای سفارش",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/api/payment/verify": {
+      "post": {
+        "operationId": "PaymentController_verifyPayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "Authority",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "تأیید پرداخت بعد از بازگشت از درگاه",
+        "tags": [
+          "Payment"
+        ]
+      }
     }
   },
   "info": {
@@ -2828,6 +2943,21 @@
   "servers": [],
   "components": {
     "schemas": {
+      "UploadFilesDto": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        },
+        "required": [
+          "files"
+        ]
+      },
       "CreateHelperDto": {
         "type": "object",
         "properties": {
@@ -3118,21 +3248,6 @@
             "default": true
           }
         }
-      },
-      "UploadFilesDto": {
-        "type": "object",
-        "properties": {
-          "files": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            }
-          }
-        },
-        "required": [
-          "files"
-        ]
       },
       "CreateCategoryDto": {
         "type": "object",
@@ -3847,7 +3962,8 @@
               "cancelled",
               "shipped",
               "delivered",
-              "refunded"
+              "refunded",
+              "failed"
             ],
             "example": "pending"
           }
@@ -4142,6 +4258,31 @@
           "code",
           "user_id",
           "total_amount"
+        ]
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 100000,
+            "description": "مبلغ پرداخت (تومان)"
+          },
+          "order_id": {
+            "type": "number",
+            "example": 123,
+            "description": "شناسه سفارش"
+          },
+          "callback": {
+            "type": "string",
+            "example": "https://your-site.com/payment/verify",
+            "description": "آدرس بازگشت از درگاه"
+          }
+        },
+        "required": [
+          "amount",
+          "order_id",
+          "callback"
         ]
       }
     }

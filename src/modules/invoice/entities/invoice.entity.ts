@@ -9,14 +9,7 @@ import {
 } from "typeorm";
 import { Order } from "src/modules/order/entities/order.entity";
 import { User } from "src/modules/user/entities/user.entity";
-
-export enum InvoiceStatus {
-    UNPAID = "unpaid",          // در انتظار پرداخت
-    PAID = "paid",              // پرداخت‌شده
-    FAILED = "failed",          // ناموفق
-    REFUNDED = "refunded",      // بازگشت وجه
-    CANCELED = "canceled",      // لغوشده
-}
+import { InvoiceStatus } from "../enums/invoice-status.enum";
 
 @Entity("invoices")
 export class Invoice {
@@ -40,23 +33,25 @@ export class Invoice {
     userId: number;
 
     // 💰 جمع مبلغ‌ها
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    @Column({ type: 'bigint' })
     subtotal: number;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+
+    @Column({ type: 'bigint', default: 0 })
     discountTotal: number;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+
+    @Column({ type: 'bigint' })
     total: number;
 
     // 🎟 فیلدهای مرتبط با کوپن
     @Column({ nullable: true })
     couponCode?: string;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     couponDiscountAmount?: number;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    @Column({ type: "bigint" })
     totalPayable?: number;
 
     // 💳 وضعیت پرداخت (پرداخت‌شده / در انتظار / لغو)

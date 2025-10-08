@@ -5,7 +5,6 @@ import { CreateOrderFromCardDto } from './dto/create-from-card.dto';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { ApiTags } from '@nestjs/swagger';
-import { OrderStatus } from './entities/order.entity';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 

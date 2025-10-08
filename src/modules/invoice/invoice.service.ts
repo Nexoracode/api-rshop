@@ -3,9 +3,10 @@ import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 
-import { Invoice, InvoiceStatus } from "./entities/invoice.entity";
+import { Invoice } from "./entities/invoice.entity";
 import { Order } from "../order/entities/order.entity";
 import { User } from "../user/entities/user.entity";
+import { InvoiceStatus } from "./enums/invoice-status.enum";
 
 @Injectable()
 export class InvoiceService {

@@ -6,7 +6,7 @@ import {
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, In, Repository } from "typeorm";
 
-import { Order, OrderStatus } from "./entities/order.entity";
+import { Order } from "./entities/order.entity";
 import { OrderItem } from "./entities/order-item.entity";
 import { Card, CardStatus } from "../card/entities/card.entity";
 import { CardItem } from "../card/entities/card-item.entity";
@@ -15,6 +15,7 @@ import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { CreateOrderFromCardDto } from "./dto/create-from-card.dto";
 import { CouponService } from "../coupon/coupon.service";
 import { paginate, PaginateQuery } from "nestjs-paginate";
+import { OrderStatus } from "./enums/order-status.enum";
 
 @Injectable()
 export class OrderService {
