@@ -17,13 +17,13 @@ export class MediaService {
 
     async uploadFile(files: Express.Multer.File[], context: MediaType) {
         if (!files || files.length === 0) throw new BadRequestException('فایلی ارسال نشده است');
-        const maxFiles = context === MediaType.CATEGORY ? 1 : 10;
+        const maxFiles = context === (MediaType.CATEGORY || MediaType.BRAND || MediaType.HELPER) ? 1 : 10;
         if (files.length > maxFiles) throw new BadRequestException(`حداکثر فایل مجاز : ${maxFiles}`);
         const uploaded: Media[] = [];
         for (const file of files) {
             const ext = file.originalname.split('.').pop();
             const format = file.mimetype.split('/')[0];
-            if (context === MediaType.CATEGORY && format !== 'image') throw new BadRequestException('فقط عکس مجاز می باشد.');
+            if (context === (MediaType.CATEGORY || MediaType.BRAND || MediaType.HELPER) && format !== 'image') throw new BadRequestException('فقط عکس مجاز می باشد.');
             const filename = `file-${Date.now()}-${Math.floor(Math.random() * 1000)}.${ext}`;
             const url = await this.uploadService.uploadFileToServer(file.buffer, context, filename);
             if (!url || typeof url !== 'string') {

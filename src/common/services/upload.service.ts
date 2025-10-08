@@ -51,11 +51,10 @@ export class UploadService {
                 password: process.env.FTP_PASSWORD,
                 secure: false,
             });
-            if (!filePath.startsWith(MediaType.CATEGORY) && !filePath.startsWith(MediaType.PRODUCT) && !filePath.startsWith(MediaType.USER)) {
+            if (!filePath.startsWith(MediaType.CATEGORY) && !filePath.startsWith(MediaType.PRODUCT) && !filePath.startsWith(MediaType.USER) && !filePath.startsWith(MediaType.BRAND) && !filePath.startsWith(MediaType.HELPER)) {
                 throw new Error('دسترسی غیرمجاز به مسیر فایل');
             }
             await this.client.remove(`Rshop${parsedUrl.pathname}`);
-            console.log('فایل حذف شد:', filePath);
         } catch (err) {
             console.error('خطا در حذف فایل از FTP:', err.message);
             throw new Error('حذف فایل با خطا مواجه شد.');
