@@ -13,7 +13,7 @@ export class CreateCategoryDto {
     @IsNotEmpty()
     slug: string;
 
-    @ApiProperty()
+    @ApiProperty({ name: 'media_id', example: 0 })
     @IsNumber()
     @IsOptional()
     mediaId?: number | null;
@@ -23,6 +23,8 @@ export class CreateCategoryDto {
     @IsOptional()
     discount: string;
 
-    @ApiProperty()
-    parentId: number;
+    @ApiProperty({ name: 'parent_id', example: 0 })
+    @IsNumber()
+    @IsOptional()
+    parentId?: number;
 }

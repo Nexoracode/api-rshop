@@ -1,66 +1,61 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Invoice, InvoiceStatus } from './entities/invoice.entity';
-import { Order, OrderStatus } from '../order/entities/order.entity';
-import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectDataSource } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
+import { runInTransaction } from "src/common/helpers/transaction.helper";
 
-
-function generateInvoiceNumber() {
-    const now = new Date();
-    // نمونه: INV-20250826-123456
-    return `INV-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1_000_000)}`;
-}
+import { Invoice, InvoiceStatus } from "./entities/invoice.entity";
+import { Order } from "../order/entities/order.entity";
+import { User } from "../user/entities/user.entity";
 
 @Injectable()
 export class InvoiceService {
-    constructor(
-        @InjectRepository(Invoice) private readonly invoiceRepo: Repository<Invoice>,
-        @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
-    ) { }
+    constructor(@InjectDataSource() private readonly dataSource: DataSource) { }
 
+    // 🧾 ایجاد فاکتور از سفارش
+    async createFromOrder(orderId: number, user: User) {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId, user: { id: user.id } },
+            });
+            if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
-    async create(dto: CreateInvoiceDto) {
-        const order = await this.orderRepo.findOne({ where: { id: dto.orderId } });
-        if (!order) throw new NotFoundException('سفارش یافت نشد.');
+            const invoice = manager.create(Invoice, {
+                order,
+                user,
+                subtotal: order.subtotal,
+                discountTotal: order.discountTotal,
+                total: order.total,
+                couponCode: order.couponCode,
+                couponDiscountAmount: order.couponDiscountAmount,
+                totalPayable: order.total,
+                status: InvoiceStatus.UNPAID,
+            });
 
-
-        const exists = await this.invoiceRepo.findOne({ where: { order: { id: order.id } } });
-        if (exists) throw new BadRequestException('این فاکتور موجود می باشد.');
-
-
-        const invoice = this.invoiceRepo.create({
-            order,
-            number: generateInvoiceNumber(),
-            status: InvoiceStatus.ISSUED,
-            total: order.total,
-            paidAmount: 0,
+            const invoiceSave = await manager.save(Invoice, invoice);
+            const returnedInvoice = await manager.findOne(Invoice, {
+                where: { id: invoiceSave.id },
+                relations: ["order"],
+            });
+            return returnedInvoice;
         });
-        return this.invoiceRepo.save(invoice);
     }
 
-    async markPaid(invoiceId: string, gatewayRef?: string) {
-        const inv = await this.invoiceRepo.findOne({ where: { id: invoiceId }, relations: ['order'] });
-        if (!inv) throw new NotFoundException('فاکتور یافت نشد.');
-
-
-        inv.status = InvoiceStatus.PAID;
-        inv.paidAmount = inv.total;
-        inv.paidAt = new Date();
-        await this.invoiceRepo.save(inv);
-
-
-        // به‌روزرسانی سفارش
-        inv.order.status = OrderStatus.PAID;
-        if (gatewayRef) (inv.order as any).paymentGatewayRef = gatewayRef;
-        await this.orderRepo.save(inv.order);
-
-
-        return inv;
+    // 📄 مشاهده فاکتور کاربر
+    async getUserInvoices(user: User) {
+        return this.dataSource.getRepository(Invoice).find({
+            where: { user: { id: user.id } },
+            order: { createdAt: "DESC" },
+            relations: ["order"],
+        });
     }
 
-
-    async getByOrder(orderId: string) {
-        return this.invoiceRepo.findOne({ where: { order: { id: orderId } } });
+    // 🔍 جزئیات فاکتور
+    async getInvoice(user: User, id: number) {
+        const invoice = await this.dataSource.getRepository(Invoice).findOne({
+            where: { id, user: { id: user.id } },
+            relations: ["order"],
+        });
+        if (!invoice) throw new NotFoundException("فاکتور یافت نشد.");
+        return invoice;
     }
 }

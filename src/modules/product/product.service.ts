@@ -96,8 +96,11 @@ export class ProductService implements IProductService {
             if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
             const category = await manager.findOne(Category, { where: { id: data.categoryId } });
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-            const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
-            if (!helper) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
+            console.log('helperId', data.helperId);
+            if (data.helperId) {
+                const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
+                if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
+            }
             const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
             if (!brand) throw new NotFoundException('راهنمای تصویر مورد نظر یافت نشد');
             const product = manager.create(Product, data);

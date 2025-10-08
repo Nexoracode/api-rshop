@@ -55,7 +55,7 @@ export class CreateProductDto {
     @IsBoolean()
     isSameDayShipping: boolean;
 
-    @ApiProperty({ name: 'required_preparation', default: false })
+    @ApiProperty({ name: 'requires_preparation', default: false })
     @IsOptional()
     @IsBoolean()
     requiresPreparation: boolean;

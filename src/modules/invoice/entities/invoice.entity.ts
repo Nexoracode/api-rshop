@@ -1,50 +1,72 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, Index, Unique } from 'typeorm';
-import { Order } from '../../order/entities/order.entity';
-
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from "typeorm";
+import { Order } from "src/modules/order/entities/order.entity";
+import { User } from "src/modules/user/entities/user.entity";
 
 export enum InvoiceStatus {
-    DRAFT = 'draft',
-    ISSUED = 'issued',
-    PAID = 'paid',
-    CANCELED = 'canceled',
+    UNPAID = "unpaid",          // در انتظار پرداخت
+    PAID = "paid",              // پرداخت‌شده
+    FAILED = "failed",          // ناموفق
+    REFUNDED = "refunded",      // بازگشت وجه
+    CANCELED = "canceled",      // لغوشده
 }
 
-
-@Entity('invoices')
-@Unique(['number'])
+@Entity("invoices")
 export class Invoice {
     @PrimaryGeneratedColumn()
-    id: string;
+    id: number;
 
-
-    @ManyToOne(() => Order, { nullable: false, onDelete: 'CASCADE' })
-    @Index()
+    // 🧾 ارتباط با سفارش
+    @ManyToOne(() => Order, (order) => order.invoices, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "order_id" })
     order: Order;
 
+    @Column()
+    orderId: number;
 
-    @Column({ type: 'varchar', length: 32 })
-    number: string;
+    // 👤 ارتباط با کاربر
+    @ManyToOne(() => User, (user) => user.invoices, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "user_id" })
+    user: User;
 
-    @Column({ type: 'enum', enum: InvoiceStatus, default: InvoiceStatus.DRAFT })
-    status: InvoiceStatus;
+    @Column()
+    userId: number;
 
+    // 💰 جمع مبلغ‌ها
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    subtotal: number;
 
-    @Column({ type: 'bigint' })
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    discountTotal: number;
+
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
     total: number;
 
+    // 🎟 فیلدهای مرتبط با کوپن
+    @Column({ nullable: true })
+    couponCode?: string;
 
-    @Column({ name: 'paid_amount', type: 'bigint', default: 0 })
-    paidAmount: number;
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    couponDiscountAmount?: number;
 
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    totalPayable?: number;
 
-    @Column({ name: 'paid_at', type: 'timestamp', nullable: true })
-    paidAt?: Date | null;
+    // 💳 وضعیت پرداخت (پرداخت‌شده / در انتظار / لغو)
+    @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.UNPAID })
+    status: InvoiceStatus;
 
-
-    @CreateDateColumn({ name: 'created_at' })
+    // 🕓 تاریخ‌ها
+    @CreateDateColumn()
     createdAt: Date;
 
-
-    @UpdateDateColumn({ name: 'updated_at' })
+    @UpdateDateColumn()
     updatedAt: Date;
 }

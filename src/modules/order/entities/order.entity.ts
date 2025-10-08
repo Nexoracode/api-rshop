@@ -1,25 +1,32 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { OrderItem } from './order-item.entity';
+import { Invoice } from 'src/modules/invoice/entities/invoice.entity';
 
 
 export enum OrderStatus {
-    PENDING = 'pending',
-    PAID = 'paid',
-    CANCELED = 'canceled',
-    FULFILLED = 'fulfilled',
+    PENDING = "pending",      // در انتظار پرداخت
+    PAID = "paid",            // پرداخت‌شده
+    CANCELLED = "cancelled",  // لغوشده
+    SHIPPED = "shipped",      // ارسال‌شده
+    DELIVERED = "delivered",  // تحویل‌شده
+    REFUNDED = "refunded",    // بازگشت وجه
 }
 
 
 @Entity('orders')
 export class Order {
+
     @PrimaryGeneratedColumn()
-    id: string;
+    id: number;
 
 
     @ManyToOne(() => User, (u) => u.orders, { nullable: false, onDelete: 'CASCADE' })
     @Index()
     user: User;
+
+    @OneToMany(() => Invoice, (invoice) => invoice.order)
+    invoices: Invoice[];
 
     @OneToMany(() => OrderItem, (i) => i.order, { cascade: true })
     items: OrderItem[];
@@ -43,6 +50,14 @@ export class Order {
 
     @Column({ type: 'varchar', length: 64, nullable: true })
     paymentGatewayRef?: string | null;
+
+
+    @Column({ nullable: true })
+    couponCode?: string;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    couponDiscountAmount?: number;
+
 
 
     @CreateDateColumn()

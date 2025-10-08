@@ -249,6 +249,7 @@ export class ProductMapper {
             weight: product.weight || null,
             weightUnit: product.weightUnit || null,
             helper: product.helper || null,
+            helperId: product.helperId || null,
             isVisible: product.isVisible || false,
             medias: product.medias ? product.medias.map((m) => ({
                 id: m.id,
@@ -256,6 +257,7 @@ export class ProductMapper {
                 alt: m.altText,
                 type: m.type,
             })) : [],
+            mediaIds: product.medias.length ? product.medias.map((p) => p.id) : [],
             variants,
             specifications: mapSpecificationsGrouped(product.attributeValues || []),
             attribute_nodes,

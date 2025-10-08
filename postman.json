@@ -2147,6 +2147,55 @@
         ]
       }
     },
+    "/api/orders/all": {
+      "get": {
+        "operationId": "OrderController_getAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> No default sorting specified, the result order is not guaranteed\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "15 - 📑 Orders"
+        ]
+      }
+    },
     "/api/orders/from-card": {
       "post": {
         "operationId": "OrderController_createFromCard",
@@ -2171,20 +2220,6 @@
         ]
       }
     },
-    "/api/orders/me": {
-      "get": {
-        "operationId": "OrderController_myOrders",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "15 - 📑 Orders"
-        ]
-      }
-    },
     "/api/orders/{id}": {
       "get": {
         "operationId": "OrderController_getOne",
@@ -2194,7 +2229,28 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "15 - 📑 Orders"
+        ]
+      },
+      "delete": {
+        "operationId": "OrderController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
         ],
@@ -2208,71 +2264,132 @@
         ]
       }
     },
-    "/api/invoices": {
-      "post": {
-        "operationId": "InvoiceController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInvoiceDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "16 - 🔖 Invoices"
-        ]
-      }
-    },
-    "/api/invoices/{id}/paid": {
-      "post": {
-        "operationId": "InvoiceController_paid",
+    "/api/orders/{id}/status": {
+      "patch": {
+        "operationId": "OrderController_updateStatus",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusDto"
+              }
+            }
+          }
+        },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
         "tags": [
-          "16 - 🔖 Invoices"
+          "15 - 📑 Orders"
         ]
       }
     },
-    "/api/invoices/by-order/{orderId}": {
-      "get": {
-        "operationId": "InvoiceController_getByOrder",
+    "/api/invoices/create-from-order/{orderId}": {
+      "post": {
+        "description": "از شناسه سفارش برای ساخت فاکتور استفاده می‌کند.",
+        "operationId": "InvoiceController_create",
         "parameters": [
           {
             "name": "orderId",
             "required": true,
             "in": "path",
             "schema": {
-              "type": "string"
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "فاکتور با موفقیت ایجاد شد.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 15,
+                    "subtotal": 250000,
+                    "discountTotal": 20000,
+                    "couponCode": "WELCOME10",
+                    "couponDiscountAmount": 15000,
+                    "totalPayable": 215000,
+                    "status": "unpaid",
+                    "createdAt": "2025-10-05T10:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "ایجاد فاکتور از سفارش (کاربر)",
+        "tags": [
+          "16 - 🔖 Invoices"
+        ]
+      }
+    },
+    "/api/invoices": {
+      "get": {
+        "description": "تمام فاکتورهای مرتبط با کاربر جاری را برمی‌گرداند.",
+        "operationId": "InvoiceController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "لیست فاکتورها برگردانده شد."
+          }
+        },
+        "summary": "دریافت لیست فاکتورهای کاربر",
+        "tags": [
+          "16 - 🔖 Invoices"
+        ]
+      }
+    },
+    "/api/invoices/{id}": {
+      "get": {
+        "description": "نمایش جزئیات کامل یک فاکتور بر اساس شناسه.",
+        "operationId": "InvoiceController_getOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "فاکتور با موفقیت دریافت شد.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 15,
+                    "subtotal": 250000,
+                    "discountTotal": 20000,
+                    "couponCode": "WELCOME10",
+                    "couponDiscountAmount": 15000,
+                    "totalPayable": 215000,
+                    "status": "unpaid",
+                    "createdAt": "2025-10-05T10:00:00Z"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "جزئیات یک فاکتور خاص",
         "tags": [
           "16 - 🔖 Invoices"
         ]
@@ -2480,6 +2597,158 @@
         },
         "tags": [
           "10 - 🧲 Product Attributes"
+        ]
+      }
+    },
+    "/api/coupon": {
+      "post": {
+        "operationId": "CouponController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "کد تخفیف با موفقیت ایجاد شد."
+          }
+        },
+        "summary": "ایجاد کد تخفیف جدید (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "get": {
+        "operationId": "CouponController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "مشاهده‌ی همه‌ی کدهای تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      }
+    },
+    "/api/coupon/{id}": {
+      "patch": {
+        "operationId": "CouponController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "کد تخفیف با موفقیت ویرایش شد."
+          }
+        },
+        "summary": "ویرایش کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "get": {
+        "operationId": "CouponController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "نمایش جزئیات یک کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "delete": {
+        "operationId": "CouponController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "کد تخفیف با موفقیت حذف شد."
+          }
+        },
+        "summary": "حذف یک کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      }
+    },
+    "/api/coupon/apply": {
+      "post": {
+        "operationId": "CouponController_apply",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "کد تخفیف معتبر و مبلغ تخفیف محاسبه شد.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "couponCode": "WELCOME10",
+                    "discount": 25000,
+                    "payable": 225000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "اعمال کد تخفیف (کاربر)",
+        "tags": [
+          "Coupon Management"
         ]
       }
     }
@@ -2874,22 +3143,24 @@
           "slug": {
             "type": "string"
           },
-          "mediaId": {
-            "type": "object"
+          "media_id": {
+            "type": "object",
+            "example": 0
           },
           "discount": {
             "type": "string"
           },
-          "parentId": {
-            "type": "number"
+          "parent_id": {
+            "type": "number",
+            "example": 0
           }
         },
         "required": [
           "title",
           "slug",
-          "mediaId",
+          "media_id",
           "discount",
-          "parentId"
+          "parent_id"
         ]
       },
       "UpdateCategoryDto": {
@@ -2901,14 +3172,16 @@
           "slug": {
             "type": "string"
           },
-          "mediaId": {
-            "type": "object"
+          "media_id": {
+            "type": "object",
+            "example": 0
           },
           "discount": {
             "type": "string"
           },
-          "parentId": {
-            "type": "number"
+          "parent_id": {
+            "type": "number",
+            "example": 0
           }
         }
       },
@@ -2959,7 +3232,7 @@
             "type": "boolean",
             "default": false
           },
-          "required_preparation": {
+          "requires_preparation": {
             "type": "boolean",
             "default": false
           },
@@ -3009,7 +3282,7 @@
           "weight",
           "weight_unit",
           "is_some_day_shipping",
-          "required_preparation",
+          "requires_preparation",
           "preparation_days",
           "description",
           "order_limit",
@@ -3067,7 +3340,7 @@
             "type": "boolean",
             "default": false
           },
-          "required_preparation": {
+          "requires_preparation": {
             "type": "boolean",
             "default": false
           },
@@ -3552,17 +3825,35 @@
       },
       "CreateOrderFromCardDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "note": {
+            "type": "string",
+            "example": "لطفا بسته رو بین ساعات 6-8 ارسال کنین. ممنون"
+          },
+          "couponCode": {
+            "type": "string",
+            "example": "WELCOME10"
+          }
+        }
       },
-      "CreateInvoiceDto": {
+      "UpdateStatusDto": {
         "type": "object",
         "properties": {
-          "orderId": {
-            "type": "number"
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "cancelled",
+              "shipped",
+              "delivered",
+              "refunded"
+            ],
+            "example": "pending"
           }
         },
         "required": [
-          "orderId"
+          "status"
         ]
       },
       "CreateProductAttributeValueDto": {
@@ -3634,6 +3925,224 @@
             "example": false
           }
         }
+      },
+      "CreateCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "WELCOME10",
+            "description": "کد تخفیف یکتا"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "fixed"
+            ],
+            "example": "percent"
+          },
+          "amount": {
+            "type": "number",
+            "example": 10,
+            "description": "مقدار تخفیف (درصد یا مبلغ ثابت)"
+          },
+          "mid_order_amount": {
+            "type": "number",
+            "example": 100000,
+            "description": "حداقل مبلغ سفارش برای فعال شدن کد"
+          },
+          "max_discount_amount": {
+            "type": "number",
+            "example": 50000,
+            "description": "حداکثر مبلغ تخفیف (در درصدی‌ها)"
+          },
+          "start_date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-03-01T00:00:00Z",
+            "description": "زمان شروع اعتبار کد"
+          },
+          "end_date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-04-01T00:00:00Z",
+            "description": "زمان پایان اعتبار کد"
+          },
+          "usage_limit": {
+            "type": "number",
+            "example": 50,
+            "description": "حداکثر تعداد استفاده از کد"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true,
+            "description": "فعال بودن کد تخفیف"
+          },
+          "for_first_order": {
+            "type": "boolean",
+            "example": true,
+            "description": "آیا مخصوص اولین سفارش است؟"
+          },
+          "allowed_user_ids": {
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "شناسه کاربران مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_product_ids": {
+            "example": [
+              4,
+              5
+            ],
+            "description": "شناسه محصولات مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_category_ids": {
+            "example": [
+              10,
+              12
+            ],
+            "description": "شناسه دسته‌های مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "amount"
+        ]
+      },
+      "UpdateCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "WELCOME10",
+            "description": "کد تخفیف یکتا"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "fixed"
+            ],
+            "example": "percent"
+          },
+          "amount": {
+            "type": "number",
+            "example": 10,
+            "description": "مقدار تخفیف (درصد یا مبلغ ثابت)"
+          },
+          "mid_order_amount": {
+            "type": "number",
+            "example": 100000,
+            "description": "حداقل مبلغ سفارش برای فعال شدن کد"
+          },
+          "max_discount_amount": {
+            "type": "number",
+            "example": 50000,
+            "description": "حداکثر مبلغ تخفیف (در درصدی‌ها)"
+          },
+          "start_date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-03-01T00:00:00Z",
+            "description": "زمان شروع اعتبار کد"
+          },
+          "end_date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-04-01T00:00:00Z",
+            "description": "زمان پایان اعتبار کد"
+          },
+          "usage_limit": {
+            "type": "number",
+            "example": 50,
+            "description": "حداکثر تعداد استفاده از کد"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true,
+            "description": "فعال بودن کد تخفیف"
+          },
+          "for_first_order": {
+            "type": "boolean",
+            "example": true,
+            "description": "آیا مخصوص اولین سفارش است؟"
+          },
+          "allowed_user_ids": {
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "شناسه کاربران مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_product_ids": {
+            "example": [
+              4,
+              5
+            ],
+            "description": "شناسه محصولات مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_category_ids": {
+            "example": [
+              10,
+              12
+            ],
+            "description": "شناسه دسته‌های مجاز",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ApplyCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "WELCOME10",
+            "description": "کد تخفیف واردشده توسط کاربر"
+          },
+          "user_id": {
+            "type": "number",
+            "example": 1,
+            "description": "شناسه کاربر"
+          },
+          "total_amount": {
+            "type": "number",
+            "example": 250000,
+            "description": "مجموع مبلغ سبد خرید"
+          }
+        },
+        "required": [
+          "code",
+          "user_id",
+          "total_amount"
+        ]
       }
     }
   }

@@ -23,6 +23,7 @@ import { OrderModule } from './modules/order/order.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { ProductAttributeValueModule } from './modules/product-attribute-value/product-attribute-value.module';
 import { CatalogModule } from './modules/catalogs/catalog.module';
+import { CouponModule } from './modules/coupon/coupon.module';
 
 
 @Module({
@@ -48,6 +49,7 @@ import { CatalogModule } from './modules/catalogs/catalog.module';
     OrderModule,
     InvoiceModule,
     ProductAttributeValueModule,
+    CouponModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService],

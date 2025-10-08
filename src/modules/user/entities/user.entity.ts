@@ -6,6 +6,7 @@ import { IUser } from "../interfaces/user.interface";
 import { Media } from "src/modules/media/entities/image.entity";
 import { Card } from "src/modules/card/entities/card.entity";
 import { Order } from "src/modules/order/entities/order.entity";
+import { Invoice } from "src/modules/invoice/entities/invoice.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -55,6 +56,9 @@ export class User implements IUser {
 
     @OneToMany(() => Order, (c) => c.user)
     orders: Order[];
+
+    @OneToMany(() => Invoice, (invoice) => invoice.user)
+    invoices: Invoice[];
 
     @Column({ name: 'is_active', default: true })
     isActive: boolean;
