@@ -20,6 +20,12 @@ export class UpdateBulkDto {
     @Type(() => Number)
     ids: number[];
 
+    @ApiProperty({ name: 'category_id', example: 1, required: false })
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    categoryId?: number;
+
     @ApiPropertyOptional({ example: true })
     @IsOptional()
     @IsBoolean()
