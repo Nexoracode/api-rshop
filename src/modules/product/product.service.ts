@@ -162,6 +162,17 @@ export class ProductService implements IProductService {
             const products = await manager.find(Product, { where: { id: In(ids) }, relations });
             if (!products.length) throw new NotFoundException("محصولات مورد نظر یافت نشدند.");
 
+            if (dto.categoryId) {
+                const category = await manager.findOne(Category, { where: { id: dto.categoryId } });
+                if (!category) {
+                    throw new NotFoundException('دسته مورد نظر یافت نشد.');
+                }
+            }
+
+            if (dto.discountAmount && dto.discountPercent) {
+                throw new BadRequestException('نمی توان همزمان تخفیف قیمت ثابت و درصدی را وارد کرد.');
+            }
+
             const updatedProductsData = products.map((product) => {
                 const basePrice = Number(product.price) || 0;
                 const delta = Number(dto.priceValue) || 0;
@@ -208,6 +219,7 @@ export class ProductService implements IProductService {
                     price: newPrice,
                     discountPercent,
                     discountAmount,
+                    category: dto.categoryId ? { id: dto.categoryId } : product.category
                 });
             });
 
