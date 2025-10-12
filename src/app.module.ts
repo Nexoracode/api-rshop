@@ -25,6 +25,7 @@ import { ProductAttributeValueModule } from './modules/product-attribute-value/p
 import { CatalogModule } from './modules/catalogs/catalog.module';
 import { CouponModule } from './modules/coupon/coupon.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { PaymentLogModule } from './modules/payment/payment-log.module';
 
 
 @Module({
@@ -52,6 +53,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     ProductAttributeValueModule,
     CouponModule,
     PaymentModule,
+    PaymentLogModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService],

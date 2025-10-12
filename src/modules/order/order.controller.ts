@@ -7,6 +7,7 @@ import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { CreateManualOrderDto } from './dto/create-order.dto';
 
 @ApiTags('15 - 📑 Orders')
 @UseGuards(AccessGuard)
@@ -17,11 +18,22 @@ export class OrderController {
   @Get('all')
   @ApiPaginationQuery({
     paginationType: PaginationType.CURSOR,
-    sortableColumns: ['id'],
-    filterableColumns: {}
+    sortableColumns: ['id', 'createdAt', 'total'],
+    searchableColumns: ['id', 'user.id', 'user.firstName', 'user.lastName', 'items.product.name'],
+    filterableColumns: {
+      status: [FilterOperator.EQ],
+      'user.addresses.city': [FilterOperator.EQ],
+      createdAt: [FilterOperator.GTE, FilterOperator.LTE]
+    },
   })
   getAll(@Paginate() query: PaginateQuery) {
     return this.orderService.getAllOrders(query);
+  }
+
+  @Post("manual")
+  @UseGuards(AccessGuard)
+  async createManualOrder(@Body() dto: CreateManualOrderDto) {
+    return this.orderService.createManualOrder(dto);
   }
 
   @Post('from-card')

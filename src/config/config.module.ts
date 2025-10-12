@@ -6,10 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessStrategy } from 'src/common/guard/access.strategy';
 import { RefreshStrategy } from 'src/common/guard/refresh.strategy';
 import { AuthModule } from 'src/modules/auth/auth.module';
-import { APP_GUARD, Reflector } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtUtil } from 'src/common/utils/jwt.util';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
+import { ZarinpalExceptionFilter } from 'src/common/exceptions/zarinpal-exception.filter';
 
 @Module({
     imports: [
@@ -29,6 +30,10 @@ import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
         })
     ],
     providers: [
+        {
+            provide: APP_FILTER,
+            useClass: ZarinpalExceptionFilter,
+        },
         {
             provide: APP_GUARD,
             useFactory: (configService: JwtUtil, authService: AuthService, reflector: Reflector) => new AutoRefreshGuard(configService, authService, reflector),

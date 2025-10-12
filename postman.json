@@ -2222,24 +2222,109 @@
             }
           },
           {
+            "name": "filter.status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status query param.\n          <p>\n             <b>Format: </b> filter.status={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.status=$not:$like:John Doe&filter.status=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.user.addresses.city",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user.addresses.city query param.\n          <p>\n             <b>Format: </b> filter.user.addresses.city={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.user.addresses.city=$not:$like:John Doe&filter.user.addresses.city=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.createdAt",
+            "required": false,
+            "in": "query",
+            "description": "Filter by createdAt query param.\n          <p>\n             <b>Format: </b> filter.createdAt={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.createdAt=$not:$like:John Doe&filter.createdAt=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "sortBy",
             "required": false,
             "in": "query",
-            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> No default sorting specified, the result order is not guaranteed\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li></ul>\n      ",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> No default sorting specified, the result order is not guaranteed\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>createdAt</li>\n<li>total</li></ul>\n      ",
             "schema": {
               "type": "array",
               "items": {
                 "type": "string",
                 "enum": [
                   "id:ASC",
-                  "id:DESC"
+                  "id:DESC",
+                  "createdAt:ASC",
+                  "createdAt:DESC",
+                  "total:ASC",
+                  "total:DESC"
                 ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> id,user.id,user.firstName,user.lastName,items.product.name\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>id</li>\n<li>user.id</li>\n<li>user.firstName</li>\n<li>user.lastName</li>\n<li>items.product.name</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
               }
             }
           }
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "15 - 📑 Orders"
+        ]
+      }
+    },
+    "/api/orders/manual": {
+      "post": {
+        "operationId": "OrderController_createManualOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManualOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2346,6 +2431,340 @@
         },
         "tags": [
           "15 - 📑 Orders"
+        ]
+      }
+    },
+    "/api/coupon": {
+      "post": {
+        "operationId": "CouponController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "کد تخفیف با موفقیت ایجاد شد."
+          }
+        },
+        "summary": "ایجاد کد تخفیف جدید (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "get": {
+        "operationId": "CouponController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter.forFirstOrder",
+            "required": false,
+            "in": "query",
+            "description": "Filter by forFirstOrder query param.\n          <p>\n             <b>Format: </b> filter.forFirstOrder={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.forFirstOrder=$not:$like:John Doe&filter.forFirstOrder=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by isActive query param.\n          <p>\n             <b>Format: </b> filter.isActive={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.isActive=$not:$like:John Doe&filter.isActive=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.amount",
+            "required": false,
+            "in": "query",
+            "description": "Filter by amount query param.\n          <p>\n             <b>Format: </b> filter.amount={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.amount=$not:$like:John Doe&filter.amount=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.minOrderAmount",
+            "required": false,
+            "in": "query",
+            "description": "Filter by minOrderAmount query param.\n          <p>\n             <b>Format: </b> filter.minOrderAmount={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.minOrderAmount=$not:$like:John Doe&filter.minOrderAmount=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by type query param.\n          <p>\n             <b>Format: </b> filter.type={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.type=$not:$like:John Doe&filter.type=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.usageLimit",
+            "required": false,
+            "in": "query",
+            "description": "Filter by usageLimit query param.\n          <p>\n             <b>Format: </b> filter.usageLimit={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.usageLimit=$not:$like:John Doe&filter.usageLimit=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.useCount",
+            "required": false,
+            "in": "query",
+            "description": "Filter by useCount query param.\n          <p>\n             <b>Format: </b> filter.useCount={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.useCount=$not:$like:John Doe&filter.useCount=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.createdAt",
+            "required": false,
+            "in": "query",
+            "description": "Filter by createdAt query param.\n          <p>\n             <b>Format: </b> filter.createdAt={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.createdAt=$not:$like:John Doe&filter.createdAt=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.startDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by startDate query param.\n          <p>\n             <b>Format: </b> filter.startDate={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.startDate=$not:$like:John Doe&filter.startDate=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.endDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by endDate query param.\n          <p>\n             <b>Format: </b> filter.endDate={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.endDate=$not:$like:John Doe&filter.endDate=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> id:DESC\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>createdAt</li>\n<li>startDate</li>\n<li>endDate</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC",
+                  "createdAt:ASC",
+                  "createdAt:DESC",
+                  "startDate:ASC",
+                  "startDate:DESC",
+                  "endDate:ASC",
+                  "endDate:DESC"
+                ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> id,code,amount\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>id</li>\n<li>code</li>\n<li>amount</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "مشاهده‌ی همه‌ی کدهای تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      }
+    },
+    "/api/coupon/{id}": {
+      "patch": {
+        "operationId": "CouponController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "کد تخفیف با موفقیت ویرایش شد."
+          }
+        },
+        "summary": "ویرایش کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "get": {
+        "operationId": "CouponController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "نمایش جزئیات یک کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      },
+      "delete": {
+        "operationId": "CouponController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "کد تخفیف با موفقیت حذف شد."
+          }
+        },
+        "summary": "حذف یک کد تخفیف (ادمین)",
+        "tags": [
+          "Coupon Management"
+        ]
+      }
+    },
+    "/api/coupon/apply": {
+      "post": {
+        "operationId": "CouponController_apply",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "کد تخفیف معتبر و مبلغ تخفیف محاسبه شد.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "couponCode": "WELCOME10",
+                    "discount": 25000,
+                    "payable": 225000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "اعمال کد تخفیف (کاربر)",
+        "tags": [
+          "Coupon Management"
         ]
       }
     },
@@ -2652,158 +3071,6 @@
         ]
       }
     },
-    "/api/coupon": {
-      "post": {
-        "operationId": "CouponController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCouponDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "کد تخفیف با موفقیت ایجاد شد."
-          }
-        },
-        "summary": "ایجاد کد تخفیف جدید (ادمین)",
-        "tags": [
-          "Coupon Management"
-        ]
-      },
-      "get": {
-        "operationId": "CouponController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "مشاهده‌ی همه‌ی کدهای تخفیف (ادمین)",
-        "tags": [
-          "Coupon Management"
-        ]
-      }
-    },
-    "/api/coupon/{id}": {
-      "patch": {
-        "operationId": "CouponController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCouponDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "کد تخفیف با موفقیت ویرایش شد."
-          }
-        },
-        "summary": "ویرایش کد تخفیف (ادمین)",
-        "tags": [
-          "Coupon Management"
-        ]
-      },
-      "get": {
-        "operationId": "CouponController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "نمایش جزئیات یک کد تخفیف (ادمین)",
-        "tags": [
-          "Coupon Management"
-        ]
-      },
-      "delete": {
-        "operationId": "CouponController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "کد تخفیف با موفقیت حذف شد."
-          }
-        },
-        "summary": "حذف یک کد تخفیف (ادمین)",
-        "tags": [
-          "Coupon Management"
-        ]
-      }
-    },
-    "/api/coupon/apply": {
-      "post": {
-        "operationId": "CouponController_apply",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ApplyCouponDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "کد تخفیف معتبر و مبلغ تخفیف محاسبه شد.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "example": {
-                    "couponCode": "WELCOME10",
-                    "discount": 25000,
-                    "payable": 225000
-                  }
-                }
-              }
-            }
-          }
-        },
-        "summary": "اعمال کد تخفیف (کاربر)",
-        "tags": [
-          "Coupon Management"
-        ]
-      }
-    },
     "/api/payment/create": {
       "post": {
         "operationId": "PaymentController_createPayment",
@@ -2866,6 +3133,47 @@
         "summary": "تأیید پرداخت بعد از بازگشت از درگاه",
         "tags": [
           "Payment"
+        ]
+      }
+    },
+    "/api/payment-logs": {
+      "get": {
+        "description": "این متد همه‌ی تراکنش‌های ثبت‌شده (موفق، ناموفق، لغوشده) را برمی‌گرداند.",
+        "operationId": "PaymentLogController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "لیست لاگ‌ها با جزئیات"
+          }
+        },
+        "summary": "لیست تمام لاگ‌های پرداخت (ادمین)",
+        "tags": [
+          "Payment Logs"
+        ]
+      }
+    },
+    "/api/payment-logs/{orderId}": {
+      "get": {
+        "description": "با وارد کردن شناسه سفارش، جزئیات تمام تراکنش‌های آن را مشاهده کنید.",
+        "operationId": "PaymentLogController_getByOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "لیست لاگ‌های مربوط به سفارش"
+          }
+        },
+        "summary": "مشاهده لاگ‌های پرداخت برای یک سفارش خاص",
+        "tags": [
+          "Payment Logs"
         ]
       }
     }
@@ -3511,6 +3819,10 @@
               "type": "number"
             }
           },
+          "category_id": {
+            "type": "number",
+            "example": 1
+          },
           "isVisible": {
             "type": "boolean",
             "example": true
@@ -3953,6 +4265,58 @@
           "itemId"
         ]
       },
+      "CreateManualOrderDto": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "number",
+            "example": 2
+          },
+          "items": {
+            "type": "array",
+            "example": [
+              {
+                "product_id": 1,
+                "variant_id": null,
+                "quantity": 50
+              },
+              {
+                "product_id": 2,
+                "variant_id": 1,
+                "quantity": 1
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "cancelled",
+              "shipped",
+              "delivered",
+              "refunded",
+              "failed"
+            ],
+            "default": "pending"
+          },
+          "discount_amount": {
+            "type": "number",
+            "example": 2000
+          },
+          "is_manual": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "user_id",
+          "items",
+          "status",
+          "discount_amount",
+          "is_manual"
+        ]
+      },
       "CreateOrderFromCardDto": {
         "type": "object",
         "properties": {
@@ -3986,76 +4350,6 @@
         "required": [
           "status"
         ]
-      },
-      "CreateProductAttributeValueDto": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer",
-            "example": 1
-          },
-          "attributeId": {
-            "type": "integer",
-            "example": 1
-          },
-          "valueIds": {
-            "type": "array",
-            "example": []
-          },
-          "isImportant": {
-            "type": "boolean",
-            "example": false
-          }
-        },
-        "required": [
-          "productId",
-          "attributeId",
-          "isImportant"
-        ]
-      },
-      "AddedImportantDto": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "example": 1
-          },
-          "attribute_id": {
-            "type": "integer",
-            "example": 1
-          },
-          "important": {
-            "type": "boolean",
-            "example": true,
-            "description": "وضعیت مهم بودن ویژگی"
-          }
-        },
-        "required": [
-          "product_id",
-          "attribute_id",
-          "important"
-        ]
-      },
-      "UpdateProductAttributeValueDto": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer",
-            "example": 1
-          },
-          "attributeId": {
-            "type": "integer",
-            "example": 1
-          },
-          "valueIds": {
-            "type": "array",
-            "example": []
-          },
-          "isImportant": {
-            "type": "boolean",
-            "example": false
-          }
-        }
       },
       "CreateCouponDto": {
         "type": "object",
@@ -4091,13 +4385,13 @@
           "start_date": {
             "format": "date-time",
             "type": "string",
-            "example": "2025-03-01T00:00:00Z",
+            "example": "2024-06-01T00:00:00.000Z",
             "description": "زمان شروع اعتبار کد"
           },
           "end_date": {
             "format": "date-time",
             "type": "string",
-            "example": "2025-04-01T00:00:00Z",
+            "example": "2024-06-01T00:00:00.000Z",
             "description": "زمان پایان اعتبار کد"
           },
           "usage_limit": {
@@ -4190,13 +4484,13 @@
           "start_date": {
             "format": "date-time",
             "type": "string",
-            "example": "2025-03-01T00:00:00Z",
+            "example": "2024-06-01T00:00:00.000Z",
             "description": "زمان شروع اعتبار کد"
           },
           "end_date": {
             "format": "date-time",
             "type": "string",
-            "example": "2025-04-01T00:00:00Z",
+            "example": "2024-06-01T00:00:00.000Z",
             "description": "زمان پایان اعتبار کد"
           },
           "usage_limit": {
@@ -4275,29 +4569,87 @@
           "total_amount"
         ]
       },
+      "CreateProductAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "attributeId": {
+            "type": "integer",
+            "example": 1
+          },
+          "valueIds": {
+            "type": "array",
+            "example": []
+          },
+          "isImportant": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "productId",
+          "attributeId",
+          "isImportant"
+        ]
+      },
+      "AddedImportantDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "attribute_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "important": {
+            "type": "boolean",
+            "example": true,
+            "description": "وضعیت مهم بودن ویژگی"
+          }
+        },
+        "required": [
+          "product_id",
+          "attribute_id",
+          "important"
+        ]
+      },
+      "UpdateProductAttributeValueDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "attributeId": {
+            "type": "integer",
+            "example": 1
+          },
+          "valueIds": {
+            "type": "array",
+            "example": []
+          },
+          "isImportant": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
       "CreatePaymentDto": {
         "type": "object",
         "properties": {
-          "amount": {
-            "type": "number",
-            "example": 100000,
-            "description": "مبلغ پرداخت (تومان)"
-          },
           "order_id": {
             "type": "number",
             "example": 123,
             "description": "شناسه سفارش"
-          },
-          "callback": {
-            "type": "string",
-            "example": "https://your-site.com/payment/verify",
-            "description": "آدرس بازگشت از درگاه"
           }
         },
         "required": [
-          "amount",
-          "order_id",
-          "callback"
+          "order_id"
         ]
       }
     }

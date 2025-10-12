@@ -1,25 +1,41 @@
-import { BadRequestException } from "@nestjs/common";
-import { ZarinpalErrorCode } from "src/modules/payment/enums/zarinpal-error.enum";
+import { HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { ZarinpalErrorMessage } from "src/modules/payment/enums/zarinpal-message.enum";
 
-export class ZarinpalException extends BadRequestException {
-    constructor(code: number, context: string) {
-        const message =
-            ZarinpalErrorMessage[code] ||
-            "خطای ناشناخته‌ای از سمت درگاه پرداخت دریافت شد.";
+export class ZarinpalException extends HttpException {
+    private readonly logger = new Logger(ZarinpalException.name);
+    public readonly errorCode: number;
+    public readonly errorMessage: string;
 
-        const readableCode =
-            Object.keys(ZarinpalErrorCode).find(
-                (key) => ZarinpalErrorCode[key as keyof typeof ZarinpalErrorCode] === code
-            ) || code;
+    constructor(errorCode: number, message?: string) {
+        // پیغام فارسی بر اساس جدول
+        const translatedMessage =
+            ZarinpalErrorMessage[errorCode] ||
+            message ||
+            "خطای ناشناخته در ارتباط با زرین‌پال.";
 
-        super({
-            success: false,
-            source: "Zarinpal",
-            context,
-            code,
-            errorKey: readableCode,
-            message: `(${context}) ${message}`,
-        });
+        // تعیین وضعیت HTTP
+        const httpStatus =
+            errorCode === 100 || errorCode === 101
+                ? HttpStatus.OK
+                : HttpStatus.BAD_REQUEST;
+
+        // ارسال به HttpException
+        super(
+            {
+                success: false,
+                statusCode: httpStatus,
+                errorCode,
+                message: translatedMessage,
+            },
+            httpStatus
+        );
+
+        this.errorCode = errorCode;
+        this.errorMessage = translatedMessage;
+
+        // ثبت لاگ در لاگر NestJS (برای مشاهده در console یا فایل)
+        this.logger.error(
+            `[ZarinpalException] code=${errorCode} | message=${translatedMessage}`
+        );
     }
 }

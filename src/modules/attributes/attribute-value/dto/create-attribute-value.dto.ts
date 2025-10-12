@@ -24,5 +24,5 @@ export class CreateAttributeValueDto {
     @ApiProperty({ name: 'is_active', required: false, default: true })
     @IsOptional()
     @IsBoolean()
-    isActive?: boolean | true;
+    isActive?: boolean;
 }

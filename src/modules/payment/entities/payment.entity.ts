@@ -1,7 +1,8 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Order } from "src/modules/order/entities/order.entity";
 import { User } from "src/modules/user/entities/user.entity";
 import { PaymentStatus } from "../enums/payment-status.enum";
+import { PaymentLog } from "./payment-logs.entity";
 
 @Entity("payments")
 export class Payment {
@@ -25,6 +26,9 @@ export class Payment {
 
     @Column({ type: "enum", enum: PaymentStatus, default: PaymentStatus.PENDING })
     status: PaymentStatus;
+
+    @OneToMany(() => PaymentLog, (log) => log.payment)
+    logs: PaymentLog[];
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

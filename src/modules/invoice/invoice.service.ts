@@ -7,6 +7,7 @@ import { Invoice } from "./entities/invoice.entity";
 import { Order } from "../order/entities/order.entity";
 import { User } from "../user/entities/user.entity";
 import { InvoiceStatus } from "./enums/invoice-status.enum";
+import { OrderStatus } from "../order/enums/order-status.enum";
 
 @Injectable()
 export class InvoiceService {
@@ -20,6 +21,11 @@ export class InvoiceService {
             });
             if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
+            const status =
+                order.status === OrderStatus.PAID
+                    ? InvoiceStatus.PAID
+                    : InvoiceStatus.UNPAID;
+
             const invoice = manager.create(Invoice, {
                 order,
                 user,
@@ -29,7 +35,7 @@ export class InvoiceService {
                 couponCode: order.couponCode,
                 couponDiscountAmount: order.couponDiscountAmount,
                 totalPayable: order.total,
-                status: InvoiceStatus.UNPAID,
+                status,
             });
 
             const invoiceSave = await manager.save(Invoice, invoice);

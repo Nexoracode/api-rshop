@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDateString, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsBoolean, IsDate, IsDateString, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 import { CouponType } from "../entities/coupon.entity";
 
 export class CreateCouponDto {
@@ -26,14 +26,14 @@ export class CreateCouponDto {
     @IsNumber()
     maxDiscountAmount?: number;
 
-    @ApiProperty({ name: 'start_date', example: "2025-03-01T00:00:00Z", required: false, description: "زمان شروع اعتبار کد" })
+    @ApiProperty({ name: 'start_date', example: '2024-06-01T00:00:00.000Z', required: false, description: "زمان شروع اعتبار کد" })
     @IsOptional()
-    @IsDateString()
+    @IsDate()
     startDate?: Date;
 
-    @ApiProperty({ name: 'end_date', example: "2025-04-01T00:00:00Z", required: false, description: "زمان پایان اعتبار کد" })
+    @ApiProperty({ name: 'end_date', example: '2024-06-01T00:00:00.000Z', required: false, description: "زمان پایان اعتبار کد" })
     @IsOptional()
-    @IsDateString()
+    @IsDate()
     endDate?: Date;
 
     @ApiProperty({ name: 'usage_limit', example: 50, required: false, description: "حداکثر تعداد استفاده از کد" })

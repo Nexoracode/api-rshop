@@ -9,9 +9,10 @@ import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { CouponService } from '../coupon/coupon.service';
+import { CouponModule } from '../coupon/coupon.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem, Card, CardItem, Product, VariantProduct])],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem, Card, CardItem, Product, VariantProduct]), CouponModule],
   controllers: [OrderController],
   providers: [OrderService, CouponService],
   exports: [OrderService],

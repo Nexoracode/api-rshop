@@ -5,7 +5,7 @@ import { IsInt, IsUUID, Min } from 'class-validator';
 export class UpdateItemDto {
     @ApiProperty({ type: 'number', })
     @IsInt()
-    itemId: string;
+    itemId: number;
 
 
     @ApiProperty({ type: 'number', example: 5, description: 'تعداد محصول در کارت' })

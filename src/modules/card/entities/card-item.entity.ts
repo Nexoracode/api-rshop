@@ -7,7 +7,7 @@ import { VariantProduct } from "src/modules/variant-product/entities/variant-pro
 @Unique('UQ_card_items__card_product_variant', ['card', 'product', 'variant'])
 export class CardItem {
     @PrimaryGeneratedColumn()
-    id: string;
+    id: number;
 
 
     @ManyToOne(() => Card, (c) => c.items, { onDelete: 'CASCADE', nullable: false })

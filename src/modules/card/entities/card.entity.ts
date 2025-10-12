@@ -14,7 +14,7 @@ export enum CardStatus {
 export class Card {
 
     @PrimaryGeneratedColumn()
-    id: string;
+    id: number;
 
     @ManyToOne(() => User, (u) => u.cards, { nullable: false, onDelete: 'CASCADE' })
     @Index('IDX_cards_user_id') // ← اگر این نام در جای دیگر هم استفاده شده، تغییرش بده

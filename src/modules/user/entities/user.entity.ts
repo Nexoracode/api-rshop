@@ -73,7 +73,6 @@ export class User implements IUser {
     addresses: Address[];
 
     @OneToOne(() => Media, (media) => media.user)
-    @JoinColumn({ name: 'media_id' })
     media: Media;
 
     @Column({ name: 'media_id', nullable: true })

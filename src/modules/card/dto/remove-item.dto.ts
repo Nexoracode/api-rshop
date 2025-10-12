@@ -6,5 +6,5 @@ export class RemoveItemDto {
 
     @ApiProperty({ type: 'number' })
     @IsInt()
-    itemId: string;
+    itemId: number;
 }

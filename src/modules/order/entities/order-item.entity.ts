@@ -7,7 +7,7 @@ import { VariantProduct } from '../../variant-product/entities/variant-product.e
 @Entity('order_items')
 export class OrderItem {
     @PrimaryGeneratedColumn()
-    id: string;
+    id: number;
 
 
     @ManyToOne(() => Order, (o) => o.items, { onDelete: 'CASCADE' })

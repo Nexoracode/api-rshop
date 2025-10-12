@@ -48,6 +48,9 @@ export class Order {
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     couponDiscountAmount?: number;
 
+    @Column({ name: 'is_manual', default: false })
+    isManual: boolean; // 🟢 مشخص می‌کنه سفارش دستی ثبت شده
+
 
     @CreateDateColumn()
     createdAt: Date;

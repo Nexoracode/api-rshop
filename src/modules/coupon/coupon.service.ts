@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource, In } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, In, Repository } from "typeorm";
 
 import { Coupon, CouponType } from "./entities/coupon.entity";
 import { CreateCouponDto } from "./dto/create-coupon.dto";
@@ -15,10 +15,15 @@ import { User } from "src/modules/user/entities/user.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 import { Category } from "src/modules/category/entities/category.entity";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
+import { FilterOperator, paginate, PaginateQuery } from "nestjs-paginate";
 
 @Injectable()
 export class CouponService {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) { }
+  constructor(
+    // @InjectRepository(Coupon)
+    // private readonly couponRepo: Repository<Coupon>,
+    @InjectDataSource() private readonly dataSource: DataSource
+  ) { }
 
   // 🟢 ایجاد کد تخفیف جدید
   async create(dto: CreateCouponDto) {
@@ -151,12 +156,37 @@ export class CouponService {
   }
 
   // 🔍 لیست همه کدها
-  async findAll() {
-    return this.dataSource.getRepository(Coupon).find({
+  async findAll(query: PaginateQuery) {
+    const couponRepo = this.dataSource.getRepository(Coupon);
+    const coupons = await paginate(query, couponRepo, {
+      sortableColumns: ['id', 'createdAt', 'startDate', 'endDate'],
       relations: ["allowedUsers", "allowedProducts", "allowedCategories"],
-      order: { createdAt: "DESC" },
+      defaultSortBy: [['id', 'DESC']],
+      searchableColumns: ['id', 'code', 'amount'],
+      filterableColumns: {
+        forFirstOrder: [FilterOperator.EQ],
+        isActive: [FilterOperator.EQ],
+        amount: [FilterOperator.GTE, FilterOperator.LTE],
+        minOrderAmount: [FilterOperator.EQ],
+        type: [FilterOperator.EQ],
+        usageLimit: [FilterOperator.GTE, FilterOperator.LTE],
+        useCount: [FilterOperator.GTE, FilterOperator.LTE],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        startDate: [FilterOperator.GTE, FilterOperator.LTE],
+        endDate: [FilterOperator.GTE, FilterOperator.LTE]
+      },
     });
+
+    return {
+      message: 'کد تخفیف ها با موفقیت دریافت شد',
+      data: {
+        items: coupons.data,
+        meta: coupons.meta,
+        links: coupons.links,
+      }
+    }
   }
+
 
   // 🔍 دریافت یک کد خاص
   async findOne(id: number) {

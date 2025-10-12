@@ -58,6 +58,12 @@ export class Invoice {
     @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.UNPAID })
     status: InvoiceStatus;
 
+    @Column({ type: "varchar", length: 255, nullable: true })
+    paymentErrorMessage?: string;
+
+    @Column({ type: "varchar", length: 100, nullable: true })
+    paymentErrorCode?: string;
+
     // 🕓 تاریخ‌ها
     @CreateDateColumn()
     createdAt: Date;

@@ -14,8 +14,12 @@ import { User } from "../user/entities/user.entity";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { CreateOrderFromCardDto } from "./dto/create-from-card.dto";
 import { CouponService } from "../coupon/coupon.service";
-import { paginate, PaginateQuery } from "nestjs-paginate";
+import { FilterOperator, paginate, PaginateQuery } from "nestjs-paginate";
 import { OrderStatus } from "./enums/order-status.enum";
+import { OrderMapper } from "./mappers/order.mapper";
+import { CreateManualOrderDto } from "./dto/create-order.dto";
+import { Product } from "../product/entities/product.entity";
+import { VariantProduct } from "../variant-product/entities/variant-product.entity";
 
 @Injectable()
 export class OrderService {
@@ -29,34 +33,98 @@ export class OrderService {
     // 🧾 دریافت تمام سفارش‌ها (ادمین)
     async getAllOrders(query: PaginateQuery) {
         const orders = await paginate(query, this.orderRepo, {
-            sortableColumns: ['id'],
-            relations: ['user', 'user.addresses', 'items'],
-            filterableColumns: {},
+            sortableColumns: ['id', 'createdAt', 'total'],
+            relations: ['user', 'user.addresses', 'items', 'items.product'],
             defaultSortBy: [['id', 'DESC']],
-            searchableColumns: ['user.id'],
-            // select: [
-            //     'id',
-            //     'status',
-            //     'updatedAt',
-            //     'user',
-            //     'user.phone',
-            //     'user.(firstName',
-            //     'user.lastName)',
-            //     'user.addresses.province',
-            //     'user.addresses.city',
-            //     'items.product',
-            //     'items.product.name',
-            // ]
+            searchableColumns: ['id', 'user.id', 'user.firstName', 'user.lastName', 'items.product.name'],
+            filterableColumns: {
+                status: [FilterOperator.EQ],
+                'user.addresses.city': [FilterOperator.EQ],
+                createdAt: [FilterOperator.GTE, FilterOperator.LTE]
+            },
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
             data: {
-                items: orders.data,
+                items: orders.data.map((order) => OrderMapper.toAllResponse(order)),
                 meta: orders.meta,
                 links: orders.links,
             }
         };
     }
+
+    async createManualOrder(dto: CreateManualOrderDto) {
+        return await runInTransaction(this.dataSource, async (manager) => {
+            const user = await manager.findOne(User, { where: { id: dto.userId } });
+            if (!user) throw new NotFoundException("کاربر یافت نشد.");
+
+            let subtotal = 0;
+            let discountTotal = 0;
+            const orderItems: OrderItem[] = [];
+
+            for (const item of dto.items) {
+                // 🧱 دریافت محصول و واریانت (در صورت وجود)
+                const product = await manager.findOne(Product, {
+                    where: { id: item.productId },
+                    relations: ["variants"],
+                });
+                if (!product) throw new NotFoundException(`محصول ${item.productId} یافت نشد.`);
+
+                let unitPrice = product.price;
+                let variant: VariantProduct | null = null;
+
+                if (item.variantId) {
+                    variant = product.variants.find(v => v.id === item.variantId) ?? null;
+                    if (!variant) throw new BadRequestException(`واریانت ${item.variantId} یافت نشد.`);
+                    unitPrice = variant.price ?? product.price;
+                }
+
+                // 🧮 محاسبه تخفیف
+                let itemDiscount = 0;
+
+                if (product.discountPercent && product.discountPercent > 0)
+                    itemDiscount = (unitPrice * product.discountPercent) / 100;
+                else if (product.discountAmount && product.discountAmount > 0)
+                    itemDiscount = product.discountAmount;
+
+                const finalUnitPrice = unitPrice - itemDiscount;
+                const lineTotal = finalUnitPrice * item.quantity;
+
+                subtotal += unitPrice * item.quantity;
+                discountTotal += itemDiscount * item.quantity;
+
+                // ایجاد OrderItem
+                const orderItem = manager.create(OrderItem, {
+                    product,
+                    quantity: item.quantity,
+                    unitPrice,
+                    discount: itemDiscount,
+                    lineTotal,
+                    variantId: item.variantId ?? null,
+                });
+                orderItems.push(orderItem);
+            }
+
+            const total = subtotal - discountTotal;
+
+            // 🧾 ذخیره سفارش
+            const order = manager.create(Order, {
+                user,
+                status: dto.status,
+                subtotal,
+                discountTotal,
+                total,
+                isManual: true, // اضافه‌شده برای تشخیص نوع سفارش
+                items: orderItems,
+            });
+
+            await manager.save(order);
+            return order;
+        });
+    }
+
+
+
 
     // 🛒 ساخت سفارش از سبد خرید
     async createFromCard(user: User, dto: CreateOrderFromCardDto) {
