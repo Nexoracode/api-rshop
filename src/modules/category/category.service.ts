@@ -105,7 +105,6 @@ export class CategoryService implements ICategoryService {
                     await manager.save(Media, mediaDeleted);
                 }
                 const media = await manager.findOne(Media, { where: { id: category.media?.id } });
-                console.log(media, data.mediaId)
                 if (!media) throw new NotFoundException('فایل مدیا یافت نشد.');
                 await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
             } else {
@@ -115,7 +114,6 @@ export class CategoryService implements ICategoryService {
                     await manager.save(Media, media);
                 }
             }
-            console.log(category);
             return CategoryMapper.toResponse(savedCategory);
         });
     }

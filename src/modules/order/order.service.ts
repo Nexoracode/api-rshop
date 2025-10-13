@@ -123,16 +123,15 @@ export class OrderService {
         });
     }
 
-
-
-
     // 🛒 ساخت سفارش از سبد خرید
-    async createFromCard(user: User, dto: CreateOrderFromCardDto) {
+    async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
-            const cardItemRepo = manager.getRepository(CardItem);
             const orderRepo = manager.getRepository(Order);
             const orderItemRepo = manager.getRepository(OrderItem);
+
+            const user = await manager.findOne(User, { where: { id: userReq.id } });
+            if (!user) throw new NotFoundException('کاربر یافت نشد');
 
             // 1️⃣ پیدا کردن سبد خرید کاربر
             const card = await cardRepo.findOne({
@@ -145,9 +144,9 @@ export class OrderService {
             if (card.status === CardStatus.ABANDONED)
                 throw new BadRequestException("سبد خرید منقضی شده است.");
 
-            // 2️⃣ قفل کردن سبد تا عملیات نهایی انجام شود
-            card.status = CardStatus.LOCKED;
-            await cardRepo.save(card);
+            // // 2️⃣ قفل کردن سبد تا عملیات نهایی انجام شود
+            // card.status = CardStatus.LOCKED;
+            // await cardRepo.save(card);
 
             // 3️⃣ محاسبه مبلغ نهایی و بررسی کوپن (اختیاری)
             let couponCode: string | undefined = undefined;
@@ -200,15 +199,15 @@ export class OrderService {
                 await orderItemRepo.save(orderItem);
             }
 
-            // 6️⃣ پاکسازی سبد خرید
-            await cardItemRepo.delete({ card: { id: card.id } as any });
-            card.itemsCount = 0;
-            card.totalQuantity = 0;
-            card.subtotal = 0;
-            card.discountTotal = 0;
-            card.total = 0;
-            card.status = CardStatus.ABANDONED;
-            await cardRepo.save(card);
+            // // 6️⃣ پاکسازی سبد خرید
+            // await cardItemRepo.delete({ card: { id: card.id } as any });
+            // card.itemsCount = 0;
+            // card.totalQuantity = 0;
+            // card.subtotal = 0;
+            // card.discountTotal = 0;
+            // card.total = 0;
+            // card.status = CardStatus.ABANDONED;
+            // await cardRepo.save(card);
 
             return order;
         });

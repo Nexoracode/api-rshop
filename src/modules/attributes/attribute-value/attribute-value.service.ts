@@ -44,7 +44,6 @@ export class AttributeValueService implements IAttributeValueService {
       order: { displayOrder: 'DESC' },
       take: 1,
     })
-    console.log(lastAttrValue);
     const nextOrder = lastAttrValue.length ? lastAttrValue[0].displayOrder + 1 : 1;
     const value = this.valueRepo.create({
       ...data,
