@@ -13,8 +13,8 @@ export class PaymentController {
   // 🟢 شروع پرداخت
   @Post("create")
   @ApiOperation({ summary: "ایجاد لینک پرداخت برای سفارش" })
-  async createPayment(@Body() dto: CreatePaymentDto) {
-    return this.paymentService.createPayment(dto.orderId);
+  async createPayment(@Body() dto: CreatePaymentDto, @Req() req: Request) {
+    return this.paymentService.createPayment(dto.orderId, req);
   }
 
   // 🔵 بازگشت از درگاه پرداخت (callback)

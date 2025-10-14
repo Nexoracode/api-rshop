@@ -10,14 +10,12 @@ export enum CardStatus {
 
 
 @Entity('cards')
-@Unique(['user'])
 export class Card {
 
     @PrimaryGeneratedColumn()
     id: number;
 
     @ManyToOne(() => User, (u) => u.cards, { nullable: false, onDelete: 'CASCADE' })
-    @Index('IDX_cards_user_id') // ← اگر این نام در جای دیگر هم استفاده شده، تغییرش بده
     @JoinColumn({ name: 'user_id' })
     user: User;
 

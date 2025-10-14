@@ -6,9 +6,10 @@ import {
     Injectable,
 } from "@nestjs/common";
 import { Request } from "express";
-import { PaymentLog, PaymentLogStatus } from "src/modules/payment/entities/payment-logs.entity";
+import { PaymentLog } from "src/modules/payment/entities/payment-logs.entity";
 import { DataSource } from "typeorm";
 import { ZarinpalException } from "./zarinpal-exception";
+import { PaymentLogStatus } from "src/modules/payment/enums/payment-status.enum";
 
 @Catch(ZarinpalException)
 @Injectable()
@@ -35,7 +36,7 @@ export class ZarinpalExceptionFilter implements ExceptionFilter {
                 user,
                 order,
                 payment,
-                status: PaymentLogStatus.GATEWAY_ERROR,
+                status: PaymentLogStatus.FAILED,
                 errorCode,
                 errorMessage,
                 authority: (request.query["Authority"] as string) ?? null,

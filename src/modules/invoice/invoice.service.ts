@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 
 import { Invoice } from "./entities/invoice.entity";
@@ -14,37 +14,35 @@ export class InvoiceService {
     constructor(@InjectDataSource() private readonly dataSource: DataSource) { }
 
     // 🧾 ایجاد فاکتور از سفارش
-    async createFromOrder(orderId: number, user: User) {
-        return runInTransaction(this.dataSource, async (manager) => {
-            const order = await manager.findOne(Order, {
-                where: { id: orderId, user: { id: user.id } },
-            });
-            if (!order) throw new NotFoundException("سفارش یافت نشد.");
-
-            const status =
-                order.status === OrderStatus.PAID
-                    ? InvoiceStatus.PAID
-                    : InvoiceStatus.UNPAID;
-
-            const invoice = manager.create(Invoice, {
-                order,
-                user,
-                subtotal: order.subtotal,
-                discountTotal: order.discountTotal,
-                total: order.total,
-                couponCode: order.couponCode,
-                couponDiscountAmount: order.couponDiscountAmount,
-                totalPayable: order.total,
-                status,
-            });
-
-            const invoiceSave = await manager.save(Invoice, invoice);
-            const returnedInvoice = await manager.findOne(Invoice, {
-                where: { id: invoiceSave.id },
-                relations: ["order"],
-            });
-            return returnedInvoice;
+    async createFromOrder(manager: EntityManager, orderId: number, user: User) {
+        const order = await manager.findOne(Order, {
+            where: { id: orderId, user: { id: user.id } },
         });
+        if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
+        const status =
+            order.status === OrderStatus.PAID
+                ? InvoiceStatus.PAID
+                : InvoiceStatus.UNPAID;
+
+        const invoice = manager.create(Invoice, {
+            order,
+            user,
+            subtotal: order.subtotal,
+            discountTotal: order.discountTotal,
+            total: order.total,
+            couponCode: order.couponCode,
+            couponDiscountAmount: order.couponDiscountAmount,
+            totalPayable: order.total,
+            status,
+        });
+
+        const invoiceSave = await manager.save(Invoice, invoice);
+        const returnedInvoice = await manager.findOne(Invoice, {
+            where: { id: invoiceSave.id },
+            relations: ["order"],
+        });
+        return returnedInvoice;
     }
 
     // 📄 مشاهده فاکتور کاربر

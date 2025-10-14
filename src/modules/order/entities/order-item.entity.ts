@@ -14,15 +14,24 @@ export class OrderItem {
     @JoinColumn({ name: 'order_id' })
     order: Order;
 
+    @Column({ name: 'order_id' })
+    orderId: number;
+
 
     @ManyToOne(() => Product, { eager: true })
     @JoinColumn({ name: 'product_id' })
     product: Product;
 
+    @Column({ name: 'product_id' })
+    productId: number;
+
 
     @ManyToOne(() => VariantProduct, { eager: true, nullable: true })
     @JoinColumn({ name: 'variant_id' })
     variant?: VariantProduct | null;
+
+    @Column({ name: 'variant_id', nullable: true })
+    variantId?: number;
 
 
     @Column({ type: 'int' })

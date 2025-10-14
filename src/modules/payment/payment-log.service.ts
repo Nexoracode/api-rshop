@@ -1,53 +1,58 @@
 import { Injectable } from "@nestjs/common";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import { Order } from "../order/entities/order.entity";
 import { User } from "../user/entities/user.entity";
-import { PaymentLog, PaymentLogStatus } from "./entities/payment-logs.entity";
+import { PaymentLog } from "./entities/payment-logs.entity";
 import { Payment } from "./entities/payment.entity";
+import { PaymentLogStatus } from "./enums/payment-status.enum";
 
 @Injectable()
 export class PaymentLogService {
-    constructor(@InjectDataSource() private readonly dataSource: DataSource) { }
+    constructor(
+        @InjectRepository(PaymentLog)
+        private readonly paymentLogRepo: Repository<PaymentLog>
+    ) { }
 
     async createLog(params: {
         order: Order;
         user: User;
-        authority: string;
+        authority?: string;
         status: PaymentLogStatus;
         errorCode?: number;
-        errorMessage?: string;
+        message?: string;
         refId?: string;
         ip?: string;
         userAgent?: string;
         payment: Payment,
+        payload: any;
     }) {
-        const repo = this.dataSource.getRepository(PaymentLog);
-        const log = repo.create({
+        const log = this.paymentLogRepo.create({
             order: params.order,
             user: params.user,
+            payment: params.payment,
+            payload: params.payload,
             authority: params.authority,
             status: params.status,
             errorCode: params.errorCode,
-            errorMessage: params.errorMessage,
+            message: params.message,
             refId: params.refId,
             ip: params.ip,
             userAgent: params.userAgent,
-            payment: params.payment,
         });
-        return repo.save(log);
+        return this.paymentLogRepo.save(log);
     }
 
     async getAllLogs() {
-        return this.dataSource.getRepository(PaymentLog).find({
+        return this.paymentLogRepo.find({
             relations: ["user", "order"],
             order: { createdAt: "DESC" },
         });
     }
 
     async getLogByOrder(orderId: number) {
-        return this.dataSource.getRepository(PaymentLog).find({
+        return this.paymentLogRepo.find({
             where: { order: { id: orderId } },
             relations: ["user", "order"],
             order: { createdAt: "DESC" },

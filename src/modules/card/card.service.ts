@@ -60,52 +60,67 @@ export class CardService {
 
 
   async addItem(user: User, dto: AddItemDto) {
-    return runInTransaction(this.dataSource, async (m) => {
-      const cardRepo = m.getRepository(Card);
-      const itemRepo = m.getRepository(CardItem);
-      const productRepo = m.getRepository(Product);
-      const variantRepo = m.getRepository(VariantProduct);
+    return runInTransaction(this.dataSource, async (manager) => {
+      const cardRepo = manager.getRepository(Card);
+      const itemRepo = manager.getRepository(CardItem);
+      const productRepo = manager.getRepository(Product);
+      const variantRepo = manager.getRepository(VariantProduct);
 
+      // 🧱 ۱. پیدا کردن سبد فعال کاربر
       let card = await cardRepo.findOne({
-        where: { user: { id: user.id } },
-        relations: ['items'],
-        lock: { mode: 'pessimistic_write' },
+        where: { user: { id: user.id }, status: CardStatus.OPEN },
+        relations: ["items"],
+        lock: { mode: "pessimistic_write" },
       });
 
+      // اگر هیچ سبد باز نداشت، یکی جدید بساز
       if (!card) {
-        card = await cardRepo.save(cardRepo.create({ user, status: CardStatus.OPEN }));
+        card = cardRepo.create({ user, status: CardStatus.OPEN });
+        await cardRepo.save(card);
         card.items = [];
       }
 
-      if (card.status !== CardStatus.OPEN) throw new BadRequestException('سبد خرید بسته شده است.');
+      // 🚫 اگر سبد در حال پرداخت بود (LOCKED) اجازه افزودن نداره
+      if (card.status === CardStatus.LOCKED) {
+        throw new BadRequestException("شما 1 سفارش در انتظار پرداخت دارید.");
+      }
 
+      // ✅ فقط سبد باز قابل تغییر است
+      if (card.status !== CardStatus.OPEN) {
+        throw new BadRequestException("سبد خرید بسته شده است.");
+      }
+
+      // ۲️⃣ دریافت محصول و واریانت
       const product = await productRepo.findOne({ where: { id: dto.productId } });
-      if (!product) throw new NotFoundException('محصول یافت نشد.');
-
+      if (!product) throw new NotFoundException("محصول یافت نشد.");
 
       let variant: VariantProduct | null = null;
       if (dto.variantId) {
         variant = await variantRepo.findOne({ where: { id: dto.variantId } });
-        if (!variant) throw new NotFoundException('نوع محصول یافت نشد.');
+        if (!variant) throw new NotFoundException("نوع محصول یافت نشد.");
       }
 
+      // ۳️⃣ محاسبه قیمت و تخفیف
+      const basePrice = variant?.price ?? product.price;
+      const dAmount = variant?.discountAmount ?? product.discountAmount;
+      const dPercent = variant?.discountPercent ?? product.discountPercent;
+      const { unitPriceSnapshot, perUnitDiscount, finalUnit } = resolveUnitDiscount(
+        basePrice,
+        dAmount ?? null,
+        dPercent ?? null
+      );
 
-      const basePrice = variant?.price ?? (product as any).price;
-      const dAmount = variant?.discountAmount ?? (product as any).discountAmount;
-      const dPercent = variant?.discountPercent ?? (product as any).discountPercent;
-      const { unitPriceSnapshot, perUnitDiscount, finalUnit } = resolveUnitDiscount(basePrice, dAmount ?? null, dPercent ?? null);
-
-
+      // ۴️⃣ بررسی وجود آیتم قبلی در سبد
       let item = await itemRepo.findOne({
         where: {
           card: { id: card.id },
           product: { id: product.id },
           variant: variant ? ({ id: variant.id } as any) : (null as any),
         } as any,
-        lock: { mode: 'pessimistic_write' },
+        lock: { mode: "pessimistic_write" },
       });
 
-
+      // ۵️⃣ بروزرسانی یا ایجاد آیتم
       if (item) {
         item.quantity += dto.quantity;
         item.unitPrice = unitPriceSnapshot;
@@ -125,7 +140,7 @@ export class CardService {
         await itemRepo.save(item);
       }
 
-
+      // ۶️⃣ به‌روزرسانی snapshot سبد
       const items = await itemRepo.find({ where: { card: { id: card.id } } });
       const snapshot = this.computeSnapshot(items, card);
       await cardRepo.update(card.id, {
@@ -135,9 +150,11 @@ export class CardService {
         discountTotal: snapshot.discountTotal,
         total: snapshot.total,
       });
-      return { ...card, ...snapshot, items }
+
+      return { ...card, ...snapshot, items };
     });
   }
+
 
   async updateItem(user: User, dto: UpdateItemDto) {
     return runInTransaction(this.dataSource, async (m) => {
@@ -198,8 +215,6 @@ export class CardService {
   async lock(user: User) {
     return runInTransaction(this.dataSource, async (m) => {
       const cardRepo = m.getRepository(Card);
-      const itemRepo = m.getRepository(CardItem);
-
       const card = await cardRepo.findOne({ where: { user: { id: user.id } }, relations: ['items'], lock: { mode: 'pessimistic_write' } });
       if (!card) throw new NotFoundException('سبد خرید یافت نشد.');
       if (!card.items?.length) throw new BadRequestException('سبد خرید خالی می باشد.');

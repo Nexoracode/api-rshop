@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Logger } from "@nestjs/common";
+import { Payment } from "src/modules/payment/entities/payment.entity";
 import { ZarinpalErrorMessage } from "src/modules/payment/enums/zarinpal-message.enum";
 
 export class ZarinpalException extends HttpException {

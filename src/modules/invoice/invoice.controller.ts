@@ -34,9 +34,9 @@ export class InvoiceController {
       },
     },
   })
-  create(@CurrentUser() user: RequestUser, @Param() dto: CreateInvoiceDto) {
-    return this.invoiceService.createFromOrder(dto.orderId, user as any);
-  }
+  // create(@CurrentUser() user: RequestUser, @Param() dto: CreateInvoiceDto) {
+  //   return this.invoiceService.createFromOrder(dto.orderId, user as any);
+  // }
 
   @Get()
   @ApiOperation({

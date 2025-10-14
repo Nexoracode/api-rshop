@@ -51,6 +51,9 @@ export class Order {
     @Column({ name: 'is_manual', default: false })
     isManual: boolean; // 🟢 مشخص می‌کنه سفارش دستی ثبت شده
 
+    @Column({ name: 'note', type: 'text', nullable: true })
+    note?: string;
+
 
     @CreateDateColumn()
     createdAt: Date;

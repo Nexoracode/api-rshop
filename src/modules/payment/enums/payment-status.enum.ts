@@ -1,5 +1,19 @@
 export enum PaymentStatus {
-    PENDING = "pending",   // ایجاد شده ولی هنوز پرداخت نشده
-    SUCCESS = "success",   // پرداخت موفق
-    FAILED = "failed",     // پرداخت ناموفق
+    PENDING = 'pending',
+    SUCCESS = 'success',
+    FAILED = 'failed',
+}
+
+export enum PaymentLogStatus {
+    INITIATED = 'initiated',
+    VERIFIED = 'verified',
+    FAILED = 'failed',
+    CALLBACK_RECEIVED = 'callback_received',
+    USER_CANCELLED = 'user_cancelled',
+}
+
+export enum PaymentGateway {
+    ZARINPAL = 'zarinpal',
+    IDPAY = 'idpay',
+    MELAT = 'melat',
 }

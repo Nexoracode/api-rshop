@@ -8,14 +8,7 @@ import {
 import { User } from "src/modules/user/entities/user.entity";
 import { Order } from "src/modules/order/entities/order.entity";
 import { Payment } from "./payment.entity";
-
-export enum PaymentLogStatus {
-    USER_CANCELLED = "user_cancelled", // کاربر پرداخت را لغو کرده
-    GATEWAY_ERROR = "gateway_error",   // خطای درگاه یا بانک
-    SUCCESS = "success",               // پرداخت موفق
-    DUPLICATE = "duplicate",           // تراکنش تکراری
-}
-
+import { PaymentLogStatus } from "../enums/payment-status.enum";
 @Entity("payment_logs")
 export class PaymentLog {
     @PrimaryGeneratedColumn()
@@ -27,8 +20,8 @@ export class PaymentLog {
     @ManyToOne(() => Order, { onDelete: "CASCADE" })
     order: Order;
 
-    @Column({ type: "varchar", length: 255 })
-    authority: string; // شناسه تراکنش در زرین‌پال
+    @Column({ type: "varchar", length: 255, nullable: true })
+    authority?: string; // شناسه تراکنش در زرین‌پال
 
     @Column({ type: "varchar", length: 50 })
     status: PaymentLogStatus;
@@ -37,7 +30,7 @@ export class PaymentLog {
     errorCode?: number;
 
     @Column({ type: "varchar", length: 255, nullable: true })
-    errorMessage?: string;
+    message?: string;
 
     @Column({ type: "varchar", length: 100, nullable: true })
     refId?: string; // شماره پیگیری بانک
@@ -47,6 +40,9 @@ export class PaymentLog {
 
     @Column({ type: "varchar", length: 255, nullable: true })
     userAgent?: string;
+
+    @Column({ type: 'json', nullable: true })
+    payload?: Record<string, any>; // پاسخ خام از درگاه
 
     @ManyToOne(() => Payment, { onDelete: 'CASCADE' })
     payment: Payment;

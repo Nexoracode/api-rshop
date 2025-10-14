@@ -4,7 +4,6 @@ import { Product } from "src/modules/product/entities/product.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 
 @Entity('card_items')
-@Unique('UQ_card_items__card_product_variant', ['card', 'product', 'variant'])
 export class CardItem {
     @PrimaryGeneratedColumn()
     id: number;
@@ -12,20 +11,26 @@ export class CardItem {
 
     @ManyToOne(() => Card, (c) => c.items, { onDelete: 'CASCADE', nullable: false })
     @JoinColumn({ name: 'card_id' })
-    @Index('IDX_card_items__card_id')
     card: Card;
+
+    @Column({ name: 'card_id' })
+    cardId: number;
 
 
     @ManyToOne(() => Product, { eager: true, nullable: false })
     @JoinColumn({ name: 'product_id' })
-    @Index('IDX_card_items__product_id')
     product: Product;
+
+    @Column({ name: 'product_id' })
+    productId: number;
 
 
     @ManyToOne(() => VariantProduct, { eager: true, nullable: true })
-    @Index('IDX_card_items__variant_id')
     @JoinColumn({ name: 'variant_id' })
     variant?: VariantProduct | null;
+
+    @Column({ name: 'variant_id', nullable: true })
+    variantId?: number;
 
 
     @Column({ type: 'int' })

@@ -2771,18 +2771,12 @@
     "/api/invoices/create-from-order/{orderId}": {
       "post": {
         "description": "از شناسه سفارش برای ساخت فاکتور استفاده می‌کند.",
-        "operationId": "InvoiceController_create",
-        "parameters": [
-          {
-            "name": "orderId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
+        "operationId": "InvoiceController_getAll",
+        "parameters": [],
         "responses": {
+          "200": {
+            "description": "لیست فاکتورها برگردانده شد."
+          },
           "201": {
             "description": "فاکتور با موفقیت ایجاد شد.",
             "content": {
@@ -2804,22 +2798,6 @@
           }
         },
         "summary": "ایجاد فاکتور از سفارش (کاربر)",
-        "tags": [
-          "16 - 🔖 Invoices"
-        ]
-      }
-    },
-    "/api/invoices": {
-      "get": {
-        "description": "تمام فاکتورهای مرتبط با کاربر جاری را برمی‌گرداند.",
-        "operationId": "InvoiceController_getAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "لیست فاکتورها برگردانده شد."
-          }
-        },
-        "summary": "دریافت لیست فاکتورهای کاربر",
         "tags": [
           "16 - 🔖 Invoices"
         ]

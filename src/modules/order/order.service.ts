@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import { Order } from "./entities/order.entity";
 import { OrderItem } from "./entities/order-item.entity";
@@ -100,7 +100,7 @@ export class OrderService {
                     unitPrice,
                     discount: itemDiscount,
                     lineTotal,
-                    variantId: item.variantId ?? null,
+                    variant
                 });
                 orderItems.push(orderItem);
             }
@@ -127,6 +127,7 @@ export class OrderService {
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
+            const cardItemRepo = manager.getRepository(CardItem);
             const orderRepo = manager.getRepository(Order);
             const orderItemRepo = manager.getRepository(OrderItem);
 
@@ -143,10 +144,6 @@ export class OrderService {
                 throw new BadRequestException("سبد خرید خالی است.");
             if (card.status === CardStatus.ABANDONED)
                 throw new BadRequestException("سبد خرید منقضی شده است.");
-
-            // // 2️⃣ قفل کردن سبد تا عملیات نهایی انجام شود
-            // card.status = CardStatus.LOCKED;
-            // await cardRepo.save(card);
 
             // 3️⃣ محاسبه مبلغ نهایی و بررسی کوپن (اختیاری)
             let couponCode: string | undefined = undefined;
@@ -177,12 +174,12 @@ export class OrderService {
                 status: OrderStatus.PENDING,
                 subtotal: card.subtotal,
                 discountTotal: card.discountTotal,
-                total: card.total,
+                note: dto.note,
+                total: totalPayable,
                 couponCode: couponCode,
                 couponDiscountAmount: couponDiscountAmount,
             });
 
-            order.total = totalPayable;
             await orderRepo.save(order);
 
             // 5️⃣ انتقال آیتم‌ها از card → orderItem
@@ -199,19 +196,13 @@ export class OrderService {
                 await orderItemRepo.save(orderItem);
             }
 
-            // // 6️⃣ پاکسازی سبد خرید
-            // await cardItemRepo.delete({ card: { id: card.id } as any });
-            // card.itemsCount = 0;
-            // card.totalQuantity = 0;
-            // card.subtotal = 0;
-            // card.discountTotal = 0;
-            // card.total = 0;
-            // card.status = CardStatus.ABANDONED;
-            // await cardRepo.save(card);
+            // ⚠️ ❌ در اینجا دیگر cart را خالی نکن
+            // فقط LOCK می‌ماند تا وضعیت پرداخت مشخص شود
 
             return order;
         });
     }
+
 
     // 🧍 سفارش‌های کاربر
     async getUserOrders(user: User) {
