@@ -8,7 +8,7 @@ import { IUserResponse } from './interfaces/user.response.interface';
 import { IUserService } from './interfaces/user.service.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Injectable()
 export class UserService extends BaseService<User> implements IUserService {
@@ -71,6 +71,10 @@ export class UserService extends BaseService<User> implements IUserService {
             searchableColumns: ['firstName', 'lastName', 'phone', 'email'],
             defaultSortBy: [['id', 'DESC']],
             select: ['id', 'firstName', 'lastName', 'avatarUrl', 'phone', 'email', 'isPhoneVerified', 'isActive', 'createdAt', 'updatedAt', 'addresses.id', 'media.id', 'media.url'],
+            filterableColumns: {
+                isActive: [FilterOperator.EQ],
+                createdAt: [FilterOperator.GTE, FilterOperator.LTE]
+            }
         });
         return {
             message: 'لیست کاربران با موفقیت دریافت شد.',

@@ -10,7 +10,7 @@ import { AddressService } from '../address/address.service';
 import { CustomRequest } from 'src/common/interfaces/request.interface';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { UpdateAddressDto } from '../address/dto/update-address.dto';
-import { ApiPaginationQuery, Paginate, Paginated, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { ApiPaginationQuery, FilterOperator, Paginate, Paginated, PaginateQuery, PaginationType } from 'nestjs-paginate';
 @ApiTags('02 - 👤 Users')
 @Controller('users')
 @UseGuards(AccessGuard, RoleGuard)
@@ -30,6 +30,10 @@ export class UserController {
         sortableColumns: ['id', 'firstName', 'email', 'phone'],
         defaultSortBy: [['id', 'DESC']],
         searchableColumns: ['firstName', 'email', 'phone'],
+        filterableColumns: {
+            isActive: [FilterOperator.EQ],
+            createdAt: [FilterOperator.GTE, FilterOperator.LTE]
+        }
     })
 
     findAll(@Paginate() query: PaginateQuery) {
