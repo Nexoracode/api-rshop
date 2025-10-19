@@ -193,7 +193,7 @@ export class CouponService {
     const repo = this.dataSource.getRepository(Coupon);
     const coupon = await repo.findOne({
       where: { id },
-      relations: ["allowedUsers", "allowedProducts", "allowedCategories"],
+      relations: ["allowedUsers", "allowedProducts", "allowedCategories", 'allowedCategories.parent', 'allowedCategories.media'],
     });
     if (!coupon) throw new NotFoundException("کد یافت نشد.");
     return coupon;

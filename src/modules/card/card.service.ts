@@ -97,7 +97,7 @@ export class CardService {
       let variant: VariantProduct | null = null;
       if (dto.variantId) {
         variant = await variantRepo.findOne({ where: { id: dto.variantId } });
-        if (!variant) throw new NotFoundException("نوع محصول یافت نشد.");
+        if (!variant) throw new NotFoundException("تنوع محصول یافت نشد.");
       }
 
       // ۳️⃣ محاسبه قیمت و تخفیف

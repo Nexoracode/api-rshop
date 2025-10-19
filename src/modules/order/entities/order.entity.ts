@@ -22,7 +22,7 @@ export class Order {
     items: OrderItem[];
 
 
-    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
+    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.AWAITING_PAYMENT })
     status: OrderStatus;
 
 

@@ -58,14 +58,11 @@ export class ProductService implements IProductService {
             },
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
-            select: ['id', 'name', 'price', 'weight', 'isFeatured', 'isVisible', 'isLimitedStock',
-                'isSameDayShipping', 'discountAmount', 'discountPercent', 'brandId', 'helperId', 'brand.id', 'brand.name', 'brand.logo',
-                'brand.slug', 'helper.id', 'helper.title', 'helper.image', 'helper.description', 'mediaPinnedId', 'stock', 'createdAt', 'orderLimit', 'medias.id', 'medias.url', 'medias.type', 'mediaPinned.id', 'mediaPinned.url', 'mediaPinned.type', 'category.id', 'category.title'],
         });
         return {
             message: 'محصولات با موفقیت دریافت شد.',
             data: {
-                items: products.data,
+                items: products.data.map((product) => ProductMapper.toResponse(product, { cartesian: true })),
                 meta: products.meta,
                 links: products.links,
             }

@@ -1,14 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
-import { File } from 'buffer';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Public } from 'src/common/decorator/public.decorator';
+
+const MAX_FILE_UPLOAD = 10;
 
 @ApiTags('03 - 🗂️ Categories')
 @Controller('category')
@@ -19,7 +20,7 @@ export class CategoryController {
   ) { }
 
   @Post('upload')
-  @UseInterceptors(FilesInterceptor('files', 10))
+  @UseInterceptors(FilesInterceptor('files', MAX_FILE_UPLOAD))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'List of Category',
@@ -49,7 +50,6 @@ export class CategoryController {
   async findByIdWithDescendants(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.findByIdWithDescendants(id);
   }
-
 
   @Patch(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateCategoryDto) {

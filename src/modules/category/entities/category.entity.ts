@@ -1,11 +1,13 @@
 import { CategoryAttribute } from "src/modules/category-attribute/entities/category-attribute.entity";
 import { Product } from "src/modules/product/entities/product.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeLevelColumn, TreeParent, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent, UpdateDateColumn } from "typeorm";
 import { ICategory } from "../interfaces/category.interface";
 import { Media } from "src/modules/media/entities/image.entity";
 
 @Tree('closure-table')
 @Entity('categories')
+@Index(['slug'])
+@Index(['title'])
 export class Category implements ICategory {
     @PrimaryGeneratedColumn()
     id: number;
@@ -34,6 +36,12 @@ export class Category implements ICategory {
 
     @Column({ nullable: true })
     discount: string;
+
+    @Column({ name: 'display_order', default: 0 })
+    displayOrder: number;
+
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean;
 
     @OneToOne(() => Media, (media) => media.category)
     media: Media;

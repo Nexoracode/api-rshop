@@ -178,6 +178,30 @@
             }
           },
           {
+            "name": "filter.isActive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by isActive query param.\n          <p>\n             <b>Format: </b> filter.isActive={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.isActive=$not:$like:John Doe&filter.isActive=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.createdAt",
+            "required": false,
+            "in": "query",
+            "description": "Filter by createdAt query param.\n          <p>\n             <b>Format: </b> filter.createdAt={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.createdAt=$not:$like:John Doe&filter.createdAt=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$gte</li>\n<li>$lte</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "sortBy",
             "required": false,
             "in": "query",
@@ -718,7 +742,7 @@
             "name": "sortBy",
             "required": false,
             "in": "query",
-            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> No default sorting specified, the result order is not guaranteed\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>name</li>\n<li>price</li>\n<li>stock</li></ul>\n      ",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> createdAt:DESC\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>name</li>\n<li>price</li>\n<li>stock</li>\n<li>createdAt</li></ul>\n      ",
             "schema": {
               "type": "array",
               "items": {
@@ -731,7 +755,9 @@
                   "price:ASC",
                   "price:DESC",
                   "stock:ASC",
-                  "stock:DESC"
+                  "stock:DESC",
+                  "createdAt:ASC",
+                  "createdAt:DESC"
                 ]
               }
             }
@@ -740,7 +766,7 @@
             "name": "filter[attributes]",
             "required": false,
             "in": "query",
-            "description": "فیلتر ویژگی‌ها بر اساس attributeId:valueIds. هر بخش با \"|\" جدا میشه.",
+            "description": "فیلتر ویژگی‌ها بر اساس attributeId:valueIds. هر attribute با \"|\" جدا می‌شود و مقادیر با \",\"",
             "schema": {
               "example": "47:55,56|48:60",
               "type": "string"
@@ -749,11 +775,14 @@
         ],
         "responses": {
           "200": {
-            "description": "لیست محصولات و فیلترها"
+            "description": "لیست محصولات و فیلترهای دسته بندی"
+          },
+          "404": {
+            "description": "دسته بندی یافت نشد"
           }
         },
         "tags": [
-          "Catalog"
+          "04 - 📦 Catalog"
         ]
       }
     },
@@ -3154,6 +3183,31 @@
           "Payment Logs"
         ]
       }
+    },
+    "/api/imported-excel/import": {
+      "post": {
+        "operationId": "ImportedExcelController_uploadAndImport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "imported excel file",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportExcelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ImportedExcel"
+        ]
+      }
     }
   },
   "info": {
@@ -3541,50 +3595,63 @@
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "عنوان دسته بندی",
+            "example": "الکترونیک"
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "نامک دسته بندی",
+            "example": "electronic"
           },
           "media_id": {
             "type": "object",
-            "example": 0
+            "example": 0,
+            "description": "شناسه تصویر دسته بندی"
           },
           "discount": {
-            "type": "string"
+            "type": "string",
+            "description": "درصد تخفیف",
+            "example": "10"
           },
           "parent_id": {
             "type": "number",
-            "example": 0
+            "example": 0,
+            "description": "شناسه دسته والد (0 برای دسته اصلی)"
           }
         },
         "required": [
           "title",
-          "slug",
-          "media_id",
-          "discount",
-          "parent_id"
+          "slug"
         ]
       },
       "UpdateCategoryDto": {
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "عنوان دسته بندی",
+            "example": "الکترونیک"
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "نامک دسته بندی",
+            "example": "electronic"
           },
           "media_id": {
             "type": "object",
-            "example": 0
+            "example": 0,
+            "description": "شناسه تصویر دسته بندی"
           },
           "discount": {
-            "type": "string"
+            "type": "string",
+            "description": "درصد تخفیف",
+            "example": "10"
           },
           "parent_id": {
             "type": "number",
-            "example": 0
+            "example": 0,
+            "description": "شناسه دسته والد (0 برای دسته اصلی)"
           }
         }
       },
@@ -4243,56 +4310,125 @@
           "itemId"
         ]
       },
+      "ManualVariantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 3,
+            "description": "شناسه واریانت (Variant ID)"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 5,
+            "description": "تعداد انتخاب‌شده از این واریانت"
+          }
+        },
+        "required": [
+          "id",
+          "quantity"
+        ]
+      },
+      "ManualProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "example": 1,
+            "description": "شناسه محصول (Product ID)"
+          },
+          "variantIds": {
+            "description": "لیست واریانت‌ها به‌همراه تعداد هرکدام",
+            "example": [
+              {
+                "id": 3,
+                "quantity": 10
+              },
+              {
+                "id": 5,
+                "quantity": 2
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManualVariantDto"
+            }
+          }
+        },
+        "required": [
+          "productId",
+          "variantIds"
+        ]
+      },
       "CreateManualOrderDto": {
         "type": "object",
         "properties": {
-          "user_id": {
+          "userId": {
             "type": "number",
-            "example": 2
+            "example": 2,
+            "description": "شناسه کاربر (User ID)"
           },
           "items": {
-            "type": "array",
+            "description": "لیست محصولات انتخاب‌شده برای این سفارش",
             "example": [
               {
                 "product_id": 1,
-                "variant_id": null,
-                "quantity": 50
+                "variant_ids": [
+                  {
+                    "id": 3,
+                    "quantity": 20
+                  },
+                  {
+                    "id": 5,
+                    "quantity": 3
+                  }
+                ]
               },
               {
                 "product_id": 2,
-                "variant_id": 1,
-                "quantity": 1
+                "variant_ids": [
+                  {
+                    "id": 7,
+                    "quantity": 2
+                  }
+                ]
               }
-            ]
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManualProductDto"
+            }
           },
           "status": {
             "type": "string",
             "enum": [
-              "pending",
-              "paid",
-              "cancelled",
-              "shipped",
+              "pending_approval",
+              "awaiting_payment",
+              "payment_confirmation_pendign",
+              "preparing",
+              "shipping",
               "delivered",
+              "not_delivered",
+              "expired",
+              "rejected",
               "refunded",
-              "failed"
+              "payment_failed"
             ],
-            "default": "pending"
+            "example": "awaiting_payment",
+            "description": "وضعیت سفارش (مثلاً pending، paid، delivered و ...)"
           },
-          "discount_amount": {
-            "type": "number",
-            "example": 2000
-          },
-          "is_manual": {
+          "isManual": {
             "type": "boolean",
+            "example": true,
+            "description": "آیا سفارش به‌صورت دستی ثبت شده است؟",
             "default": true
           }
         },
         "required": [
-          "user_id",
+          "userId",
           "items",
           "status",
-          "discount_amount",
-          "is_manual"
+          "isManual"
         ]
       },
       "CreateOrderFromCardDto": {
@@ -4314,15 +4450,19 @@
           "status": {
             "type": "string",
             "enum": [
-              "pending",
-              "paid",
-              "cancelled",
-              "shipped",
+              "pending_approval",
+              "awaiting_payment",
+              "payment_confirmation_pendign",
+              "preparing",
+              "shipping",
               "delivered",
+              "not_delivered",
+              "expired",
+              "rejected",
               "refunded",
-              "failed"
+              "payment_failed"
             ],
-            "example": "pending"
+            "example": "awaiting_payment"
           }
         },
         "required": [
@@ -4624,10 +4764,31 @@
             "type": "number",
             "example": 123,
             "description": "شناسه سفارش"
+          },
+          "callback": {
+            "type": "string",
+            "example": "https://your-site.com/payment/verify",
+            "description": "آدرس بازگشت از درگاه"
           }
         },
         "required": [
-          "order_id"
+          "order_id",
+          "callback"
+        ]
+      },
+      "ImportExcelDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        },
+        "required": [
+          "file"
         ]
       }
     }

@@ -14,7 +14,7 @@ export class PaymentController {
   @Post("create")
   @ApiOperation({ summary: "ایجاد لینک پرداخت برای سفارش" })
   async createPayment(@Body() dto: CreatePaymentDto, @Req() req: Request) {
-    return this.paymentService.createPayment(dto.orderId, req);
+    return this.paymentService.createPayment(dto.callback, dto.orderId, req);
   }
 
   // 🔵 بازگشت از درگاه پرداخت (callback)
@@ -26,6 +26,6 @@ export class PaymentController {
     @Query("Authority") authority: string,
     @Query("Status") status: string
   ) {
-    return this.paymentService.verifyPayment(orderId, authority, status, req);
+    return this.paymentService.verifyPayment(authority, status, req);
   }
 }

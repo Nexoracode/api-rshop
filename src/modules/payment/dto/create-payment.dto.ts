@@ -10,7 +10,8 @@ export class CreatePaymentDto {
     @IsNumber()
     orderId: number;
 
-    // @ApiProperty({ name: 'callback', example: "https://your-site.com/payment/verify", description: "آدرس بازگشت از درگاه" })
-    // @IsString()
-    // callback: string;
+
+    @ApiProperty({ name: 'callback', example: "https://your-site.com/payment/verify", description: "آدرس بازگشت از درگاه" })
+    @IsString()
+    callback: string;
 }

@@ -1,5 +1,4 @@
 import { Media } from "src/modules/media/entities/image.entity";
-import { Category } from "../entities/category.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 
 export interface ICategoryResponse {
@@ -11,8 +10,8 @@ export interface ICategoryResponse {
     isDelete: boolean;
     title: string;
     slug: string;
-    media: Media | Object,
-    products: Product[]
+    media: Media | null;
+    products: Product[];
 }
 
 export interface ICategoryResponseSite {

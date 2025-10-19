@@ -34,6 +34,7 @@ export class BrandController {
     return this.brandService.create(createBrandDto);
   }
 
+
   @Get()
   @ApiPaginationQuery({
     sortableColumns: ['id', 'name', 'logo'],
@@ -44,6 +45,7 @@ export class BrandController {
   findAllPaginate(@Paginate() query: PaginateQuery) {
     return this.brandService.findAllPaginate(query);
   }
+
 
   @Get('all')
   findAll() {

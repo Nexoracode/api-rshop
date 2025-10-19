@@ -4,7 +4,7 @@ import { OrderStatus } from "../enums/order-status.enum";
 
 export class UpdateStatusDto {
 
-    @ApiProperty({ enum: OrderStatus, example: OrderStatus.PENDING })
+    @ApiProperty({ enum: OrderStatus, example: OrderStatus.AWAITING_PAYMENT })
     @IsEnum(OrderStatus)
     @IsNotEmpty()
     status: OrderStatus;

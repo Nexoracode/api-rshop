@@ -62,59 +62,87 @@ export class OrderService {
             let discountTotal = 0;
             const orderItems: OrderItem[] = [];
 
-            for (const item of dto.items) {
-                // 🧱 دریافت محصول و واریانت (در صورت وجود)
+            for (const productItem of dto.items) {
                 const product = await manager.findOne(Product, {
-                    where: { id: item.productId },
+                    where: { id: productItem.productId },
                     relations: ["variants"],
                 });
-                if (!product) throw new NotFoundException(`محصول ${item.productId} یافت نشد.`);
+                if (!product) throw new NotFoundException(`محصول ${productItem.productId} یافت نشد.`);
 
-                let unitPrice = product.price;
-                let variant: VariantProduct | null = null;
+                const basePrice = Number(product.price) || 0;
+                const discountPercent = Number(product.discountPercent) || 0;
+                const discountAmount = Number(product.discountAmount) || 0;
 
-                if (item.variantId) {
-                    variant = product.variants.find(v => v.id === item.variantId) ?? null;
-                    if (!variant) throw new BadRequestException(`واریانت ${item.variantId} یافت نشد.`);
-                    unitPrice = variant.price ?? product.price;
+                // 🧩 حالت ۱: محصول بدون واریانت
+                if (!productItem.variantIds || productItem.variantIds.length === 0) {
+                    const unitPrice = basePrice;
+
+                    // تخفیف از محصول
+                    let discount = 0;
+                    if (discountPercent && discountPercent > 0)
+                        discount = (unitPrice * discountPercent) / 100;
+                    else if (discountAmount && discountAmount > 0)
+                        discount = discountAmount;
+
+                    const finalUnitPrice = unitPrice - discount;
+                    const lineTotal = finalUnitPrice * 1; // مقدار quantity پیش‌فرض ۱ اگر فرانت نده
+
+                    subtotal += unitPrice;
+                    discountTotal += discount;
+
+                    orderItems.push(
+                        manager.create(OrderItem, {
+                            quantity: 1,
+                            unitPrice,
+                            discount,
+                            lineTotal,
+                            productId: product.id,
+                            variant: null,
+                        }),
+                    );
+                } else {
+                    // 🧩 حالت ۲: محصول با واریانت‌ها
+                    for (const variantObj of productItem.variantIds) {
+                        const variant = product.variants.find(v => v.id === variantObj.id);
+                        if (!variant) throw new BadRequestException(`واریانت ${variantObj.id} یافت نشد.`);
+
+                        const unitPrice = variant.price ?? product.price;
+
+                        let discount = 0;
+                        if (product.discountPercent && product.discountPercent > 0)
+                            discount = (unitPrice * product.discountPercent) / 100;
+                        else if (product.discountAmount && product.discountAmount > 0)
+                            discount = product.discountAmount;
+
+                        const finalUnitPrice = unitPrice - discount;
+                        const lineTotal = finalUnitPrice * variantObj.quantity;
+
+                        subtotal += unitPrice * variantObj.quantity;
+                        discountTotal += discount * variantObj.quantity;
+
+                        orderItems.push(
+                            manager.create(OrderItem, {
+                                quantity: variantObj.quantity,
+                                unitPrice,
+                                discount,
+                                lineTotal,
+                                productId: product.id,
+                                variantId: variant.id,
+                            }),
+                        );
+                    }
                 }
-
-                // 🧮 محاسبه تخفیف
-                let itemDiscount = 0;
-
-                if (product.discountPercent && product.discountPercent > 0)
-                    itemDiscount = (unitPrice * product.discountPercent) / 100;
-                else if (product.discountAmount && product.discountAmount > 0)
-                    itemDiscount = product.discountAmount;
-
-                const finalUnitPrice = unitPrice - itemDiscount;
-                const lineTotal = finalUnitPrice * item.quantity;
-
-                subtotal += unitPrice * item.quantity;
-                discountTotal += itemDiscount * item.quantity;
-
-                // ایجاد OrderItem
-                const orderItem = manager.create(OrderItem, {
-                    product,
-                    quantity: item.quantity,
-                    unitPrice,
-                    discount: itemDiscount,
-                    lineTotal,
-                    variant
-                });
-                orderItems.push(orderItem);
             }
 
             const total = subtotal - discountTotal;
 
-            // 🧾 ذخیره سفارش
             const order = manager.create(Order, {
                 user,
                 status: dto.status,
                 subtotal,
                 discountTotal,
                 total,
-                isManual: true, // اضافه‌شده برای تشخیص نوع سفارش
+                isManual: true,
                 items: orderItems,
             });
 
@@ -122,6 +150,8 @@ export class OrderService {
             return order;
         });
     }
+
+
 
     // 🛒 ساخت سفارش از سبد خرید
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
@@ -136,14 +166,13 @@ export class OrderService {
 
             // 1️⃣ پیدا کردن سبد خرید کاربر
             const card = await cardRepo.findOne({
-                where: { user: { id: user.id } },
+                where: { user: { id: user.id }, status: CardStatus.OPEN },
                 relations: ["items", "items.product", "items.variant"],
                 lock: { mode: "pessimistic_write" },
             });
+            console.log(card);
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
-            if (card.status === CardStatus.ABANDONED)
-                throw new BadRequestException("سبد خرید منقضی شده است.");
 
             // 3️⃣ محاسبه مبلغ نهایی و بررسی کوپن (اختیاری)
             let couponCode: string | undefined = undefined;
@@ -171,7 +200,7 @@ export class OrderService {
             // 4️⃣ ایجاد سفارش جدید
             const order = orderRepo.create({
                 user: user,
-                status: OrderStatus.PENDING,
+                status: OrderStatus.AWAITING_PAYMENT,
                 subtotal: card.subtotal,
                 discountTotal: card.discountTotal,
                 note: dto.note,
@@ -213,10 +242,10 @@ export class OrderService {
     }
 
     // 🔍 جزئیات سفارش خاص
-    async getOrderById(user: User, id: number) {
+    async getOrderById(id: number) {
         const order = await this.dataSource.getRepository(Order).findOne({
-            where: { id, user: { id: user.id } },
-            relations: ["user"],
+            where: { id },
+            relations: ["user", 'items', 'items.variant'],
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
         return order;

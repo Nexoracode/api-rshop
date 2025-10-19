@@ -1,7 +1,9 @@
 export enum InvoiceStatus {
-    UNPAID = "unpaid",          // در انتظار پرداخت
-    PAID = "paid",              // پرداخت‌شده
-    FAILED = "failed",          // ناموفق
-    REFUNDED = "refunded",      // بازگشت وجه
-    CANCELED = "canceled",      // لغوشده
+    PENDING = "pending",      // در انتظار پرداخت
+    PAID = "paid",            // پرداخت‌شده
+    CANCELLED = "cancelled",  // لغوشده
+    SHIPPED = "shipped",      // ارسال‌شده
+    DELIVERED = "delivered",  // تحویل‌شده
+    REFUNDED = "refunded",    // بازگشت وجه
+    FAILED = 'failed',   // لغوشده
 }

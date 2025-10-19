@@ -43,8 +43,8 @@ export class OrderController {
 
 
   @Get(':id')
-  getOne(@CurrentUser() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
-    return this.orderService.getOrderById(user as any, id);
+  getOne(@Param('id', ParseIntPipe) id: number) {
+    return this.orderService.getOrderById(id);
   }
 
   @Patch(':id/status')

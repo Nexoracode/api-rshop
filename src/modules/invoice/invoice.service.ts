@@ -21,9 +21,9 @@ export class InvoiceService {
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
         const status =
-            order.status === OrderStatus.PAID
+            order.status === OrderStatus.DELIVERED
                 ? InvoiceStatus.PAID
-                : InvoiceStatus.UNPAID;
+                : InvoiceStatus.PENDING;
 
         const invoice = manager.create(Invoice, {
             order,

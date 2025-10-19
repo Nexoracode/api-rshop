@@ -8,24 +8,31 @@ import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery } from 'nes
 import { CatalogService } from './catalog.service';
 import { Public } from 'src/common/decorator/public.decorator';
 
-@ApiTags('Catalog')
+@ApiTags('04 - 📦 Catalog')
 @Controller('catalog')
 export class CatalogController {
     constructor(private readonly catalogService: CatalogService) { }
 
     @Public()
     @Get(':category')
-    @ApiResponse({ status: 200, description: 'لیست محصولات و فیلترها' })
+    @ApiResponse({ 
+        status: 200, 
+        description: 'لیست محصولات و فیلترهای دسته بندی' 
+    })
+    @ApiResponse({ 
+        status: 404, 
+        description: 'دسته بندی یافت نشد' 
+    })
     @ApiQuery({
         name: 'filter[attributes]',
         required: false,
         type: String,
         example: '47:55,56|48:60',
-        description:
-            'فیلتر ویژگی‌ها بر اساس attributeId:valueIds. هر بخش با "|" جدا میشه.',
+        description: 'فیلتر ویژگی‌ها بر اساس attributeId:valueIds. هر attribute با "|" جدا می‌شود و مقادیر با ","'
     })
     @ApiPaginationQuery({
-        sortableColumns: ['id', 'name', 'price', 'stock'],
+        sortableColumns: ['id', 'name', 'price', 'stock', 'createdAt'],
+        defaultSortBy: [['createdAt', 'DESC']],
         filterableColumns: {
             price: [FilterOperator.GTE, FilterOperator.LTE],
             discountAmount: [FilterOperator.GT, FilterOperator.EQ],

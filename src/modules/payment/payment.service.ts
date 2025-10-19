@@ -49,11 +49,12 @@ export class PaymentService {
   // ────────────────────────────────────────────────
   // 💰 مرحله 1: ایجاد درخواست پرداخت در زرین‌پال
   // ────────────────────────────────────────────────
-  async createPayment(orderId: number, req: Request) {
+  async createPayment(callbackUrl: string, orderId: number, req: Request) {
     return runInTransaction(this.dataSource, async (manager) => {
       const orderRepo = manager.getRepository(Order);
       const paymentRepo = manager.getRepository(Payment);
       const paymentLogRepo = manager.getRepository(PaymentLog);
+      const cardRepo = manager.getRepository(Card);
 
       const order = await orderRepo.findOne({
         where: { id: orderId },
@@ -62,20 +63,35 @@ export class PaymentService {
       if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
       // اگر قبلاً پرداخت شده
-      if (order.status === OrderStatus.PAID)
+      if (order.status === OrderStatus.PAYMENT_CONFIRMATION_PENDING)
         throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
 
       // ✅ ارسال درخواست پرداخت به زرین‌پال
+      // const card = await cardRepo.findOne({ where: { user: { id: order.user.id }, status: CardStatus.OPEN } });
+      // if (card) {
+      //   card.status = CardStatus.LOCKED
+      //   await cardRepo.save(card);
+      // }
       let requestResult: any;
       try {
         requestResult = await zarinpal.PaymentRequest({
           Amount: order.total,
-          CallbackURL: `${process.env.FRONTEND_URL}/payment/verify?order_id=${order.id}`,
+          CallbackURL: callbackUrl,
           Description: `پرداخت سفارش شماره ${order.id}`,
           Email: order.user?.email ?? undefined,
           Mobile: order.user?.phone ?? undefined,
         });
       } catch (e: any) {
+        // await paymentLogRepo.save({
+        //   order: order,
+        //   user: order.user,
+        //   authority: "",
+        //   status: PaymentLogStatus.FAILED,
+        //   message: "خطای درگاه پرداخت هنگام create",
+        //   ip: req.ip,
+        //   userAgent: req.headers["user-agent"],
+        //   payload: { e },
+        // });
         const code = e.errors?.code ?? -50;
         throw new ZarinpalException(code, e.errors?.message);
       }
@@ -126,36 +142,37 @@ export class PaymentService {
   // 💳 مرحله 2: تأیید پرداخت (بازگشت از درگاه)
   // ────────────────────────────────────────────────
   async verifyPayment(
-    orderId: number,
     authority: string,
     status: string,
     req: Request,
   ) {
-    await runInTransaction(this.dataSource, async (manager) => {
+    return runInTransaction(this.dataSource, async (manager) => {
       const cardRepo = manager.getRepository(Card);
       const cardItemRepo = manager.getRepository(CardItem);
       const paymentRepo = manager.getRepository(Payment);
       const paymentLogRepo = manager.getRepository(PaymentLog);
 
-      const order = await manager.findOne(Order, {
-        where: { id: orderId },
-        relations: ["user"],
-      });
-      if (!order) throw new NotFoundException("سفارش یافت نشد.");
-
-      if (order.status === OrderStatus.PAID)
-        throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
-
-      const card = await cardRepo.findOne({
-        where: { user: { id: order.user.id } },
-        relations: ["items"],
-      });
 
       const payment = await paymentRepo.findOne({
         where: { authority },
         relations: ['order', 'user'],
       });
       if (!payment) throw new NotFoundException('تراکنش یافت نشد.');
+
+      const order = await manager.findOne(Order, {
+        where: { id: payment.order.id },
+        relations: ["user", 'items'],
+      });
+      if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
+      if (order.status === OrderStatus.PREPARING)
+        throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
+
+      const card = await cardRepo.findOne({
+        where: { user: { id: order.user.id }, status: CardStatus.LOCKED },
+        relations: ["items"],
+      });
+
 
       await paymentLogRepo.save({
         order,
@@ -171,7 +188,7 @@ export class PaymentService {
 
       // 🚫 اگر کاربر پرداخت را لغو کرده باشد
       if (status !== "OK") {
-        order.status = OrderStatus.FAILED;
+        order.status = OrderStatus.PAYMENT_FAILED;
         await manager.save(order);
         if (card) {
           card.status = CardStatus.OPEN;
@@ -205,10 +222,11 @@ export class PaymentService {
           Amount: order.total,
           Authority: authority,
         });
+        console.log(verification);
         // ✅ پرداخت موفق
         if ([100, 101].includes(verification.status)) {
-          order.status = OrderStatus.PAID;
-          await manager.save(order);
+          // order.status = OrderStatus.PAID;
+          // await manager.save(order);
           if (card) {
             await cardItemRepo.delete({ cardId: card.id });
             card.itemsCount = 0;
@@ -235,15 +253,20 @@ export class PaymentService {
             userAgent: req.headers["user-agent"],
             payload: verification,
           });
-          await this.invoiceService.createFromOrder(manager, order.id, order.user);
+          const invoice = await this.invoiceService.createFromOrder(manager, order.id, order.user);
+          console.log(order.items);
           return {
             order,
-            success: true,
-            refId: verification.refId,
+            items: order.items,
             message: "پرداخت با موفقیت انجام شد.",
+            payment: {
+              refId: verification.refId,
+              fee: verification.fee,
+              date: invoice?.createdAt,
+            }
           };
         } else {
-          order.status = OrderStatus.FAILED;
+          order.status = OrderStatus.PAYMENT_FAILED;
           await manager.save(order);
         }
       } catch (e) {
@@ -255,7 +278,7 @@ export class PaymentService {
           payment,
           authority,
           status: PaymentLogStatus.FAILED,
-          message: "خطای درگاه پرداخت",
+          message: "خطای درگاه پرداخت هنگام verify",
           ip: req.ip,
           userAgent: req.headers["user-agent"],
           payload: { e },

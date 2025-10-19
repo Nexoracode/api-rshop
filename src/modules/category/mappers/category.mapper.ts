@@ -12,13 +12,8 @@ export class CategoryMapper {
             parentId: category.parent?.id || 0,
             children: category.children?.map((child) => this.toResponse(child)) ?? [],
             isDelete: !category.children || category.children.length === 0,
-            media: category.media ? {
-                id: category.media.id,
-                url: category.media.url,
-                alt: category.media.altText,
-                type: category.media.type,
-            } : {},
-            products: category.products,
+            media: category.media ?? null,
+            products: category.products || [],
         };
     }
 

@@ -55,7 +55,7 @@ export class Invoice {
     totalPayable?: number;
 
     // 💳 وضعیت پرداخت (پرداخت‌شده / در انتظار / لغو)
-    @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.UNPAID })
+    @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.PENDING })
     status: InvoiceStatus;
 
     @Column({ type: "varchar", length: 255, nullable: true })
