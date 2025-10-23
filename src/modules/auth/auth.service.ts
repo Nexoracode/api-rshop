@@ -4,8 +4,8 @@ import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { RequestDto } from './dto/request.dto';
 import { VerifyOtpDto } from './dto/verify.dto';
-import { JwtTypeToken as TypeToken, JwtUtil } from 'src/common/utils/jwt.util';
-import { Response } from 'express';
+import { JwtTypeToken as TypeToken, JwtUtil, JwtTypeToken } from 'src/common/utils/jwt.util';
+import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { IAuthService } from './interfaces/auth.service.interface';
 import { RegisterDto } from './dto/register.dto';
@@ -13,6 +13,7 @@ import { IAuthResponse } from './interfaces/auth-response.interface';
 import { UserMapper } from '../user/mappers/user.mapper';
 import { AuthMapper } from './mappers/auth.mapper';
 import { LoginDto } from './dto/login.dto';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 @Injectable()
 export class AuthService implements IAuthService {
     constructor(
@@ -42,7 +43,6 @@ export class AuthService implements IAuthService {
         })
         if (!user) throw new NotFoundException('نام کاربری یا رمز عبور صحیح نمی باشد.');
         const matchPassword = await bcrypt.compare(data.password, user.password);
-        console.log(matchPassword);
         if (!matchPassword) throw new NotFoundException('نام کاربری یا رمز عبور صحیح نمی باشد.');
         const NewUser = await this.generateRefreshTokenAndSetCookie(user, res);
         return AuthMapper.toResponse(NewUser);
@@ -52,8 +52,17 @@ export class AuthService implements IAuthService {
         throw new Error('Method not implemented.');
     }
 
-    async logout(): Promise<Object> {
-        throw new Error('Method not implemented.');
+    async logout(userId: number, res: Response) {
+        const user = await this.userRepo.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException('کاربر یافت نشد.');
+        user.apiToken = null;
+        this.jwtUtil.removeTokenFromCookie(res, JwtTypeToken.ACCESS)
+        this.jwtUtil.removeTokenFromCookie(res, JwtTypeToken.REFRESH)
+        await this.userRepo.save(user);
+        res.json({
+            message: 'خروج با موفقیت انجام شد',
+            data: null,
+        })
     }
 
     private otpService = new Map<string, string>();

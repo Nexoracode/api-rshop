@@ -42,7 +42,7 @@ export class User implements IUser {
     role: Role;
 
     @Column({ name: 'api_token', type: 'varchar', nullable: true, select: false })
-    apiToken: string;
+    apiToken?: string | null;
     @BeforeInsert()
     @BeforeUpdate()
     async hashedApi() {

@@ -2,7 +2,7 @@ import { PaginateQuery } from "nestjs-paginate";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
 import { IUserResponse } from "./user.response.interface";
-
+import { Request } from "express";
 export interface IUserService {
     create(data: CreateUserDto): Promise<IUserResponse>;
     findOneUser(id: number): Promise<IUserResponse>;

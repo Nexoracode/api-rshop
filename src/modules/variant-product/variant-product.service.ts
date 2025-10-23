@@ -117,7 +117,7 @@ export class VariantProductService {
 
         // SKU یکتا و قطعی
         const deterministic = buildDeterministicSku(dto.sku, combo, product.id);
-        const uniqueSku = await ensureUniqueSku(manager, deterministic);
+        const uniqueSku = `${deterministic}sdk${product.id}`
 
         const variant = manager.create(VariantProduct, {
           sku: uniqueSku,

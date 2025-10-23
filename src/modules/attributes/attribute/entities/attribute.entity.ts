@@ -43,6 +43,9 @@ export class Attribute implements IAttribute {
     @Column({ type: 'enum', enum: AttributeUnit, default: AttributeUnit.TEXT })
     type: AttributeUnit;
 
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean;
+
     @Column({ name: 'display_order', type: 'int' })
     displayOrder: number;
 

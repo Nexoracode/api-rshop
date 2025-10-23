@@ -34,7 +34,7 @@ export class AutoRefreshGuard implements CanActivate {
             try {
                 const decode = await this.tokenService.verifyToken(refreshToken, JwtTypeToken.REFRESH);
                 const user = await this.authService.getUserById(decode.sub);
-                const isMatch = await bcrypt.compare(refreshToken, user.apiToken);
+                const isMatch = await bcrypt.compare(refreshToken, user.apiToken!);
                 if (!isMatch) throw new UnauthorizedException('refresh token not match');
 
                 const payload = {

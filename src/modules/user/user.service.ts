@@ -9,6 +9,7 @@ import { IUserService } from './interfaces/user.service.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterOperator, paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { Request } from 'express';
 
 @Injectable()
 export class UserService extends BaseService<User> implements IUserService {

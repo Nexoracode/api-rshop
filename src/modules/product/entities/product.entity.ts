@@ -25,7 +25,7 @@ export class Product implements IProduct {
     @Column('int')
     stock: number;
 
-    @Column({ name: 'is_some_day_shipping', default: false })
+    @Column({ name: 'is_same_day_shipping', default: false })
     isSameDayShipping: boolean;
 
     @Column({ name: 'requires_preparation', default: false })
@@ -49,7 +49,7 @@ export class Product implements IProduct {
     @Column({ type: 'float', default: 0 })
     weight: number;
 
-    @Column({ name: 'widget_unit', type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
+    @Column({ name: 'weight_unit', type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
     weightUnit: WeightUnit;
 
     @Column({ type: 'longtext', nullable: true })
@@ -101,6 +101,9 @@ export class Product implements IProduct {
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
+
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean | true;
 
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;

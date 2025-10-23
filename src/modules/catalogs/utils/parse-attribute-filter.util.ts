@@ -1,17 +1,24 @@
-export type ParsedAttributeFilter = Record<number, number[]>;
+// src/modules/catalog/utils/parse-attribute-filter.util.ts
+export function parseAttributeFilter(raw?: string): Record<number, number[]> {
+    if (!raw) return {};
 
-/**
- * ورودی شبیه "47:55,56|48:60"
- * خروجی: { 47: [55,56], 48: [60] }
- */
-export function parseAttributeFilter(str?: string): ParsedAttributeFilter {
-    const out: ParsedAttributeFilter = {};
-    if (!str) return out;
+    const result: Record<number, number[]> = {};
+    const parts = raw.split('|'); // هر attribute با | جدا شده
 
-    for (const group of str.split('|')) {
-        const [aid, vals] = group.split(':');
-        if (!aid || !vals) continue;
-        out[+aid] = vals.split(',').map((v) => +v).filter(Boolean);
+    for (const part of parts) {
+        const [attr, values] = part.split(':');
+        if (!attr || !values) continue;
+
+        const attrId = parseInt(attr.trim());
+        const valueIds = values
+            .split(',')
+            .map((v) => parseInt(v.trim()))
+            .filter((v) => !isNaN(v));
+
+        if (!isNaN(attrId) && valueIds.length > 0) {
+            result[attrId] = valueIds;
+        }
     }
-    return out;
+
+    return result;
 }

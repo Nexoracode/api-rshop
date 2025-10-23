@@ -1,5 +1,5 @@
 export interface RequestUser {
-    id: string;
+    id: number;
     email?: string;
     phone?: string;
     firstName?: string;

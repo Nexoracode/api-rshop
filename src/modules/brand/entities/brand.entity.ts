@@ -9,11 +9,14 @@ export class Brand {
     @Column({ unique: true })
     name: string;
 
-    @Column()
+    @Column({ nullable: true, default: '' })
     slug: string;
 
     @Column()
     logo: string;
+
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean | true;
 
     @OneToMany(() => Product, product => product.brand)
     products: Product;

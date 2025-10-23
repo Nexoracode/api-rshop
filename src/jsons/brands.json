@@ -1,0 +1,44 @@
+{
+    "brands": [
+        {
+            "id": 1,
+            "name": "مهرآسا",
+            "logo": "/mock/image_32.jpg"
+        },
+        {
+            "id": 2,
+            "name": "عطر نیک",
+            "logo": "/mock/image_33.jpg"
+        },
+        {
+            "id": 3,
+            "name": "تسبیح‌کو",
+            "logo": "/mock/image_25.jpg"
+        },
+        {
+            "id": 4,
+            "name": "کتاب دعا",
+            "logo": "/mock/image_36.jpg"
+        },
+        {
+            "id": 5,
+            "name": "چراغین",
+            "logo": "/mock/image_50.jpg"
+        },
+        {
+            "id": 6,
+            "name": "دیجیتال‌پلاس",
+            "logo": "/mock/image_44.jpg"
+        },
+        {
+            "id": 7,
+            "name": "ماگ‌لند",
+            "logo": "/mock/image_49.jpg"
+        },
+        {
+            "id": 8,
+            "name": "اسپیکر‌استار",
+            "logo": "/mock/image_53.jpg"
+        }
+    ]
+}

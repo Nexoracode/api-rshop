@@ -4,7 +4,7 @@ import { AttributeValue } from "../../attribute-value/entities/attribute-value.e
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { IVariantAttributeValue } from "../interfaces/variant-attribute-value.interface";
 
-@Entity()
+@Entity('variant_attribute_values')
 export class VariantAttributeValue implements IVariantAttributeValue {
     @PrimaryGeneratedColumn()
     id: number;

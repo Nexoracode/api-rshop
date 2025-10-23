@@ -27,6 +27,7 @@ import { CouponModule } from './modules/coupon/coupon.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { PaymentLogModule } from './modules/payment/payment-log.module';
 import { ImportedExcelModule } from './modules/imported-excel/imported-excel.module';
+import { CatalogImportService } from './modules/catalogs/catalog-import.service';
 
 
 @Module({
@@ -58,6 +59,6 @@ import { ImportedExcelModule } from './modules/imported-excel/imported-excel.mod
     ImportedExcelModule,
   ],
   controllers: [AppController, HelperController],
-  providers: [AppService],
+  providers: [AppService, CatalogImportService],
 })
 export class AppModule { }

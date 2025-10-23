@@ -13,7 +13,7 @@ export interface IUser {
     email: string;
     password: string;
     role: Role,
-    apiToken: string;
+    apiToken?: string | null;
     isActive: boolean;
     lastLoginAt: Date;
     avatarUrl?: String;

@@ -25,6 +25,9 @@ export class Category implements ICategory {
     @JoinColumn({ name: 'parent_id' })
     parent: Category | null
 
+    @Column({ name: 'parent_id', nullable: true })
+    parentId: number;
+
     @OneToMany(() => Product, product => product.category)
     products: Product[]
 

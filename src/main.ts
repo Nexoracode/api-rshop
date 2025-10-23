@@ -7,9 +7,13 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ResponseSnakeCaseInterceptor } from './common/interceptors/response.interceptor';
 import { SnakeToCamelInterceptor } from './common/interceptors/snake-case.interceptor';
 import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
+import { CatalogImportService } from './modules/catalogs/catalog-import.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // const importer = app.get(CatalogImportService);
+  // await importer.run();
+  // await app.close;
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({

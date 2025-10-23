@@ -1,0 +1,1884 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "title": "ادعیه و کتب مذهبی",
+            "slug": "prayers-books",
+            "discount": "10%",
+            "level": 1,
+            "media": {
+                "id": 1001,
+                "url": "/mock/image_3.jpg",
+                "type": "image",
+                "alt_text": "تصویر محصول ادعیه و کتب مذهبی",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 11,
+                    "title": "کتاب دعا",
+                    "slug": "prayers-books-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 111,
+                            "title": "کتاب دعا - زیرگروه 1",
+                            "slug": "prayers-books-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 11,
+                                "title": "کتاب دعا",
+                                "slug": "prayers-books-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 11,
+                                "discount": "0"
+                            },
+                            "parent_id": 11,
+                            "children": []
+                        },
+                        {
+                            "id": 112,
+                            "title": "کتاب دعا - زیرگروه 2",
+                            "slug": "prayers-books-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 11,
+                                "title": "کتاب دعا",
+                                "slug": "prayers-books-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 11,
+                                "discount": "0"
+                            },
+                            "parent_id": 11,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 1,
+                        "title": "ادعیه و کتب مذهبی",
+                        "slug": "prayers-books",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 1,
+                        "discount": "10%"
+                    },
+                    "parent_id": 1
+                },
+                {
+                    "id": 12,
+                    "title": "ادعیه جیبی",
+                    "slug": "prayers-books-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 121,
+                            "title": "ادعیه جیبی - زیرگروه 1",
+                            "slug": "prayers-books-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 12,
+                                "title": "ادعیه جیبی",
+                                "slug": "prayers-books-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 12,
+                                "discount": "0"
+                            },
+                            "parent_id": 12,
+                            "children": []
+                        },
+                        {
+                            "id": 122,
+                            "title": "ادعیه جیبی - زیرگروه 2",
+                            "slug": "prayers-books-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 12,
+                                "title": "ادعیه جیبی",
+                                "slug": "prayers-books-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 12,
+                                "discount": "0"
+                            },
+                            "parent_id": 12,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 1,
+                        "title": "ادعیه و کتب مذهبی",
+                        "slug": "prayers-books",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 1,
+                        "discount": "10%"
+                    },
+                    "parent_id": 1
+                },
+                {
+                    "id": 13,
+                    "title": "قرآن",
+                    "slug": "prayers-books-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 131,
+                            "title": "قرآن - زیرگروه 1",
+                            "slug": "prayers-books-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 13,
+                                "title": "قرآن",
+                                "slug": "prayers-books-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 13,
+                                "discount": "0"
+                            },
+                            "parent_id": 13,
+                            "children": []
+                        },
+                        {
+                            "id": 132,
+                            "title": "قرآن - زیرگروه 2",
+                            "slug": "prayers-books-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 13,
+                                "title": "قرآن",
+                                "slug": "prayers-books-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 1,
+                                    "title": "ادعیه و کتب مذهبی",
+                                    "slug": "prayers-books",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 1,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 13,
+                                "discount": "0"
+                            },
+                            "parent_id": 13,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 1,
+                        "title": "ادعیه و کتب مذهبی",
+                        "slug": "prayers-books",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 1,
+                        "discount": "10%"
+                    },
+                    "parent_id": 1
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 2,
+            "title": "عطر و لوازم شخصی",
+            "slug": "perfume-accessories",
+            "discount": "5%",
+            "level": 1,
+            "media": {
+                "id": 1002,
+                "url": "/mock/image_45.jpg",
+                "type": "image",
+                "alt_text": "تصویر عطر و لوازم شخصی",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 21,
+                    "title": "عطر",
+                    "slug": "perfume-accessories-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 211,
+                            "title": "عطر - زیرگروه 1",
+                            "slug": "perfume-accessories-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 21,
+                                "title": "عطر",
+                                "slug": "perfume-accessories-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 21,
+                                "discount": "0"
+                            },
+                            "parent_id": 21,
+                            "children": []
+                        },
+                        {
+                            "id": 212,
+                            "title": "عطر - زیرگروه 2",
+                            "slug": "perfume-accessories-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 21,
+                                "title": "عطر",
+                                "slug": "perfume-accessories-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 21,
+                                "discount": "0"
+                            },
+                            "parent_id": 21,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 2,
+                        "title": "عطر و لوازم شخصی",
+                        "slug": "perfume-accessories",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 2,
+                        "discount": "5%"
+                    },
+                    "parent_id": 2
+                },
+                {
+                    "id": 22,
+                    "title": "ماگ",
+                    "slug": "perfume-accessories-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 221,
+                            "title": "ماگ - زیرگروه 1",
+                            "slug": "perfume-accessories-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 22,
+                                "title": "ماگ",
+                                "slug": "perfume-accessories-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 22,
+                                "discount": "0"
+                            },
+                            "parent_id": 22,
+                            "children": []
+                        },
+                        {
+                            "id": 222,
+                            "title": "ماگ - زیرگروه 2",
+                            "slug": "perfume-accessories-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 22,
+                                "title": "ماگ",
+                                "slug": "perfume-accessories-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 22,
+                                "discount": "0"
+                            },
+                            "parent_id": 22,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 2,
+                        "title": "عطر و لوازم شخصی",
+                        "slug": "perfume-accessories",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 2,
+                        "discount": "5%"
+                    },
+                    "parent_id": 2
+                },
+                {
+                    "id": 23,
+                    "title": "کیف",
+                    "slug": "perfume-accessories-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 231,
+                            "title": "کیف - زیرگروه 1",
+                            "slug": "perfume-accessories-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 23,
+                                "title": "کیف",
+                                "slug": "perfume-accessories-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 23,
+                                "discount": "0"
+                            },
+                            "parent_id": 23,
+                            "children": []
+                        },
+                        {
+                            "id": 232,
+                            "title": "کیف - زیرگروه 2",
+                            "slug": "perfume-accessories-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 23,
+                                "title": "کیف",
+                                "slug": "perfume-accessories-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 2,
+                                    "title": "عطر و لوازم شخصی",
+                                    "slug": "perfume-accessories",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 2,
+                                    "discount": "5%"
+                                },
+                                "parent_id": 23,
+                                "discount": "0"
+                            },
+                            "parent_id": 23,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 2,
+                        "title": "عطر و لوازم شخصی",
+                        "slug": "perfume-accessories",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 2,
+                        "discount": "5%"
+                    },
+                    "parent_id": 2
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 3,
+            "title": "مهر و تسبیح",
+            "slug": "mohr-tasbih",
+            "discount": "15%",
+            "level": 1,
+            "media": {
+                "id": 1002,
+                "url": "/mock/image_26.jpg",
+                "type": "image",
+                "alt_text": "تصویر تسبیح",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 31,
+                    "title": "مهر",
+                    "slug": "mohr-tasbih-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 311,
+                            "title": "مهر - زیرگروه 1",
+                            "slug": "mohr-tasbih-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 31,
+                                "title": "مهر",
+                                "slug": "mohr-tasbih-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 31,
+                                "discount": "0"
+                            },
+                            "parent_id": 31,
+                            "children": []
+                        },
+                        {
+                            "id": 312,
+                            "title": "مهر - زیرگروه 2",
+                            "slug": "mohr-tasbih-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 31,
+                                "title": "مهر",
+                                "slug": "mohr-tasbih-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 31,
+                                "discount": "0"
+                            },
+                            "parent_id": 31,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 3,
+                        "title": "مهر و تسبیح",
+                        "slug": "mohr-tasbih",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 3,
+                        "discount": "15%"
+                    },
+                    "parent_id": 3
+                },
+                {
+                    "id": 32,
+                    "title": "تسبیح چوبی",
+                    "slug": "mohr-tasbih-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 321,
+                            "title": "تسبیح چوبی - زیرگروه 1",
+                            "slug": "mohr-tasbih-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 32,
+                                "title": "تسبیح چوبی",
+                                "slug": "mohr-tasbih-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 32,
+                                "discount": "0"
+                            },
+                            "parent_id": 32,
+                            "children": []
+                        },
+                        {
+                            "id": 322,
+                            "title": "تسبیح چوبی - زیرگروه 2",
+                            "slug": "mohr-tasbih-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 32,
+                                "title": "تسبیح چوبی",
+                                "slug": "mohr-tasbih-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 32,
+                                "discount": "0"
+                            },
+                            "parent_id": 32,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 3,
+                        "title": "مهر و تسبیح",
+                        "slug": "mohr-tasbih",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 3,
+                        "discount": "15%"
+                    },
+                    "parent_id": 3
+                },
+                {
+                    "id": 33,
+                    "title": "تسبیح سنگی",
+                    "slug": "mohr-tasbih-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 331,
+                            "title": "تسبیح سنگی - زیرگروه 1",
+                            "slug": "mohr-tasbih-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 33,
+                                "title": "تسبیح سنگی",
+                                "slug": "mohr-tasbih-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 33,
+                                "discount": "0"
+                            },
+                            "parent_id": 33,
+                            "children": []
+                        },
+                        {
+                            "id": 332,
+                            "title": "تسبیح سنگی - زیرگروه 2",
+                            "slug": "mohr-tasbih-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 33,
+                                "title": "تسبیح سنگی",
+                                "slug": "mohr-tasbih-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 3,
+                                    "title": "مهر و تسبیح",
+                                    "slug": "mohr-tasbih",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 3,
+                                    "discount": "15%"
+                                },
+                                "parent_id": 33,
+                                "discount": "0"
+                            },
+                            "parent_id": 33,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 3,
+                        "title": "مهر و تسبیح",
+                        "slug": "mohr-tasbih",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 3,
+                        "discount": "15%"
+                    },
+                    "parent_id": 3
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 4,
+            "title": "تندیس و دکوری",
+            "slug": "decor-religious",
+            "discount": "20%",
+            "level": 1,
+            "media": {
+                "id": 1005,
+                "url": "/mock/image_36.jpg",
+                "type": "image",
+                "alt_text": "تصویر ",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 41,
+                    "title": "تندیس",
+                    "slug": "decor-religious-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 411,
+                            "title": "تندیس - زیرگروه 1",
+                            "slug": "decor-religious-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 41,
+                                "title": "تندیس",
+                                "slug": "decor-religious-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 41,
+                                "discount": "0"
+                            },
+                            "parent_id": 41,
+                            "children": []
+                        },
+                        {
+                            "id": 412,
+                            "title": "تندیس - زیرگروه 2",
+                            "slug": "decor-religious-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 41,
+                                "title": "تندیس",
+                                "slug": "decor-religious-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 41,
+                                "discount": "0"
+                            },
+                            "parent_id": 41,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 4,
+                        "title": "تندیس و دکوری",
+                        "slug": "decor-religious",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 4,
+                        "discount": "20%"
+                    },
+                    "parent_id": 4
+                },
+                {
+                    "id": 42,
+                    "title": "تابلو",
+                    "slug": "decor-religious-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 421,
+                            "title": "تابلو - زیرگروه 1",
+                            "slug": "decor-religious-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 42,
+                                "title": "تابلو",
+                                "slug": "decor-religious-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 42,
+                                "discount": "0"
+                            },
+                            "parent_id": 42,
+                            "children": []
+                        },
+                        {
+                            "id": 422,
+                            "title": "تابلو - زیرگروه 2",
+                            "slug": "decor-religious-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 42,
+                                "title": "تابلو",
+                                "slug": "decor-religious-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 42,
+                                "discount": "0"
+                            },
+                            "parent_id": 42,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 4,
+                        "title": "تندیس و دکوری",
+                        "slug": "decor-religious",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 4,
+                        "discount": "20%"
+                    },
+                    "parent_id": 4
+                },
+                {
+                    "id": 43,
+                    "title": "قاب",
+                    "slug": "decor-religious-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 431,
+                            "title": "قاب - زیرگروه 1",
+                            "slug": "decor-religious-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 43,
+                                "title": "قاب",
+                                "slug": "decor-religious-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 43,
+                                "discount": "0"
+                            },
+                            "parent_id": 43,
+                            "children": []
+                        },
+                        {
+                            "id": 432,
+                            "title": "قاب - زیرگروه 2",
+                            "slug": "decor-religious-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 43,
+                                "title": "قاب",
+                                "slug": "decor-religious-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 4,
+                                    "title": "تندیس و دکوری",
+                                    "slug": "decor-religious",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 4,
+                                    "discount": "20%"
+                                },
+                                "parent_id": 43,
+                                "discount": "0"
+                            },
+                            "parent_id": 43,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 4,
+                        "title": "تندیس و دکوری",
+                        "slug": "decor-religious",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 4,
+                        "discount": "20%"
+                    },
+                    "parent_id": 4
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 5,
+            "title": "محصولات دیجیتال",
+            "slug": "digital-products",
+            "discount": "0%",
+            "level": 1,
+            "media": {
+                "id": 1008,
+                "url": "/mock/image_10.jpg",
+                "type": "image",
+                "alt_text": "تصویر ",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 51,
+                    "title": "اسپیکر",
+                    "slug": "digital-products-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 511,
+                            "title": "اسپیکر - زیرگروه 1",
+                            "slug": "digital-products-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 51,
+                                "title": "اسپیکر",
+                                "slug": "digital-products-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 51,
+                                "discount": "0"
+                            },
+                            "parent_id": 51,
+                            "children": []
+                        },
+                        {
+                            "id": 512,
+                            "title": "اسپیکر - زیرگروه 2",
+                            "slug": "digital-products-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 51,
+                                "title": "اسپیکر",
+                                "slug": "digital-products-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 51,
+                                "discount": "0"
+                            },
+                            "parent_id": 51,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 5,
+                        "title": "محصولات دیجیتال",
+                        "slug": "digital-products",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 5,
+                        "discount": "0%"
+                    },
+                    "parent_id": 5
+                },
+                {
+                    "id": 52,
+                    "title": "پاوربانک",
+                    "slug": "digital-products-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 521,
+                            "title": "پاوربانک - زیرگروه 1",
+                            "slug": "digital-products-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 52,
+                                "title": "پاوربانک",
+                                "slug": "digital-products-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 52,
+                                "discount": "0"
+                            },
+                            "parent_id": 52,
+                            "children": []
+                        },
+                        {
+                            "id": 522,
+                            "title": "پاوربانک - زیرگروه 2",
+                            "slug": "digital-products-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 52,
+                                "title": "پاوربانک",
+                                "slug": "digital-products-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 52,
+                                "discount": "0"
+                            },
+                            "parent_id": 52,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 5,
+                        "title": "محصولات دیجیتال",
+                        "slug": "digital-products",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 5,
+                        "discount": "0%"
+                    },
+                    "parent_id": 5
+                },
+                {
+                    "id": 53,
+                    "title": "فلش",
+                    "slug": "digital-products-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 531,
+                            "title": "فلش - زیرگروه 1",
+                            "slug": "digital-products-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 53,
+                                "title": "فلش",
+                                "slug": "digital-products-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 53,
+                                "discount": "0"
+                            },
+                            "parent_id": 53,
+                            "children": []
+                        },
+                        {
+                            "id": 532,
+                            "title": "فلش - زیرگروه 2",
+                            "slug": "digital-products-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 53,
+                                "title": "فلش",
+                                "slug": "digital-products-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 5,
+                                    "title": "محصولات دیجیتال",
+                                    "slug": "digital-products",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 5,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 53,
+                                "discount": "0"
+                            },
+                            "parent_id": 53,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 5,
+                        "title": "محصولات دیجیتال",
+                        "slug": "digital-products",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 5,
+                        "discount": "0%"
+                    },
+                    "parent_id": 5
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 6,
+            "title": "پوشاک مذهبی",
+            "slug": "clothing",
+            "discount": "25%",
+            "level": 1,
+            "media": {
+                "id": 1004,
+                "url": "/mock/image_31.jpg",
+                "type": "image",
+                "alt_text": "تصویر ",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 61,
+                    "title": "چفیه",
+                    "slug": "clothing-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 611,
+                            "title": "چفیه - زیرگروه 1",
+                            "slug": "clothing-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 61,
+                                "title": "چفیه",
+                                "slug": "clothing-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 61,
+                                "discount": "0"
+                            },
+                            "parent_id": 61,
+                            "children": []
+                        },
+                        {
+                            "id": 612,
+                            "title": "چفیه - زیرگروه 2",
+                            "slug": "clothing-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 61,
+                                "title": "چفیه",
+                                "slug": "clothing-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 61,
+                                "discount": "0"
+                            },
+                            "parent_id": 61,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 6,
+                        "title": "پوشاک مذهبی",
+                        "slug": "clothing",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 6,
+                        "discount": "25%"
+                    },
+                    "parent_id": 6
+                },
+                {
+                    "id": 62,
+                    "title": "شال عزا",
+                    "slug": "clothing-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 621,
+                            "title": "شال عزا - زیرگروه 1",
+                            "slug": "clothing-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 62,
+                                "title": "شال عزا",
+                                "slug": "clothing-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 62,
+                                "discount": "0"
+                            },
+                            "parent_id": 62,
+                            "children": []
+                        },
+                        {
+                            "id": 622,
+                            "title": "شال عزا - زیرگروه 2",
+                            "slug": "clothing-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 62,
+                                "title": "شال عزا",
+                                "slug": "clothing-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 62,
+                                "discount": "0"
+                            },
+                            "parent_id": 62,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 6,
+                        "title": "پوشاک مذهبی",
+                        "slug": "clothing",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 6,
+                        "discount": "25%"
+                    },
+                    "parent_id": 6
+                },
+                {
+                    "id": 63,
+                    "title": "لباس",
+                    "slug": "clothing-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 631,
+                            "title": "لباس - زیرگروه 1",
+                            "slug": "clothing-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 63,
+                                "title": "لباس",
+                                "slug": "clothing-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 63,
+                                "discount": "0"
+                            },
+                            "parent_id": 63,
+                            "children": []
+                        },
+                        {
+                            "id": 632,
+                            "title": "لباس - زیرگروه 2",
+                            "slug": "clothing-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 63,
+                                "title": "لباس",
+                                "slug": "clothing-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 6,
+                                    "title": "پوشاک مذهبی",
+                                    "slug": "clothing",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 6,
+                                    "discount": "25%"
+                                },
+                                "parent_id": 63,
+                                "discount": "0"
+                            },
+                            "parent_id": 63,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 6,
+                        "title": "پوشاک مذهبی",
+                        "slug": "clothing",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 6,
+                        "discount": "25%"
+                    },
+                    "parent_id": 6
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 7,
+            "title": "روشنایی مذهبی",
+            "slug": "lighting",
+            "discount": "10%",
+            "level": 1,
+            "media": {
+                "id": 1002,
+                "url": "/mock/image_46.jpg",
+                "type": "image",
+                "alt_text": "تصویر ",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 71,
+                    "title": "چراغ خواب",
+                    "slug": "lighting-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 711,
+                            "title": "چراغ خواب - زیرگروه 1",
+                            "slug": "lighting-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 71,
+                                "title": "چراغ خواب",
+                                "slug": "lighting-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 71,
+                                "discount": "0"
+                            },
+                            "parent_id": 71,
+                            "children": []
+                        },
+                        {
+                            "id": 712,
+                            "title": "چراغ خواب - زیرگروه 2",
+                            "slug": "lighting-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 71,
+                                "title": "چراغ خواب",
+                                "slug": "lighting-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 71,
+                                "discount": "0"
+                            },
+                            "parent_id": 71,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 7,
+                        "title": "روشنایی مذهبی",
+                        "slug": "lighting",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 7,
+                        "discount": "10%"
+                    },
+                    "parent_id": 7
+                },
+                {
+                    "id": 72,
+                    "title": "ریسه نوری",
+                    "slug": "lighting-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 721,
+                            "title": "ریسه نوری - زیرگروه 1",
+                            "slug": "lighting-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 72,
+                                "title": "ریسه نوری",
+                                "slug": "lighting-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 72,
+                                "discount": "0"
+                            },
+                            "parent_id": 72,
+                            "children": []
+                        },
+                        {
+                            "id": 722,
+                            "title": "ریسه نوری - زیرگروه 2",
+                            "slug": "lighting-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 72,
+                                "title": "ریسه نوری",
+                                "slug": "lighting-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 72,
+                                "discount": "0"
+                            },
+                            "parent_id": 72,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 7,
+                        "title": "روشنایی مذهبی",
+                        "slug": "lighting",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 7,
+                        "discount": "10%"
+                    },
+                    "parent_id": 7
+                },
+                {
+                    "id": 73,
+                    "title": "لامپ مذهبی",
+                    "slug": "lighting-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 731,
+                            "title": "لامپ مذهبی - زیرگروه 1",
+                            "slug": "lighting-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 73,
+                                "title": "لامپ مذهبی",
+                                "slug": "lighting-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 73,
+                                "discount": "0"
+                            },
+                            "parent_id": 73,
+                            "children": []
+                        },
+                        {
+                            "id": 732,
+                            "title": "لامپ مذهبی - زیرگروه 2",
+                            "slug": "lighting-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 73,
+                                "title": "لامپ مذهبی",
+                                "slug": "lighting-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 7,
+                                    "title": "روشنایی مذهبی",
+                                    "slug": "lighting",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 7,
+                                    "discount": "10%"
+                                },
+                                "parent_id": 73,
+                                "discount": "0"
+                            },
+                            "parent_id": 73,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 7,
+                        "title": "روشنایی مذهبی",
+                        "slug": "lighting",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 7,
+                        "discount": "10%"
+                    },
+                    "parent_id": 7
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        },
+        {
+            "id": 8,
+            "title": "کودک و نوجوان",
+            "slug": "kids",
+            "discount": "0%",
+            "level": 1,
+            "media": {
+                "id": 1002,
+                "url": "/mock/image_44.jpg",
+                "type": "image",
+                "alt_text": "تصویر ",
+                "product_id": null,
+                "category_id": null,
+                "user_id": null,
+                "created_at": "2025-09-06T10:37:27.736Z",
+                "media": null
+            },
+            "children": [
+                {
+                    "id": 81,
+                    "title": "کتاب کودک",
+                    "slug": "kids-sub1",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 811,
+                            "title": "کتاب کودک - زیرگروه 1",
+                            "slug": "kids-sub1-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 81,
+                                "title": "کتاب کودک",
+                                "slug": "kids-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 81,
+                                "discount": "0"
+                            },
+                            "parent_id": 81,
+                            "children": []
+                        },
+                        {
+                            "id": 812,
+                            "title": "کتاب کودک - زیرگروه 2",
+                            "slug": "kids-sub1-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 81,
+                                "title": "کتاب کودک",
+                                "slug": "kids-sub1",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 81,
+                                "discount": "0"
+                            },
+                            "parent_id": 81,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 8,
+                        "title": "کودک و نوجوان",
+                        "slug": "kids",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 8,
+                        "discount": "0%"
+                    },
+                    "parent_id": 8
+                },
+                {
+                    "id": 82,
+                    "title": "لباس کودک",
+                    "slug": "kids-sub2",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 821,
+                            "title": "لباس کودک - زیرگروه 1",
+                            "slug": "kids-sub2-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 82,
+                                "title": "لباس کودک",
+                                "slug": "kids-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 82,
+                                "discount": "0"
+                            },
+                            "parent_id": 82,
+                            "children": []
+                        },
+                        {
+                            "id": 822,
+                            "title": "لباس کودک - زیرگروه 2",
+                            "slug": "kids-sub2-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 82,
+                                "title": "لباس کودک",
+                                "slug": "kids-sub2",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 82,
+                                "discount": "0"
+                            },
+                            "parent_id": 82,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 8,
+                        "title": "کودک و نوجوان",
+                        "slug": "kids",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 8,
+                        "discount": "0%"
+                    },
+                    "parent_id": 8
+                },
+                {
+                    "id": 83,
+                    "title": "بازی",
+                    "slug": "kids-sub3",
+                    "discount": "0",
+                    "level": 2,
+                    "children": [
+                        {
+                            "id": 831,
+                            "title": "بازی - زیرگروه 1",
+                            "slug": "kids-sub3-child1",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 83,
+                                "title": "بازی",
+                                "slug": "kids-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 83,
+                                "discount": "0"
+                            },
+                            "parent_id": 83,
+                            "children": []
+                        },
+                        {
+                            "id": 832,
+                            "title": "بازی - زیرگروه 2",
+                            "slug": "kids-sub3-child2",
+                            "discount": "0",
+                            "level": 3,
+                            "parent": {
+                                "id": 83,
+                                "title": "بازی",
+                                "slug": "kids-sub3",
+                                "level": 2,
+                                "parent": {
+                                    "id": 8,
+                                    "title": "کودک و نوجوان",
+                                    "slug": "kids",
+                                    "level": 1,
+                                    "parent": null,
+                                    "parent_id": 8,
+                                    "discount": "0%"
+                                },
+                                "parent_id": 83,
+                                "discount": "0"
+                            },
+                            "parent_id": 83,
+                            "children": []
+                        }
+                    ],
+                    "parent": {
+                        "id": 8,
+                        "title": "کودک و نوجوان",
+                        "slug": "kids",
+                        "level": 1,
+                        "parent": null,
+                        "parent_id": 8,
+                        "discount": "0%"
+                    },
+                    "parent_id": 8
+                }
+            ],
+            "parent": null,
+            "parent_id": 0
+        }
+    ]
+}
