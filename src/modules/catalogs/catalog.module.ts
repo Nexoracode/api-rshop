@@ -1,49 +1,41 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CatalogCacheService } from './services/catalog-cache.service';
+import { CatalogQueryService } from './services/catalog-query.service';
+
+// Entities
+import { Category } from '../category/entities/category.entity';
+import { Brand } from '../brand/entities/brand.entity';
+import { Product } from '../product/entities/product.entity';
+
+// Mapper
+import { CatalogMapper } from './mappers/catalog.mapper';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ThrottlerModule } from '@nestjs/throttler';
 import { CatalogController } from './catalog.controller';
 import { CatalogService } from './catalog.service';
-import { Product } from '../product/entities/product.entity';
-import { Category } from '../category/entities/category.entity';
-import { CategoryAttribute } from '../category-attribute/entities/category-attribute.entity';
-import { Brand } from '../brand/entities/brand.entity';
+import { CatalogSearchService } from './services/catalog-search.service';
 
 @Module({
     imports: [
-        // TypeORM Entities
-        TypeOrmModule.forFeature([
-            Product,
-            Category,
-            CategoryAttribute,
-            Brand,
-        ]),
+        // TypeORM entities used in queries
+        TypeOrmModule.forFeature([Category, Brand, Product]),
 
-        // 💾 Cache Configuration
-        // گزینه 1: In-Memory Cache (ساده)
+        // Global cache for smartSearch results
         CacheModule.register({
-            ttl: 300, // 5 minutes
-            max: 1000, // max 1000 items in cache
+            isGlobal: false,
+            ttl: 300, // default TTL 5 min
         }),
-
-        // گزینه 2: Redis Cache (Production - uncomment اگه Redis داری)
-        // CacheModule.register({
-        //   store: require('cache-manager-redis-store'),
-        //   host: process.env.REDIS_HOST || 'localhost',
-        //   port: parseInt(process.env.REDIS_PORT) || 6379,
-        //   password: process.env.REDIS_PASSWORD,
-        //   ttl: 300,
-        //   max: 10000,
-        // }),
-
-        // 🚦 Rate Limiting
-        ThrottlerModule.forRoot([{
-            ttl: 60000,  // 60 seconds
-            limit: 20,   // 20 requests per 60 seconds
-        }]),
     ],
     controllers: [CatalogController],
-    providers: [CatalogService],
-    exports: [CatalogService],
+    providers: [
+        CatalogService,
+        CatalogCacheService,
+        CatalogQueryService,
+        CatalogSearchService,
+        CatalogMapper,
+    ],
+    exports: [
+        CatalogService, // export if other modules (e.g., product page) need it
+    ],
 })
 export class CatalogModule { }
