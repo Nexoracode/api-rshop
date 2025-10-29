@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Card, CardStatus } from './entities/card.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, In } from 'typeorm';
 import { CardItem } from './entities/card-item.entity';
 import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
@@ -10,6 +10,8 @@ import { AddItemDto } from './dto/add-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { RemoveItemDto } from './dto/remove-item.dto';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
+
+const relations = ['items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
 
 function clampPercent(p?: number | null): number {
   if (p == null || Number.isNaN(p)) return 0;
@@ -48,15 +50,17 @@ export class CardService {
     return card;
   }
 
-  async getOrCreateUserCard(user: User): Promise<Card> {
+  async getOrCreateUserCard(user: User) {
     const cardRepo = this.dataSource.getRepository(Card);
-    let card = await cardRepo.findOne({ where: { user: { id: user?.id } }, relations: ['items', 'items.product', 'items.product.mediaPinned'] });
+
+    let card = await cardRepo.findOne({ where: { user: { id: user.id }, status: CardStatus.OPEN }, relations });
     if (!card) {
       card = cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
       await cardRepo.save(card);
     }
-    return card;
+    return card!;
   }
+
 
 
   async addItem(user: User, dto: AddItemDto) {
@@ -194,7 +198,10 @@ export class CardService {
 
   async getMyCard(user: User) {
     const card = await this.getOrCreateUserCard(user);
-    const items = await this.dataSource.getRepository(CardItem).find({ where: { card: { id: card.id } } });
+    const items = await this.dataSource.getRepository(CardItem).find({
+      where: { card: { id: card.id } }, relations: [
+        'variant.attributes']
+    });
     return this.computeSnapshot(items, card);
   }
 

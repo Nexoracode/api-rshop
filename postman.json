@@ -2405,6 +2405,20 @@
         ]
       }
     },
+    "/api/orders/me": {
+      "post": {
+        "operationId": "OrderController_getMeOrder",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "15 - 📑 Orders"
+        ]
+      }
+    },
     "/api/orders/{id}": {
       "get": {
         "operationId": "OrderController_getOne",
@@ -3126,14 +3140,6 @@
       "post": {
         "operationId": "PaymentController_verifyPayment",
         "parameters": [
-          {
-            "name": "orderId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
           {
             "name": "Authority",
             "required": true,

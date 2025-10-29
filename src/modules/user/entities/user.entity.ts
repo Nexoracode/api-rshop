@@ -69,7 +69,7 @@ export class User implements IUser {
     @Column({ name: 'avatar_url', nullable: true })
     avatarUrl?: string;
 
-    @OneToMany(() => Address, (address) => address.user, { cascade: true })
+    @OneToMany(() => Address, (address) => address.user, { cascade: true, eager: true })
     addresses: Address[];
 
     @OneToOne(() => Media, (media) => media.user)

@@ -22,7 +22,6 @@ export class PaymentController {
   @ApiOperation({ summary: "تأیید پرداخت بعد از بازگشت از درگاه" })
   async verifyPayment(
     @Req() req: Request,
-    @Query("orderId") orderId: number,
     @Query("Authority") authority: string,
     @Query("Status") status: string
   ) {

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { BaseService } from 'src/common/bases/base.service';
 import { UserMapper } from './mappers/user.mapper';
 import { IUserResponse } from './interfaces/user.response.interface';
@@ -9,13 +9,13 @@ import { IUserService } from './interfaces/user.service.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterOperator, paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
-import { Request } from 'express';
 
 @Injectable()
 export class UserService extends BaseService<User> implements IUserService {
     constructor(
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
+        private readonly dataSource: DataSource
     ) { super(userRepo) }
 
     async create(data: CreateUserDto): Promise<IUserResponse> {

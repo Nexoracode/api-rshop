@@ -19,7 +19,8 @@ import { OrderStatus } from "./enums/order-status.enum";
 import { OrderMapper } from "./mappers/order.mapper";
 import { CreateManualOrderDto } from "./dto/create-order.dto";
 import { Product } from "../product/entities/product.entity";
-import { VariantProduct } from "../variant-product/entities/variant-product.entity";
+
+const relations = ['items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
 
 @Injectable()
 export class OrderService {
@@ -234,18 +235,19 @@ export class OrderService {
 
 
     // 🧍 سفارش‌های کاربر
-    async getUserOrders(user: User) {
+    async getUserOrders(userId: number) {
         return this.dataSource.getRepository(Order).find({
-            where: { user: { id: user.id } },
+            where: { user: { id: userId } },
+            relations,
             order: { createdAt: "DESC" },
         });
     }
 
     // 🔍 جزئیات سفارش خاص
     async getOrderById(id: number) {
-        const order = await this.dataSource.getRepository(Order).findOne({
+        const order = await this.orderRepo.findOne({
             where: { id },
-            relations: ["user", 'items', 'items.variant'],
+            relations,
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
         return order;

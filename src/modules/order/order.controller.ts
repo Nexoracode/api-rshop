@@ -41,6 +41,11 @@ export class OrderController {
     return this.orderService.createFromCard(user as any, dto);
   }
 
+  @Post('me')
+  getMeOrder(@CurrentUser() user: RequestUser) {
+    return this.orderService.getUserOrders(user.id);
+  }
+
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {

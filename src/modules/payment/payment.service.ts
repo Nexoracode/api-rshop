@@ -20,7 +20,6 @@ import { ZarinpalErrorMessage } from "./enums/zarinpal-message.enum";
 
 // Services
 import { InvoiceService } from "../invoice/invoice.service";
-import { PaymentLogService } from "./payment-log.service";
 
 
 // Exceptions
@@ -32,6 +31,8 @@ import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { Card, CardStatus } from "../card/entities/card.entity";
 import { CardItem } from "../card/entities/card-item.entity";
 import { PaymentLog } from "./entities/payment-logs.entity";
+
+const relations = ['user', 'items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
 
 // Third-party SDK
 const zarinpal = require("zarinpal-checkout").create(
@@ -58,20 +59,20 @@ export class PaymentService {
 
       const order = await orderRepo.findOne({
         where: { id: orderId },
-        relations: ["user"],
+        relations: ["user", "user.addresses"],
       });
       if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
       // اگر قبلاً پرداخت شده
-      if (order.status === OrderStatus.PAYMENT_CONFIRMATION_PENDING)
+      if (order.status === OrderStatus.SHIPPING)
         throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
 
-      // ✅ ارسال درخواست پرداخت به زرین‌پال
-      // const card = await cardRepo.findOne({ where: { user: { id: order.user.id }, status: CardStatus.OPEN } });
-      // if (card) {
-      //   card.status = CardStatus.LOCKED
-      //   await cardRepo.save(card);
-      // }
+      //✅ ارسال درخواست پرداخت به زرین‌پال
+      const card = await cardRepo.findOne({ where: { user: { id: order.user.id }, status: CardStatus.OPEN } });
+      if (card) {
+        card.status = CardStatus.LOCKED
+        await cardRepo.save(card);
+      }
       let requestResult: any;
       try {
         requestResult = await zarinpal.PaymentRequest({
@@ -161,7 +162,7 @@ export class PaymentService {
 
       const order = await manager.findOne(Order, {
         where: { id: payment.order.id },
-        relations: ["user", 'items'],
+        relations,
       });
       if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
@@ -176,7 +177,6 @@ export class PaymentService {
 
       await paymentLogRepo.save({
         order,
-        user: order.user,
         payment,
         authority,
         status: PaymentLogStatus.CALLBACK_RECEIVED,
@@ -222,11 +222,10 @@ export class PaymentService {
           Amount: order.total,
           Authority: authority,
         });
-        console.log(verification);
         // ✅ پرداخت موفق
         if ([100, 101].includes(verification.status)) {
-          // order.status = OrderStatus.PAID;
-          // await manager.save(order);
+          order.status = OrderStatus.SHIPPING;
+          await manager.save(order);
           if (card) {
             await cardItemRepo.delete({ cardId: card.id });
             card.itemsCount = 0;
@@ -254,9 +253,10 @@ export class PaymentService {
             payload: verification,
           });
           const invoice = await this.invoiceService.createFromOrder(manager, order.id, order.user);
-          console.log(order.items);
+          // console.log(order.items);
           return {
             order,
+            user: order.user,
             items: order.items,
             message: "پرداخت با موفقیت انجام شد.",
             payment: {
@@ -274,7 +274,6 @@ export class PaymentService {
         (req as any).user = order.user;
         await paymentLogRepo.save({
           order: order,
-          user: order.user,
           payment,
           authority,
           status: PaymentLogStatus.FAILED,
@@ -283,7 +282,6 @@ export class PaymentService {
           userAgent: req.headers["user-agent"],
           payload: { e },
         });
-        console.log(e);
         throw new ZarinpalException(e.errors.code, e.errors.message);
       }
     });
