@@ -3795,6 +3795,83 @@
           "Admin - Support"
         ]
       }
+    },
+    "/api/profile/compare": {
+      "post": {
+        "operationId": "CompareController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCompareDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "افزودن محصول به مقایسه",
+        "tags": [
+          "Profile - Compare"
+        ]
+      },
+      "get": {
+        "operationId": "CompareController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت لیست مقایسه محصولات",
+        "tags": [
+          "Profile - Compare"
+        ]
+      }
+    },
+    "/api/profile/compare/{productId}": {
+      "delete": {
+        "operationId": "CompareController_remove",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "حذف محصول از مقایسه",
+        "tags": [
+          "Profile - Compare"
+        ]
+      }
     }
   },
   "info": {
@@ -5518,6 +5595,18 @@
         },
         "required": [
           "content"
+        ]
+      },
+      "AddCompareDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "example": 20
+          }
+        },
+        "required": [
+          "productId"
         ]
       }
     }

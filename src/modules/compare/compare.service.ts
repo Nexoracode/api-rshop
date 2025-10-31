@@ -1,0 +1,75 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CompareProduct } from './entities/compare.entity';
+import { AddCompareDto } from './dto/add-compare.dto';
+import { CompareMapper } from './mappers/compare.mapper';
+import { Product } from '../product/entities/product.entity';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
+
+const relations = [
+  'user',
+  'product',
+  'product.mediaPinned',
+  'product.brand',
+  'product.variants',
+  'product.variants.attributes',
+  'product.variants.attributes.attribute',
+  'product.variants.attributes.value',
+]
+
+@Injectable()
+export class CompareService {
+  constructor(
+    @InjectRepository(CompareProduct)
+    private readonly compareRepo: Repository<CompareProduct>,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
+  ) { }
+
+  // 🟢 افزودن محصول به لیست مقایسه
+  async add(user: RequestUser, dto: AddCompareDto) {
+    const product = await this.productRepo.findOne({
+      where: { id: dto.productId },
+      relations: ['mediaPinned', 'brand', 'variants', 'variants.attributes', 'variants.attributes.attribute', 'variants.attributes.value'],
+    });
+
+    if (!product) throw new NotFoundException('محصول یافت نشد');
+
+    const existing = await this.compareRepo.findOne({
+      where: { userId: user.id, productId: dto.productId },
+    });
+
+    if (existing) return CompareMapper.toResponse(existing);
+
+    const compare = this.compareRepo.create({
+      userId: user.id,
+      productId: dto.productId,
+    });
+    await this.compareRepo.save(compare);
+
+    const full = await this.compareRepo.findOne({
+      where: { id: compare.id },
+      relations,
+    });
+
+    return CompareMapper.toResponse(full!);
+  }
+
+  // 🟡 دریافت لیست محصولات برای مقایسه
+  async getAll(user: RequestUser) {
+    const compares = await this.compareRepo.find({
+      where: { userId: user.id },
+      relations,
+      order: { createdAt: 'DESC' },
+    });
+
+    return CompareMapper.toList(compares);
+  }
+
+  // 🔴 حذف از مقایسه
+  async remove(user: RequestUser, productId: number) {
+    await this.compareRepo.delete({ userId: user.id, productId });
+    return { success: true, message: 'محصول از مقایسه حذف شد' };
+  }
+}

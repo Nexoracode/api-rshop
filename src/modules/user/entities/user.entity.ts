@@ -12,6 +12,7 @@ import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
 import { Support } from "src/modules/support/entities/support.entity";
 import { Message } from "src/modules/support/entities/message.entity";
+import { CompareProduct } from "src/modules/compare/entities/compare.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -92,6 +93,8 @@ export class User implements IUser {
     @OneToMany(() => Message, (message) => message.sender)
     messages: Message[];
 
+    @OneToMany(() => CompareProduct, (compare) => compare.user)
+    comparedProducts: CompareProduct[];
 
     @OneToOne(() => Media, (media) => media.user)
     media: Media;
