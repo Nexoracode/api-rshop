@@ -9,6 +9,7 @@ import { Order } from "src/modules/order/entities/order.entity";
 import { Invoice } from "src/modules/invoice/entities/invoice.entity";
 import { Review } from "src/modules/review/entities/review.entity";
 import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
+import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -79,6 +80,9 @@ export class User implements IUser {
 
     @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
     wishlists: Wishlist[];
+
+    @OneToMany(() => RecentView, (recentView) => recentView.user)
+    recentViews: RecentView[];
 
 
     @OneToOne(() => Media, (media) => media.user)
