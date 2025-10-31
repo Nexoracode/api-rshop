@@ -9,6 +9,7 @@ import { ReviewModule } from '../review/review.module';
 import { WishlistModule } from '../wishlist/wishlist.module';
 import { RecentViewModule } from '../recent-view/recent-view.module';
 import { SupportModule } from '../support/support.module';
+import { OrderModule } from '../order/order.module';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { SupportModule } from '../support/support.module';
     WishlistModule,
     RecentViewModule,
     SupportModule,
+    OrderModule,
   ],
   controllers: [ProfileController],
   providers: [ProfileService],

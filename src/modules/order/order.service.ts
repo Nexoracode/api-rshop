@@ -16,9 +16,10 @@ import { CreateOrderFromCardDto } from "./dto/create-from-card.dto";
 import { CouponService } from "../coupon/coupon.service";
 import { FilterOperator, paginate, PaginateQuery } from "nestjs-paginate";
 import { OrderStatus } from "./enums/order-status.enum";
-import { OrderMapper } from "./mappers/order.mapper";
+import { OrderMapper, OrderMapperNew } from "./mappers/order.mapper";
 import { CreateManualOrderDto } from "./dto/create-order.dto";
 import { Product } from "../product/entities/product.entity";
+import { RequestUser } from "src/common/interfaces/request-user.interface";
 
 const relations = ['items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
 
@@ -235,22 +236,33 @@ export class OrderService {
 
 
     // 🧍 سفارش‌های کاربر
-    async getUserOrders(userId: number) {
-        return this.dataSource.getRepository(Order).find({
+    async findAllByUser(userId: number) {
+        const orders = await this.dataSource.getRepository(Order).find({
             where: { user: { id: userId } },
             relations,
             order: { createdAt: "DESC" },
         });
+        return orders.map(order => OrderMapperNew.toDetail(order));
     }
 
     // 🔍 جزئیات سفارش خاص
-    async getOrderById(id: number) {
+    async findOneById(id: number) {
         const order = await this.orderRepo.findOne({
             where: { id },
             relations,
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
-        return order;
+        return OrderMapperNew.toDetail(order);
+    }
+
+    // 📦 جزئیات سفارش
+    async findOneByUser(user: RequestUser, id: number) {
+        const order = await this.orderRepo.findOne({
+            where: { id, user: { id: user.id } },
+            relations,
+        });
+        if (!order) throw new NotFoundException('سفارش یافت نشد');
+        return OrderMapperNew.toDetail(order);
     }
 
     // 💳 تغییر وضعیت سفارش (ادمین)

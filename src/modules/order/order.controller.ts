@@ -4,7 +4,7 @@ import { AccessGuard } from '../../common/guard/access.guard';
 import { CreateOrderFromCardDto } from './dto/create-from-card.dto';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { CreateManualOrderDto } from './dto/create-order.dto';
@@ -43,13 +43,19 @@ export class OrderController {
 
   @Post('me')
   getMeOrder(@CurrentUser() user: RequestUser) {
-    return this.orderService.getUserOrders(user.id);
+    return this.orderService.findAllByUser(user.id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'دریافت جزئیات سفارش' })
+  findOne(@CurrentUser() user: RequestUser, @Param('id') id: number) {
+    return this.orderService.findOneByUser(user, id);
   }
 
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.orderService.getOrderById(id);
+    return this.orderService.findOneById(id);
   }
 
   @Patch(':id/status')

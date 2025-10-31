@@ -6,6 +6,7 @@ import { User } from '../user/entities/user.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { UpdateReviewStatusDto } from './dto/update-review-status.dto';
+import { ReviewMapper } from './mappers/review.mapper';
 
 @Injectable()
 export class ReviewService {
@@ -20,11 +21,12 @@ export class ReviewService {
   }
 
   async findAllByUser(userId: number) {
-    return this.reviewRepo.find({
+    const list = await this.reviewRepo.find({
       where: { userId: userId },
       relations: ['product'],
       order: { createdAt: 'DESC' },
     });
+    return ReviewMapper.toList(list);
   }
 
   async findAllByProduct(productId: number) {
@@ -54,10 +56,11 @@ export class ReviewService {
   }
 
   async findAllForAdmin() {
-    return this.reviewRepo.find({
+    const list = await this.reviewRepo.find({
       relations: ['product', 'user'],
       order: { createdAt: 'DESC' },
     });
+    return ReviewMapper.toList(list);
   }
 
   async updateStatus(id: number, dto: UpdateReviewStatusDto) {

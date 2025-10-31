@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { RecentView } from './entities/recent-view.entity';
 import { CreateRecentViewDto } from './dto/create-recent-view.dto';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
+import { RecentViewMapper } from './mappers/recent-view.mapper';
 
 @Injectable()
 export class RecentViewService {
@@ -45,10 +46,11 @@ export class RecentViewService {
   }
 
   async getAll(user: RequestUser) {
-    return this.repo.find({
+    const list = await this.repo.find({
       where: { userId: user.id },
       relations: ['product'],
       order: { updatedAt: 'DESC' },
     });
+    return RecentViewMapper.toList(list);
   }
 }

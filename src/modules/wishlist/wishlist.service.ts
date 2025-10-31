@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Wishlist } from './entities/wishlist.entity';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
-import { User } from '../user/entities/user.entity';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
+import { WishlistMapper } from './mappers/wishlist.mapper';
 
 @Injectable()
 export class WishlistService {
@@ -29,11 +29,12 @@ export class WishlistService {
   }
 
   async getAll(user: RequestUser) {
-    return this.wishlistRepo.find({
+    const list = await this.wishlistRepo.find({
       where: { userId: user.id },
       relations: ['product'],
       order: { createdAt: 'DESC' },
     });
+    return WishlistMapper.toList(list);
   }
 
   async remove(user: RequestUser, id: number) {
