@@ -8,6 +8,7 @@ import { Card } from "src/modules/card/entities/card.entity";
 import { Order } from "src/modules/order/entities/order.entity";
 import { Invoice } from "src/modules/invoice/entities/invoice.entity";
 import { Review } from "src/modules/review/entities/review.entity";
+import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -75,6 +76,9 @@ export class User implements IUser {
 
     @OneToMany(() => Review, (review) => review.user, { cascade: true })
     reviews: Review[];
+
+    @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
+    wishlists: Wishlist[];
 
 
     @OneToOne(() => Media, (media) => media.user)

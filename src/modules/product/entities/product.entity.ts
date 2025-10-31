@@ -9,6 +9,7 @@ import { HelperEntity } from "src/modules/helper/entities/helper.entity";
 import { Brand } from "src/modules/brand/entities/brand.entity";
 import { ProductAttributeValue } from "src/modules/product-attribute-value/entities/product-attribute-value.entity";
 import { Review } from "src/modules/review/entities/review.entity";
+import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -100,6 +101,8 @@ export class Product implements IProduct {
     @OneToMany(() => Review, (review) => review.product, { cascade: true })
     reviews: Review[];
 
+    @OneToMany(() => Wishlist, (wishlist) => wishlist.product)
+    wishlists: Wishlist[];
 
     @Column({ name: 'brand_id', nullable: true })
     brandId: number;
