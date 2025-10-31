@@ -7,6 +7,7 @@ import { Media } from "src/modules/media/entities/image.entity";
 import { Card } from "src/modules/card/entities/card.entity";
 import { Order } from "src/modules/order/entities/order.entity";
 import { Invoice } from "src/modules/invoice/entities/invoice.entity";
+import { Review } from "src/modules/review/entities/review.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -71,6 +72,10 @@ export class User implements IUser {
 
     @OneToMany(() => Address, (address) => address.user, { cascade: true, eager: true })
     addresses: Address[];
+
+    @OneToMany(() => Review, (review) => review.user, { cascade: true })
+    reviews: Review[];
+
 
     @OneToOne(() => Media, (media) => media.user)
     media: Media;

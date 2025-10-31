@@ -8,6 +8,7 @@ import { WeightUnit } from "src/common/enums/product.enum";
 import { HelperEntity } from "src/modules/helper/entities/helper.entity";
 import { Brand } from "src/modules/brand/entities/brand.entity";
 import { ProductAttributeValue } from "src/modules/product-attribute-value/entities/product-attribute-value.entity";
+import { Review } from "src/modules/review/entities/review.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -95,6 +96,10 @@ export class Product implements IProduct {
     @ManyToOne(() => Brand, brand => brand.products, { cascade: true, nullable: true })
     @JoinColumn({ name: 'brand_id' })
     brand: Brand;
+
+    @OneToMany(() => Review, (review) => review.product, { cascade: true })
+    reviews: Review[];
+
 
     @Column({ name: 'brand_id', nullable: true })
     brandId: number;
