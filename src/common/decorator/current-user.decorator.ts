@@ -14,7 +14,7 @@ export const CurrentUser = createParamDecorator(
             phone: user.phone ?? null,
             firstName: user.firstName ?? null,
             lastName: user.lastName ?? null,
-            // role: user.role ?? null,
+            role: user.role ?? null,
         };
     },
 );

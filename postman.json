@@ -3233,6 +3233,548 @@
           "ImportedExcel"
         ]
       }
+    },
+    "/api/profile/reviews": {
+      "post": {
+        "operationId": "ReviewController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Reviews"
+        ]
+      },
+      "get": {
+        "operationId": "ReviewController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Reviews"
+        ]
+      }
+    },
+    "/api/profile/reviews/{id}": {
+      "patch": {
+        "operationId": "ReviewController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Reviews"
+        ]
+      }
+    },
+    "/api/admin/reviews": {
+      "get": {
+        "operationId": "ReviewAdminController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/admin/reviews/{id}/status": {
+      "put": {
+        "operationId": "ReviewAdminController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/profile/wishlist": {
+      "get": {
+        "operationId": "WishlistController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Wishlist"
+        ]
+      },
+      "post": {
+        "operationId": "WishlistController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWishlistDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Wishlist"
+        ]
+      }
+    },
+    "/api/profile/wishlist/{id}": {
+      "delete": {
+        "operationId": "WishlistController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Wishlist"
+        ]
+      }
+    },
+    "/api/profile/recent-views": {
+      "get": {
+        "operationId": "RecentViewController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Profile - Recent Views"
+        ]
+      },
+      "post": {
+        "operationId": "RecentViewController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecentViewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "هنگام بازدید از محصول فراخوانی شود.",
+        "tags": [
+          "Profile - Recent Views"
+        ]
+      }
+    },
+    "/api/profile/support": {
+      "post": {
+        "operationId": "SupportController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ایجاد گفتگو عمومی با پشتیبانی",
+        "tags": [
+          "Profile - Support"
+        ]
+      },
+      "get": {
+        "operationId": "SupportController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت لیست گفتگوهای کاربر",
+        "tags": [
+          "Profile - Support"
+        ]
+      }
+    },
+    "/api/profile/support/product": {
+      "post": {
+        "operationId": "SupportController_createForProduct",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductSupportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ایجاد گفتگو در مورد محصول",
+        "tags": [
+          "Profile - Support"
+        ]
+      }
+    },
+    "/api/profile/support/{id}": {
+      "get": {
+        "operationId": "SupportController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت جزئیات گفتگو",
+        "tags": [
+          "Profile - Support"
+        ]
+      }
+    },
+    "/api/profile/support/message": {
+      "post": {
+        "operationId": "SupportController_addMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ارسال پیام جدید در گفت‌وگو موجود",
+        "tags": [
+          "Profile - Support"
+        ]
+      }
+    },
+    "/api/profile/support/{id}/close": {
+      "post": {
+        "operationId": "SupportController_closeSupport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "بستن گفت‌وگو توسط کاربر",
+        "tags": [
+          "Profile - Support"
+        ]
+      }
+    },
+    "/api/admin/support": {
+      "get": {
+        "operationId": "SupportAdminController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت لیست تمام گفتگوها",
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/admin/support/{id}": {
+      "get": {
+        "operationId": "SupportAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت جزئیات گفت‌وگو",
+        "tags": [
+          "Admin - Support"
+        ]
+      }
+    },
+    "/api/admin/support/{id}/reply": {
+      "post": {
+        "operationId": "SupportAdminController_adminReply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ارسال پاسخ توسط ادمین",
+        "tags": [
+          "Admin - Support"
+        ]
+      }
     }
   },
   "info": {
@@ -4814,6 +5356,148 @@
         },
         "required": [
           "file"
+        ]
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "number",
+            "example": 1
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "comment": {
+            "type": "string",
+            "example": "محصول خیلی خوبی بود!"
+          }
+        },
+        "required": [
+          "product_id",
+          "rating",
+          "comment"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "number",
+            "example": 1
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "comment": {
+            "type": "string",
+            "example": "محصول خیلی خوبی بود!"
+          }
+        }
+      },
+      "UpdateReviewStatusDto": {
+        "type": "object",
+        "properties": {
+          "isApproved": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "isApproved"
+        ]
+      },
+      "CreateWishlistDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "number",
+            "example": 42
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      },
+      "CreateRecentViewDto": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "number",
+            "example": 12
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      },
+      "CreateSupportDto": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "example": "مشکل در پرداخت"
+          },
+          "content": {
+            "type": "string",
+            "example": "سلام، من پرداخت کردم ولی سفارش ثبت نشد."
+          }
+        },
+        "required": [
+          "subject",
+          "content"
+        ]
+      },
+      "CreateProductSupportDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "example": 23
+          },
+          "message": {
+            "type": "string",
+            "example": "این کیف رنگ قهوه‌ای هم داره؟"
+          },
+          "subject": {
+            "type": "string",
+            "example": "سوال درباره محصول"
+          }
+        },
+        "required": [
+          "productId",
+          "message"
+        ]
+      },
+      "CreateMessageDto": {
+        "type": "object",
+        "properties": {
+          "supportId": {
+            "type": "number",
+            "example": 1
+          },
+          "content": {
+            "type": "string",
+            "example": "سلام، لطفاً بررسی کنید."
+          }
+        },
+        "required": [
+          "supportId",
+          "content"
+        ]
+      },
+      "CreateAdminReplyDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "example": "بله موجوده، رنگ قهوه‌ای هم داریم."
+          }
+        },
+        "required": [
+          "content"
         ]
       }
     }

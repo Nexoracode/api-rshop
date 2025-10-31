@@ -11,6 +11,7 @@ import { ProductAttributeValue } from "src/modules/product-attribute-value/entit
 import { Review } from "src/modules/review/entities/review.entity";
 import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
+import { Support } from "src/modules/support/entities/support.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -107,6 +108,9 @@ export class Product implements IProduct {
 
     @OneToMany(() => RecentView, (recentView) => recentView.product)
     recentViews: RecentView[];
+
+    @OneToMany(() => Support, (support) => support.product)
+    supports: Support[];
 
 
     @Column({ name: 'brand_id', nullable: true })

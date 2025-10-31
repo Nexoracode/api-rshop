@@ -10,6 +10,8 @@ import { Invoice } from "src/modules/invoice/entities/invoice.entity";
 import { Review } from "src/modules/review/entities/review.entity";
 import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
+import { Support } from "src/modules/support/entities/support.entity";
+import { Message } from "src/modules/support/entities/message.entity";
 
 @Entity('users')
 export class User implements IUser {
@@ -83,6 +85,12 @@ export class User implements IUser {
 
     @OneToMany(() => RecentView, (recentView) => recentView.user)
     recentViews: RecentView[];
+
+    @OneToMany(() => Support, (support) => support.user)
+    supports: Support[];
+
+    @OneToMany(() => Message, (message) => message.sender)
+    messages: Message[];
 
 
     @OneToOne(() => Media, (media) => media.user)

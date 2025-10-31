@@ -32,6 +32,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { ReviewModule } from './modules/review/review.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { RecentViewModule } from './modules/recent-view/recent-view.module';
+import { SupportModule } from './modules/support/support.module';
 
 
 @Module({
@@ -65,6 +66,7 @@ import { RecentViewModule } from './modules/recent-view/recent-view.module';
     ReviewModule,
     WishlistModule,
     RecentViewModule,
+    SupportModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
