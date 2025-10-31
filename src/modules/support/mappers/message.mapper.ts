@@ -12,7 +12,8 @@ export class MessageMapper {
             sender: entity.sender
                 ? {
                     id: entity.sender.id,
-                    name: entity.sender.firstName === null ? entity.sender.phone : name,
+                    name: entity.sender.firstName === null ? 'کاربر سایت' : name,
+                    phone: entity.sender.phone,
                     role: entity.sender.role,
                 }
                 : undefined,

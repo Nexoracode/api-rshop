@@ -8,6 +8,7 @@ export interface MessageResponse {
     sender?: {
         id: number;
         name: string;
+        phone: string;
         role: Role;
     };
 }

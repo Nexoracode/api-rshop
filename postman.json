@@ -3234,6 +3234,26 @@
         ]
       }
     },
+    "/api/profile": {
+      "get": {
+        "operationId": "ProfileController_getOverview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "دریافت اطلاعات کلی پروفایل کاربر",
+        "tags": [
+          "Profile - Overview"
+        ]
+      }
+    },
     "/api/profile/reviews": {
       "post": {
         "operationId": "ReviewController_create",
