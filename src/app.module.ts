@@ -30,6 +30,7 @@ import { ImportedExcelModule } from './modules/imported-excel/imported-excel.mod
 import { CatalogImportService } from './modules/catalogs/catalog-import.service';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ReviewModule } from './modules/review/review.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 
 
 @Module({
@@ -61,6 +62,7 @@ import { ReviewModule } from './modules/review/review.module';
     ImportedExcelModule,
     ProfileModule,
     ReviewModule,
+    WishlistModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
