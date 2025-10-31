@@ -15,6 +15,8 @@ import axios from 'axios';
 import { HelperEntity } from '../helper/entities/helper.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { UpdateBulkDto } from './dto/update-bulk.dto';
+import { getAverageRating } from 'src/common/helpers/review.helper';
+import { ReviewMapper } from '../review/mappers/review.mapper';
 
 const relations = [
     "variants",
@@ -81,10 +83,16 @@ export class ProductService implements IProductService {
     async findOneForSite(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
             where: { id },
-            relations
+            relations: [...relations, 'reviews', 'reviews.user', 'reviews.product'],
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
-        return ProductMapper.toResponse(product, { cartesian: true });
+        const approvedReviews = product.reviews.filter((r) => r.isApproved);
+        return {
+            ...ProductMapper.toResponse(product, { cartesian: true }),
+            count: approvedReviews.length,
+            averageRating: getAverageRating(approvedReviews),
+            items: ReviewMapper.toListProduct(approvedReviews),
+        }
     }
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
