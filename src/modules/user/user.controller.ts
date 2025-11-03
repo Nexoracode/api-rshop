@@ -86,6 +86,7 @@ export class UserController {
 
     @Patch('me/addresses/:addressId')
     updateUserAddress(@Param('addressId', ParseIntPipe) addressId: number, @Body() data: UpdateAddressDto) {
+        console.log('Updating address:', addressId, data);
         return this.addressService.update(addressId, data);
     }
 

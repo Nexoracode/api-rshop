@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class RequestDto {
 
-    @ApiProperty({ description: 'email or phone' })
+    @ApiProperty({ description: 'email or phone', default: '09150553208' })
     @IsNotEmpty()
     @Validate(IsEmailOrMobileConstraint)
     identifier: string;

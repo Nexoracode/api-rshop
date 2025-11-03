@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Attribute } from "../../attribute/entities/attribute.entity";
 import { IAttributeGroup } from "../interfaces/attribute-group.interface";
 
-@Entity()
+@Entity('attribute_groups')
 export class AttributeGroup implements IAttributeGroup {
     @PrimaryGeneratedColumn()
     id: number;

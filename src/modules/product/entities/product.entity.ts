@@ -81,7 +81,7 @@ export class Product implements IProduct {
     mediaPinned: Media;
 
     @Column({ name: 'media_pinned_id', nullable: true })
-    mediaPinnedId: number;
+    mediaPinnedId?: number | null;
 
     @ManyToOne(() => HelperEntity, helper => helper.product, { nullable: true, cascade: true })
     @JoinColumn({ name: 'helper_id' })

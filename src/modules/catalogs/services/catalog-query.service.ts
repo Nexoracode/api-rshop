@@ -2,6 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Category } from '../../category/entities/category.entity';
 
+
+// نوع جدید برای مقدارهای هر attribute
+interface AttributeValue {
+  id: number;
+  value: string;
+}
+
+// نوع برای attribute اصلی
+interface AttributeItem {
+  id: number;
+  name: string;
+  type: string;
+  values: AttributeValue[];
+}
+
 @Injectable()
 export class CatalogQueryService {
   constructor(private readonly dataSource: DataSource) { }
@@ -24,28 +39,29 @@ export class CatalogQueryService {
     // ویژگی‌ها (attribute)
     const attributesRaw = await this.dataSource.query(
       `
-      SELECT DISTINCT
-        a.id AS attribute_id,
-        a.name AS attribute_name,
-        a.type AS attribute_type,
-        av.value AS attribute_value
-      FROM product_attribute_values pav
-      INNER JOIN attributes a ON a.id = pav.attribute_id
-      LEFT JOIN attribute_values av ON av.id = pav.value_id
-      INNER JOIN products p ON p.id = pav.product_id
-      WHERE p.is_active = 1
-        AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-        AND av.value IS NOT NULL
-      `,
+  SELECT DISTINCT
+    a.id AS attribute_id,
+    a.name AS attribute_name,
+    a.type AS attribute_type,
+    av.id AS attribute_value_id,
+    av.value AS attribute_value
+  FROM product_attribute_values pav
+  INNER JOIN attributes a ON a.id = pav.attribute_id
+  LEFT JOIN attribute_values av ON av.id = pav.value_id
+  INNER JOIN products p ON p.id = pav.product_id
+  WHERE p.is_active = 1
+    AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
+    AND av.value IS NOT NULL
+  `,
       categoryIds,
     );
 
-    const attributeMap = new Map<
-      number,
-      { id: number; name: string; type: string; values: string[] }
-    >();
+
+    // مپ برای گروه‌بندی attributeها
+    const attributeMap = new Map<number, AttributeItem>();
 
     for (const row of attributesRaw) {
+      // اگر برای اولین بار با این attribute مواجه شدیم، بسازش
       if (!attributeMap.has(row.attribute_id)) {
         attributeMap.set(row.attribute_id, {
           id: row.attribute_id,
@@ -54,12 +70,21 @@ export class CatalogQueryService {
           values: [],
         });
       }
+
       const attr = attributeMap.get(row.attribute_id)!;
-      if (row.attribute_value && !attr.values.includes(row.attribute_value)) {
-        attr.values.push(row.attribute_value);
+
+      // بررسی اینکه مقدار تکراری نباشد
+      if (
+        row.attribute_value &&
+        row.attribute_value_id &&
+        !attr.values.some(v => v.id === row.attribute_value_id)
+      ) {
+        attr.values.push({
+          id: row.attribute_value_id,
+          value: row.attribute_value,
+        });
       }
     }
-
     // بازه قیمت
     const priceRange = await this.dataSource.query(
       `

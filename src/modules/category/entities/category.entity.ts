@@ -6,8 +6,8 @@ import { Media } from "src/modules/media/entities/image.entity";
 
 @Tree('closure-table')
 @Entity('categories')
-@Index(['slug'])
-@Index(['title'])
+// @Index(['slug'])
+// @Index(['title'])
 export class Category implements ICategory {
     @PrimaryGeneratedColumn()
     id: number;

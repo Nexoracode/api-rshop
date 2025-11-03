@@ -4,7 +4,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 
-@Entity('media')
+@Entity('medias')
 export class Media {
     @PrimaryGeneratedColumn()
     id: number;

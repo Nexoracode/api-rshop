@@ -27,7 +27,7 @@ export interface IProduct {
     categoryId: number;
     media: Media[],
     mediaPinned: Media;
-    mediaPinnedId: number;
+    mediaPinnedId?: number | null;
     variants: VariantProduct[]
     brand: Brand | null;
     brandId: number;

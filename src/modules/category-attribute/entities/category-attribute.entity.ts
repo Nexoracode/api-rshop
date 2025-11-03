@@ -3,7 +3,7 @@ import { Category } from "src/modules/category/entities/category.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ICategoryAttribute } from "../interfaces/category-attribute.interface";
 
-@Entity()
+@Entity('category_attributes')
 export class CategoryAttribute implements ICategoryAttribute {
     @PrimaryGeneratedColumn()
     id: number;

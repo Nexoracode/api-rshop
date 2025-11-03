@@ -3,7 +3,7 @@ import { Attribute } from "../../attribute/entities/attribute.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 import { IAttributeValue } from "../interfaces/attribute-value.interface";
 
-@Entity()
+@Entity('attribute_values')
 export class AttributeValue implements IAttributeValue {
 
     @PrimaryGeneratedColumn()

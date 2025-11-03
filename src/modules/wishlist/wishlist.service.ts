@@ -20,7 +20,6 @@ export class WishlistService {
 
     if (exists)
       throw new ConflictException('این محصول قبلاً در لیست علاقه‌مندی‌ها وجود دارد.');
-
     const wishlist = this.wishlistRepo.create({
       userId: user.id,
       productId: dto.productId,

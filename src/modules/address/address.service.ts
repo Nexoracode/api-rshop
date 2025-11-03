@@ -46,7 +46,7 @@ export class AddressService implements IAddressService {
                 user: { id: userId },
                 isPrimary: true,
             },
-            relations: ['user']
+            relations: ['user'],
         })
         if (!address) {
             throw new NotFoundException('address not found');
@@ -56,6 +56,7 @@ export class AddressService implements IAddressService {
 
     async update(id: number, data: UpdateAddressDto): Promise<IAddressResponse> {
         const address = await this.addressRepo.findOne({
+            relations: ['user'],
             where: { id },
         })
         if (!address) {

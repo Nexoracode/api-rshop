@@ -4,7 +4,7 @@ import { IsEmailOrMobileConstraint } from "./validator";
 
 export class LoginDto {
 
-    @ApiProperty({ description: 'email or phone' })
+    @ApiProperty({ description: 'email or phone', default: '09150553208' })
     @IsNotEmpty()
     @Validate(IsEmailOrMobileConstraint)
     identifier: string;

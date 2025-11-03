@@ -16,7 +16,8 @@ export const dataSourceOption: DataSourceOptions = {
     logging: false,
     synchronize: process.env.NODE_ENV === 'development',
     namingStrategy: new SnakeNamingStrategy(),
-    timezone: '+3:30'
+    timezone: '+3:30',
+    // dropSchema: true,
 };
 
 const dataSource = new DataSource(dataSourceOption);

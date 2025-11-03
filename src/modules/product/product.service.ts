@@ -134,26 +134,69 @@ export class ProductService implements IProductService {
 
     async update(id: number, data: UpdateProductDto): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
-            const product = await manager.findOne(Product, { where: { id } });
+            // load product with relations so we can manage medias and pinned media
+            const product = await manager.findOne(Product, { where: { id }, relations });
             if (!product) throw new NotFoundException('محصول یافت نشد');
             const duplicate = await manager.findOne(Product, { where: { name: data.name } });
             if (duplicate && duplicate.id !== id) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
-            const category = manager.findOne(Category, { where: { id: data.categoryId } })
+            const category = await manager.findOne(Category, { where: { id: data.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             if (data.helperId && data.helperId !== 0) {
                 const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
                 if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
             }
+            if (data.discountAmount && data.discountPercent) {
+                throw new BadRequestException('نمی توان همزمان تخفیف قیمت ثابت و درصدی را وارد کرد.');
+            }
             const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
             if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
+
+            // merge incoming data
             const updated = manager.merge(Product, product, data);
             if (!data.requiresPreparation) {
                 updated.preparationDays = null;
             }
+
+            // handle mediaPinned in payload (set/unset)
+            if (data.mediaPinnedId != null) {
+                if (data.mediaPinnedId === 0) {
+                    // unset pinned media
+                    updated.mediaPinned = null as unknown as Media;
+                    updated.mediaPinnedId = null;
+                } else {
+                    const media = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
+                    if (!media) throw new NotFoundException('تصویر پین‌شده یافت نشد.');
+                    updated.mediaPinned = media;
+                    updated.mediaPinnedId = media.id;
+                }
+            }
+
             const savedProduct = await manager.save(Product, updated);
+
+            // update media associations if mediaIds provided
             if (data.mediaIds?.length) {
+                // detach previous medias
+                const prevMediaIds = (product.medias || []).map((m) => m.id);
+                if (prevMediaIds.length) {
+                    await manager.update(Media, { id: In(prevMediaIds) }, { product: null });
+                }
+                // attach new medias to product
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
+
+            // ensure pinned media is associated with the product (or unset previous pinned)
+            if (data.mediaPinnedId != null) {
+                if (data.mediaPinnedId === 0) {
+                    if (product.mediaPinned) {
+                        // if previous pinned media existed, clear its product link only if it still references this product
+                        await manager.update(Media, { id: product.mediaPinned.id, product: { id: savedProduct.id } }, { product: null });
+                    }
+                } else {
+                    // attach the pinned media to the product (if not already)
+                    await manager.update(Media, { id: data.mediaPinnedId }, { product: savedProduct });
+                }
+            }
+
             const result = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
                 relations

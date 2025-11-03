@@ -52,7 +52,7 @@ export class AutoRefreshGuard implements CanActivate {
                 return true;
 
             } catch (error) {
-                throw new UnauthorizedException('refresh token is invalid');
+                throw new UnauthorizedException('لطفا ابتدا وارد حساب کاربری خود شوید.');
             }
         }
     }

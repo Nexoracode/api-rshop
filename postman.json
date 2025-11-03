@@ -3991,7 +3991,8 @@
         "properties": {
           "identifier": {
             "type": "string",
-            "description": "email or phone"
+            "description": "email or phone",
+            "default": "09150553208"
           }
         },
         "required": [
@@ -4003,10 +4004,12 @@
         "properties": {
           "identifier": {
             "type": "string",
-            "description": "email or phone"
+            "description": "email or phone",
+            "default": "09150553208"
           },
           "code": {
-            "type": "string"
+            "type": "string",
+            "default": "123456"
           }
         },
         "required": [
@@ -4019,7 +4022,8 @@
         "properties": {
           "identifier": {
             "type": "string",
-            "description": "email or phone"
+            "description": "email or phone",
+            "default": "09150553208"
           },
           "password": {
             "type": "string"

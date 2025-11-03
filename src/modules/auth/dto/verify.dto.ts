@@ -4,12 +4,12 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class VerifyOtpDto {
 
-    @ApiProperty({ description: 'email or phone' })
+    @ApiProperty({ description: 'email or phone', default: '09150553208' })
     @IsNotEmpty()
     @Validate(IsEmailOrMobileConstraint)
     identifier: string;
 
-    @ApiProperty()
+    @ApiProperty({ default: '123456' })
     @IsNotEmpty()
     code: string;
 }
