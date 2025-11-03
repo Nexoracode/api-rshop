@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
 import { CompareProduct } from './entities/compare.entity';
 import { AddCompareDto } from './dto/add-compare.dto';
 import { CompareMapper } from './mappers/compare.mapper';
@@ -33,9 +33,13 @@ export class CompareService {
   // 🟢 افزودن محصول به لیست مقایسه
   async add(user: RequestUser, dto: AddCompareDto) {
     // قبل از اضافه کردن، compareهای قدیمی رو پاک کن (مثلاً بیشتر از ۷ روز)
-    const expireDate = new Date();
-    expireDate.setDate(expireDate.getDate() - 30);
-    await this.compareRepo.delete({ userId: user.id, createdAt: LessThan(expireDate) });
+    await this.compareRepo
+      .createQueryBuilder()
+      .delete()
+      .from(CompareProduct)
+      .where('user_id = :userId', { userId: user.id })
+      .andWhere('created_at < NOW() - INTERVAL 1 DAY')
+      .execute();
 
     const product = await this.productRepo.findOne({
       where: { id: dto.productId },

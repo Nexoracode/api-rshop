@@ -15,6 +15,7 @@ export interface IOrderItems {
 }
 
 export interface IOrderAddressUser {
+    id: number;
     province: string;
     city: string;
 }
@@ -23,6 +24,8 @@ export interface iUserOrder {
     id: number;
     firstName: string;
     lastName: string;
+    phone: string;
+    email: string | null;
     avatarUrl?: string;
     addresses: IOrderAddressUser[] | null;
 }

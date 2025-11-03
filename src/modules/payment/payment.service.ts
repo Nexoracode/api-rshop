@@ -57,22 +57,33 @@ export class PaymentService {
       const paymentLogRepo = manager.getRepository(PaymentLog);
       const cardRepo = manager.getRepository(Card);
 
+      // 🔹 ۱. دریافت سفارش و بررسی وضعیت
       const order = await orderRepo.findOne({
         where: { id: orderId },
-        relations: ["user", "user.addresses"],
+        relations: ['user', 'user.addresses'],
       });
-      if (!order) throw new NotFoundException("سفارش یافت نشد.");
+      if (!order) throw new NotFoundException('سفارش یافت نشد.');
 
-      // اگر قبلاً پرداخت شده
-      if (order.status === OrderStatus.SHIPPING)
-        throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
+      if (
+        ![
+          OrderStatus.AWAITING_PAYMENT,
+          OrderStatus.PAYMENT_FAILED,
+          OrderStatus.PENDING_APPROVAL,
+        ].includes(order.status)
+      ) {
+        throw new BadRequestException('این سفارش قابل پرداخت نیست.');
+      }
 
-      //✅ ارسال درخواست پرداخت به زرین‌پال
-      const card = await cardRepo.findOne({ where: { user: { id: order.user.id }, status: CardStatus.OPEN } });
+      // 🔹 ۲. قفل کردن کارت خرید در صورت وجود
+      const card = await cardRepo.findOne({
+        where: { user: { id: order.user.id }, status: CardStatus.OPEN },
+      });
       if (card) {
-        card.status = CardStatus.LOCKED
+        card.status = CardStatus.LOCKED;
         await cardRepo.save(card);
       }
+
+      // 🔹 ۳. ارسال درخواست به زرین‌پال
       let requestResult: any;
       try {
         requestResult = await zarinpal.PaymentRequest({
@@ -83,61 +94,83 @@ export class PaymentService {
           Mobile: order.user?.phone ?? undefined,
         });
       } catch (e: any) {
-        // await paymentLogRepo.save({
-        //   order: order,
-        //   user: order.user,
-        //   authority: "",
-        //   status: PaymentLogStatus.FAILED,
-        //   message: "خطای درگاه پرداخت هنگام create",
-        //   ip: req.ip,
-        //   userAgent: req.headers["user-agent"],
-        //   payload: { e },
-        // });
-        const code = e.errors?.code ?? -50;
-        throw new ZarinpalException(code, e.errors?.message);
+        // ثبت لاگ خطا در درگاه
+        await paymentLogRepo.save({
+          order,
+          user: order.user,
+          authority: '',
+          status: PaymentLogStatus.FAILED,
+          message: 'خطا در ایجاد درخواست پرداخت',
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+          payload: { e },
+        });
+        throw new ZarinpalException(e.errors?.code ?? -50, e.errors?.message);
       }
 
-      // بررسی پاسخ زرین‌پال
+      // 🔹 ۴. بررسی پاسخ زرین‌پال
       if (requestResult.status !== 100) {
+        await paymentLogRepo.save({
+          order,
+          user: order.user,
+          authority: requestResult.authority ?? '',
+          status: PaymentLogStatus.FAILED,
+          message: `درخواست پرداخت رد شد (${requestResult.status})`,
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+          payload: requestResult,
+        });
         throw new ZarinpalException(
           requestResult.status,
           ZarinpalErrorMessage[requestResult.status],
         );
       }
 
-      // 💳 ساخت رکورد اولیه پرداخت در دیتابیس
+      // 🔹 ۵. ساخت رکورد پرداخت در دیتابیس
       const payment = await paymentRepo.save({
         user: order.user,
         order,
         authority: requestResult.authority,
         amount: order.total,
-        status: PaymentStatus.PENDING,
-        message: "در انتظار پرداخت کاربر...",
-        gateway: PaymentGateway.ZARINPAL
+        status: PaymentStatus.IN_PROGRESS,
+        message: 'در انتظار پرداخت کاربر...',
+        gateway: PaymentGateway.ZARINPAL,
       });
 
+      // 🔹 ۶. به‌روزرسانی وضعیت سفارش
+      order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
+      await orderRepo.save(order);
+
+      // 🔹 ۷. ثبت لاگ موفق ساخت لینک پرداخت
       await paymentLogRepo.save({
         order,
         user: order.user,
         payment,
         authority: payment.authority,
         status: PaymentLogStatus.INITIATED,
-        message: "لینک پرداخت ساخته شد، در انتظار پرداخت کاربر",
+        message: 'لینک پرداخت ایجاد شد، در انتظار پرداخت کاربر',
         ip: req.ip,
-        userAgent: req.headers["user-agent"],
+        userAgent: req.headers['user-agent'],
         payload: requestResult,
       });
 
-      // بازگرداندن لینک درگاه
+      // 🔹 ۸. بازگرداندن پاسخ برای انتقال به درگاه
+      // نگه داشتن وضعیت PENDING مطابق با نوع فیلد وضعیت در موجودیت پرداخت
+      payment.status = PaymentStatus.IN_PROGRESS;
+      await paymentRepo.save(payment);
+
       return {
+        success: true,
+        message: 'کاربر به درگاه پرداخت منتقل می‌شود.',
         authority: requestResult.authority,
         paymentUrl: requestResult.url,
         amount: order.total,
         orderId: order.id,
-        message: "کاربر به درگاه پرداخت منتقل می‌شود.",
+        orderStatus: order.status,
       };
-    })
+    });
   }
+
 
   // ────────────────────────────────────────────────
   // 💳 مرحله 2: تأیید پرداخت (بازگشت از درگاه)
@@ -148,84 +181,115 @@ export class PaymentService {
     req: Request,
   ) {
     return runInTransaction(this.dataSource, async (manager) => {
+      const orderRepo = manager.getRepository(Order);
       const cardRepo = manager.getRepository(Card);
       const cardItemRepo = manager.getRepository(CardItem);
       const paymentRepo = manager.getRepository(Payment);
       const paymentLogRepo = manager.getRepository(PaymentLog);
 
-
+      // 🔹 مرحله ۱: واکشی اطلاعات تراکنش
       const payment = await paymentRepo.findOne({
         where: { authority },
         relations: ['order', 'user'],
       });
       if (!payment) throw new NotFoundException('تراکنش یافت نشد.');
 
-      const order = await manager.findOne(Order, {
+      const order = await orderRepo.findOne({
         where: { id: payment.order.id },
         relations,
       });
-      if (!order) throw new NotFoundException("سفارش یافت نشد.");
+      if (!order) throw new NotFoundException('سفارش یافت نشد.');
 
-      if (order.status === OrderStatus.PREPARING)
-        throw new BadRequestException("این سفارش قبلاً پرداخت شده است.");
+      // 🚫 جلوگیری از verify تکراری
+      if (payment.status === PaymentStatus.SUCCESS) {
+        return {
+          success: true,
+          message: 'این پرداخت قبلاً تایید شده است.',
+          refId: payment.refId,
+        };
+      }
 
+      // 🔹 بررسی وضعیت مجاز سفارش برای پرداخت
+      if (
+        ![
+          OrderStatus.AWAITING_PAYMENT,
+          OrderStatus.PAYMENT_FAILED,
+          OrderStatus.PENDING_APPROVAL,
+          OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+        ].includes(order.status)
+      ) {
+        throw new BadRequestException('این سفارش قابل پرداخت نیست.');
+      }
+
+      // 🔹 قفل کارت خرید در صورت وجود
       const card = await cardRepo.findOne({
         where: { user: { id: order.user.id }, status: CardStatus.LOCKED },
-        relations: ["items"],
+        relations: ['items'],
       });
-
 
       await paymentLogRepo.save({
         order,
+        user: order.user,
         payment,
         authority,
         status: PaymentLogStatus.CALLBACK_RECEIVED,
-        message: "در انتظار احراز تراکنش",
+        message: 'در انتظار احراز تراکنش',
         ip: req.ip,
-        userAgent: req.headers["user-agent"],
+        userAgent: req.headers['user-agent'],
         payload: { status },
       });
 
-      // 🚫 اگر کاربر پرداخت را لغو کرده باشد
-      if (status !== "OK") {
+      // 🚫 اگر کاربر پرداخت را لغو کرده
+      if (status !== 'OK') {
         order.status = OrderStatus.PAYMENT_FAILED;
-        await manager.save(order);
+        await orderRepo.save(order);
+
         if (card) {
           card.status = CardStatus.OPEN;
           await cardRepo.save(card);
         }
-        payment.status = PaymentStatus.FAILED;
-        payment.message = "پرداخت توسط کاربر لغو شد.";
+
+        payment.status = PaymentStatus.CANCELLED;
+        payment.message = 'پرداخت توسط کاربر لغو شد.';
         await paymentRepo.save(payment);
+
         await paymentLogRepo.save({
           order,
           user: order.user,
           payment,
           authority,
           status: PaymentLogStatus.USER_CANCELLED,
-          message: "پرداخت توسط کاربر لغو شد.",
+          message: 'پرداخت توسط کاربر لغو شد.',
           ip: req.ip,
-          userAgent: req.headers["user-agent"],
-          payload: { status },
+          userAgent: req.headers['user-agent'],
         });
+
         return {
-          order,
           success: false,
-          message: "پرداخت توسط کاربر لغو شد.",
-          status: PaymentLogStatus.FAILED,
+          message: 'پرداخت توسط کاربر لغو شد.',
+          orderStatus: order.status,
         };
       }
 
-      // ✅ تأیید با زرین‌پال
+      // ──────────────────────────────
+      // ✅ مرحله ۲: تأیید تراکنش با زرین‌پال
+      // ──────────────────────────────
       try {
         const verification = await zarinpal.PaymentVerification({
           Amount: order.total,
           Authority: authority,
         });
-        // ✅ پرداخت موفق
-        if ([100, 101].includes(verification.status)) {
-          order.status = OrderStatus.SHIPPING;
-          await manager.save(order);
+
+        if (verification.status === 100) {
+          // 🔹 پرداخت موفق جدید
+          order.status = OrderStatus.PREPARING;
+          payment.status = PaymentStatus.SUCCESS;
+          payment.refId = verification.RefID || verification.refId;
+          payment.message = 'پرداخت با موفقیت تایید شد.';
+          await orderRepo.save(order);
+          await paymentRepo.save(payment);
+
+          // 🔹 پاک‌سازی کارت خرید
           if (card) {
             await cardItemRepo.delete({ cardId: card.id });
             card.itemsCount = 0;
@@ -234,56 +298,119 @@ export class PaymentService {
             card.discountTotal = 0;
             card.total = 0;
             card.status = CardStatus.ABANDONED;
-            card.items = [];
             await cardRepo.save(card);
           }
-          payment.status = PaymentStatus.SUCCESS;
-          payment.refId = verification.refId;
-          payment.message = "پرداخت با موفقیت انجام شد.";
-          await paymentRepo.save(payment);
+
+          // 🔹 ثبت لاگ موفق
           await paymentLogRepo.save({
-            order: order,
+            order,
             user: order.user,
             payment,
             authority,
             status: PaymentLogStatus.VERIFIED,
-            message: "پرداخت با موفقیت انجام شد.",
+            message: 'پرداخت با موفقیت تایید شد.',
             ip: req.ip,
-            userAgent: req.headers["user-agent"],
+            userAgent: req.headers['user-agent'],
             payload: verification,
           });
-          const invoice = await this.invoiceService.createFromOrder(manager, order.id, order.user);
-          // console.log(order.items);
-          return {
-            order,
-            user: order.user,
-            items: order.items,
-            message: "پرداخت با موفقیت انجام شد.",
-            payment: {
+
+          // 🔹 ساخت فاکتور (با کنترل خطا)
+          try {
+            const invoice = await this.invoiceService.createFromOrder(
+              manager,
+              order.id,
+              order.user,
+            );
+            return {
+              success: true,
+              message: 'پرداخت با موفقیت انجام شد.',
               refId: verification.refId,
-              fee: verification.fee,
-              date: invoice?.createdAt,
-            }
-          };
-        } else {
-          order.status = OrderStatus.PAYMENT_FAILED;
-          await manager.save(order);
+              invoiceDate: invoice!.createdAt,
+              order,
+            };
+          } catch (e) {
+            payment.status = PaymentStatus.VERIFIED;
+            payment.message = 'پرداخت تایید شد ولی صدور فاکتور با خطا مواجه شد.';
+            await paymentRepo.save(payment);
+            await paymentLogRepo.save({
+              order,
+              user: order.user,
+              payment,
+              authority,
+              status: PaymentLogStatus.FAILED,
+              message: 'خطا در صدور فاکتور پس از پرداخت موفق',
+              payload: { e },
+            });
+            return {
+              success: true,
+              message: 'پرداخت تایید شد اما فاکتور صادر نشد.',
+              refId: verification.refId,
+              order,
+            };
+          }
         }
-      } catch (e) {
-        (req as any).order = order;
-        (req as any).user = order.user;
+
+        // 🔸 اگر تراکنش قبلاً تایید شده (کد 101)
+        if (verification.status === 101) {
+          return {
+            success: true,
+            message: 'این تراکنش قبلاً تایید شده است.',
+            refId: payment.refId,
+          };
+        }
+
+        // 🔻 وضعیت‌های دیگر: پرداخت ناموفق
+        order.status = OrderStatus.PAYMENT_FAILED;
+        payment.status = PaymentStatus.FAILED;
+        payment.message = `تراکنش با وضعیت ${verification.status} بازگشت داده شد.`;
+        await orderRepo.save(order);
+        await paymentRepo.save(payment);
+
         await paymentLogRepo.save({
-          order: order,
+          order,
+          user: order.user,
           payment,
           authority,
           status: PaymentLogStatus.FAILED,
-          message: "خطای درگاه پرداخت هنگام verify",
+          message: `پرداخت ناموفق (${verification.status})`,
+          payload: verification,
+        });
+
+        return {
+          success: false,
+          message: 'پرداخت ناموفق بود.',
+          orderStatus: order.status,
+        };
+      } catch (e) {
+        // 🔴 خطا هنگام تماس با زرین‌پال
+        payment.status = PaymentStatus.FAILED;
+        payment.message = 'خطا در ارتباط با درگاه پرداخت.';
+        await paymentRepo.save(payment);
+
+        await paymentLogRepo.save({
+          order,
+          user: order.user,
+          payment,
+          authority,
+          status: PaymentLogStatus.FAILED,
+          message: 'خطا هنگام verify درگاه پرداخت',
           ip: req.ip,
-          userAgent: req.headers["user-agent"],
+          userAgent: req.headers['user-agent'],
           payload: { e },
         });
-        throw new ZarinpalException(e.errors.code, e.errors.message);
+
+        throw new ZarinpalException(e.errors?.code ?? -99, e.errors?.message ?? 'Zarinpal verification error');
+      } finally {
+        // 🔹 آزادسازی کارت در صورت قفل‌شده
+        const lockedCard = await cardRepo.findOne({
+          where: { user: { id: order.user.id }, status: CardStatus.LOCKED },
+        });
+        if (lockedCard) {
+          lockedCard.status = CardStatus.OPEN;
+          await cardRepo.save(lockedCard);
+        }
       }
     });
   }
+
 }

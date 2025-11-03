@@ -24,8 +24,11 @@ export class OrderMapper {
                 firstName: order.user.firstName,
                 lastName: order.user.lastName,
                 avatarUrl: order.user.avatarUrl,
+                phone: order.user.phone,
+                email: order.user.email || null,
                 addresses: order.user.addresses.length
                     ? order.user.addresses.map(address => ({
+                        id: address.id,
                         province: address.province ?? '',
                         city: address.city ?? ''
                     }))
@@ -68,6 +71,21 @@ export class OrderMapperNew {
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,
             items: order.items?.map((item) => this.mapItem(item)) || [],
+            user: {
+                id: order.user.id,
+                firstName: order.user.firstName,
+                lastName: order.user.lastName,
+                avatarUrl: order.user.avatarUrl,
+                phone: order.user.phone,
+                email: order.user.email || null,
+                addresses: order.user.addresses.length
+                    ? order.user.addresses.map(address => ({
+                        id: address.id,
+                        province: address.province ?? '',
+                        city: address.city ?? ''
+                    }))
+                    : [],
+            }
         };
     }
 

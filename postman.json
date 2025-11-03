@@ -5622,13 +5622,13 @@
       "AddCompareDto": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "number",
             "example": 20
           }
         },
         "required": [
-          "productId"
+          "product_id"
         ]
       }
     }

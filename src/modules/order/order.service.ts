@@ -21,7 +21,7 @@ import { CreateManualOrderDto } from "./dto/create-order.dto";
 import { Product } from "../product/entities/product.entity";
 import { RequestUser } from "src/common/interfaces/request-user.interface";
 
-const relations = ['items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
+const relations = ['user', 'user.addresses', 'items', 'items.product', 'items.product.mediaPinned', 'items.variant', 'items.variant.attributes', 'items.variant.attributes.attribute', 'items.variant.attributes.value'];
 
 @Injectable()
 export class OrderService {

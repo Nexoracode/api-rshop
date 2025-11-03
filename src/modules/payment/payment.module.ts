@@ -2,14 +2,19 @@ import { Module } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Order } from '../order/entities/order.entity';
-import { InvoiceModule } from '../invoice/invoice.module';
-import { PaymentLogModule } from './payment-log.module';
+import { Payment } from './entities/payment.entity';
+import { PaymentLog } from './entities/payment-logs.entity';
+import { InvoiceService } from '../invoice/invoice.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { PaymentRecoveryService } from './payment-recovery.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order]), InvoiceModule, PaymentLogModule],
+  imports: [
+    TypeOrmModule.forFeature([Payment, PaymentLog]),
+    ScheduleModule.forRoot(),
+  ],
   controllers: [PaymentController],
-  providers: [PaymentService],
+  providers: [PaymentService, PaymentRecoveryService, InvoiceService],
   exports: [PaymentService],
 })
 export class PaymentModule { }
