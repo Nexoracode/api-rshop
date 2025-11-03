@@ -38,9 +38,16 @@ export class CompareMapper {
                 name: product.name,
                 image: product.mediaPinned?.url || null,
                 brand: product.brand?.name || null,
-                categoryId: product.categoryId,
-                ...priceData,
+                price: priceData.price,
+                discountAmount: priceData.discountAmount,
+                discountPercent: priceData.discountPercent,
+                finalPrice: priceData.finalPrice,
                 attributes,
+                category: {
+                    id: product.categoryId,
+                    title: product.category?.title || null,
+                    slug: product.category?.slug || null,
+                }
             },
             user: {
                 id: compare.user.id,

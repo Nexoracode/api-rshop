@@ -3273,11 +3273,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "tags": [
           "Profile - Reviews"
         ]
@@ -3290,11 +3285,29 @@
             "description": ""
           }
         },
-        "security": [
+        "tags": [
+          "Profile - Reviews"
+        ]
+      }
+    },
+    "/api/profile/reviews/products/{id}": {
+      "get": {
+        "operationId": "ReviewController_findAllProducts",
+        "parameters": [
           {
-            "bearer": []
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
         "tags": [
           "Profile - Reviews"
         ]
@@ -3328,11 +3341,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "tags": [
           "Profile - Reviews"
         ]
@@ -3354,11 +3362,21 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
+        "tags": [
+          "Profile - Reviews"
+        ]
+      }
+    },
+    "/api/profile/reviews/pending": {
+      "get": {
+        "operationId": "ReviewController_getPending",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
           }
-        ],
+        },
+        "summary": "لیست محصولاتی که هنوز برایشان نظر ثبت نشده",
         "tags": [
           "Profile - Reviews"
         ]

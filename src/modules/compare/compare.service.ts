@@ -1,15 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { CompareProduct } from './entities/compare.entity';
 import { AddCompareDto } from './dto/add-compare.dto';
 import { CompareMapper } from './mappers/compare.mapper';
 import { Product } from '../product/entities/product.entity';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
+const MAX_COMPARE_ITEMS = 5;
+
 const relations = [
   'user',
   'product',
+  'product.category',
   'product.mediaPinned',
   'product.brand',
   'product.variants',
@@ -29,15 +32,26 @@ export class CompareService {
 
   // 🟢 افزودن محصول به لیست مقایسه
   async add(user: RequestUser, dto: AddCompareDto) {
+    // قبل از اضافه کردن، compareهای قدیمی رو پاک کن (مثلاً بیشتر از ۷ روز)
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() - 30);
+    await this.compareRepo.delete({ userId: user.id, createdAt: LessThan(expireDate) });
+
     const product = await this.productRepo.findOne({
       where: { id: dto.productId },
-      relations: ['mediaPinned', 'brand', 'variants', 'variants.attributes', 'variants.attributes.attribute', 'variants.attributes.value'],
+      relations: ['category', 'mediaPinned', 'brand', 'variants', 'variants.attributes', 'variants.attributes.attribute', 'variants.attributes.value'],
     });
 
     if (!product) throw new NotFoundException('محصول یافت نشد');
 
+    const count = await this.compareRepo.count({ where: { userId: user.id } });
+    if (count >= MAX_COMPARE_ITEMS) {
+      throw new NotFoundException(`شما تنها می‌توانید تا ${MAX_COMPARE_ITEMS} محصول را برای مقایسه انتخاب کنید`);
+    }
+
     const existing = await this.compareRepo.findOne({
       where: { userId: user.id, productId: dto.productId },
+      relations,
     });
 
     if (existing) return CompareMapper.toResponse(existing);

@@ -7,13 +7,14 @@ import { CategoryModule } from '../category/category.module';
 import { VariantAttributeValueModule } from '../attributes/variant-attribute-value/variant-attribute-value.module';
 import { MediaModule } from '../media/media.module';
 import { UploadService } from 'src/common/services/upload.service';
+import { Review } from '../review/entities/review.entity';
 
 @Module({
   imports: [
     CategoryModule,
     VariantAttributeValueModule,
     MediaModule,
-    TypeOrmModule.forFeature([Product]),
+    TypeOrmModule.forFeature([Product, Review]),
   ],
   providers: [ProductService, UploadService],
   controllers: [ProductController],

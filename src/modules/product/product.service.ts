@@ -83,16 +83,10 @@ export class ProductService implements IProductService {
     async findOneForSite(id: number): Promise<IProductResponse> {
         const product = await this.productRepo.findOne({
             where: { id },
-            relations: [...relations, 'reviews', 'reviews.user', 'reviews.product'],
+            relations,
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
-        const approvedReviews = product.reviews.filter((r) => r.isApproved);
-        return {
-            ...ProductMapper.toResponse(product, { cartesian: true }),
-            count: approvedReviews.length,
-            averageRating: getAverageRating(approvedReviews),
-            items: ReviewMapper.toListProduct(approvedReviews),
-        }
+        return ProductMapper.toResponse(product, { cartesian: true });
     }
 
     async create(data: CreateProductDto): Promise<IProductResponse> {
