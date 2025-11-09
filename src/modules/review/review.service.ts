@@ -81,16 +81,17 @@ export class ReviewService {
   async findAllForAdmin(query: PaginateQuery) {
     const response = await paginate(query, this.reviewRepo, {
       sortableColumns: ['createdAt', 'id'],
-      relations: ['product', 'user'],
+      relations: ['product', 'product.mediaPinned', 'user'],
+      searchableColumns: ['comment', 'product.name'],
       filterableColumns: {
-        productId: [FilterOperator.EQ],
-        userId: [FilterOperator.EQ],
+        productId: [FilterOperator.IN],
+        userId: [FilterOperator.IN],
         isApproved: [FilterOperator.EQ],
       },
       defaultSortBy: [['createdAt', 'DESC']],
     });
     return {
-      data: ReviewMapper.toList(response.data),
+      items: ReviewMapper.toList(response.data),
       meta: response.meta,
       links: response.links,
     }

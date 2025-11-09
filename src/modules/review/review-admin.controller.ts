@@ -20,9 +20,10 @@ export class ReviewAdminController {
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,
         sortableColumns: ['id', 'rating', 'createdAt'],
+        searchableColumns: ['comment', 'product.name'],
         filterableColumns: {
-            productId: [FilterOperator.EQ],
-            userId: [FilterOperator.EQ],
+            productId: [FilterOperator.IN],
+            userId: [FilterOperator.IN],
             isApproved: [FilterOperator.EQ],
 
         }

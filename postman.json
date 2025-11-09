@@ -3432,7 +3432,7 @@
             "name": "filter.productId",
             "required": false,
             "in": "query",
-            "description": "Filter by productId query param.\n          <p>\n             <b>Format: </b> filter.productId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.productId=$not:$like:John Doe&filter.productId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "description": "Filter by productId query param.\n          <p>\n             <b>Format: </b> filter.productId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.productId=$not:$like:John Doe&filter.productId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$in</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -3444,7 +3444,7 @@
             "name": "filter.userId",
             "required": false,
             "in": "query",
-            "description": "Filter by userId query param.\n          <p>\n             <b>Format: </b> filter.userId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.userId=$not:$like:John Doe&filter.userId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "description": "Filter by userId query param.\n          <p>\n             <b>Format: </b> filter.userId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.userId=$not:$like:John Doe&filter.userId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$in</li></ul>",
             "schema": {
               "type": "array",
               "items": {
@@ -3481,6 +3481,27 @@
                   "createdAt:ASC",
                   "createdAt:DESC"
                 ]
+              }
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search term to filter result values\n        <p>\n             <b>Example: </b> John\n          </p>\n        <p>\n             <b>Default Value: </b> No default value\n          </p>\n        ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "description": "List of fields to search by term to filter result values\n        <p>\n             <b>Example: </b> comment,product.name\n          </p>\n        <p>\n             <b>Default Value: </b> By default all fields mentioned below will be used to search by term\n          </p>\n        <h4>Available Fields</h4><ul><li>comment</li>\n<li>product.name</li></ul>\n        ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
               }
             }
           }

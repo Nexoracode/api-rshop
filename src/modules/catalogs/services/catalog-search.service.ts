@@ -89,7 +89,7 @@ export class CatalogSearchService {
       FROM products p
       LEFT JOIN brands b ON b.id = p.brand_id
       LEFT JOIN categories c ON c.id = p.category_id
-      LEFT JOIN media m ON m.id = p.media_pinned_id
+      LEFT JOIN medias m ON m.id = p.media_pinned_id
       WHERE p.is_active = 1
         AND p.is_visible = 1
         AND (
