@@ -3409,7 +3409,82 @@
     "/api/admin/reviews": {
       "get": {
         "operationId": "ReviewAdminController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number to retrieve.If you provide invalid value the default page number will applied\n        <p>\n             <b>Example: </b> 1\n          </p>\n        <p>\n             <b>Default Value: </b> 1\n          </p>\n        ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of records per page.\n      <p>\n             <b>Example: </b> 20\n          </p>\n      <p>\n             <b>Default Value: </b> 20\n          </p>\n      <p>\n             <b>Max Value: </b> 100\n          </p>\n\n      If provided value is greater than max value, max value will be applied.\n      ",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter.productId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by productId query param.\n          <p>\n             <b>Format: </b> filter.productId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.productId=$not:$like:John Doe&filter.productId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.userId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by userId query param.\n          <p>\n             <b>Format: </b> filter.userId={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.userId=$not:$like:John Doe&filter.userId=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter.isApproved",
+            "required": false,
+            "in": "query",
+            "description": "Filter by isApproved query param.\n          <p>\n             <b>Format: </b> filter.isApproved={$not}:OPERATION:VALUE\n          </p>\n          <p>\n             <b>Example: </b> filter.isApproved=$not:$like:John Doe&filter.isApproved=like:John\n          </p>\n          <h4>Available Operations</h4><ul><li>$eq</li></ul>",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Parameter to sort by.\n      <p>To sort by multiple fields, just provide query param multiple types. The order in url defines an order of sorting</p>\n      <p>\n             <b>Format: </b> fieldName:DIRECTION\n          </p>\n      <p>\n             <b>Example: </b> sortBy=id:DESC&sortBy=createdAt:ASC\n          </p>\n      <p>\n             <b>Default Value: </b> No default sorting specified, the result order is not guaranteed\n          </p>\n      <h4>Available Fields</h4><ul><li>id</li>\n<li>rating</li>\n<li>createdAt</li></ul>\n      ",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id:ASC",
+                  "id:DESC",
+                  "rating:ASC",
+                  "rating:DESC",
+                  "createdAt:ASC",
+                  "createdAt:DESC"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -3426,7 +3501,7 @@
       }
     },
     "/api/admin/reviews/{id}/status": {
-      "put": {
+      "patch": {
         "operationId": "ReviewAdminController_updateStatus",
         "parameters": [
           {
@@ -3448,6 +3523,34 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Admin - Reviews"
+        ]
+      }
+    },
+    "/api/admin/reviews/{id}": {
+      "delete": {
+        "operationId": "ReviewAdminController_deleteReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""

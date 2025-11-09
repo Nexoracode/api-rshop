@@ -1,5 +1,6 @@
 import { buildPriceObject } from 'src/common/helpers/price.helper';
 import { Review } from '../entities/review.entity';
+import { create } from 'lodash';
 
 export class ReviewMapper {
     static toResponse(review: Review) {
@@ -14,7 +15,7 @@ export class ReviewMapper {
             id: review.id,
             rating: review.rating,
             comment: review.comment,
-            createdAt: review.createdAt,
+            isApproved: review.isApproved,
             user: {
                 id: review.user.id,
                 name: review.user.firstName === null ? 'کاربر مهمان' : review.user.firstName + ' ' + review.user.lastName,
@@ -25,6 +26,8 @@ export class ReviewMapper {
                 image: product.mediaPinned?.url,
                 ...priceData, // 👈 شامل price, discountAmount, discountPercent, finalPrice
             },
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt,
         };
     }
 

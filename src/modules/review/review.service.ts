@@ -7,7 +7,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { UpdateReviewStatusDto } from './dto/update-review-status.dto';
 import { ReviewMapper } from './mappers/review.mapper';
-import { paginate, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { getAverageRating } from 'src/common/helpers/review.helper';
 import { buildPriceObject } from 'src/common/helpers/price.helper';
 import { OrderItem } from '../order/entities/order-item.entity';
@@ -71,12 +71,29 @@ export class ReviewService {
     return { message: 'نظر با موفقیت حذف شد' };
   }
 
-  async findAllForAdmin() {
-    const list = await this.reviewRepo.find({
+  async removeByAdmin(id: number) {
+    const review = await this.reviewRepo.findOne({ where: { id } });
+    if (!review) throw new NotFoundException('نظر یافت نشد');
+    await this.reviewRepo.remove(review);
+    return { message: 'نظر با موفقیت حذف شد' };
+  }
+
+  async findAllForAdmin(query: PaginateQuery) {
+    const response = await paginate(query, this.reviewRepo, {
+      sortableColumns: ['createdAt', 'id'],
       relations: ['product', 'user'],
-      order: { createdAt: 'DESC' },
+      filterableColumns: {
+        productId: [FilterOperator.EQ],
+        userId: [FilterOperator.EQ],
+        isApproved: [FilterOperator.EQ],
+      },
+      defaultSortBy: [['createdAt', 'DESC']],
     });
-    return ReviewMapper.toList(list);
+    return {
+      data: ReviewMapper.toList(response.data),
+      meta: response.meta,
+      links: response.links,
+    }
   }
 
   async updateStatus(id: number, dto: UpdateReviewStatusDto) {
