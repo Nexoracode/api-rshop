@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDateColumn, UpdateDateColumn, Index, JoinColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 import { Invoice } from 'src/modules/invoice/entities/invoice.entity';
 import { OrderStatus } from '../enums/order-status.enum';
+import { Address } from 'src/modules/address/entities/address.entity';
 
 @Entity('orders')
 export class Order {
@@ -14,6 +15,15 @@ export class Order {
     @ManyToOne(() => User, (u) => u.orders, { nullable: false, onDelete: 'CASCADE' })
     @Index()
     user: User;
+
+
+    // 🏠 آدرس انتخاب‌شده کاربر برای این سفارش
+    @ManyToOne(() => Address, { eager: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'address_id' })
+    address: Address;
+
+    @Column({ name: 'address_id', nullable: true })
+    addressId: number;
 
     @OneToMany(() => Invoice, (invoice) => invoice.order)
     invoices: Invoice[];

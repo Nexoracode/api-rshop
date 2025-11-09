@@ -17,7 +17,7 @@ export class SupportMapper {
                     id: entity.product.id,
                     title: entity.product.name,
                     price: entity.product.price,
-                    image: entity.product.mediaPinned.url
+                    image: entity.product.mediaPinned?.url
                 }
                 : undefined,
             messages: entity.messages

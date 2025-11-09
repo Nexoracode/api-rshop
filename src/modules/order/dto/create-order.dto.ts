@@ -5,6 +5,7 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
+    isNotEmpty,
     IsNotEmpty,
     IsOptional,
     ValidateNested,
@@ -68,6 +69,14 @@ export class CreateManualOrderDto {
     userId: number;
 
     @ApiProperty({
+        example: 2,
+        description: "آدرس کاربر (Address ID)",
+    })
+    @IsNotEmpty()
+    @IsInt()
+    addressId: number;
+
+    @ApiProperty({
         type: [ManualProductDto],
         description: "لیست محصولات انتخاب‌شده برای این سفارش",
         example: [
@@ -97,12 +106,4 @@ export class CreateManualOrderDto {
     @IsNotEmpty()
     @IsEnum(OrderStatus)
     status: OrderStatus;
-
-    @ApiProperty({
-        example: true,
-        description: "آیا سفارش به‌صورت دستی ثبت شده است؟",
-        default: true,
-    })
-    @IsBoolean()
-    isManual: boolean = true;
 }

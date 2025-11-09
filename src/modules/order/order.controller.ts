@@ -41,12 +41,12 @@ export class OrderController {
     return this.orderService.createFromCard(user as any, dto);
   }
 
-  @Post('me')
+  @Post('all/me')
   getMeOrder(@CurrentUser() user: RequestUser) {
     return this.orderService.findAllByUser(user.id);
   }
 
-  @Get(':id')
+  @Get(':id/me')
   @ApiOperation({ summary: 'دریافت جزئیات سفارش' })
   findOne(@CurrentUser() user: RequestUser, @Param('id') id: number) {
     return this.orderService.findOneByUser(user, id);

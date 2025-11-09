@@ -2405,7 +2405,7 @@
         ]
       }
     },
-    "/api/orders/me": {
+    "/api/orders/all/me": {
       "post": {
         "operationId": "OrderController_getMeOrder",
         "parameters": [],
@@ -2414,6 +2414,30 @@
             "description": ""
           }
         },
+        "tags": [
+          "15 - 📑 Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}/me": {
+      "get": {
+        "operationId": "OrderController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "دریافت جزئیات سفارش",
         "tags": [
           "15 - 📑 Orders"
         ]
@@ -5054,6 +5078,11 @@
             "example": 2,
             "description": "شناسه کاربر (User ID)"
           },
+          "addressId": {
+            "type": "number",
+            "example": 2,
+            "description": "آدرس کاربر (Address ID)"
+          },
           "items": {
             "description": "لیست محصولات انتخاب‌شده برای این سفارش",
             "example": [
@@ -5090,7 +5119,7 @@
             "enum": [
               "pending_approval",
               "awaiting_payment",
-              "payment_confirmation_pendign",
+              "payment_confirmation_pending",
               "preparing",
               "shipping",
               "delivered",
@@ -5102,19 +5131,13 @@
             ],
             "example": "awaiting_payment",
             "description": "وضعیت سفارش (مثلاً pending، paid، delivered و ...)"
-          },
-          "isManual": {
-            "type": "boolean",
-            "example": true,
-            "description": "آیا سفارش به‌صورت دستی ثبت شده است؟",
-            "default": true
           }
         },
         "required": [
           "userId",
+          "addressId",
           "items",
-          "status",
-          "isManual"
+          "status"
         ]
       },
       "CreateOrderFromCardDto": {
@@ -5124,11 +5147,19 @@
             "type": "string",
             "example": "لطفا بسته رو بین ساعات 6-8 ارسال کنین. ممنون"
           },
+          "addressId": {
+            "type": "number",
+            "example": 2,
+            "description": "آدرس کاربر (Address ID)"
+          },
           "couponCode": {
             "type": "string",
             "example": "WELCOME10"
           }
-        }
+        },
+        "required": [
+          "addressId"
+        ]
       },
       "UpdateStatusDto": {
         "type": "object",
@@ -5138,7 +5169,7 @@
             "enum": [
               "pending_approval",
               "awaiting_payment",
-              "payment_confirmation_pendign",
+              "payment_confirmation_pending",
               "preparing",
               "shipping",
               "delivered",

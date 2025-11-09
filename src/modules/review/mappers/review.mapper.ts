@@ -15,6 +15,10 @@ export class ReviewMapper {
             rating: review.rating,
             comment: review.comment,
             createdAt: review.createdAt,
+            user: {
+                id: review.user.id,
+                name: review.user.firstName === null ? 'کاربر مهمان' : review.user.firstName + ' ' + review.user.lastName,
+            },
             product: {
                 id: product.id,
                 name: product.name,

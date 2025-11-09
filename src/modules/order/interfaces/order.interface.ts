@@ -1,5 +1,6 @@
 import { OrderStatus } from "../enums/order-status.enum";
 import { Order } from "../entities/order.entity";
+import { Address } from "src/modules/address/entities/address.entity";
 
 
 export interface IOrderProduct {
@@ -27,7 +28,6 @@ export interface iUserOrder {
     phone: string;
     email: string | null;
     avatarUrl?: string;
-    addresses: IOrderAddressUser[] | null;
 }
 
 export interface iAllOrderResponse {
@@ -37,5 +37,6 @@ export interface iAllOrderResponse {
     user: iUserOrder;
     total: number;
     status: OrderStatus;
+    address: Address;
     items: IOrderItems[] | null
 }

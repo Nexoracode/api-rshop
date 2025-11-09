@@ -1,6 +1,7 @@
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Product } from "../entities/product.entity";
 import { mapSpecificationsGrouped } from "./spec.mapper";
+import { getAverageRating } from "src/common/helpers/review.helper";
 
 export class ProductMapper {
     private static uniqVariantAttributes(variant: any) {
@@ -252,6 +253,8 @@ export class ProductMapper {
             helper: product.helper || null,
             helperId: product.helperId || null,
             isVisible: product.isVisible || false,
+            averageRaiting: getAverageRating((product as any).reviews || []),
+            reviewsCount: (product as any).reviewsCount || 0,
             medias: product.medias ? product.medias.map((m) => ({
                 id: m.id,
                 url: m.url,

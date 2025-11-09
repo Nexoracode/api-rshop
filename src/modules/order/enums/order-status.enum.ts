@@ -1,7 +1,7 @@
 export enum OrderStatus {
     PENDING_APPROVAL = "pending_approval", // در انتظار تایید
     AWAITING_PAYMENT = 'awaiting_payment', // در انتطار پرداخت
-    PAYMENT_CONFIRMATION_PENDING = "payment_confirmation_pendign", //در انتظار تایید پرداخت
+    PAYMENT_CONFIRMATION_PENDING = "payment_confirmation_pending", //در انتظار تایید پرداخت
     PREPARING = "preparing", // در حال آماده سازی
     SHIPPING = "shipping", // در حال ارسال
     DELIVERED = 'delivered', // تحویل گرفته

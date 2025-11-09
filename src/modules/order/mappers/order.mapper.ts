@@ -1,3 +1,4 @@
+import { Payment } from "src/modules/payment/entities/payment.entity";
 import { OrderItem } from "../entities/order-item.entity";
 import { Order } from "../entities/order.entity";
 import { iAllOrderResponse } from "../interfaces/order.interface";
@@ -10,6 +11,15 @@ export class OrderMapper {
             updatedAt: order.updatedAt,
             status: order.status,
             total: order.total,
+            user: {
+                id: order.user.id,
+                firstName: order.user.firstName,
+                lastName: order.user.lastName,
+                avatarUrl: order.user.avatarUrl,
+                phone: order.user.phone,
+                email: order.user.email || null,
+            },
+            address: order.address,
             items: order.items.length ? order.items.map((item) => ({
                 id: item.id,
                 order: item.order,
@@ -19,21 +29,6 @@ export class OrderMapper {
                     price: item.product.price,
                 }
             })) : null,
-            user: {
-                id: order.user.id,
-                firstName: order.user.firstName,
-                lastName: order.user.lastName,
-                avatarUrl: order.user.avatarUrl,
-                phone: order.user.phone,
-                email: order.user.email || null,
-                addresses: order.user.addresses.length
-                    ? order.user.addresses.map(address => ({
-                        id: address.id,
-                        province: address.province ?? '',
-                        city: address.city ?? ''
-                    }))
-                    : [],
-            }
         }
     }
 }
@@ -60,7 +55,7 @@ export class OrderMapperNew {
     }
 
     // 🔹 سطح جزئیات (برای مشاهده یک سفارش)
-    static toDetail(order: Order) {
+    static toDetail(order: Order, payment?: Payment | null) {
         return {
             id: order.id,
             status: order.status,
@@ -78,14 +73,9 @@ export class OrderMapperNew {
                 avatarUrl: order.user.avatarUrl,
                 phone: order.user.phone,
                 email: order.user.email || null,
-                addresses: order.user.addresses.length
-                    ? order.user.addresses.map(address => ({
-                        id: address.id,
-                        province: address.province ?? '',
-                        city: address.city ?? ''
-                    }))
-                    : [],
-            }
+            },
+            address: order.address,
+            payment: payment || null,
         };
     }
 

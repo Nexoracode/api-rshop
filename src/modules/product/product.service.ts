@@ -17,6 +17,7 @@ import { Brand } from '../brand/entities/brand.entity';
 import { UpdateBulkDto } from './dto/update-bulk.dto';
 import { getAverageRating } from 'src/common/helpers/review.helper';
 import { ReviewMapper } from '../review/mappers/review.mapper';
+import { Review } from '../review/entities/review.entity';
 
 const relations = [
     "variants",
@@ -39,6 +40,8 @@ export class ProductService implements IProductService {
     constructor(
         @InjectRepository(Product)
         private readonly productRepo: Repository<Product>,
+        @InjectRepository(Review)
+        private readonly reviewRepo: Repository<Review>,
         private dataSource: DataSource,
     ) { }
 
@@ -86,6 +89,18 @@ export class ProductService implements IProductService {
             relations,
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
+        const reviews = await this.reviewRepo.find({
+            where: {
+                product: { id: product.id },
+                isApproved: true,
+            },
+            relations: ['user', 'product'],
+        });
+        const averageRating = getAverageRating(reviews);
+        const lengthReview = reviews.length;
+        (product as any).averageRating = averageRating;
+        (product as any).reviewsCount = lengthReview;
+        (product as any).reviews = reviews.map(r => ReviewMapper.toResponse(r));
         return ProductMapper.toResponse(product, { cartesian: true });
     }
 
