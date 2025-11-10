@@ -51,7 +51,7 @@ export class OrderService {
     async getAllOrders(query: PaginateQuery) {
         const orders = await paginate(query, this.orderRepo, {
             sortableColumns: ["id", "createdAt", "total"],
-            relations: ["user", "address", "items", "items.product"],
+            relations: ["user", "address", "items", "items.product", "items.product.mediaPinned"],
             defaultSortBy: [["id", "DESC"]],
             searchableColumns: [
                 "id",
@@ -314,7 +314,6 @@ export class OrderService {
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
         })
-        if (!payment) throw new NotFoundException("اطلاعات پرداخت یافت نشد.");
         return OrderMapperNew.toDetail(order, payment);
     }
 
@@ -328,7 +327,6 @@ export class OrderService {
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
         })
-        if (!payment) throw new NotFoundException("اطلاعات پرداخت یافت نشد.");
         return OrderMapperNew.toDetail(order, payment);
     }
 

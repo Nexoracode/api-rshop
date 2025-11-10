@@ -4,6 +4,7 @@ import { ApiPaginationQuery, FilterOperator, PaginateQuery, PaginationType } fro
 import { CatalogService } from './catalog.service';
 import { Public } from 'src/common/decorator/public.decorator';
 import { CatalogSearchService } from './services/catalog-search.service';
+import { CatalogQueryDto } from './dto/catalog-query.dto';
 
 @ApiTags('Catalog')
 @Controller('catalog')
@@ -39,18 +40,18 @@ export class CatalogController {
     }
 
     @Public()
-    @Get(':slug')
-    @ApiPaginationQuery({
-        paginationType: PaginationType.CURSOR,
-        sortableColumns: ['id', 'price', 'createdAt'],
-        searchableColumns: ['name', 'description'],
-        defaultSortBy: [['id', 'DESC']],
-        defaultLimit: 20,
-        maxLimit: 100,
+    @Get(':slug') // مثل /catalog/books
+    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری با فیلترها' })
+    @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'books' })
+    @ApiQuery({
+        name: 'filter[attributes]',
+        required: false,
+        description: 'فیلتر ویژگی‌ها: "attrId:valueId,valueId|attrId:valueId"',
+        example: '12:4,5|13:2',
     })
     async getProductsByCategory(
         @Param('slug') slug: string,
-        @Query() query: PaginateQuery,
+        @Query() query: CatalogQueryDto
     ) {
         return this.catalogService.getProductsByCategoryWithPaginate(slug, query);
     }

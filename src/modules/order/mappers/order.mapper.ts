@@ -27,6 +27,7 @@ export class OrderMapper {
                     id: item.product.id,
                     name: item.product.name,
                     price: item.product.price,
+                    image: item.product.mediaPinned.url,
                 }
             })) : null,
         }

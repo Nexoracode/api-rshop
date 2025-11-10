@@ -48,13 +48,14 @@ export class OrderController {
 
   @Get(':id/me')
   @ApiOperation({ summary: 'دریافت جزئیات سفارش' })
-  findOne(@CurrentUser() user: RequestUser, @Param('id') id: number) {
+  findOne(@CurrentUser() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
     return this.orderService.findOneByUser(user, id);
   }
 
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
+    console.log(id);
     return this.orderService.findOneById(id);
   }
 

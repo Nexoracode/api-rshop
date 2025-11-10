@@ -84,8 +84,8 @@ export class ReviewService {
       relations: ['product', 'product.mediaPinned', 'user'],
       searchableColumns: ['comment', 'product.name'],
       filterableColumns: {
-        productId: [FilterOperator.IN],
-        userId: [FilterOperator.IN],
+        productId: [FilterOperator.EQ],
+        userId: [FilterOperator.EQ],
         isApproved: [FilterOperator.EQ],
       },
       defaultSortBy: [['createdAt', 'DESC']],

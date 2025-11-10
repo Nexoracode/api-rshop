@@ -1,6 +1,7 @@
 import { Brand } from "src/modules/brand/entities/brand.entity";
 import { Category } from "src/modules/category/entities/category.entity";
 import { Media } from "src/modules/media/entities/image.entity";
+import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 
 export interface CatalogProduct {
     id: number;
@@ -8,8 +9,12 @@ export interface CatalogProduct {
     price: number;
     discountAmount: number;
     discountPrecent: number;
+    finalPrice: number;
+    hasVariants: boolean;
     medias: [] | null,
     isSameDayShipping: boolean,
     category: Category | null;
-    brand?: Brand | null
+    mediaPinned?: Media | null;
+    brand?: Brand | null;
+    variants: VariantProduct[] | [] | null;
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Category } from '../../category/entities/category.entity';
+import { Product } from 'src/modules/product/entities/product.entity';
 
 
 // نوع جدید برای مقدارهای هر attribute
@@ -17,51 +18,170 @@ interface AttributeItem {
   values: AttributeValue[];
 }
 
+type BuildQBInput = {
+  categoryIds: number[];
+  attributeMap: Record<number, number[]>; // { attrId: [valueId,...], ... }
+  sortBy?: [string, 'ASC' | 'DESC'][];
+};
+
 @Injectable()
 export class CatalogQueryService {
   constructor(private readonly dataSource: DataSource) { }
 
+  async buildProductsQBByCategory(input: BuildQBInput) {
+    const { categoryIds, attributeMap, sortBy } = input;
+
+    const qb = this.dataSource.getRepository(Product)
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.mediaPinned', 'mediaPinned')
+      .leftJoinAndSelect('p.brand', 'brand')
+      .leftJoinAndSelect('p.category', 'category')
+      // برای محاسبه فیلترها و vitals
+      .leftJoin('p.variants', 'v')
+      .leftJoin('v.attributes', 'va')       // جدول واسط variant_attributes
+      .leftJoin('va.attribute', 'attr')
+      .leftJoin('va.value', 'aval')
+      .where('p.isActive = true')
+      .andWhere('p.categoryId IN (:...categoryIds)', { categoryIds });
+
+    // ----- فیلتر attributes -----
+    const attrIds = Object.keys(attributeMap).map((k) => +k).filter(Boolean);
+    if (attrIds.length > 0) {
+      // شرط: وجود حداقل یک واریانت که تمام attributeهای انتخابی را با یکی از valueهای مجاز داشته باشد
+      // EXISTS (
+      //    SELECT v2.id
+      //    FROM product_variants v2
+      //    JOIN variant_attributes va2 ON va2.variant_id = v2.id
+      //    WHERE v2.product_id = p.id
+      //      AND (
+      //         (va2.attribute_id = :a1 AND va2.value_id IN (:...a1_vals)) OR
+      //         (va2.attribute_id = :a2 AND va2.value_id IN (:...a2_vals)) OR ...
+      //      )
+      //    GROUP BY v2.id
+      //    HAVING COUNT(DISTINCT va2.attribute_id) = :numAttrs
+      // )
+
+      const orParts: string[] = [];
+      const params: any = { numAttrs: attrIds.length };
+
+      attrIds.forEach((attrId, idx) => {
+        const paramAttr = `a${idx}`;
+        const paramVals = `a${idx}_vals`;
+        orParts.push(`(va2.attribute_id = :${paramAttr} AND va2.value_id IN (:...${paramVals}))`);
+        params[paramAttr] = attrId;
+        params[paramVals] = attributeMap[attrId];
+      });
+
+      const existsSql = `
+        EXISTS (
+          SELECT 1
+          FROM variants_product v2
+          JOIN variant_attribute_values va2 ON va2.variant_id = v2.id
+          WHERE v2.product_id = p.id
+            AND (
+              ${orParts.join(' OR ')}
+            )
+          GROUP BY v2.id
+          HAVING COUNT(DISTINCT va2.attribute_id) = :numAttrs
+        )
+      `;
+
+      qb.andWhere(existsSql, params);
+    }
+
+    // ----- مرتب‌سازی سفارشی (اختیاری) -----
+    if (Array.isArray(sortBy)) {
+      for (const [col, dir] of sortBy) {
+        // white-list ساده:
+        if (['id', 'createdAt', 'price'].includes(col)) {
+          qb.addOrderBy(`p.${col}`, dir === 'ASC' ? 'ASC' : 'DESC');
+        }
+      }
+    } else {
+      qb.addOrderBy('p.id', 'DESC');
+    }
+
+    return qb;
+  }
+
   // 🎯 ساخت فیلترها برای صفحه دسته
   async buildFilters(category: Category, categoryIds: number[]) {
-    // برندها
+    // ------------------------------------------
+    // ۱. برندها
+    // ------------------------------------------
     const brands = await this.dataSource.query(
       `
-      SELECT b.id, b.slug, b.name, COUNT(p.id) as count
-      FROM products p
-      INNER JOIN brands b ON b.id = p.brand_id
-      WHERE p.is_active = 1 AND b.is_active = 1
-        AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-      GROUP BY b.id, b.name
-      `,
+    SELECT b.id, b.slug, b.name, COUNT(p.id) as count
+    FROM products p
+    INNER JOIN brands b ON b.id = p.brand_id
+    WHERE p.is_active = 1 AND b.is_active = 1
+      AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
+    GROUP BY b.id, b.name
+    `,
       categoryIds,
     );
 
-    // ویژگی‌ها (attribute)
-    const attributesRaw = await this.dataSource.query(
+    // ------------------------------------------
+    // ۲. ویژگی‌ها از category_attribute + product_attribute_values
+    // ------------------------------------------
+    const productAttrs = await this.dataSource.query(
       `
-  SELECT DISTINCT
-    a.id AS attribute_id,
-    a.name AS attribute_name,
-    a.type AS attribute_type,
-    av.id AS attribute_value_id,
-    av.value AS attribute_value
-  FROM product_attribute_values pav
-  INNER JOIN attributes a ON a.id = pav.attribute_id
-  LEFT JOIN attribute_values av ON av.id = pav.value_id
-  INNER JOIN products p ON p.id = pav.product_id
-  WHERE p.is_active = 1
-    AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-    AND av.value IS NOT NULL
-  `,
-      categoryIds,
+      SELECT DISTINCT
+        a.id AS attribute_id,
+        a.name AS attribute_name,
+        a.type AS attribute_type,
+        av.id AS attribute_value_id,
+        av.value AS attribute_value
+      FROM category_attributes ca
+      INNER JOIN attributes a ON a.id = ca.attribute_id
+      INNER JOIN attribute_values av ON av.attribute_id = a.id
+      INNER JOIN product_attribute_values pav ON pav.value_id = av.id
+      INNER JOIN products p ON p.id = pav.product_id
+      WHERE p.is_active = 1
+        AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
+        AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
+        AND av.value IS NOT NULL
+        AND a.is_public = true
+    `,
+      [...categoryIds, ...categoryIds],
     );
 
+    // ------------------------------------------
+    // ۳. ویژگی‌های واریانت از category_attribute + variant_attribute_values
+    // ------------------------------------------
+    const variantAttrs = await this.dataSource.query(
+      `
+      SELECT DISTINCT
+        a.id AS attribute_id,
+        a.name AS attribute_name,
+        a.type AS attribute_type,
+        av.id AS attribute_value_id,
+        av.value AS attribute_value
+      FROM category_attributes ca
+      INNER JOIN attributes a ON a.id = ca.attribute_id
+      INNER JOIN attribute_values av ON av.attribute_id = a.id
+      INNER JOIN variant_attribute_values vav ON vav.value_id = av.id
+      INNER JOIN variants_product v ON v.id = vav.variant_id
+      INNER JOIN products p ON p.id = v.product_id
+      WHERE p.is_active = 1
+        AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
+        AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
+        AND av.value IS NOT NULL
+        AND a.is_public = true
+    `,
+      [...categoryIds, ...categoryIds],
+    );
 
-    // مپ برای گروه‌بندی attributeها
-    const attributeMap = new Map<number, AttributeItem>();
+    // ------------------------------------------
+    // ۴. ترکیب نتایج product + variant و حذف تکراری‌ها
+    // ------------------------------------------
+    const attributesRaw = [...productAttrs, ...variantAttrs];
+    const attributeMap = new Map<
+      number,
+      { id: number; name: string; type: string; values: { id: number; value: string }[] }
+    >();
 
     for (const row of attributesRaw) {
-      // اگر برای اولین بار با این attribute مواجه شدیم، بسازش
       if (!attributeMap.has(row.attribute_id)) {
         attributeMap.set(row.attribute_id, {
           id: row.attribute_id,
@@ -72,12 +192,10 @@ export class CatalogQueryService {
       }
 
       const attr = attributeMap.get(row.attribute_id)!;
-
-      // بررسی اینکه مقدار تکراری نباشد
       if (
         row.attribute_value &&
         row.attribute_value_id &&
-        !attr.values.some(v => v.id === row.attribute_value_id)
+        !attr.values.some((v) => v.id === row.attribute_value_id)
       ) {
         attr.values.push({
           id: row.attribute_value_id,
@@ -85,20 +203,25 @@ export class CatalogQueryService {
         });
       }
     }
-    // بازه قیمت
+
+    // ------------------------------------------
+    // ۵. بازه قیمت
+    // ------------------------------------------
     const priceRange = await this.dataSource.query(
       `
-      SELECT 
-        MIN(p.price - COALESCE(p.discount_amount, 0)) as min,
-        MAX(p.price - COALESCE(p.discount_amount, 0)) as max
-      FROM products p
-      WHERE p.is_active = 1
-        AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-      `,
+    SELECT 
+      MIN(p.price - COALESCE(p.discount_amount, 0)) as min,
+      MAX(p.price - COALESCE(p.discount_amount, 0)) as max
+    FROM products p
+    WHERE p.is_active = 1
+      AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
+    `,
       categoryIds,
     );
 
-    // زیردسته‌ها
+    // ------------------------------------------
+    // ۶. زیردسته‌ها
+    // ------------------------------------------
     const subCategories = (category.children || []).map((c) => ({
       id: c.id,
       title: c.title,
@@ -106,6 +229,9 @@ export class CatalogQueryService {
       count: 0,
     }));
 
+    // ------------------------------------------
+    // ۷. خروجی نهایی برای فرانت
+    // ------------------------------------------
     return {
       attributes: Array.from(attributeMap.values()),
       generic: {
@@ -127,4 +253,6 @@ export class CatalogQueryService {
       },
     };
   }
+
+
 }
