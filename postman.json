@@ -3229,31 +3229,6 @@
         ]
       }
     },
-    "/api/imported-excel/import": {
-      "post": {
-        "operationId": "ImportedExcelController_uploadAndImport",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "description": "imported excel file",
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/ImportExcelDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "ImportedExcel"
-        ]
-      }
-    },
     "/api/profile": {
       "get": {
         "operationId": "ProfileController_getOverview",
@@ -5611,21 +5586,6 @@
         "required": [
           "order_id",
           "callback"
-        ]
-      },
-      "ImportExcelDto": {
-        "type": "object",
-        "properties": {
-          "file": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            }
-          }
-        },
-        "required": [
-          "file"
         ]
       },
       "CreateReviewDto": {

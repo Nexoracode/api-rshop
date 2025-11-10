@@ -66,7 +66,6 @@
     "typeorm": "^0.3.24",
     "typeorm-naming-strategies": "^4.1.0",
     "uuid": "^11.1.0",
-    "xlsx": "^0.18.5",
     "xml2js": "^0.6.2",
     "zarinpal-checkout": "^0.3.0"
   },

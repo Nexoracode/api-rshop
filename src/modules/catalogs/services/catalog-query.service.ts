@@ -220,14 +220,40 @@ export class CatalogQueryService {
     );
 
     // ------------------------------------------
-    // ۶. زیردسته‌ها
+    // ۴. ساخت breadcrumb و درخت کتگوری
     // ------------------------------------------
-    const subCategories = (category.children || []).map((c) => ({
+    const categoryRepo = this.dataSource.getTreeRepository(Category);
+
+    // مسیر از ریشه تا دسته فعلی
+    const ancestors = await categoryRepo.findAncestors(category);
+
+    // آخرین جد (ریشه‌ی همین شاخه)
+    const root = ancestors[0];
+
+    // ساخت درخت فقط از همین شاخه
+    const rootTree = await categoryRepo.findDescendantsTree(root);
+
+    // Breadcrumb از والد اول تا همین دسته فعلی
+    const breadcrumbCategories = ancestors.map((c, index) => ({
       id: c.id,
       title: c.title,
       slug: c.slug,
-      count: 0,
+      level: index + 1,
     }));
+
+    // تابع بازگشتی برای ساخت ساختار فیلتر درختی
+    const buildTree = (cats: Category[]): any[] =>
+      cats.map((c) => ({
+        id: c.id,
+        title: c.title,
+        slug: c.slug,
+        children: c.children ? buildTree(c.children) : [],
+      }));
+
+    // درخت شاخه‌ی فعلی (از والد اصلی تا انتها)
+    const treeCategories = buildTree([rootTree]);
+
+
 
     // ------------------------------------------
     // ۷. خروجی نهایی برای فرانت
@@ -243,7 +269,7 @@ export class CatalogQueryService {
           min: Number(priceRange[0].min) || 0,
           max: Number(priceRange[0].max) || 0,
         },
-        categories: subCategories,
+        categories: treeCategories,
         brands: brands.map((b) => ({
           id: b.id,
           name: b.name,

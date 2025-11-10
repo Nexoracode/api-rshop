@@ -1,14 +1,14 @@
+// catalog.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
 import { CatalogCacheService } from './services/catalog-cache.service';
 import { Category } from '../category/entities/category.entity';
-import { extractCategoryIds } from './utils/category-tree.util';
 import { Product } from '../product/entities/product.entity';
-import { CatalogMapper } from './mappers/catalog.mapper';
+import { extractCategoryIds } from './utils/category-tree.util';
 import { parseAttributeFilter } from './utils/parse-attribute-filter.util';
-import { Attribute } from '../attributes/attribute/entities/attribute.entity';
+import { CatalogMapper } from './mappers/catalog.mapper';
 
 const relations = [
     'brand',
@@ -21,7 +21,6 @@ const relations = [
     'variants.attributes.value',
 ];
 
-
 @Injectable()
 export class CatalogService {
     constructor(
@@ -30,29 +29,38 @@ export class CatalogService {
         private readonly dataSource: DataSource,
     ) { }
 
-    // 🛍️ محصولات دسته همراه با paginate و فیلترها
     async getProductsByCategoryWithPaginate(
         slug: string,
         query: PaginateQuery,
     ): Promise<any> {
+        // ------------------------------------------
+        // ۱. بررسی کش
+        // ------------------------------------------
         const cacheKey = `catalog:category:${slug}:${JSON.stringify(query)}`;
         const cached = await this.cacheService.get<any>(cacheKey);
         if (cached) return cached;
 
         // ------------------------------------------
-        // ۱. گرفتن درخت دسته و id زیرمجموعه‌ها
+        // ۲. یافتن دسته فعلی و ساخت مسیر
         // ------------------------------------------
         const categoryRepo = this.dataSource.getTreeRepository(Category);
         const categoryNode = await categoryRepo.findOne({
             where: { slug },
-            relations: ['children.parent'],
+            relations: ['children', 'parent'],
         });
         if (!categoryNode) throw new NotFoundException('دسته یافت نشد');
+
+        // درخت کامل زیرمجموعه برای محصولات
         const categoryTree = await categoryRepo.findDescendantsTree(categoryNode);
-        const categoryIds = extractCategoryIds(categoryTree);
+
+        // ✅ محصولات فقط از دسته فعلی و زیرمجموعه‌اش
+        const categoryIdsForProducts = extractCategoryIds(categoryTree, false);
+
+        // ✅ فیلتر attribute از والدها و خودش
+        const categoryIdsForAttributes = extractCategoryIds(categoryTree, true);
 
         // ------------------------------------------
-        // ۲. آماده‌سازی Query پایه محصولات
+        // ۳. ساخت query پایه
         // ------------------------------------------
         const qb = this.dataSource
             .getRepository(Product)
@@ -61,19 +69,23 @@ export class CatalogService {
             .leftJoinAndSelect('p.category', 'c')
             .leftJoinAndSelect('p.mediaPinned', 'm')
             .leftJoinAndSelect('p.medias', 'me')
+            .leftJoinAndSelect('p.variants', 'v')
+            .leftJoinAndSelect('v.attributes', 'va')
+            .leftJoinAndSelect('va.attribute', 'attr')
+            .leftJoinAndSelect('va.value', 'aval')
             .where('p.is_active = true')
             .andWhere('p.is_visible = true')
-            .andWhere('p.category_id IN (:...ids)', { ids: categoryIds });
+            .andWhere('p.category_id IN (:...ids)', { ids: categoryIdsForProducts });
 
         // ------------------------------------------
-        // ۳. فیلتر برند
+        // ۴. فیلتر برند
         // ------------------------------------------
         if (query.filter?.brand) {
             qb.andWhere('b.id = :brandId', { brandId: query.filter.brand });
         }
 
         // ------------------------------------------
-        // ۴. فیلتر بازه قیمت
+        // ۵. بازه قیمت
         // ------------------------------------------
         if (query.filter?.price_min) {
             qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) >= :min', {
@@ -87,46 +99,52 @@ export class CatalogService {
         }
 
         // ------------------------------------------
-        // ۵. محصولات دارای تخفیف
+        // ۶. محصولات دارای تخفیف
         // ------------------------------------------
         if (query.filter?.special_offer === 'true') {
             qb.andWhere('(p.discount_amount > 0 OR p.discount_percent > 0)');
         }
 
         // ------------------------------------------
-        // ۶. فیلتر بر اساس ویژگی‌ها (Attribute/Value)
+        // ۷. فیلتر attributeها
         // ------------------------------------------
         const rawMap = parseAttributeFilter(query['filter[attributes]']);
         const attrIds = Object.keys(rawMap).map((k) => +k).filter(Boolean);
 
         if (attrIds.length > 0) {
-            // فقط attributeهای مجاز در گروه‌های همین کتگوری
-            // ✅ دریافت attribute‌های مجاز از category_attribute
-            const validAttributeIds = await this.dataSource
-                .createQueryBuilder()
-                .select('ca.attribute_id', 'id')
-                .from('category_attributes', 'ca')
-                .where('ca.category_id IN (:...categoryIds)', { categoryIds })
-                .getRawMany();
+            // فقط attributeهای مجاز از دسته و والدها
+            const validAttrs = await this.dataSource.query(
+                `
+          SELECT DISTINCT ca.attribute_id as id
+          FROM category_attributes ca
+          INNER JOIN attributes a ON a.id = ca.attribute_id
+          WHERE ca.category_id IN (${categoryIdsForAttributes.map(() => '?').join(',')})
+            AND a.is_public = 1
+        `,
+                categoryIdsForAttributes,
+            );
 
-            const validIds = validAttributeIds.map(a => a.id);
+            const validIds = validAttrs.map((a) => a.id);
             const attributeMap: Record<number, number[]> = {};
             for (const [attrId, values] of Object.entries(rawMap)) {
-                if (validIds.includes(+attrId)) {
-                    attributeMap[+attrId] = values;
-                }
+                if (validIds.includes(+attrId)) attributeMap[+attrId] = values;
             }
 
-            // شرط فیلتر ساده‌تر و دقیق‌تر (بدون HAVING)
+            // 🚫 فقط محصولاتی که variant دارند در نظر بگیر
+            qb.andWhere(`EXISTS (SELECT 1 FROM variants_product vp WHERE vp.product_id = p.id)`);
+
+            // شرط دقیق برای match attribute-value در variantها
             for (const [attrId, valueIds] of Object.entries(attributeMap)) {
                 qb.andWhere(
-                    `EXISTS (
-                        SELECT 1 FROM variant_attribute_values vav
-                        JOIN variants_product vp ON vp.id = vav.variant_id
-                        WHERE vp.product_id = p.id
-                        AND vav.attribute_id = :attr_${attrId}
-                        AND vav.value_id IN (:...vals_${attrId})
-                    )`,
+                    `
+            EXISTS (
+              SELECT 1 FROM variant_attribute_values vav
+              JOIN variants_product vp ON vp.id = vav.variant_id
+              WHERE vp.product_id = p.id
+                AND vav.attribute_id = :attr_${attrId}
+                AND vav.value_id IN (:...vals_${attrId})
+            )
+          `,
                     {
                         [`attr_${attrId}`]: +attrId,
                         [`vals_${attrId}`]: valueIds,
@@ -136,7 +154,7 @@ export class CatalogService {
         }
 
         // ------------------------------------------
-        // ۷. اجرای paginate
+        // ۸. اجرای paginate
         // ------------------------------------------
         const paginated = await paginate(query, qb, {
             sortableColumns: ['id', 'price', 'createdAt'],
@@ -148,17 +166,17 @@ export class CatalogService {
         });
 
         // ------------------------------------------
-        // ۸. تبدیل داده‌ها به مدل خروجی
+        // ۹. مپ محصولات
         // ------------------------------------------
         const products = paginated.data.map(CatalogMapper.toProduct);
 
         // ------------------------------------------
-        // ۹. دریافت فیلترهای سایدبار (از QueryService)
+        // 🔟 فیلترها (شامل breadcrumb + tree)
         // ------------------------------------------
-        const filters = await this.queryService.buildFilters(categoryTree, categoryIds);
+        const filters = await this.queryService.buildFilters(categoryNode, categoryIdsForAttributes);
 
         // ------------------------------------------
-        // 🔟 ساخت خروجی و کش
+        // ✅ خروجی نهایی
         // ------------------------------------------
         const result = {
             data: products,

@@ -26,7 +26,6 @@ import { CatalogModule } from './modules/catalogs/catalog.module';
 import { CouponModule } from './modules/coupon/coupon.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { PaymentLogModule } from './modules/payment/payment-log.module';
-import { ImportedExcelModule } from './modules/imported-excel/imported-excel.module';
 import { CatalogImportService } from './modules/catalogs/catalog-import.service';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ReviewModule } from './modules/review/review.module';
@@ -62,7 +61,6 @@ import { CompareModule } from './modules/compare/compare.module';
     CouponModule,
     PaymentModule,
     PaymentLogModule,
-    ImportedExcelModule,
     ProfileModule,
     ReviewModule,
     WishlistModule,
