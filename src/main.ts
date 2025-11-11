@@ -10,6 +10,23 @@ import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors({
+    credentials: true,
+    origin: [
+      'https://app-backend-rshop-nodejs.roohbakhshac.com',
+      'https://rshop.roohbakhshac.ir',
+      'https://cms.rshop.roohbakhshac.ir',
+      'https://app-front-rshop-next.roohbakhshac.com',
+      'https://app-front-rshop-next.roohbakhshac.com',
+      'https://app-cms-rshop-next.roohbakhshac.com',
+      'http://app-backend-rshop-nodejs.roohbakhshac.com',
+      'http://rshop.roohbakhshac.ir',
+      'http://cms.rshop.roohbakhshac.ir',
+      'http://app-front-rshop-next.roohbakhshac.com',
+      'http://app-front-rshop-next.roohbakhshac.com',
+      'http://app-cms-rshop-next.roohbakhshac.com'
+    ]
+  })
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
@@ -22,24 +39,6 @@ async function bootstrap() {
   }));
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());
   app.setGlobalPrefix('api')
-  app.enableCors({
-    credentials: true,
-    // origin: [
-    //   'https://app-backend-rshop-nodejs.roohbakhshac.com',
-    //   'https://rshop.roohbakhshac.ir',
-    //   'https://cms.rshop.roohbakhshac.ir',
-    //   'https://app-front-rshop-next.roohbakhshac.com',
-    //   'https://app-front-rshop-next.roohbakhshac.com',
-    //   'https://app-cms-rshop-next.roohbakhshac.com',
-    //   'http://app-backend-rshop-nodejs.roohbakhshac.com',
-    //   'http://rshop.roohbakhshac.ir',
-    //   'http://cms.rshop.roohbakhshac.ir',
-    //   'http://app-front-rshop-next.roohbakhshac.com',
-    //   'http://app-front-rshop-next.roohbakhshac.com',
-    //   'http://app-cms-rshop-next.roohbakhshac.com'
-    // ]
-    origin: ['*']
-  })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
   await app.listen(process.env.PORT ?? 3001)
