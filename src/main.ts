@@ -34,6 +34,9 @@ async function bootstrap() {
       'https://app-backend-rshop-nodejs.roohbakhshac.com:3001',
       'https://rshop.roohbakhshac.ir',
       'https://cms.rshop.roohbakhshac.ir',
+      'https://app-front-rshop-next.roohbakhshac.com',
+      'https://app-front-rshop-next.roohbakhshac.com',
+      'https://app-cms-rshop-next.roohbakhshac.com'
     ]
   })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
