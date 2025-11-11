@@ -25,13 +25,13 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
     origin: [
-      'https://app-backend-rshop-nodejs.roohbakhshac.com:3001',
+      'https://app-backend-rshop-nodejs.roohbakhshac.com',
       'https://rshop.roohbakhshac.ir',
       'https://cms.rshop.roohbakhshac.ir',
       'https://app-front-rshop-next.roohbakhshac.com',
       'https://app-front-rshop-next.roohbakhshac.com',
       'https://app-cms-rshop-next.roohbakhshac.com',
-      'http://app-backend-rshop-nodejs.roohbakhshac.com:3001',
+      'http://app-backend-rshop-nodejs.roohbakhshac.com',
       'http://rshop.roohbakhshac.ir',
       'http://cms.rshop.roohbakhshac.ir',
       'http://app-front-rshop-next.roohbakhshac.com',
