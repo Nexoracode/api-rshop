@@ -14,7 +14,8 @@ import { PaymentRecoveryService } from './payment-recovery.service';
     ScheduleModule.forRoot(),
   ],
   controllers: [PaymentController],
-  providers: [PaymentService, PaymentRecoveryService, InvoiceService],
+  // providers: [PaymentService, PaymentRecoveryService, InvoiceService],
+  providers: [PaymentService, InvoiceService],
   exports: [PaymentService],
 })
 export class PaymentModule { }
