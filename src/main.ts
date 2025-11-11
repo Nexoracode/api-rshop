@@ -25,18 +25,18 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
     origin: [
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'http://172.18.100.45:3001',
-      'http://172.18.100.45:3000',
-      'http://172.18.100.50:3000',
-      'http://172.18.100.165:3000',
       'https://app-backend-rshop-nodejs.roohbakhshac.com:3001',
       'https://rshop.roohbakhshac.ir',
       'https://cms.rshop.roohbakhshac.ir',
       'https://app-front-rshop-next.roohbakhshac.com',
       'https://app-front-rshop-next.roohbakhshac.com',
-      'https://app-cms-rshop-next.roohbakhshac.com'
+      'https://app-cms-rshop-next.roohbakhshac.com',
+      'http://app-backend-rshop-nodejs.roohbakhshac.com:3001',
+      'http://rshop.roohbakhshac.ir',
+      'http://cms.rshop.roohbakhshac.ir',
+      'http://app-front-rshop-next.roohbakhshac.com',
+      'http://app-front-rshop-next.roohbakhshac.com',
+      'http://app-cms-rshop-next.roohbakhshac.com'
     ]
   })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
