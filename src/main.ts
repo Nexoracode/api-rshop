@@ -26,6 +26,9 @@ async function bootstrap() {
     credentials: true,
     origin: [
       'http://localhost:3001',
+      'https://app-backend-rshop-nodejs.roohbakhshac.com:3001',
+      'https://rshop.roohbakhshac.ir',
+      'https://cms.rshop.roohbakhshac.ir',
       'http://localhost:3000',
       'http://172.18.100.42:3001',
       'http://172.18.100.42:3002',
