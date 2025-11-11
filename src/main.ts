@@ -24,20 +24,21 @@ async function bootstrap() {
   app.setGlobalPrefix('api')
   app.enableCors({
     credentials: true,
-    origin: [
-      'https://app-backend-rshop-nodejs.roohbakhshac.com',
-      'https://rshop.roohbakhshac.ir',
-      'https://cms.rshop.roohbakhshac.ir',
-      'https://app-front-rshop-next.roohbakhshac.com',
-      'https://app-front-rshop-next.roohbakhshac.com',
-      'https://app-cms-rshop-next.roohbakhshac.com',
-      'http://app-backend-rshop-nodejs.roohbakhshac.com',
-      'http://rshop.roohbakhshac.ir',
-      'http://cms.rshop.roohbakhshac.ir',
-      'http://app-front-rshop-next.roohbakhshac.com',
-      'http://app-front-rshop-next.roohbakhshac.com',
-      'http://app-cms-rshop-next.roohbakhshac.com'
-    ]
+    // origin: [
+    //   'https://app-backend-rshop-nodejs.roohbakhshac.com',
+    //   'https://rshop.roohbakhshac.ir',
+    //   'https://cms.rshop.roohbakhshac.ir',
+    //   'https://app-front-rshop-next.roohbakhshac.com',
+    //   'https://app-front-rshop-next.roohbakhshac.com',
+    //   'https://app-cms-rshop-next.roohbakhshac.com',
+    //   'http://app-backend-rshop-nodejs.roohbakhshac.com',
+    //   'http://rshop.roohbakhshac.ir',
+    //   'http://cms.rshop.roohbakhshac.ir',
+    //   'http://app-front-rshop-next.roohbakhshac.com',
+    //   'http://app-front-rshop-next.roohbakhshac.com',
+    //   'http://app-cms-rshop-next.roohbakhshac.com'
+    // ]
+    origin: ['*']
   })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
