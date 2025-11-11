@@ -1,4 +1,5 @@
 import { Role } from "src/common/enums/role.enum";
+import { Address } from "src/modules/address/entities/address.entity";
 
 export interface IUserResponse {
     id: number;
@@ -13,4 +14,5 @@ export interface IUserResponse {
     avatarUrl?: string;
     createdAt: Date;
     updatedAt: Date;
+    addresses: Address[] | null
 }

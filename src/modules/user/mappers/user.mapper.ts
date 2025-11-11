@@ -15,6 +15,7 @@ export class UserMapper {
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            addresses: user.addresses
         }
     }
 }
