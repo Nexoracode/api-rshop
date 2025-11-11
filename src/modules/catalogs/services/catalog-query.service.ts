@@ -263,7 +263,11 @@ export class CatalogQueryService {
       generic: {
         special_offer: {
           type: 'boolean',
-          label: 'فقط محصولات دارای تخفیف',
+          label: 'فقط محصولات پیشنهاد ویژه',
+        },
+        discounted: {
+          type: 'boolean',
+          label: 'فقط محصولات دارای تخفیف'
         },
         price_range: {
           min: Number(priceRange[0].min) || 0,

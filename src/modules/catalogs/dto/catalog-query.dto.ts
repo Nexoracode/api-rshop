@@ -12,6 +12,31 @@ export class CatalogQueryDto implements PaginateQuery {
     @IsString()
     'filter[attributes]'?: string;
 
+    @ApiPropertyOptional({ description: 'لیست محصول بر اساس شناسه برند', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[brand]'?: string;
+
+    @ApiPropertyOptional({ description: 'لیست محصول بر اساس حداقل قیمت', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[price_min]'?: string;
+
+    @ApiPropertyOptional({ description: 'لیست محصول بر اساس حداکثر قیمت', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[price_max]'?: string;
+
+    @ApiPropertyOptional({ description: 'فقط محصولات پیشنهاد ویژه', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[special_offer]'?: string;
+
+    @ApiPropertyOptional({ description: 'فقط محصولات دارای تخفیف', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[discounted]'?: string;
+
     // بقیه فیلدهای استاندارد paginate
     @ApiPropertyOptional({ description: 'شماره صفحه', example: 1 })
     page?: number;
@@ -22,6 +47,5 @@ export class CatalogQueryDto implements PaginateQuery {
     @ApiPropertyOptional({ description: 'مرتب‌سازی بر اساس', example: 'createdAt:DESC' })
     sortBy?: [string, string][]
 
-    @ApiPropertyOptional({ description: 'path url', example: '' })
     path: string;
 }

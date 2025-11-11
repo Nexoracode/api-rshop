@@ -733,7 +733,7 @@
             "in": "path",
             "description": "اسلاگ کتگوری",
             "schema": {
-              "example": "books",
+              "example": "mohr-tasbih",
               "type": "string"
             }
           },
@@ -741,9 +741,59 @@
             "name": "filter[attributes]",
             "required": false,
             "in": "query",
-            "description": "فیلتر ویژگی‌ها: \"attrId:valueId,valueId|attrId:valueId\"",
+            "description": "فیلتر ویژگی‌ها به صورت رشته‌ای، مثال: \"12:4,5|13:2\"",
             "schema": {
               "example": "12:4,5|13:2",
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[brand]",
+            "required": false,
+            "in": "query",
+            "description": "لیست محصول بر اساس شناسه برند",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[price_min]",
+            "required": false,
+            "in": "query",
+            "description": "لیست محصول بر اساس حداقل قیمت",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[price_max]",
+            "required": false,
+            "in": "query",
+            "description": "لیست محصول بر اساس حداکثر قیمت",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[special_offer]",
+            "required": false,
+            "in": "query",
+            "description": "فقط محصولات پیشنهاد ویژه",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[discounted]",
+            "required": false,
+            "in": "query",
+            "description": "فقط محصولات دارای تخفیف",
+            "schema": {
+              "example": 1,
               "type": "string"
             }
           },
@@ -777,16 +827,6 @@
               "items": {
                 "type": "string"
               }
-            }
-          },
-          {
-            "name": "path",
-            "required": false,
-            "in": "query",
-            "description": "path url",
-            "schema": {
-              "example": "",
-              "type": "string"
             }
           }
         ],

@@ -80,33 +80,45 @@ export class CatalogService {
         // ------------------------------------------
         // ۴. فیلتر برند
         // ------------------------------------------
-        if (query.filter?.brand) {
-            qb.andWhere('b.id = :brandId', { brandId: query.filter.brand });
+        if (query['filter[brand]']) {
+            const brandIds = Array.isArray(query['filter[brand]'])
+                ? query['filter[brand]']
+                : query['filter[brand]'].split(',').map((id: string) => parseInt(id.trim(), 10));
+
+            qb.andWhere('b.id IN (:...brandIds)', { brandIds });
         }
+
 
         // ------------------------------------------
         // ۵. بازه قیمت
         // ------------------------------------------
-        if (query.filter?.price_min) {
+        if (query['filter[price_min]']) {
             qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) >= :min', {
-                min: query.filter.price_min,
+                min: query['filter[price_min]']
             });
         }
-        if (query.filter?.price_max) {
+        if (query['filter[price_max]']) {
             qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) <= :max', {
-                max: query.filter.price_max,
+                max: query['filter[price_max]']
             });
         }
 
         // ------------------------------------------
-        // ۶. محصولات دارای تخفیف
+        // ۶. محصولات پیشنهاد ویژه
         // ------------------------------------------
-        if (query.filter?.special_offer === 'true') {
+        if (query['filter[special_offer]'] === '1') {
+            qb.andWhere('(p.is_featured > 0)');
+        }
+
+        // ------------------------------------------
+        // 7. محصولات دارای تخفیف
+        // ------------------------------------------
+        if (query['filter[discounted]'] === '1') {
             qb.andWhere('(p.discount_amount > 0 OR p.discount_percent > 0)');
         }
 
         // ------------------------------------------
-        // ۷. فیلتر attributeها
+        // 8. فیلتر attributeها
         // ------------------------------------------
         const rawMap = parseAttributeFilter(query['filter[attributes]']);
         const attrIds = Object.keys(rawMap).map((k) => +k).filter(Boolean);
@@ -154,19 +166,19 @@ export class CatalogService {
         }
 
         // ------------------------------------------
-        // ۸. اجرای paginate
+        // 9. اجرای paginate
         // ------------------------------------------
         const paginated = await paginate(query, qb, {
             sortableColumns: ['id', 'price', 'createdAt'],
             searchableColumns: ['name', 'description'],
             defaultSortBy: [['id', 'DESC']],
             relations,
-            defaultLimit: 20,
+            defaultLimit: query.limit,
             maxLimit: 100,
         });
 
         // ------------------------------------------
-        // ۹. مپ محصولات
+        // 10. مپ محصولات
         // ------------------------------------------
         const products = paginated.data.map(CatalogMapper.toProduct);
 
@@ -179,6 +191,8 @@ export class CatalogService {
         // ✅ خروجی نهایی
         // ------------------------------------------
         const result = {
+            // data: { count: products.length, products },
+            items_count: paginated.meta.totalItems,
             data: products,
             meta: paginated.meta,
             filters,

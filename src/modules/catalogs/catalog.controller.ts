@@ -42,13 +42,7 @@ export class CatalogController {
     @Public()
     @Get(':slug') // مثل /catalog/books
     @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری با فیلترها' })
-    @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'books' })
-    @ApiQuery({
-        name: 'filter[attributes]',
-        required: false,
-        description: 'فیلتر ویژگی‌ها: "attrId:valueId,valueId|attrId:valueId"',
-        example: '12:4,5|13:2',
-    })
+    @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'mohr-tasbih' })
     async getProductsByCategory(
         @Param('slug') slug: string,
         @Query() query: CatalogQueryDto
