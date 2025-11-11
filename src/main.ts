@@ -26,12 +26,14 @@ async function bootstrap() {
     credentials: true,
     origin: [
       'http://localhost:3001',
+      'http://localhost:3000',
+      'http://172.18.100.45:3001',
+      'http://172.18.100.45:3000',
+      'http://172.18.100.50:3000',
+      'http://172.18.100.165:3000',
       'https://app-backend-rshop-nodejs.roohbakhshac.com:3001',
       'https://rshop.roohbakhshac.ir',
       'https://cms.rshop.roohbakhshac.ir',
-      'http://localhost:3000',
-      'http://172.18.100.42:3001',
-      'http://172.18.100.42:3002',
     ]
   })
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
