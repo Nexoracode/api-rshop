@@ -261,13 +261,15 @@ export class CatalogQueryService {
     return {
       attributes: Array.from(attributeMap.values()),
       generic: {
-        special_offer: {
-          type: 'boolean',
-          label: 'فقط محصولات پیشنهاد ویژه',
-        },
-        discounted: {
-          type: 'boolean',
-          label: 'فقط محصولات دارای تخفیف'
+        boolean_filter: {
+          special_offer: {
+            type: 'boolean',
+            label: 'فقط محصولات پیشنهاد ویژه',
+          },
+          discounted: {
+            type: 'boolean',
+            label: 'فقط محصولات دارای تخفیف'
+          },
         },
         price_range: {
           min: Number(priceRange[0].min) || 0,
