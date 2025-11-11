@@ -25,8 +25,8 @@ export class SwaggerDocumentBuilder {
 
   public setupSwagger() {
     const document = this.createDocument();
-    fs.writeFileSync('postman.json', JSON.stringify(document, null, 2));
-    const swaggerUI = new SwaggerUI('http://localhost:3001/api');
+    // fs.writeFileSync('postman.json', JSON.stringify(document, null, 2));
+    const swaggerUI = new SwaggerUI('https://app-backend-rshop-nodejs.roohbakhshac.com/api');
     SwaggerModule.setup(
       'api/swagger',
       this.app,
