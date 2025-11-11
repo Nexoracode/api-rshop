@@ -8,6 +8,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 interface AttributeValue {
   id: number;
   value: string;
+  displayColor: string;
 }
 
 // نوع برای attribute اصلی
@@ -131,7 +132,8 @@ export class CatalogQueryService {
         a.name AS attribute_name,
         a.type AS attribute_type,
         av.id AS attribute_value_id,
-        av.value AS attribute_value
+        av.value AS attribute_value,
+        av.display_color AS attribute_value_color
       FROM category_attributes ca
       INNER JOIN attributes a ON a.id = ca.attribute_id
       INNER JOIN attribute_values av ON av.attribute_id = a.id
@@ -156,7 +158,8 @@ export class CatalogQueryService {
         a.name AS attribute_name,
         a.type AS attribute_type,
         av.id AS attribute_value_id,
-        av.value AS attribute_value
+        av.value AS attribute_value,
+        av.display_color AS attribute_value_color
       FROM category_attributes ca
       INNER JOIN attributes a ON a.id = ca.attribute_id
       INNER JOIN attribute_values av ON av.attribute_id = a.id
@@ -178,7 +181,7 @@ export class CatalogQueryService {
     const attributesRaw = [...productAttrs, ...variantAttrs];
     const attributeMap = new Map<
       number,
-      { id: number; name: string; type: string; values: { id: number; value: string }[] }
+      { id: number; name: string; type: string; values: AttributeValue[] }
     >();
 
     for (const row of attributesRaw) {
@@ -195,11 +198,13 @@ export class CatalogQueryService {
       if (
         row.attribute_value &&
         row.attribute_value_id &&
+        row.attribute_value_color &&
         !attr.values.some((v) => v.id === row.attribute_value_id)
       ) {
         attr.values.push({
           id: row.attribute_value_id,
           value: row.attribute_value,
+          displayColor: row.attribute_value_color,
         });
       }
     }
@@ -253,8 +258,6 @@ export class CatalogQueryService {
     // درخت شاخه‌ی فعلی (از والد اصلی تا انتها)
     const treeCategories = buildTree([rootTree]);
 
-
-
     // ------------------------------------------
     // ۷. خروجی نهایی برای فرانت
     // ------------------------------------------
@@ -269,6 +272,14 @@ export class CatalogQueryService {
           discounted: {
             type: 'boolean',
             label: 'فقط محصولات دارای تخفیف'
+          },
+          same_day_shipping: {
+            type: 'boolean',
+            label: 'ارسال سریع',
+          },
+          in_stock: {
+            type: 'boolean',
+            label: 'فقط محصولات موجود در انبار',
           },
         },
         price_range: {

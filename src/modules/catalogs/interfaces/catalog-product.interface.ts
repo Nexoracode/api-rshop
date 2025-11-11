@@ -10,9 +10,11 @@ export interface CatalogProduct {
     discountAmount: number;
     discountPrecent: number;
     finalPrice: number;
+    stock: number;
+    isFeautered?: boolean;
     hasVariants: boolean;
+    isSameDayShipping: boolean;
     medias: [] | null,
-    isSameDayShipping: boolean,
     category: Category | null;
     mediaPinned?: Media | null;
     brand?: Brand | null;

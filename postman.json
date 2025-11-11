@@ -798,6 +798,26 @@
             }
           },
           {
+            "name": "filter[same_day_shipping]",
+            "required": false,
+            "in": "query",
+            "description": "ارسال امروز",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter[in_stock]",
+            "required": false,
+            "in": "query",
+            "description": "فقط محصولات موجود در انبار",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",

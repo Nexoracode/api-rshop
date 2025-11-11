@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginateQuery } from 'nestjs-paginate';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CatalogQueryDto implements PaginateQuery {
     @ApiPropertyOptional({
@@ -37,11 +37,25 @@ export class CatalogQueryDto implements PaginateQuery {
     @IsString()
     'filter[discounted]'?: string;
 
+    @ApiPropertyOptional({ description: 'ارسال امروز', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[same_day_shipping]'?: string;
+
+    @ApiPropertyOptional({ description: 'فقط محصولات موجود در انبار', example: 1 })
+    @IsOptional()
+    @IsString()
+    'filter[in_stock]'?: string;
+
     // بقیه فیلدهای استاندارد paginate
     @ApiPropertyOptional({ description: 'شماره صفحه', example: 1 })
+    @IsOptional()
+    @IsNumber()
     page?: number;
 
     @ApiPropertyOptional({ description: 'تعداد آیتم در هر صفحه', example: 10 })
+    @IsOptional()
+    @IsNumber()
     limit?: number;
 
     @ApiPropertyOptional({ description: 'مرتب‌سازی بر اساس', example: 'createdAt:DESC' })

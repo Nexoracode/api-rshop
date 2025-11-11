@@ -45,6 +45,6 @@ export function buildPriceObject(options: DiscountOptions) {
         price,
         discountAmount,
         discountPercent,
-        finalPrice,
+        finalPrice: Math.round(finalPrice),
     };
 }

@@ -45,8 +45,9 @@ export class CatalogController {
     @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'mohr-tasbih' })
     async getProductsByCategory(
         @Param('slug') slug: string,
-        @Query() query: CatalogQueryDto
+        @Query() query: CatalogQueryDto,
     ) {
+        // console.log(query, query.limit);
         return this.catalogService.getProductsByCategoryWithPaginate(slug, query);
     }
 

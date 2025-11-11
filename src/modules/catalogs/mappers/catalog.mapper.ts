@@ -2,18 +2,28 @@
 import { Product } from '../../product/entities/product.entity';
 import { VariantProduct } from 'src/modules/variant-product/entities/variant-product.entity';
 import { CatalogProduct } from '../interfaces/catalog-product.interface';
+import { buildPriceObject } from 'src/common/helpers/price.helper';
 
 export class CatalogMapper {
     static toProduct(entity: Product): CatalogProduct {
+        const buildPrice = buildPriceObject(entity);
         return {
             id: entity.id,
             name: entity.name,
-            price: Number(entity.price),
-            discountAmount: Number(entity.discountAmount || 0),
-            discountPrecent: Number(entity.discountPercent || 0),
-            finalPrice: Number(entity.price) - (Number(entity.discountAmount || 0) || 0),
-            mediaPinned: entity.mediaPinned,
+            price: buildPrice.price,
+            discountAmount: buildPrice.discountAmount,
+            discountPrecent: buildPrice.discountPercent,
+            finalPrice: buildPrice.finalPrice,
             isSameDayShipping: entity.isSameDayShipping,
+            isFeautered: entity.isFeatured,
+            stock: entity.stock,
+            hasVariants: entity.variants?.length > 0,
+            mediaPinned: {
+                id: entity.mediaPinned?.id,
+                url: entity.mediaPinned?.url,
+                altText: entity.mediaPinned?.altText ?? null,
+                type: entity.mediaPinned?.type,
+            },
             medias: entity.medias
                 ?.filter((media) => media.type === 'image')
                 .slice(0, 2)
@@ -23,12 +33,10 @@ export class CatalogMapper {
                         url: media.url,
                         altText: media.altText ?? undefined,
                         type: media.type,
-                        createdAt: media.createdAt,
                     };
                 }) ?? null,
             brand: entity.brand,
             category: entity.category,
-            hasVariants: entity.variants?.length > 0,
             variants: entity.variants
                 ? (entity.variants.map((v) => CatalogMapper.toVariant(v)) as unknown as VariantProduct[])
                 : [],
