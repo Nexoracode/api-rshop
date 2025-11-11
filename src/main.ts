@@ -10,24 +10,34 @@ import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // app.enableCors({
+  //   credentials: true,
+  //   // origin: [
+  //   //   'https://app-backend-rshop-nodejs.roohbakhshac.com',
+  //   //   'https://rshop.roohbakhshac.ir',
+  //   //   'https://cms.rshop.roohbakhshac.ir',
+  //   //   'https://app-front-rshop-next.roohbakhshac.com',
+  //   //   'https://app-front-rshop-next.roohbakhshac.com',
+  //   //   'https://app-cms-rshop-next.roohbakhshac.com',
+  //   //   'http://app-backend-rshop-nodejs.roohbakhshac.com',
+  //   //   'http://rshop.roohbakhshac.ir',
+  //   //   'http://cms.rshop.roohbakhshac.ir',
+  //   //   'http://app-front-rshop-next.roohbakhshac.com',
+  //   //   'http://app-front-rshop-next.roohbakhshac.com',
+  //   //   'http://app-cms-rshop-next.roohbakhshac.com'
+  //   // ]
+  // })
   app.enableCors({
+    origin: (origin, callback) => {
+      console.log(`Checking origin: ${origin}`);
+      callback(null, true);
+    },
     credentials: true,
-    // origin: [
-    //   'https://app-backend-rshop-nodejs.roohbakhshac.com',
-    //   'https://rshop.roohbakhshac.ir',
-    //   'https://cms.rshop.roohbakhshac.ir',
-    //   'https://app-front-rshop-next.roohbakhshac.com',
-    //   'https://app-front-rshop-next.roohbakhshac.com',
-    //   'https://app-cms-rshop-next.roohbakhshac.com',
-    //   'http://app-backend-rshop-nodejs.roohbakhshac.com',
-    //   'http://rshop.roohbakhshac.ir',
-    //   'http://cms.rshop.roohbakhshac.ir',
-    //   'http://app-front-rshop-next.roohbakhshac.com',
-    //   'http://app-front-rshop-next.roohbakhshac.com',
-    //   'http://app-cms-rshop-next.roohbakhshac.com'
-    // ]
-    origin: (origin, callback) => callback(null, true)
-  })
+  });
+  app.use((req, res, next) => {
+    console.log(`Request from origin: ${req.headers.origin}`);
+    next();
+  });
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
