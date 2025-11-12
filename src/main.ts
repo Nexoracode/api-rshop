@@ -41,7 +41,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api')
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
-  await app.listen(process.env.PORT ?? 3001)
+  await app.listen(process.env.PORT ?? 3000)
 }
 
 bootstrap();
