@@ -41,12 +41,14 @@ export class JwtUtil {
     setTokenInCookie(res: Response, token: string, type: JwtTypeToken) {
         res.cookie(type, token, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
-            maxAge: type === JwtTypeToken.ACCESS ?
-                15 * 60 * 1000 : // 15 minutes
-                7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: process.env.NODE_ENV === 'production', // ✅ فقط روی HTTPS فعال
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // ✅ برای Front روی دامنه دیگر
+            maxAge: type === JwtTypeToken.ACCESS
+                ? 15 * 60 * 1000
+                : 7 * 24 * 60 * 60 * 1000,
+            path: '/', // ✅ حتماً مسیر رو ست کن
         });
+
     }
 
     removeTokenFromCookie(res: Response, type: JwtTypeToken) {
