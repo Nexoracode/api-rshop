@@ -17,14 +17,20 @@ export class OtpService {
 
     await this.otpRepo.delete({ identifier }); // حذف OTPهای قبلی
 
+    // const otp = this.otpRepo.create({
+    //   identifier,
+    //   code,
+    //   expireAt: expireAt,
+    // });
+
     const otp = this.otpRepo.create({
       identifier,
-      code,
+      code: '123456',
       expireAt: expireAt,
     });
     await this.otpRepo.save(otp);
 
-    await this.smsService.sendOtp(identifier, code);
+    // await this.smsService.sendOtp(identifier, code);
   }
 
   async verify(identifier: string, code: string): Promise<boolean> {

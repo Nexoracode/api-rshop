@@ -84,6 +84,7 @@ export class AuthService implements IAuthService {
     }
 
     async verifyOtp(dto: VerifyOtpDto) {
+        // await this.otpService.verify(dto.identifier, dto.code);
         await this.otpService.verify(dto.identifier, dto.code);
 
         let user = await this.userRepo.findOne({
