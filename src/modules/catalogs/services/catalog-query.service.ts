@@ -198,7 +198,6 @@ export class CatalogQueryService {
       if (
         row.attribute_value &&
         row.attribute_value_id &&
-        row.attribute_value_color &&
         !attr.values.some((v) => v.id === row.attribute_value_id)
       ) {
         attr.values.push({
