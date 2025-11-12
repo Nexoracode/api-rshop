@@ -12,7 +12,7 @@ export class CatalogMapper {
             name: entity.name,
             price: buildPrice.price,
             discountAmount: buildPrice.discountAmount,
-            discountPrecent: buildPrice.discountPercent,
+            discountPercent: buildPrice.discountPercent,
             finalPrice: buildPrice.finalPrice,
             isSameDayShipping: entity.isSameDayShipping,
             isFeautered: entity.isFeatured,

@@ -8,7 +8,7 @@ export interface CatalogProduct {
     name: string;
     price: number;
     discountAmount: number;
-    discountPrecent: number;
+    discountPercent: number;
     finalPrice: number;
     stock: number;
     isFeautered?: boolean;
