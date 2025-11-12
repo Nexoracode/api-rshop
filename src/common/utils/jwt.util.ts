@@ -52,6 +52,11 @@ export class JwtUtil {
     }
 
     removeTokenFromCookie(res: Response, type: JwtTypeToken) {
-        res.clearCookie(type);
+        res.clearCookie(type, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            path: '/',
+        });
     }
 }
