@@ -26,11 +26,11 @@ export class ProductMapper {
         return pairs.sort().join("|");
     }
 
-    private static buildVariantName(productName: string, attrs: any[]): string {
+    private static buildVariantName(attrs: any[]): string {
         const values = attrs
             .map((a) => (a.values ? a.values.value : null))
             .filter(Boolean);
-        return [productName, ...values].join(" , ");
+        return [...values].join(" - ");
     }
 
     private static mapAttributeNodes(product: any) {
@@ -141,7 +141,7 @@ export class ProductMapper {
                 discount_percent: v.discountPercent ?? 0,
                 stock: v.stock,
                 attributes: attrs,
-                name: ProductMapper.buildVariantName(product.name, attrs),
+                name: ProductMapper.buildVariantName(attrs),
             };
         });
     }
@@ -208,7 +208,7 @@ export class ProductMapper {
             const matched = dbIndex.get(key);
 
             return {
-                name: ProductMapper.buildVariantName(product.name, attrs),
+                name: ProductMapper.buildVariantName(attrs),
                 id: matched?.id ?? null,
                 product_id: product.id,
                 sku: matched?.sku ?? `AUTO-${product.id}-${idx + 1}`,
