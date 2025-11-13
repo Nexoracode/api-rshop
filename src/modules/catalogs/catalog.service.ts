@@ -1,6 +1,6 @@
 // catalog.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PaginateQuery, paginate } from 'nestjs-paginate';
+import { PaginateQuery, PaginationType, paginate } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
 import { CatalogCacheService } from './services/catalog-cache.service';
@@ -187,6 +187,8 @@ export class CatalogService {
             sortableColumns: ['id', 'price', 'createdAt'],
             searchableColumns: ['name', 'description'],
             defaultSortBy: [['id', 'DESC']],
+            // return result for all page for test
+            paginationType: PaginationType.LIMIT_AND_OFFSET,
             relations,
             defaultLimit: query.limit,
             maxLimit: 100,
