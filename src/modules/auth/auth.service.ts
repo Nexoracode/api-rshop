@@ -70,7 +70,7 @@ export class AuthService implements IAuthService {
     async getUserById(id: number) {
         const user = await this.userRepo.findOne({
             where: [{ id: id },],
-            select: ['id', 'phone', 'email', 'role'],
+            select: ['id', 'phone', 'email', 'role', 'apiToken'],
         });
         if (!user) {
             throw new NotFoundException('user not found');
