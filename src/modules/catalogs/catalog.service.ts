@@ -9,6 +9,7 @@ import { Product } from '../product/entities/product.entity';
 import { extractCategoryIds } from './utils/category-tree.util';
 import { parseAttributeFilter } from './utils/parse-attribute-filter.util';
 import { CatalogMapper } from './mappers/catalog.mapper';
+import { SortEnum } from './enums/sort.enum';
 
 const relations = [
     'brand',
@@ -132,6 +133,67 @@ export class CatalogService {
             qb.andWhere('(p.stock > 0)');
         }
 
+        // Support sorting by stock descending when sortBy is provided as a string ('stock_desc')
+        // or as an array of [column, direction] pairs (e.g. [['stock','DESC']])
+
+        if (query.sortBy) {
+            const sortEnum: SortEnum[] = Object.values(SortEnum);
+            if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
+                switch (query.sortBy) {
+                    case SortEnum.NEWEST:
+                        qb.addOrderBy('p.createdAt', 'DESC');
+                        break;
+
+                    case SortEnum.CHEAPEST:
+                        qb.addOrderBy(`
+                                p.price 
+                                - COALESCE(p.discount_amount, 0)
+                                - (p.price * COALESCE(p.discount_percent, 0) / 100)
+                            `, 'ASC');
+                        break;
+
+                    case SortEnum.BESTSELLING:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COALESCE(SUM(oi.quantity), 0)')
+                                .from('order_items', 'oi')
+                                .where('oi.product_id = p.id');
+                        }, 'sales_count')
+                            .addOrderBy('sales_count', 'DESC');
+                        break;
+
+                    case SortEnum.POPULAR:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COUNT(w.id)')
+                                .from('wishlists', 'w')
+                                .where('w.product_id = p.id');
+                        }, 'wishlist_count')
+                            .addOrderBy('wishlist_count', 'DESC');
+                        break;
+
+                    case SortEnum.EXPENSIVE:
+                        qb.addOrderBy('(p.price - (COALESCE(p.discount_amount, 0)) OR COALESCE(p.discount_percent, 0))', 'DESC');
+                        break;
+
+                    case SortEnum.VISITED:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COUNT(rv.id)')
+                                .from('recent_views', 'rv')
+                                .where('rv.product_id = p.id');
+                        }, 'view_count')
+                            .addOrderBy('view_count', 'DESC');
+                        break;
+
+                    default:
+                        qb.addOrderBy('p.created_at', 'DESC');  // Default sorting by ID
+                        break;
+                }
+            }
+        }
+
+
         // ------------------------------------------
         // 8. فیلتر attributeها
         // ------------------------------------------
@@ -188,7 +250,7 @@ export class CatalogService {
             searchableColumns: ['name', 'description'],
             defaultSortBy: [['id', 'DESC']],
             // return result for all page for test
-            paginationType: PaginationType.LIMIT_AND_OFFSET,
+            // paginationType: PaginationType.LIMIT_AND_OFFSET,
             relations,
             defaultLimit: query.limit,
             maxLimit: 100,

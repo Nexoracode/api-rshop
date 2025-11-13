@@ -47,7 +47,6 @@ export class CatalogController {
         @Param('slug') slug: string,
         @Query() query: CatalogQueryDto,
     ) {
-        // console.log(query, query.limit);
         return this.catalogService.getProductsByCategoryWithPaginate(slug, query);
     }
 

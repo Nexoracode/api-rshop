@@ -59,7 +59,9 @@ export class CatalogQueryDto implements PaginateQuery {
     limit?: number;
 
     @ApiPropertyOptional({ description: 'مرتب‌سازی بر اساس', example: 'createdAt:DESC' })
-    sortBy?: [string, string][]
+    @IsOptional()
+    @IsString()
+    sortBy?: [string, string][];
 
     path: string;
 }
