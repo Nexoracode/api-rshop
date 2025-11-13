@@ -70,7 +70,7 @@ export class AuthService implements IAuthService {
     async getUserById(id: number) {
         const user = await this.userRepo.findOne({
             where: [{ id: id },],
-            select: ['id', 'phone', 'email', 'role', 'apiToken'],
+            select: ['id', 'phone', 'email', 'role'],
         });
         if (!user) {
             throw new NotFoundException('user not found');
@@ -84,11 +84,11 @@ export class AuthService implements IAuthService {
     }
 
     async verifyOtp(dto: VerifyOtpDto) {
-        // await this.otpService.verify(dto.identifier, dto.code);
         await this.otpService.verify(dto.identifier, dto.code);
 
         let user = await this.userRepo.findOne({
             where: [{ phone: dto.identifier }, { email: dto.identifier }],
+            select: ['id', 'phone', 'email', 'role', 'apiToken'],
         });
 
         if (!user) {
