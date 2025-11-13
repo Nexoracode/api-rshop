@@ -23,6 +23,9 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
     origin: [
+      'http://localhost:3000',
+      'http://172.18.100.50:3000',
+      'http://172.18.100.165:3000',
       'https://app-backend-rshop-nodejs.roohbakhshac.com',
       'https://rshop.roohbakhshac.ir',
       'https://cms.rshop.roohbakhshac.ir',

@@ -88,7 +88,7 @@ export class AuthService implements IAuthService {
 
         let user = await this.userRepo.findOne({
             where: [{ phone: dto.identifier }, { email: dto.identifier }],
-            select: ['id', 'phone', 'email', 'role', 'apiToken'],
+            select: ['firstName', 'lastName', 'id', 'phone', 'email', 'role'],
         });
 
         if (!user) {
