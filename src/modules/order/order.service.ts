@@ -22,6 +22,7 @@ import { Product } from "../product/entities/product.entity";
 import { RequestUser } from "src/common/interfaces/request-user.interface";
 import { Address } from "../address/entities/address.entity";
 import { Payment } from "../payment/entities/payment.entity";
+import { ManualDiscountType } from "src/common/enums/discount.enum";
 
 const relations = [
     "user",
@@ -159,17 +160,32 @@ export class OrderService {
                 }
             }
 
-            const total = subtotal - discountTotal;
+            let total = subtotal - discountTotal;
+            let manualDiscountApplied = 0;
+
+            if (dto.manualDiscountValue && dto.manualDiscountValue > 0) {
+                if (dto.manualDiscountType === ManualDiscountType.PERCENT) {
+                    manualDiscountApplied = (total * dto.manualDiscountValue) / 100;
+                } else {
+                    manualDiscountApplied = dto.manualDiscountValue;
+                }
+
+                total -= manualDiscountApplied;
+                discountTotal += manualDiscountApplied;
+            }
 
             const order = manager.create(Order, {
                 user,
-                address: address || null,
+                address,
                 status: dto.status,
                 subtotal,
                 discountTotal,
                 total,
                 isManual: true,
                 items: orderItems,
+                manualDiscountType: dto.manualDiscountType ?? undefined,
+                manualDiscountValue: dto.manualDiscountValue ?? 0,
+                manualDiscountApplied,
             });
 
             await manager.save(order);

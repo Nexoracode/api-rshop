@@ -4,6 +4,7 @@ import { OrderItem } from './order-item.entity';
 import { Invoice } from 'src/modules/invoice/entities/invoice.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { Address } from 'src/modules/address/entities/address.entity';
+import { ManualDiscountType } from 'src/common/enums/discount.enum';
 
 @Entity('orders')
 export class Order {
@@ -57,6 +58,16 @@ export class Order {
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     couponDiscountAmount?: number;
+
+    @Column({ type: "varchar", nullable: true })
+    manualDiscountType?: ManualDiscountType;
+
+    @Column({ type: "int", default: 0 })
+    manualDiscountValue: number;
+
+    @Column({ type: "int", default: 0 })
+    manualDiscountApplied: number; // مقدار واقعی تخفیف نهایی بعد از محاسبه
+
 
     @Column({ name: 'is_manual', default: false })
     isManual: boolean; // 🟢 مشخص می‌کنه سفارش دستی ثبت شده

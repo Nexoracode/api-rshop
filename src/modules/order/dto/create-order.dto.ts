@@ -11,6 +11,7 @@ import {
     ValidateNested,
 } from "class-validator";
 import { OrderStatus } from "../enums/order-status.enum";
+import { ManualDiscountType } from "src/common/enums/discount.enum";
 
 // ============================
 // 👇 سطح ۳: جزئیات واریانت‌ها
@@ -62,6 +63,7 @@ export class ManualProductDto {
 // ============================
 export class CreateManualOrderDto {
     @ApiProperty({
+        name: 'user_id',
         example: 2,
         description: "شناسه کاربر (User ID)",
     })
@@ -69,12 +71,34 @@ export class CreateManualOrderDto {
     userId: number;
 
     @ApiProperty({
+        name: 'address_id',
         example: 2,
         description: "آدرس کاربر (Address ID)",
     })
     @IsNotEmpty()
     @IsInt()
     addressId: number;
+
+    @ApiProperty({
+        name: 'manual_discount_type',
+        enum: ManualDiscountType,
+        required: false,
+        description: "نوع تخفیف دستی: مبلغ ثابت یا درصدی",
+    })
+    @IsOptional()
+    @IsEnum(ManualDiscountType)
+    manualDiscountType?: ManualDiscountType;
+
+    @ApiProperty({
+        name: 'manual_discount_value',
+        example: 20000,
+        required: false,
+        description: "مقدار تخفیف دستی (بسته به نوع: مبلغ یا درصد)",
+    })
+    @IsOptional()
+    @IsInt()
+    manualDiscountValue?: number;
+
 
     @ApiProperty({
         type: [ManualProductDto],
