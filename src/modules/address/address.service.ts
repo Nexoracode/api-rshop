@@ -8,8 +8,6 @@ import { Address } from './entities/address.entity';
 import { Repository } from 'typeorm';
 import { AddressMapper } from './mappers/address.mapper';
 import { User } from '../user/entities/user.entity';
-import { Request } from 'express';
-import { CustomRequest } from 'src/common/interfaces/request.interface';
 
 @Injectable()
 export class AddressService implements IAddressService {
@@ -22,7 +20,7 @@ export class AddressService implements IAddressService {
 
     async create(userId: number, data: CreateAddressDto): Promise<IAddressResponse> {
         const user = await this.userRepo.findOne({ where: { id: userId } })
-        if (!user) throw new NotFoundException('user not found');
+        if (!user) throw new NotFoundException('کاربری با این شناسه یافت نشد.');
         const exists = await this.addressRepo.findOne({
             where: { postalCode: data.postalCode },
             relations: ['user']

@@ -145,12 +145,10 @@ export class CatalogService {
                         break;
 
                     case SortEnum.CHEAPEST:
-                        qb.addOrderBy(`
-                                p.price 
-                                - COALESCE(p.discount_amount, 0)
-                                - (p.price * COALESCE(p.discount_percent, 0) / 100)
-                            `, 'ASC');
-                        break;
+                        qb.addOrderBy(
+                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
+                            "ASC"
+                        );
 
                     case SortEnum.BESTSELLING:
                         qb.addSelect(subQuery => {
@@ -173,7 +171,10 @@ export class CatalogService {
                         break;
 
                     case SortEnum.EXPENSIVE:
-                        qb.addOrderBy('(p.price - (COALESCE(p.discount_amount, 0)) OR COALESCE(p.discount_percent, 0))', 'DESC');
+                        qb.addOrderBy(
+                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
+                            "DESC"
+                        );
                         break;
 
                     case SortEnum.VISITED:
@@ -190,6 +191,7 @@ export class CatalogService {
                         qb.addOrderBy('p.created_at', 'DESC');  // Default sorting by ID
                         break;
                 }
+                console.log('🔹 sortBy:', query.sortBy);
             }
         }
 
