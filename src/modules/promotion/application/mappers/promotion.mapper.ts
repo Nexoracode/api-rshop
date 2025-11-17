@@ -41,6 +41,7 @@ export class PromotionMapper {
                         userId: c.userId ?? undefined,
                         productIds: c.productIds ?? undefined,
                         categoryIds: c.categoryIds ?? undefined,
+                        variantIds: c.variantIds ?? undefined,
                         minAmount: c.minAmount ?? undefined,
                     }),
             ) || [];
@@ -89,6 +90,7 @@ export class PromotionMapper {
             ce.type = c.type;
             ce.userId = c.userId ?? null;
             ce.productIds = c.productIds ?? null;
+            ce.variantIds = c.variantIds ?? null;
             ce.categoryIds = c.categoryIds ?? null;
             ce.minAmount = c.minAmount ?? null;
             ce.promotion = orm;

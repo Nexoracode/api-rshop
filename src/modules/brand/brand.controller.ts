@@ -57,6 +57,11 @@ export class BrandController {
     return this.brandService.findOne(+id);
   }
 
+  @Get('find/:slug')
+  findOneSlug(@Param('slug') slug: string) {
+    return this.brandService.findOneBySlug(slug);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
     return this.brandService.update(+id, updateBrandDto);

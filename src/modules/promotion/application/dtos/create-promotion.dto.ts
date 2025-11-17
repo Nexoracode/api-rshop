@@ -12,7 +12,7 @@ import {
     Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { PromotionType } from '../../domain/enums/promotion-type.enum';
 import { ConditionType } from '../../domain/enums/confition-type.enum';
@@ -39,6 +39,16 @@ export class CreatePromotionConditionDto {
     @IsArray()
     @IsInt({ each: true })
     categoryIds?: number[];
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @ApiPropertyOptional({
+        type: [Number],
+        description: "لیست Variant ID هایی که پروموشن باید روی آنها اعمال شود"
+    })
+    variantIds?: number[];
+
 
     @ApiProperty({ required: false })
     @IsOptional()

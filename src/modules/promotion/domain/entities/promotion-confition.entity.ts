@@ -5,10 +5,11 @@ export class PromotionCondition {
     type: ConditionType;
 
     // برای انواع مختلف شرط‌ها
-    userId?: number;
-    productIds?: number[];
-    categoryIds?: number[];
-    minAmount?: number;
+    userId?: number | null;
+    productIds?: number[] | null;
+    categoryIds?: number[] | null;
+    variantIds?: number[] | null;
+    minAmount?: number | null;
 
     constructor(partial: Partial<PromotionCondition>) {
         Object.assign(this, partial);

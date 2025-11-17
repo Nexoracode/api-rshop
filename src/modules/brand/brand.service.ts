@@ -61,6 +61,15 @@ export class BrandService {
     };
   }
 
+  async findOneBySlug(slug: string) {
+    const brand = await this.brandRepo.findOne({ where: { slug } });
+    if (!brand) throw new BadRequestException('برند یافت نشد');
+    return {
+      message: 'برند با موفقیت دریافت شد',
+      data: brand,
+    };
+  }
+
   async update(id: number, updateBrandDto: UpdateBrandDto) {
     const brand = await this.brandRepo.findOne({ where: { id } });
     if (!brand) throw new BadRequestException('برند یافت نشد');

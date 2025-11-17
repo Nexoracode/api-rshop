@@ -20,6 +20,7 @@ export interface OrderPreview {
     items: {
         productId: number;
         categoryId?: number;
+        variantId: number;
         quantity: number;
         unitPrice: number;
     }[];

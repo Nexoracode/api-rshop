@@ -29,6 +29,9 @@ export class PromotionConditionOrmEntity {
     @Column({ name: 'category_ids', type: 'json', nullable: true })
     categoryIds: number[] | null;
 
+    @Column({ name: 'variant_ids', type: 'json', nullable: true })
+    variantIds: number[] | null;
+
     @Column({ name: 'min_amount', type: 'decimal', precision: 15, scale: 2, nullable: true })
     minAmount: number | null;
 }

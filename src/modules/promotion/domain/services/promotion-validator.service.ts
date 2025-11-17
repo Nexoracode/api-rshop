@@ -52,6 +52,16 @@ export class PromotionValidatorService extends PromotionValidator {
                     }
                     break;
 
+                case ConditionType.VARIANT:   // 🟦 قسمت جدید که لازم داشتی
+                    if (condition.variantIds) {
+                        const orderVariantIds = order.items.map(i => i.variantId);
+                        const required = condition.variantIds;
+
+                        const match = required.some(v => orderVariantIds.includes(v));
+                        if (!match) return false;
+                    }
+                    break;
+
                 case ConditionType.MIN_ORDER_AMOUNT:
                     if (
                         typeof condition.minAmount === 'number' &&

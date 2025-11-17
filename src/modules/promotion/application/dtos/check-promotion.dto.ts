@@ -18,6 +18,9 @@ export class CheckPromotionItemDto {
     @IsInt()
     categoryId?: number;
 
+    @ApiProperty()
+    variantId: number;
+
     @ApiProperty({ example: 2 })
     @IsInt()
     quantity: number;
