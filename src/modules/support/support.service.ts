@@ -17,6 +17,7 @@ import { SupportMapper } from './mappers/support.mapper';
 import { Product } from '../product/entities/product.entity';
 import { includeRole } from './decorators/include-role.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 
 @Injectable()
 export class SupportService {
@@ -153,8 +154,6 @@ export class SupportService {
         .leftJoinAndSelect('messages.sender', 'sender')
         .orderBy('messages.createdAt', 'ASC');
 
-      includeRole(qb, ['sender']);
-
       const updated = await qb.getOne();
       return SupportMapper.toResponse(updated!);
     });
@@ -198,7 +197,7 @@ export class SupportService {
         .leftJoinAndSelect('support.messages', 'messages')
         .leftJoinAndSelect('messages.sender', 'sender');
 
-      includeRole(qb, ['user', 'sender']);
+      includeRole(qb, ['sender']);
 
       const updated = await qb.getOne();
       return SupportMapper.toResponse(updated!);
@@ -206,7 +205,7 @@ export class SupportService {
   }
 
   // 🟢 مشاهده همه گفتگوها برای ادمین
-  async findAllForAdmin() {
+  async findAllForAdmin(query: PaginateQuery) {
     const qb = this.supportRepo
       .createQueryBuilder('support')
       .leftJoinAndSelect('support.user', 'user')
@@ -215,11 +214,31 @@ export class SupportService {
       .leftJoinAndSelect('messages.sender', 'sender')
       .orderBy('support.updatedAt', 'DESC');
 
-    includeRole(qb, ['user', 'sender']);
+    const paginated = await paginate(query, qb, {
+      relations: ['messages', 'messages.sender', 'user'],
+      sortableColumns: ['id', 'updatedAt'],
+      defaultSortBy: [['updatedAt', 'DESC']],
+      searchableColumns: [
+        'messages.support.subject',
+        'messages.content',
+        'user.firstName',
+        'user.lastName',
+      ],
+      filterableColumns: {
+        createdAt: [FilterOperator.LTE, FilterOperator.GTE],
+        productId: [FilterOperator.EQ],
+      },
+      maxLimit: 50,
+      defaultLimit: 15,
+    });
 
-    const supports = await qb.getMany();
-    return supports.map(SupportMapper.toResponse);
+    return {
+      items: paginated.data,
+      meta: paginated.meta,
+      link: paginated.links,
+    }
   }
+
 
   // 🟢 مشاهده یک گفت‌وگو برای ادمین
   async findOneForAdmin(id: number) {
@@ -231,7 +250,7 @@ export class SupportService {
       .leftJoinAndSelect('support.messages', 'messages')
       .leftJoinAndSelect('messages.sender', 'sender');
 
-    includeRole(qb, ['user', 'sender']);
+    includeRole(qb, ['sender']);
 
     const support = await qb.getOne();
     if (!support) throw new NotFoundException('گفت‌وگو یافت نشد');

@@ -15,6 +15,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { AccessGuard } from 'src/common/guard/access.guard';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 
 @ApiTags('Admin - Support')
 @ApiBearerAuth()
@@ -25,11 +26,26 @@ export class SupportAdminController {
     constructor(private readonly supportService: SupportService) { }
 
     // 🟢 لیست همه گفتگوها
+    @ApiPaginationQuery({
+        paginationType: PaginationType.CURSOR,
+        sortableColumns: ['id', 'updatedAt'],
+        defaultSortBy: [['updatedAt', 'DESC']],
+        searchableColumns: [
+            'messages.support.subject',
+            'messages.content',
+            'user.firstName',
+            'user.lastName',
+        ],
+        filterableColumns: {
+            createdAt: [FilterOperator.LTE, FilterOperator.GTE],
+            productId: [FilterOperator.EQ],
+        },
+    })
     @Get()
-    @ApiOperation({ summary: 'دریافت لیست تمام گفتگوها' })
-    findAll() {
-        return this.supportService.findAllForAdmin();
+    async findAllForAdmin(@Paginate() query: PaginateQuery) {
+        return this.supportService.findAllForAdmin(query);
     }
+
 
     // 🟢 جزئیات گفت‌وگو
     @Get(':id')
