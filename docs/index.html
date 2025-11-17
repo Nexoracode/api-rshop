@@ -33,13 +33,13 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: auto;
             text-align: center;
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 42px;
             font-weight: 800;
             color: var(--fg);
             margin-bottom: 10px;
@@ -47,23 +47,23 @@
         }
 
         p.subtitle {
-            font-size: 14px;
+            font-size: 16px;
             color: var(--muted);
-            margin-bottom: 40px;
+            margin-bottom: 50px;
         }
 
         .docs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
         }
 
         .doc-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: var(--radius);
-            padding: 22px;
+            padding: 26px;
             text-align: right;
             transition: 0.25s ease;
             box-shadow: var(--shadow);
@@ -79,16 +79,19 @@
         }
 
         .doc-card h3 {
-            margin: 0 0 8px;
-            font-size: 18px;
+            margin: 0 0 10px;
+            font-size: 20px;
             color: var(--fg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .doc-card p {
             margin: 0;
             color: var(--muted);
-            font-size: 13px;
-            line-height: 1.7;
+            font-size: 14px;
+            line-height: 1.8;
         }
 
         .doc-card a {
@@ -99,11 +102,25 @@
             width: 100%;
         }
 
+        .icon {
+            font-size: 24px;
+        }
+
         footer {
-            margin-top: 60px;
-            font-size: 12px;
+            margin-top: 80px;
+            font-size: 13px;
             color: var(--muted);
             opacity: 0.7;
+        }
+
+        .category-title {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 40px 0 20px;
+            padding-right: 10px;
+            border-right: 3px solid var(--accent);
         }
     </style>
 
@@ -112,55 +129,198 @@
 <body>
     <div class="container">
 
-        <h1>RSHOP API Documentation</h1>
-        <p class="subtitle">مستندات فنی سرویس‌های مختلف فروشگاه</p>
+        <h1>📚 RSHOP API Documentation</h1>
+        <p class="subtitle">مستندات فنی کامل سرویس‌های مختلف فروشگاه آنلاین</p>
 
+        <div class="category-title">🔐 احراز هویت و کاربران</div>
         <div class="docs-grid">
-
-            <!-- Promotion Docs -->
             <div class="doc-card">
-                <a href="/docs/promotion-docs.html">
-                    <h3>Promotion Module</h3>
-                    <p>مستندات کامل سیستم تخفیف، کوپن‌ها، پیشنهاد شگفت‌انگیز، ارسال رایگان و خرید اول.</p>
+                <a href="/docs/auth-docs.html">
+                    <h3><span class="icon">🛡️</span> Auth Module</h3>
+                    <p>سیستم احراز هویت با استفاده از OTP و Login/Password</p>
                 </a>
             </div>
 
-            <!-- Product Docs -->
-            <div class="doc-card">
-                <a href="/docs/product-docs.html">
-                    <h3>Product Module</h3>
-                    <p>مدیریت محصولات، ویژگی‌ها، دسته‌بندی‌ها و جستجوی پیشرفته.</p>
-                </a>
-            </div>
-
-            <!-- Order Docs -->
-            <div class="doc-card">
-                <a href="/docs/order-docs.html">
-                    <h3>Order Module</h3>
-                    <p>سفارش‌گذاری، وضعیت سفارش، پرداخت، فاکتور و محاسبات مالی.</p>
-                </a>
-            </div>
-
-            <!-- User Docs -->
             <div class="doc-card">
                 <a href="/docs/user-docs.html">
-                    <h3>User Module</h3>
-                    <p>مستندات مدیریت کاربران، پروفایل‌ها، اعتبارسنجی و لاگین/OTP.</p>
+                    <h3><span class="icon">👤</span> User Module</h3>
+                    <p>مدیریت کاربران، پروفایل و اطلاعات کاربری</p>
                 </a>
             </div>
 
-            <!-- Support Docs -->
+            <div class="doc-card">
+                <a href="/docs/profile-docs.html">
+                    <h3><span class="icon">👨‍💼</span> Profile Module</h3>
+                    <p>مدیریت پروفایل کاربری و اطلاعات شخصی</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/address-docs.html">
+                    <h3><span class="icon">📍</span> Address Module</h3>
+                    <p>مدیریت آدرس‌های ارسال کاربران</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-title">🛍️ محصولات و کاتالوگ</div>
+        <div class="docs-grid">
+            <div class="doc-card">
+                <a href="/docs/product-docs.html">
+                    <h3><span class="icon">📦</span> Product Module</h3>
+                    <p>مدیریت محصولات، ویرایش، آپلود تصاویر و موجودی</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/category-docs.html">
+                    <h3><span class="icon">📂</span> Category Module</h3>
+                    <p>مدیریت دسته‌بندی محصولات به صورت سلسله مراتبی</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/brand-docs.html">
+                    <h3><span class="icon">🏷️</span> Brand Module</h3>
+                    <p>مدیریت برندهای محصولات</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/attributes-docs.html">
+                    <h3><span class="icon">⚙️</span> Attributes Module</h3>
+                    <p>ویژگی‌های محصولات و Variant</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/variant-product-docs.html">
+                    <h3><span class="icon">🎨</span> Variant Product Module</h3>
+                    <p>مدیریت انواع و تنوعات محصولات</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/catalogs-docs.html">
+                    <h3><span class="icon">🔍</span> Catalog Module</h3>
+                    <p>جستجو و فیلتر پیشرفته محصولات</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-title">🛒 سبد خرید و سفارشات</div>
+        <div class="docs-grid">
+            <div class="doc-card">
+                <a href="/docs/card-docs.html">
+                    <h3><span class="icon">🛒</span> Card Module</h3>
+                    <p>سبد خرید - افزودن، حذف و ویرایش آیتم‌ها</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/order-docs.html">
+                    <h3><span class="icon">📑</span> Order Module</h3>
+                    <p>مدیریت سفارشات، ثبت، پیگیری و تغییر وضعیت</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/payment-docs.html">
+                    <h3><span class="icon">💳</span> Payment Module</h3>
+                    <p>سیستم پرداخت آنلاین با درگاه زرین‌پال</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/invoice-docs.html">
+                    <h3><span class="icon">🧾</span> Invoice Module</h3>
+                    <p>صدور و مدیریت فاکتورها</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-title">🎁 تخفیفات و پروموشن</div>
+        <div class="docs-grid">
+            <div class="doc-card">
+                <a href="/docs/promotion-docs.html">
+                    <h3><span class="icon">🎉</span> Promotion Module</h3>
+                    <p>مستندات کامل سیستم تخفیف، کوپن‌ها، پیشنهاد شگفت‌انگیز، ارسال رایگان و خرید اول</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/coupon-docs.html">
+                    <h3><span class="icon">🎫</span> Coupon Module</h3>
+                    <p>مدیریت کوپن‌های تخفیف</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-title">⭐ تعاملات کاربری</div>
+        <div class="docs-grid">
+            <div class="doc-card">
+                <a href="/docs/review-docs.html">
+                    <h3><span class="icon">⭐</span> Review Module</h3>
+                    <p>نظرات و امتیازدهی به محصولات</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/wishlist-docs.html">
+                    <h3><span class="icon">❤️</span> Wishlist Module</h3>
+                    <p>لیست علاقه‌مندی‌های کاربر</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/compare-docs.html">
+                    <h3><span class="icon">⚖️</span> Compare Module</h3>
+                    <p>مقایسه محصولات</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/recent-view-docs.html">
+                    <h3><span class="icon">👁️</span> Recent View Module</h3>
+                    <p>تاریخچه بازدید محصولات</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-title">🛠️ پشتیبانی و سیستمی</div>
+        <div class="docs-grid">
             <div class="doc-card">
                 <a href="/docs/support-docs.html">
-                    <h3>Support Module</h3>
-                    <p>سیستم تیکت، پیام‌رسان داخلی، وضعیت‌ها، فایل‌ها و نوتیفیکیشن.</p>
+                    <h3><span class="icon">💬</span> Support Module</h3>
+                    <p>سیستم تیکتینگ و پشتیبانی مشتریان</p>
                 </a>
             </div>
 
+            <div class="doc-card">
+                <a href="/docs/media-docs.html">
+                    <h3><span class="icon">🖼️</span> Media Module</h3>
+                    <p>آپلود و مدیریت فایل‌ها و تصاویر</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/otps-docs.html">
+                    <h3><span class="icon">📱</span> OTP Module</h3>
+                    <p>سیستم OTP و ارسال پیامک</p>
+                </a>
+            </div>
+
+            <div class="doc-card">
+                <a href="/docs/helper-docs.html">
+                    <h3><span class="icon">🔧</span> Helper Module</h3>
+                    <p>توابع کمکی و utilities</p>
+                </a>
+            </div>
         </div>
 
         <footer>
-            © RSHOP Internal Developer Documentation – Powered by NestJS & TypeORM
+            © RSHOP Internal Developer Documentation – Powered by NestJS & TypeORM<br>
+            Auto-generated documentation with ❤️
         </footer>
 
     </div>

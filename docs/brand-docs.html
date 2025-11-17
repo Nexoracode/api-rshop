@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>RSHOP – برندها Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #0f172a;
+      --subtext: #475569;
+      --card-bg: #f8fafc;
+      --border: #e2e8f0;
+      --accent: #0ea5e9;
+      --accent-bg: #e0f7ff;
+      --code-bg: #f1f5f9;
+      --sidebar-bg: #f8fafc;
+      --sidebar-border: #e2e8f0;
+    }
+
+    .dark {
+      --bg: #0f172a;
+      --text: #e2e8f0;
+      --subtext: #94a3b8;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent-bg: rgba(56, 189, 248, 0.1);
+      --code-bg: #111827;
+      --sidebar-bg: #0f172a;
+      --sidebar-border: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      z-index: 999999;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      padding: 24px 22px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--sidebar-border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      font-size: 13px;
+      opacity: .6;
+      margin: 20px 0 10px;
+      font-weight: 600;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      transition: .15s;
+      border: 1px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 50px 60px 100px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 16px;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin: 50px 0 20px;
+      color: var(--text);
+      font-weight: 700;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 20px;
+      margin: 30px 0 15px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    p {
+      line-height: 1.8;
+      color: var(--subtext);
+      margin: 12px 0;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      color: var(--accent);
+    }
+
+    pre {
+      background: var(--code-bg);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+    }
+
+    .endpoint-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .method.get {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .method.post {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .method.patch {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .method.put {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .method.delete {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .path {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--accent-bg);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 0 4px;
+    }
+
+    .badge.public {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.protected {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.optional {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .badge.required {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .note {
+      background: var(--accent-bg);
+      border-right: 4px solid var(--accent);
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 6px;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--text);
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌗 تغییر تم</button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h3>فهرست مطالب</h3>
+    <a href="#endpoints">🔗 API Endpoints</a>
+    <a href="#entities">📦 Entities</a>
+    <a href="#dtos">📝 DTOs</a>
+    <h3 style="margin-top: 40px;">
+      <a href="../docs/index.html" style="color: var(--accent);">← بازگشت به صفحه اصلی</a>
+    </h3>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <h1>📘 برندها – RSHOP</h1>
+
+
+    <h2 id="intro">۱. معرفی</h2>
+    <p>مدیریت برندهای محصولات</p>
+
+    <div class="note">
+      <p><strong>💡 نکته:</strong> این ماژول شامل 8 endpoint،
+        1 entity و 2 DTO می‌باشد.</p>
+    </div>
+
+
+    <h2 id="endpoints">۲. API Endpoints</h2>
+
+    <div class="endpoint-card">
+      <h3>1. findAll</h3>
+      <p>
+        <span class="method post">POST</span>
+        <code class="path">/brand/upload</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>findAll</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>2. findAll</h3>
+      <p>
+        <span class="method post">POST</span>
+        <code class="path">/brand</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>findAll</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>3. findAll</h3>
+      <p>
+        <span class="method get">GET</span>
+        <code class="path">/brand</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>findAll</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>4. findAll</h3>
+      <p>
+        <span class="method get">GET</span>
+        <code class="path">/brand/all</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>findAll</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>5. unknown</h3>
+      <p>
+        <span class="method get">GET</span>
+        <code class="path">/brand/:id</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>unknown</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>6. unknown</h3>
+      <p>
+        <span class="method get">GET</span>
+        <code class="path">/brand/find/:slug</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>unknown</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>7. unknown</h3>
+      <p>
+        <span class="method patch">PATCH</span>
+        <code class="path">/brand/:id</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>unknown</code></p>
+    </div>
+
+    <div class="endpoint-card">
+      <h3>8. unknown</h3>
+      <p>
+        <span class="method delete">DELETE</span>
+        <code class="path">/brand/:id</code>
+        <span class="badge protected">نیاز به احراز هویت</span>
+      </p>
+      <p><strong>Function:</strong> <code>unknown</code></p>
+    </div>
+
+
+    <h2 id="entities">۳. Entities (مدل‌های دیتابیس)</h2>
+
+    <h3>Brand</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>نام فیلد</th>
+          <th>نوع</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+        </tr>
+
+        <tr>
+          <td><code>slug</code></td>
+          <td>string</td>
+        </tr>
+
+        <tr>
+          <td><code>logo</code></td>
+          <td>string</td>
+        </tr>
+
+        <tr>
+          <td><code>isActive</code></td>
+          <td>boolean | true</td>
+        </tr>
+
+      </tbody>
+    </table>
+
+
+    <h2 id="dtos">۴. DTOs (Data Transfer Objects)</h2>
+
+    <h3>UpdateBrandDto</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>نام فیلد</th>
+          <th>نوع</th>
+          <th>الزامی/اختیاری</th>
+        </tr>
+      </thead>
+      <tbody>
+
+      </tbody>
+    </table>
+
+    <h3>CreateBrandDto</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>نام فیلد</th>
+          <th>نوع</th>
+          <th>الزامی/اختیاری</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td><code>name</code></td>
+          <td>string</td>
+          <td><span class="badge required">الزامی</span></td>
+        </tr>
+
+        <tr>
+          <td><code>slug</code></td>
+          <td>string</td>
+          <td><span class="badge required">الزامی</span></td>
+        </tr>
+
+        <tr>
+          <td><code>logo</code></td>
+          <td>string</td>
+          <td><span class="badge required">الزامی</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+
+
+  </main>
+
+  <script>
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme',
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+      );
+    }
+    window.onload = () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    }
+  </script>
+
+</body>
+
+</html>
