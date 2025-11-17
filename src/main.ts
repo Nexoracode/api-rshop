@@ -24,6 +24,7 @@ async function bootstrap() {
     credentials: true,
     origin: [
       'http://localhost:3000',
+      'http://localhost:3001',
       'http://172.18.100.50:3000',
       'http://172.18.100.165:3000',
       'https://app-backend-rshop-nodejs.roohbakhshac.com',
@@ -41,10 +42,12 @@ async function bootstrap() {
     ]
   })
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api', {
+    exclude: ['/docs/(.*)'],
+  });
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3001)
 }
 
 bootstrap();

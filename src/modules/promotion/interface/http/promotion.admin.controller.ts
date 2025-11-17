@@ -1,0 +1,57 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Put,
+    Query,
+} from '@nestjs/common';
+import { CreatePromotionUseCase } from '../../application/usecases/create-promotion.usecase';
+import { UpdatePromotionUseCase } from '../../application/usecases/update-promotion.usecase';
+import { DeletePromotionUseCase } from '../../application/usecases/delete-promotion.usecase';
+import { CreatePromotionDto } from '../../application/dtos/create-promotion.dto';
+import { UpdatePromotionDto } from '../../application/dtos/update-promotion.dto';
+import { ListPromotionsUseCase } from '../../application/usecases/list-promotion.usecase';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Admin Promotions')
+@Controller('admin/promotions')
+export class PromotionAdminController {
+    constructor(
+        private readonly createUseCase: CreatePromotionUseCase,
+        private readonly updateUseCase: UpdatePromotionUseCase,
+        private readonly deleteUseCase: DeletePromotionUseCase,
+        private readonly listUseCase: ListPromotionsUseCase,
+    ) { }
+
+    @Post()
+    @ApiOperation({ summary: 'Create a new promotion' })
+    @ApiBody({ type: CreatePromotionDto })
+    @ApiResponse({ status: 201, description: 'Promotion created successfully' })
+    create(@Body() dto: CreatePromotionDto) {
+        return this.createUseCase.execute(dto);
+    }
+
+    @Get()
+    @ApiOperation({ summary: 'List promotions' })
+    @ApiQuery({ name: 'page', required: false })
+    @ApiQuery({ name: 'limit', required: false })
+    list(@Query('page') page = 1, @Query('limit') limit = 20) {
+        return this.listUseCase.execute(+page, +limit);
+    }
+
+    @Put(':id')
+    @ApiOperation({ summary: 'Update promotion' })
+    @ApiBody({ type: UpdatePromotionDto })
+    update(@Param('id') id: string, @Body() dto: UpdatePromotionDto) {
+        return this.updateUseCase.execute(+id, dto);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete promotion' })
+    delete(@Param('id') id: string) {
+        return this.deleteUseCase.execute(+id);
+    }
+}

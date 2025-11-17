@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>مستندات سیستم پروموشن فروشگاه</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-elevated: #020617;
+      --card-bg: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --danger: #fb7185;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1f2937;
+      --code-bg: #020617;
+      --badge-bg: #111827;
+      --radius-lg: 16px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
+      color: var(--text-main);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      padding: 24px 20px;
+      border-left: 1px solid rgba(148, 163, 184, 0.15);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-logo {
+      font-weight: 700;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .sidebar-logo span.icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 0, #38bdf8, #a855f7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: white;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 6px;
+    }
+
+    .sidebar-section-label {
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 7px 9px;
+      border-radius: 8px;
+      color: var(--text-main);
+      border: 1px solid transparent;
+      transition: background-color 0.15s ease, border-color 0.15s ease,
+        color 0.15s ease;
+    }
+
+    .sidebar-link small {
+      display: inline-block;
+      margin-right: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-link:hover {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 24px 28px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .page-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-title-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.16);
+      color: #e0f2fe;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .page-subtitle {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 640px;
+    }
+
+    .tag-badges {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tag-badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #cbd5f5;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title span.api-method {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #bbf7d0;
+      background: rgba(22, 163, 74, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.6);
+    }
+
+    .section-title span.api-method-del {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #fecaca;
+      background: rgba(248, 113, 113, 0.2);
+      border: 1px solid rgba(248, 113, 113, 0.7);
+    }
+
+    .section-path {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      display: inline-block;
+      margin-bottom: 10px;
+      direction: ltr;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* Cards */
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), rgba(15, 23, 42, 0.98));
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      padding: 14px 14px 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #e5e7eb;
+      margin-right: 6px;
+    }
+
+    /* Code */
+    pre {
+      background: var(--code-bg);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 6px 0 6px;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.8), 0 18px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    pre,
+    code {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: bidi-override !important;
+      white-space: pre !important;
+      word-break: normal !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace !important;
+    }
+
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      direction: ltr;
+      text-align: left;
+      color: #e5e7eb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      padding: 6px 8px;
+      text-align: right;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.98);
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: var(--badge-bg);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: #e5e7eb;
+    }
+
+    .pill span {
+      margin-left: 4px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 960px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        max-height: none;
+        border-left: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .main {
+        padding: 18px 16px 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="icon">P</span>
+      <span>Promotion API Docs</span>
+    </div>
+
+    <div class="sidebar-section-label">Endpoints</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="#check-promotion" class="sidebar-link">
+          <small>POST</small> /promotions/check
+        </a>
+      </li>
+      <li>
+        <a href="#create-promotion" class="sidebar-link">
+          <small>POST</small> /admin/promotions
+        </a>
+      </li>
+      <li>
+        <a href="#list-promotions" class="sidebar-link">
+          <small>GET</small> /admin/promotions
+        </a>
+      </li>
+      <li>
+        <a href="#update-promotion" class="sidebar-link">
+          <small>PUT</small> /admin/promotions/:id
+        </a>
+      </li>
+      <li>
+        <a href="#delete-promotion" class="sidebar-link">
+          <small>DELETE</small> /admin/promotions/:id
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-section-label">Reference</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="#types-promotion" class="sidebar-link">PromotionType</a>
+      </li>
+      <li>
+        <a href="#types-condition" class="sidebar-link">ConditionType</a>
+      </li>
+      <li>
+        <a href="#types-action" class="sidebar-link">ActionType</a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="page-header">
+      <div class="page-eyebrow">Ecommerce · Promotions</div>
+      <div class="page-title">
+        سیستم پروموشن فروشگاه
+        <span class="page-title-badge">v1 · Internal</span>
+      </div>
+      <p class="page-subtitle">
+        این مستند نحوه تعریف، مدیریت و استفاده از پروموشن‌ها (کوپن تخفیف، پیشنهاد شگفت‌انگیز،
+        ارسال رایگان، خرید اول و پاداش خرید بعدی) را در بک‌اند فروشگاه توضیح می‌دهد.
+      </p>
+      <div class="tag-badges">
+        <span class="tag-badge">NestJS · TypeORM</span>
+        <span class="tag-badge">Admin Panel</span>
+        <span class="tag-badge">Checkout Engine</span>
+      </div>
+    </header>
+
+    <!-- Check Promotion -->
+    <section id="check-promotion">
+      <h2 class="section-title">
+        <span class="api-method">POST</span>
+        بررسی و اعمال پروموشن روی سفارش
+      </h2>
+      <div class="section-path">/promotions/check</div>
+      <p class="section-desc">
+        این متد برای مرحلهٔ Checkout استفاده می‌شود؛ براساس سبد خرید و اطلاعات کاربر، تخفیف و
+        ارسال رایگان محاسبه می‌شود. اگر <code>code</code> ارسال شود، فقط همان کوپن بررسی می‌شود؛
+        در غیر این‌صورت همهٔ پروموشن‌های فعال روی سفارش تست می‌شوند.
+      </p>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Request Body</div>
+            <div class="card-subtitle">نمونه ورودی برای محاسبهٔ پروموشن روی سفارش</div>
+          </div>
+          <span class="pill"><span>type</span>JSON</span>
+        </div>
+        <pre><code>{
+  "userId": 100,
+  "code": "OFF20",
+  "subtotal": 300000,
+  "shippingCost": 30000,
+  "isFirstOrder": false,
+  "items": [
+    {
+      "productId": 12,
+      "categoryId": 5,
+      "quantity": 1,
+      "unitPrice": 300000
+    }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Response</div>
+            <div class="card-subtitle">خروجی نهایی پس از اعمال پروموشن‌ها</div>
+          </div>
+          <span class="pill"><span>200</span>OK</span>
+        </div>
+        <pre><code>{
+  "discount": 60000,
+  "freeShipping": false,
+  "finalShipping": 30000,
+  "finalTotal": 270000,
+  "appliedPromotionIds": [3]
+}</code></pre>
+        <table>
+          <thead>
+            <tr>
+              <th>فیلد</th>
+              <th>توضیح</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>discount</td>
+              <td>مجموع مبلغ تخفیف اعمال‌شده روی سفارش</td>
+            </tr>
+            <tr>
+              <td>freeShipping</td>
+              <td>اگر true باشد یعنی هزینهٔ ارسال صفر شده است</td>
+            </tr>
+            <tr>
+              <td>finalShipping</td>
+              <td>هزینهٔ نهایی ارسال پس از پروموشن</td>
+            </tr>
+            <tr>
+              <td>finalTotal</td>
+              <td>مبلغ نهایی پرداختی کاربر</td>
+            </tr>
+            <tr>
+              <td>appliedPromotionIds</td>
+              <td>آیدی پروموشن‌هایی که روی سفارش اعمال شده‌اند</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Create Promotion -->
+    <section id="create-promotion">
+      <h2 class="section-title">
+        <span class="api-method">POST</span>
+        ساخت پروموشن جدید
+      </h2>
+      <div class="section-path">/admin/promotions</div>
+      <p class="section-desc">
+        این متد در پنل ادمین استفاده می‌شود و امکان تعریف انواع پروموشن (کوپن تخفیف، پیشنهاد
+        شگفت‌انگیز، ارسال رایگان، خرید اول و پاداش خرید بعدی) را به شما می‌دهد.
+      </p>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Coupon – تخفیف درصدی روی محصول مشخص</div>
+            <div class="card-subtitle">type = <b>coupon</b> · تخفیف ۲۰٪ روی محصول ۱۲</div>
+          </div>
+          <span class="card-tag">Example A</span>
+        </div>
+        <pre><code>{
+  "name": "20% OFF Product 12",
+  "type": "coupon",
+  "code": "OFF20P12",
+  "startsAt": "2025-01-01 00:00:00",
+  "endsAt": "2025-12-31 23:59:59",
+  "usageLimit": 100,
+  "isActive": true,
+  "conditions": [
+    { "type": "product", "productIds": [12] }
+  ],
+  "actions": [
+    { "type": "percent_discount", "value": 20 }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Coupon – تخفیف مبلغی مخصوص یک کاربر</div>
+            <div class="card-subtitle">type = <b>coupon</b> · تخفیف ۷۰هزار تومانی فقط برای userId=322</div>
+          </div>
+          <span class="card-tag">Example B</span>
+        </div>
+        <pre><code>{
+  "name": "70,000 OFF for User 322",
+  "type": "coupon",
+  "code": "REZA70",
+  "startsAt": "2025-01-01 00:00:00",
+  "endsAt": "2025-12-31 23:59:59",
+  "conditions": [
+    { "type": "user", "userId": 322 }
+  ],
+  "actions": [
+    { "type": "amount_discount", "value": 70000 }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flash Deal – پیشنهاد شگفت‌انگیز دسته</div>
+            <div class="card-subtitle">type = <b>flash_deal</b> · تخفیف ۱۵۰هزار روی categoryId=5</div>
+          </div>
+          <span class="card-tag">Example C</span>
+        </div>
+        <pre><code>{
+  "name": "Flash Deal Perfumes",
+  "type": "flash_deal",
+  "startsAt": "2025-02-10 00:00:00",
+  "endsAt": "2025-02-20 23:59:59",
+  "conditions": [
+    { "type": "category", "categoryIds": [5] }
+  ],
+  "actions": [
+    { "type": "amount_discount", "value": 150000 }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Free Shipping – ارسال رایگان بالای مبلغ مشخص</div>
+            <div class="card-subtitle">type = <b>free_shipping</b> · ارسال رایگان بالای ۵۰۰هزار تومان</div>
+          </div>
+          <span class="card-tag">Example D</span>
+        </div>
+        <pre><code>{
+  "name": "Free shipping over 500k",
+  "type": "free_shipping",
+  "startsAt": "2025-01-01 00:00:00",
+  "endsAt": "2030-01-01 00:00:00",
+  "conditions": [
+    { "type": "min_order_amount", "minAmount": 500000 }
+  ],
+  "actions": [
+    { "type": "free_shipping" }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">First Order – تخفیف خرید اول</div>
+            <div class="card-subtitle">type = <b>first_order</b> · تخفیف ۱۵٪ مخصوص اولین سفارش</div>
+          </div>
+          <span class="card-tag">Example E</span>
+        </div>
+        <pre><code>{
+  "name": "15% OFF First Order",
+  "type": "first_order",
+  "startsAt": "2025-01-01 00:00:00",
+  "endsAt": "2026-01-01 00:00:00",
+  "conditions": [
+    { "type": "first_order" }
+  ],
+  "actions": [
+    { "type": "percent_discount", "value": 15 }
+  ]
+}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Next Order Reward – پاداش خرید بعدی</div>
+            <div class="card-subtitle">type = <b>next_order_reward</b> · صدور کوپن برای سفارش بعدی</div>
+          </div>
+          <span class="card-tag">Example F</span>
+        </div>
+        <pre><code>{
+  "name": "Next Order Reward 50k",
+  "type": "next_order_reward",
+  "startsAt": "2025-01-01 00:00:00",
+  "endsAt": "2026-01-01 00:00:00",
+  "conditions": [
+    { "type": "min_order_amount", "minAmount": 400000 }
+  ],
+  "actions": [
+    {
+      "type": "next_order_coupon",
+      "meta": { "rewardAmount": 50000 }
+    }
+  ]
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- List Promotions -->
+    <section id="list-promotions">
+      <h2 class="section-title">
+        <span class="api-method">GET</span>
+        لیست پروموشن‌ها (پنل ادمین)
+      </h2>
+      <div class="section-path">/admin/promotions</div>
+      <p class="section-desc">
+        این متد برای لیست کردن پروموشن‌ها در پنل ادمین با پشتیبانی از صفحه‌بندی، جستجو و فیلترها
+        استفاده می‌شود.
+      </p>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Query Params</div>
+            <div class="card-subtitle">نمونهٔ فراخوانی با فیلتر</div>
+          </div>
+        </div>
+        <pre><code>GET /admin/promotions?page=1&amp;limit=20&amp;search=off&amp;type=coupon&amp;status=active</code></pre>
+        <table>
+          <thead>
+            <tr>
+              <th>پارامتر</th>
+              <th>نوع</th>
+              <th>توضیح</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>page</td>
+              <td>number</td>
+              <td>شماره صفحه (پیش‌فرض: 1)</td>
+            </tr>
+            <tr>
+              <td>limit</td>
+              <td>number</td>
+              <td>تعداد در هر صفحه (پیش‌فرض: 20)</td>
+            </tr>
+            <tr>
+              <td>search</td>
+              <td>string</td>
+              <td>جستجو روی فیلد name</td>
+            </tr>
+            <tr>
+              <td>type</td>
+              <td>string</td>
+              <td>فیلتر بر اساس PromotionType (مثلاً: coupon, flash_deal, ...)</td>
+            </tr>
+            <tr>
+              <td>isActive</td>
+              <td>boolean</td>
+              <td>true / false</td>
+            </tr>
+            <tr>
+              <td>status</td>
+              <td>string</td>
+              <td>active / expired / upcoming</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Response</div>
+            <div class="card-subtitle">ساختار خروجی صفحه‌بندی</div>
+          </div>
+        </div>
+        <pre><code>{
+  "items": [
+    {
+      "id": 1,
+      "name": "Flash Deal Perfumes",
+      "type": "flash_deal",
+      "code": null,
+      "startsAt": "2025-02-10T00:00:00.000Z",
+      "endsAt": "2025-02-20T23:59:59.000Z",
+      "isActive": true
+    }
+  ],
+  "total": 1
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Update Promotion -->
+    <section id="update-promotion">
+      <h2 class="section-title">
+        <span class="api-method">PUT</span>
+        ویرایش پروموشن
+      </h2>
+      <div class="section-path">/admin/promotions/:id</div>
+      <p class="section-desc">
+        برای به‌روزرسانی نام، وضعیت، شروط یا اکشن‌های یک پروموشن استفاده می‌شود. بدنهٔ درخواست
+        همان ساختار <code>CreatePromotionDto</code> را به‌صورت partial دارد.
+      </p>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Request نمونه</div>
+            <div class="card-subtitle">افزایش مقدار تخفیف در یک فلش دیل</div>
+          </div>
+        </div>
+        <pre><code>{
+  "name": "Flash Deal Perfumes (Updated)",
+  "actions": [
+    { "type": "amount_discount", "value": 200000 }
+  ]
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Delete Promotion -->
+    <section id="delete-promotion">
+      <h2 class="section-title">
+        <span class="api-method-del">DELETE</span>
+        حذف پروموشن
+      </h2>
+      <div class="section-path">/admin/promotions/:id</div>
+      <p class="section-desc">
+        حذف پروموشن از سیستم. این عملیات رکورد پروموشن و شروط/اکشن‌های مرتبط را حذف می‌کند
+        (Cascade).
+      </p>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">نمونه</div>
+            <div class="card-subtitle">حذف پروموشن با آیدی 5</div>
+          </div>
+        </div>
+        <pre><code>DELETE /admin/promotions/5</code></pre>
+      </div>
+    </section>
+
+    <!-- Types: PromotionType -->
+    <section id="types-promotion">
+      <h2 class="section-title">
+        انواع <span>PromotionType</span>
+      </h2>
+      <p class="section-desc">
+        نوع کلی پروموشن که رفتار اصلی آن را تعیین می‌کند. این نوع در فیلد <code>type</code> در
+        پروموشن استفاده می‌شود.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>مقدار</th>
+            <th>توضیح</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>coupon</td>
+            <td>کد تخفیف مبتنی بر کوپن (دارای فیلد code)</td>
+          </tr>
+          <tr>
+            <td>flash_deal</td>
+            <td>پیشنهاد شگفت‌انگیز (برای نمایش در صفحهٔ اصلی/لیست‌ها)</td>
+          </tr>
+          <tr>
+            <td>free_shipping</td>
+            <td>پروموشن‌های مربوط به ارسال رایگان</td>
+          </tr>
+          <tr>
+            <td>first_order</td>
+            <td>تنها برای اولین سفارش کاربر</td>
+          </tr>
+          <tr>
+            <td>next_order_reward</td>
+            <td>اعطای پاداش (کوپن) برای خریدهای بعدی</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Types: ConditionType -->
+    <section id="types-condition">
+      <h2 class="section-title">
+        انواع <span>ConditionType</span>
+      </h2>
+      <p class="section-desc">
+        هر پروموشن می‌تواند یک یا چند شرط داشته باشد؛ تمام شروط باید برقرار باشند تا پروموشن روی
+        سفارش اعمال شود.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>مقدار</th>
+            <th>فیلدهای مرتبط</th>
+            <th>توضیح</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>user</td>
+            <td><code>userId</code></td>
+            <td>محدود کردن پروموشن برای یک کاربر مشخص</td>
+          </tr>
+          <tr>
+            <td>product</td>
+            <td><code>productIds</code></td>
+            <td>اعمال پروموشن فقط روی سفارش‌هایی که شامل محصولات خاصی هستند</td>
+          </tr>
+          <tr>
+            <td>category</td>
+            <td><code>categoryIds</code></td>
+            <td>محدود به محصولات داخل دسته‌بندی‌های مشخص</td>
+          </tr>
+          <tr>
+            <td>min_order_amount</td>
+            <td><code>minAmount</code></td>
+            <td>حداقل مبلغ سفارش برای فعال شدن پروموشن</td>
+          </tr>
+          <tr>
+            <td>first_order</td>
+            <td>-</td>
+            <td>تنها برای اولین سفارش (با فیلد isFirstOrder در Request کنترل می‌شود)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Types: ActionType -->
+    <section id="types-action">
+      <h2 class="section-title">
+        انواع <span>ActionType</span>
+      </h2>
+      <p class="section-desc">
+        هر اکشن مشخص می‌کند که بعد از برقرار بودن شروط، چه نوع تخفیف/اثری روی سفارش اعمال شود.
+        یک پروموشن می‌تواند چند اکشن همزمان داشته باشد.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>مقدار</th>
+            <th>فیلدهای مرتبط</th>
+            <th>توضیح</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>percent_discount</td>
+            <td><code>value</code></td>
+            <td>اعمال تخفیف درصدی روی مبلغ سبد خرید</td>
+          </tr>
+          <tr>
+            <td>amount_discount</td>
+            <td><code>value</code></td>
+            <td>اعمال تخفیف مبلغ ثابت روی سبد خرید</td>
+          </tr>
+          <tr>
+            <td>free_shipping</td>
+            <td>-</td>
+            <td>رایگان کردن هزینهٔ ارسال (shippingCost = 0)</td>
+          </tr>
+          <tr>
+            <td>next_order_coupon</td>
+            <td><code>meta.rewardAmount</code> (و سایر تنظیمات داخل meta)</td>
+            <td>صدور یک کوپن جدید برای سفارش‌های بعدی کاربر پس از تکمیل این سفارش</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+
+</html>

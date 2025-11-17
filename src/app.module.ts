@@ -34,7 +34,8 @@ import { RecentViewModule } from './modules/recent-view/recent-view.module';
 import { SupportModule } from './modules/support/support.module';
 import { CompareModule } from './modules/compare/compare.module';
 import { OtpModule as OtpModule } from './modules/otps/otps.module';
-
+import { PromotionModule } from './modules/promotion/promotion.module';
+import { DocsModule } from './docs/docs.module';
 
 @Module({
   imports: [
@@ -69,6 +70,8 @@ import { OtpModule as OtpModule } from './modules/otps/otps.module';
     SupportModule,
     CompareModule,
     OtpModule,
+    PromotionModule,
+    DocsModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
