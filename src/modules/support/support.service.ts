@@ -206,16 +206,8 @@ export class SupportService {
 
   // 🟢 مشاهده همه گفتگوها برای ادمین
   async findAllForAdmin(query: PaginateQuery) {
-    const qb = this.supportRepo
-      .createQueryBuilder('support')
-      .leftJoinAndSelect('support.user', 'user')
-      .leftJoinAndSelect('support.product', 'product')
-      .leftJoinAndSelect('support.messages', 'messages')
-      .leftJoinAndSelect('messages.sender', 'sender')
-      .orderBy('support.updatedAt', 'DESC');
-
-    const paginated = await paginate(query, qb, {
-      relations: ['messages', 'messages.sender', 'user'],
+    const paginated = await paginate(query, this.supportRepo, {
+      relations: ['user', 'product', 'product.mediaPinned', 'messages', 'messages.support', 'messages.sender'],
       sortableColumns: ['id', 'updatedAt'],
       defaultSortBy: [['updatedAt', 'DESC']],
       searchableColumns: [
@@ -233,7 +225,7 @@ export class SupportService {
     });
 
     return {
-      items: paginated.data,
+      items: SupportMapper.toList(paginated.data),
       meta: paginated.meta,
       link: paginated.links,
     }
