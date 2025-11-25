@@ -15,6 +15,8 @@ import { CreatePromotionDto } from '../../application/dtos/create-promotion.dto'
 import { UpdatePromotionDto } from '../../application/dtos/update-promotion.dto';
 import { ListPromotionsUseCase } from '../../application/usecases/list-promotion.usecase';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PromotionType } from '../../domain/enums/promotion-type.enum';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 
 @ApiTags('Admin Promotions')
 @Controller('admin/promotions')
@@ -35,11 +37,19 @@ export class PromotionAdminController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'List promotions' })
-    @ApiQuery({ name: 'page', required: false })
-    @ApiQuery({ name: 'limit', required: false })
-    list(@Query('page') page = 1, @Query('limit') limit = 20) {
-        return this.listUseCase.execute(+page, +limit);
+    @ApiPaginationQuery({
+        sortableColumns: ['id', 'startsAt', 'type'],
+        searchableColumns: ['code', 'type', 'actions'],
+        filterableColumns: {
+            type: [FilterOperator.EQ, FilterOperator.IN],
+            isActive: [FilterOperator.EQ],
+        },
+        defaultSortBy: [['id', 'DESC']],
+        maxLimit: 100,
+    })
+    @Get()
+    async list(@Paginate() query: PaginateQuery) {
+        return this.listUseCase.execute(query);
     }
 
     @Put(':id')

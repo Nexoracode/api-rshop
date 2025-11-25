@@ -20,8 +20,9 @@ export class PromotionEngineService extends PromotionEngine {
         const appliedPromotions: Promotion[] = [];
 
         for (const promo of promotions) {
-            const valid = await this.validator.isValid(order, promo);
-            if (!valid) continue;
+            console.log(promo.actions);
+            // const valid = await this.validator.isValid(order, promo);
+            // if (!valid) continue;
 
             let promoApplied = false;
 

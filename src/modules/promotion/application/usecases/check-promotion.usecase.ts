@@ -29,7 +29,7 @@ export class CheckPromotionUseCase {
         if (dto.code) {
             const promo = await this.repo.findActiveByCode(dto.code);
             if (!promo) {
-                throw new NotFoundException('promotion code not found or inactive');
+                throw new NotFoundException('این کد تخفیف وجود ندارد یا غیر فعال است.');
             }
             promotions = [promo];
         } else {
@@ -37,6 +37,7 @@ export class CheckPromotionUseCase {
         }
 
         const result = await this.engine.applyPromotions(order, promotions);
+        console.log(result);
 
         const finalShipping = result.freeShipping ? 0 : dto.shippingCost;
         const finalTotal = dto.subtotal - result.discount + finalShipping;

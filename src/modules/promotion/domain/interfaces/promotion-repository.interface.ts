@@ -1,3 +1,4 @@
+import { PaginateQuery } from 'nestjs-paginate';
 import { Promotion } from '../entities/promotion.entity';
 
 export abstract class PromotionRepository {
@@ -7,10 +8,7 @@ export abstract class PromotionRepository {
     abstract create(promotion: Promotion): Promise<Promotion>;
     abstract update(id: number, promotion: Promotion): Promise<Promotion>;
     abstract delete(id: number): Promise<void>;
-    abstract paginate(params: {
-        page: number;
-        limit: number;
-    }): Promise<{ items: Promotion[]; total: number }>;
+    abstract paginated(query: PaginateQuery): Promise<any>;
 }
 
 // یک نوع ساده برای preview سفارش (برای check promo)
