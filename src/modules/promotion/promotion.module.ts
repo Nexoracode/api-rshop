@@ -31,6 +31,7 @@ import { SmsProvider } from './domain/interfaces/sms-provider.interface';
 import { IppanelSmsProvider } from './infrastructure/sms/ippanel-sms.provider';
 import { SmsSenderService } from './domain/services/sms-sender.service';
 import { PromotionRepository } from './domain/interfaces/promotion-repository.interface';
+import { GetPromotionByIdUseCase } from './application/usecases/get-promotion-by-id.usecase';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { PromotionRepository } from './domain/interfaces/promotion-repository.in
     DeletePromotionUseCase,
     ListPromotionsUseCase,
     CheckPromotionUseCase,
+    GetPromotionByIdUseCase
   ],
 
   exports: [PromotionEngine, PromotionRepository],

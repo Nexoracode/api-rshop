@@ -17,8 +17,8 @@ export interface OrderPreview {
     isFirstOrder: boolean;
     items: {
         productId: number;
+        variantId?: number;    // ✅ اضافه شد
         categoryId?: number;
-        variantId: number;
         quantity: number;
         unitPrice: number;
     }[];

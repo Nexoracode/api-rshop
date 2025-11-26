@@ -28,16 +28,28 @@ export class PromotionValidatorService extends PromotionValidator {
                     }
                     break;
 
-                case ConditionType.PRODUCT:
-                    if (
-                        condition.productIds?.length &&
-                        !order.items.some((i) =>
-                            condition.productIds!.includes(i.productId),
-                        )
-                    ) {
-                        return false;
-                    }
+                case ConditionType.PRODUCT: {
+                    if (!condition.products?.length) break;
+
+                    const match = condition.products.some((rule) => {
+                        return order.items.some((item) => {
+                            if (item.productId !== rule.productId) return false;
+
+                            if (!rule.variantIds?.length) {
+                                // فقط محصول مهم است، هر واریانتی
+                                return true;
+                            }
+
+                            // واریانت مشخص شده
+                            if (!item.variantId) return false;
+                            return rule.variantIds.includes(item.variantId);
+                        });
+                    });
+
+                    if (!match) return false;
                     break;
+                }
+
 
                 case ConditionType.CATEGORY:
                     if (
@@ -51,17 +63,6 @@ export class PromotionValidatorService extends PromotionValidator {
                         return false;
                     }
                     break;
-
-                case ConditionType.VARIANT:   // 🟦 قسمت جدید که لازم داشتی
-                    if (condition.variantIds) {
-                        const orderVariantIds = order.items.map(i => i.variantId);
-                        const required = condition.variantIds;
-
-                        const match = required.some(v => orderVariantIds.includes(v));
-                        if (!match) return false;
-                    }
-                    break;
-
                 case ConditionType.MIN_ORDER_AMOUNT:
                     if (
                         typeof condition.minAmount === 'number' &&

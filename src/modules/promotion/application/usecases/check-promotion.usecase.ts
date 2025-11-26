@@ -19,7 +19,7 @@ export class CheckPromotionUseCase {
             items: dto.items.map((i) => ({
                 productId: i.productId,
                 categoryId: i.categoryId,
-                variantId: i.variantId,
+                variantId: i.variantId ?? undefined,
                 quantity: i.quantity,
                 unitPrice: i.unitPrice,
             })),

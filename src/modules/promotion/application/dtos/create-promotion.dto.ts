@@ -9,70 +9,96 @@ import {
     IsOptional,
     IsString,
     ValidateNested,
-    Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
 import { PromotionType } from '../../domain/enums/promotion-type.enum';
-import { ConditionType } from '../../domain/enums/confition-type.enum';
 import { ActionType } from '../../domain/enums/action-type.enum';
+import { ConditionType } from '../../domain/enums/confition-type.enum';
 
+// -----------------------------
+// ProductConditionDto
+// -----------------------------
+export class ProductConditionDto {
+    @ApiProperty({ name: 'product_id', example: 12 })
+    @IsInt()
+    productId: number;
+
+    @ApiPropertyOptional({
+        name: 'variant_ids',
+        example: [101, 102, 103],
+        description: 'Optional variant IDs for this product',
+    })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    variantIds?: number[];
+}
+
+// -----------------------------
+// CreatePromotionConditionDto
+// -----------------------------
 export class CreatePromotionConditionDto {
     @ApiProperty({ enum: ConditionType })
     @IsEnum(ConditionType)
     type: ConditionType;
 
-    @ApiProperty({ required: false })
+    @ApiPropertyOptional({ name: 'user_id', example: 5 })
     @IsOptional()
     @IsInt()
     userId?: number;
 
-    @ApiProperty({ type: [Number], required: false })
+    @ApiPropertyOptional({
+        type: [ProductConditionDto],
+        description: 'List of products and optional variant IDs',
+    })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true })
-    productIds?: number[];
+    @ValidateNested({ each: true })
+    @Type(() => ProductConditionDto)
+    products?: ProductConditionDto[];
 
-    @ApiProperty({ type: [Number], required: false })
+    @ApiPropertyOptional({
+        name: 'category_ids',
+        example: [1, 2, 3],
+        description: 'Filter by category IDs',
+    })
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
     categoryIds?: number[];
 
-    @IsOptional()
-    @IsArray()
-    @IsInt({ each: true })
-    @ApiPropertyOptional({
-        type: [Number],
-        description: "لیست Variant ID هایی که پروموشن باید روی آنها اعمال شود"
-    })
-    variantIds?: number[];
-
-
-    @ApiProperty({ required: false })
+    @ApiPropertyOptional({ name: 'min_amount', example: 200000 })
     @IsOptional()
     @IsNumber()
     minAmount?: number;
 }
 
+// -----------------------------
+// CreatePromotionActionDto
+// -----------------------------
 export class CreatePromotionActionDto {
     @ApiProperty({ enum: ActionType })
     @IsEnum(ActionType)
     type: ActionType;
 
-    @ApiProperty({ required: false })
+    @ApiPropertyOptional({ example: 15 })
     @IsOptional()
     @IsNumber()
     value?: number;
 
-    @ApiProperty({ required: false, type: Object })
+    @ApiPropertyOptional({
+        example: { maxUsagePerUser: 1 },
+    })
     @IsOptional()
     meta?: Record<string, any>;
 }
 
+// -----------------------------
+// CreatePromotionDto
+// -----------------------------
 export class CreatePromotionDto {
-    @ApiProperty({ example: '20% OFF for perfumes' })
+    @ApiProperty({ example: '15% off on selected variants' })
     @IsString()
     @IsNotEmpty()
     name: string;
@@ -81,37 +107,42 @@ export class CreatePromotionDto {
     @IsEnum(PromotionType)
     type: PromotionType;
 
-    @ApiProperty({ required: false, example: 'OFF20' })
+    @ApiPropertyOptional({ example: 'WINTER15' })
     @IsOptional()
     @IsString()
     code?: string;
 
-    @ApiProperty({ example: '2025-01-01 00:00:00' })
+    @ApiProperty({ name: 'starts_at', example: '2025-01-01T00:00:00.000Z' })
     @IsDateString()
     startsAt: string;
 
-    @ApiProperty({ example: '2025-12-31 23:59:59' })
+    @ApiProperty({ name: 'ends_at', example: '2025-12-31T23:59:59.000Z' })
     @IsDateString()
     endsAt: string;
 
-    @ApiProperty({ required: false, example: 100 })
+    @ApiPropertyOptional({ name: 'usage_limit', example: 100 })
     @IsOptional()
     @IsInt()
-    @Min(0)
     usageLimit?: number;
 
-    @ApiProperty({ required: false, default: true })
+    @ApiPropertyOptional({ name: 'is_active', example: true })
     @IsOptional()
     @IsBoolean()
     isActive?: boolean;
 
-    @ApiProperty({ type: [CreatePromotionConditionDto] })
+    @ApiProperty({
+        type: [CreatePromotionConditionDto],
+        description: 'Conditions for applying this promotion',
+    })
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => CreatePromotionConditionDto)
     conditions: CreatePromotionConditionDto[];
 
-    @ApiProperty({ type: [CreatePromotionActionDto] })
+    @ApiProperty({
+        type: [CreatePromotionActionDto],
+        description: 'Actions this promotion performs (discount, free shipping, etc)',
+    })
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => CreatePromotionActionDto)

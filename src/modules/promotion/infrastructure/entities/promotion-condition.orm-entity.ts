@@ -23,15 +23,24 @@ export class PromotionConditionOrmEntity {
     @Column({ name: 'user_id', type: 'int', nullable: true })
     userId: number | null;
 
-    @Column({ name: 'product_ids', type: 'json', nullable: true })
-    productIds: number[] | null;
+    // ✅ ساختار جدید products: [{ productId, variantIds? }, ...]
+    @Column({ name: 'products', type: 'json', nullable: true })
+    products:
+        | {
+            productId: number;
+            variantIds?: number[];
+        }[]
+        | null;
 
     @Column({ name: 'category_ids', type: 'json', nullable: true })
     categoryIds: number[] | null;
 
-    @Column({ name: 'variant_ids', type: 'json', nullable: true })
-    variantIds: number[] | null;
-
-    @Column({ name: 'min_amount', type: 'decimal', precision: 15, scale: 2, nullable: true })
-    minAmount: number | null;
+    @Column({
+        name: 'min_amount',
+        type: 'decimal',
+        precision: 15,
+        scale: 2,
+        nullable: true,
+    })
+    minAmount: string | null;
 }

@@ -1,58 +1,70 @@
 import {
     IsArray,
     IsInt,
-    IsNotEmpty,
     IsNumber,
     IsOptional,
     IsString,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+// -----------------------------
+// CheckPromotionItemDto
+// -----------------------------
 export class CheckPromotionItemDto {
     @ApiProperty({ example: 12 })
     @IsInt()
     productId: number;
 
-    @ApiProperty({ required: false, example: 5 })
+    @ApiPropertyOptional({ example: 101 })
+    @IsOptional()
+    @IsInt()
+    variantId?: number;
+
+    @ApiPropertyOptional({ example: 3 })
     @IsOptional()
     @IsInt()
     categoryId?: number;
-
-    @ApiProperty()
-    variantId: number;
 
     @ApiProperty({ example: 2 })
     @IsInt()
     quantity: number;
 
-    @ApiProperty({ example: 180000 })
+    @ApiProperty({ example: 150000 })
     @IsNumber()
     unitPrice: number;
 }
 
+// -----------------------------
+// CheckPromotionDto
+// -----------------------------
 export class CheckPromotionDto {
-    @ApiProperty({ example: 42 })
+    @ApiProperty({ example: 1 })
     @IsInt()
     userId: number;
 
-    @ApiProperty({ required: false, example: 'OFF20' })
+    @ApiPropertyOptional({
+        example: 'WINTER15',
+        description: 'If provided, only this code will be validated',
+    })
     @IsOptional()
     @IsString()
     code?: string;
 
-    @ApiProperty({ type: [CheckPromotionItemDto] })
+    @ApiProperty({
+        type: [CheckPromotionItemDto],
+        description: 'Items inside the order',
+    })
     @IsArray()
     items: CheckPromotionItemDto[];
 
-    @ApiProperty({ example: 350000 })
+    @ApiProperty({ example: 450000 })
     @IsNumber()
     subtotal: number;
 
-    @ApiProperty({ example: 30000 })
+    @IsOptional()
     @IsNumber()
     shippingCost: number;
 
-    @ApiProperty({ required: false, example: true })
     @IsOptional()
     isFirstOrder?: boolean;
 }
