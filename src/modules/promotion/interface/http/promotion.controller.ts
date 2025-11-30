@@ -14,6 +14,7 @@ export class PromotionController {
     @ApiResponse({ status: 200, description: 'Promotion applied successfully' })
     @ApiResponse({ status: 404, description: 'Promotion not found' })
     async check(@Body() dto: CheckPromotionDto) {
-        return this.checkPromotionUseCase.execute(dto);
+        const payload = { ...dto, isFirstOrder: dto.isFirstOrder ?? false };
+        return this.checkPromotionUseCase.execute(payload);
     }
 }

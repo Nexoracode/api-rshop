@@ -14,7 +14,7 @@ export class ListPromotionsUseCase {
         const { items, meta, links } = await this.repo.paginated(query);
 
         return {
-            items: items.map(PromotionMapper.toResponseDto),
+            items: items.map(PromotionMapper.toDetailResponseDto),
             meta,
             links,
         };

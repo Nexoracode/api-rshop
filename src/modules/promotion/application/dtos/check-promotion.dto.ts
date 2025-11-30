@@ -62,9 +62,5 @@ export class CheckPromotionDto {
     subtotal: number;
 
     @IsOptional()
-    @IsNumber()
-    shippingCost: number;
-
-    @IsOptional()
     isFirstOrder?: boolean;
 }

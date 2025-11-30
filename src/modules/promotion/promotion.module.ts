@@ -32,6 +32,9 @@ import { IppanelSmsProvider } from './infrastructure/sms/ippanel-sms.provider';
 import { SmsSenderService } from './domain/services/sms-sender.service';
 import { PromotionRepository } from './domain/interfaces/promotion-repository.interface';
 import { GetPromotionByIdUseCase } from './application/usecases/get-promotion-by-id.usecase';
+import { Product } from '../product/entities/product.entity';
+import { User } from '../user/entities/user.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { GetPromotionByIdUseCase } from './application/usecases/get-promotion-by
       PromotionOrmEntity,
       PromotionConditionOrmEntity,
       PromotionActionOrmEntity,
+      Product,
+      User,
+      Category,
     ]),
   ],
   controllers: [
@@ -79,6 +85,6 @@ import { GetPromotionByIdUseCase } from './application/usecases/get-promotion-by
     GetPromotionByIdUseCase
   ],
 
-  exports: [PromotionEngine, PromotionRepository],
+  exports: [PromotionEngine, PromotionRepository, CheckPromotionUseCase],
 })
 export class PromotionModule { }

@@ -31,8 +31,6 @@ export class InvoiceService {
             subtotal: order.subtotal,
             discountTotal: order.discountTotal,
             total: order.total,
-            couponCode: order.couponCode,
-            couponDiscountAmount: order.couponDiscountAmount,
             totalPayable: order.total,
             status,
         });

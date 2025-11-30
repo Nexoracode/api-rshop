@@ -53,11 +53,23 @@ export class Order {
     paymentGatewayRef?: string | null;
 
 
-    @Column({ nullable: true })
-    couponCode?: string;
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    promotionDiscountAmount: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-    couponDiscountAmount?: number;
+    @Column({ type: 'json', nullable: true })
+    promotionDetails?: {
+        promotionId: number;
+        name: string;
+        type: string;
+        amount: number;
+    }[];
+
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    shippingCost: number;
+
+    @Column({ type: 'varchar', length: 191, nullable: true })
+    promotionCode?: string | null;
+
 
     @Column({ type: "varchar", nullable: true })
     manualDiscountType?: ManualDiscountType;

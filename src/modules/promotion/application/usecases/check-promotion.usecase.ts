@@ -10,12 +10,11 @@ export class CheckPromotionUseCase {
         private readonly engine: PromotionEngine,
     ) { }
 
-    async execute(dto: CheckPromotionDto) {
+    async execute(dto: CheckPromotionDto & { isFirstOrder: boolean }) {
         const order: OrderPreview = {
             userId: dto.userId,
-            isFirstOrder: dto.isFirstOrder ?? false,
             subtotal: dto.subtotal,
-            shippingCost: dto.shippingCost,
+            isFirstOrder: dto.isFirstOrder,
             items: dto.items.map((i) => ({
                 productId: i.productId,
                 categoryId: i.categoryId,
@@ -26,6 +25,7 @@ export class CheckPromotionUseCase {
         };
 
         let promotions;
+
         if (dto.code) {
             const promo = await this.repo.findActiveByCode(dto.code);
             if (!promo) {
@@ -37,17 +37,11 @@ export class CheckPromotionUseCase {
         }
 
         const result = await this.engine.applyPromotions(order, promotions);
-        console.log(result);
-
-        const finalShipping = result.freeShipping ? 0 : dto.shippingCost;
-        const finalTotal = dto.subtotal - result.discount + finalShipping;
 
         return {
             discount: result.discount,
             freeShipping: result.freeShipping,
-            finalShipping,
-            finalTotal,
-            appliedPromotionIds: result.appliedPromotions.map((p) => p.id),
+            appliedPromotions: result.appliedPromotions,   // 🔥 ساختار کامل و صحیح
         };
     }
 }

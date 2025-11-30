@@ -11,11 +11,13 @@ import { OrderItem } from './entities/order-item.entity';
 import { CouponService } from '../coupon/coupon.service';
 import { CouponModule } from '../coupon/coupon.module';
 import { Payment } from '../payment/entities/payment.entity';
+import { CheckPromotionUseCase } from '../promotion/application/usecases/check-promotion.usecase';
+import { PromotionModule } from '../promotion/promotion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem, Card, CardItem, Product, VariantProduct, Payment]), CouponModule],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem, Card, CardItem, Product, VariantProduct, Payment]), CouponModule, PromotionModule],
   controllers: [OrderController],
-  providers: [OrderService, CouponService],
+  providers: [OrderService, CouponService, CheckPromotionUseCase],
   exports: [OrderService],
 })
 export class OrderModule { }

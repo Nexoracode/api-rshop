@@ -1,24 +1,27 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString } from 'class-validator';
 
-
 export class CreateOrderFromCardDto {
-
-    @ApiProperty({ example: "لطفا بسته رو بین ساعات 6-8 ارسال کنین. ممنون", required: false })
-    @IsOptional()
-    @IsString()
-    note?: string;
-
     @ApiProperty({
-        example: 2,
-        description: "آدرس کاربر (Address ID)",
+        example: 12,
+        description: 'شناسه آدرس انتخاب شده برای سفارش',
     })
     @IsInt()
     addressId: number;
 
-    @ApiProperty({ example: "WELCOME10", required: false })
+    @ApiPropertyOptional({
+        example: 'سفارش برای هدیه پیچیده شود',
+        description: 'توضیحات اختیاری سفارش',
+    })
     @IsOptional()
     @IsString()
-    couponCode?: string;
+    note?: string;
 
+    @ApiPropertyOptional({
+        example: 'WINTER15',
+        description: 'کد تخفیف مربوط به پروموشن (اختیاری)',
+    })
+    @IsOptional()
+    @IsString()
+    promotionCode?: string;
 }

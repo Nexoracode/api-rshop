@@ -23,6 +23,7 @@ import { RequestUser } from "src/common/interfaces/request-user.interface";
 import { Address } from "../address/entities/address.entity";
 import { Payment } from "../payment/entities/payment.entity";
 import { ManualDiscountType } from "src/common/enums/discount.enum";
+import { CheckPromotionUseCase } from "../promotion/application/usecases/check-promotion.usecase";
 
 const relations = [
     "user",
@@ -45,7 +46,8 @@ export class OrderService {
         private readonly orderRepo: Repository<Order>,
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
-        private readonly couponService: CouponService
+        private readonly couponService: CouponService,
+        private readonly promotionCheck: CheckPromotionUseCase
     ) { }
 
     // 🧾 دریافت تمام سفارش‌ها (ادمین)
@@ -194,6 +196,11 @@ export class OrderService {
     }
 
     // 🛒 ساخت سفارش از سبد خرید
+    private async calculateShippingCost(user: User, address: Address, items: CardItem[]) {
+        return 35000; // اینجا خودت منطق واقعی را پیاده کن
+    }
+
+    // ساخت سفارش از کارت
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
@@ -217,7 +224,7 @@ export class OrderService {
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
 
-            // ✅ بررسی سفارش باز قبلی (پرداخت نشده)
+            // سفارش باز قبلی
             let existingOrder = await orderRepo.findOne({
                 where: {
                     user: { id: user.id },
@@ -230,36 +237,70 @@ export class OrderService {
                 relations: ['user', 'address', "items"],
             });
 
-            let couponCode: string | undefined;
-            let couponDiscountAmount = 0;
-            let totalPayable = card.total;
+            // محاسبه هزینه ارسال
+            const shippingCost = await this.calculateShippingCost(user, address, card.items);
 
-            if (dto.couponCode) {
-                try {
-                    const applyResult = await this.couponService.apply({
-                        code: dto.couponCode,
-                        userId: user.id,
-                        totalAmount: card.total,
-                    });
-                    couponCode = applyResult.couponCode;
-                    couponDiscountAmount = applyResult.discount;
-                    totalPayable = applyResult.payable;
-                } catch (err) {
-                    throw new BadRequestException(err.message || "کد تخفیف معتبر نیست.");
-                }
-            }
+            const previousOrders = await orderRepo.count({
+                where: { user: { id: user.id } }
+            });
 
-            // 🧩 اگر سفارش باز وجود داشت → آپدیتش کن
+            const isFirstOrder = previousOrders === 0;
+
+
+            // چک پروموشن‌ها
+            const promotionResult = await this.promotionCheck.execute({
+                userId: user.id,
+                code: dto.promotionCode,
+                isFirstOrder,
+                subtotal: card.subtotal,
+                items: card.items.map(ci => ({
+                    productId: ci.product.id,
+                    variantId: ci.variant?.id,
+                    categoryId: ci.product.categoryId,
+                    quantity: ci.quantity,
+                    unitPrice: ci.unitPrice,
+                })),
+            });
+
+            // لیست جزئیات پروموشن‌ها
+            const promotionDetails = promotionResult.appliedPromotions?.map(ap => ({
+                promotionId: ap.promotion.id!,
+                name: ap.promotion.name,
+                type: ap.promotion.type,
+                amount: ap.discountAmount,
+            })) ?? [];
+
+
+            const promotionDiscountAmount = promotionDetails.reduce((a, b) => a + b.amount, 0);
+
+            // فینال‌سازی حمل‌ونقل
+            const finalShippingCost = promotionResult.freeShipping ? 0 : shippingCost;
+
+            // تخفیف محصول (از کارت)
+            const productDiscount = card.discountTotal;
+
+            // تخفیف نهایی
+            const discountTotal =
+                productDiscount +
+                promotionDiscountAmount;
+
+            const finalTotal =
+                card.subtotal -
+                discountTotal +
+                finalShippingCost;
+
+            // اگر سفارش باز هست → آپدیت کن
             if (existingOrder) {
                 existingOrder.subtotal = card.subtotal;
-                existingOrder.discountTotal = card.discountTotal;
-                existingOrder.total = totalPayable;
-                existingOrder.couponCode = couponCode;
-                existingOrder.couponDiscountAmount = couponDiscountAmount;
+                existingOrder.discountTotal = discountTotal;
+                existingOrder.total = finalTotal;
+                existingOrder.promotionCode = dto.promotionCode ?? null;
+                existingOrder.promotionDiscountAmount = promotionDiscountAmount;
+                existingOrder.promotionDetails = promotionDetails;
+                existingOrder.shippingCost = finalShippingCost;
                 existingOrder.note = dto.note;
                 existingOrder.address = address;
 
-                // حذف آیتم‌های قبلی و جایگزینی با آیتم‌های فعلی کارت
                 await orderItemRepo.delete({ order: { id: existingOrder.id } });
                 for (const ci of card.items) {
                     const item = orderItemRepo.create({
@@ -277,17 +318,21 @@ export class OrderService {
                 return OrderMapperNew.toDetail(existingOrder);
             }
 
-            // 🆕 اگر سفارش باز وجود نداشت → سفارش جدید بساز
+            // سفارش جدید
             const newOrder = orderRepo.create({
                 user,
                 address,
                 status: OrderStatus.AWAITING_PAYMENT,
                 subtotal: card.subtotal,
-                discountTotal: card.discountTotal,
+                discountTotal,
+                total: finalTotal,
                 note: dto.note,
-                total: totalPayable,
-                couponCode,
-                couponDiscountAmount,
+
+                promotionCode: dto.promotionCode ?? null,
+                promotionDiscountAmount,
+                promotionDetails,
+
+                shippingCost: finalShippingCost,
             });
 
             await orderRepo.save(newOrder);

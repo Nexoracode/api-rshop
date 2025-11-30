@@ -14,14 +14,14 @@ export abstract class PromotionRepository {
 // یک نوع ساده برای preview سفارش (برای check promo)
 export interface OrderPreview {
     userId: number;
-    isFirstOrder: boolean;
+    isFirstOrder: boolean;   // 🔥 باید وجود داشته باشد
+    subtotal: number;
     items: {
         productId: number;
-        variantId?: number;    // ✅ اضافه شد
+        variantId?: number;
         categoryId?: number;
         quantity: number;
         unitPrice: number;
     }[];
-    subtotal: number;
-    shippingCost: number;
 }
+

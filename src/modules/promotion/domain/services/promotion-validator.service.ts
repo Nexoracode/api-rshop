@@ -72,12 +72,6 @@ export class PromotionValidatorService extends PromotionValidator {
                     }
                     break;
 
-                case ConditionType.FIRST_ORDER:
-                    if (!order.isFirstOrder) {
-                        return false;
-                    }
-                    break;
-
                 default:
                     break;
             }

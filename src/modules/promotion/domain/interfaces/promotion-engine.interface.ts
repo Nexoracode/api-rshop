@@ -4,7 +4,10 @@ import { OrderPreview } from './promotion-repository.interface';
 export interface PromotionApplyResult {
     discount: number;
     freeShipping: boolean;
-    appliedPromotions: Promotion[];
+    appliedPromotions: {
+        promotion: Promotion,
+        discountAmount: number,
+    }[];
 }
 
 export abstract class PromotionEngine {
