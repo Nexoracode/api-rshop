@@ -3,6 +3,7 @@ import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrderFromCardDto {
     @ApiProperty({
+        name: 'address_id',
         example: 12,
         description: 'شناسه آدرس انتخاب شده برای سفارش',
     })
@@ -18,6 +19,7 @@ export class CreateOrderFromCardDto {
     note?: string;
 
     @ApiPropertyOptional({
+        name: 'promotion_code',
         example: 'WINTER15',
         description: 'کد تخفیف مربوط به پروموشن (اختیاری)',
     })
@@ -27,6 +29,7 @@ export class CreateOrderFromCardDto {
 
     // 🎁 Gift Wrapping Fields
     @ApiPropertyOptional({
+        name: 'is_gift',
         example: false,
         default: false,
         description: 'آیا این سفارش یک هدیه است؟',
@@ -36,6 +39,7 @@ export class CreateOrderFromCardDto {
     isGift?: boolean;
 
     @ApiPropertyOptional({
+        name: 'gift_wrapping_id',
         example: 1,
         description: 'شناسه بسته‌بندی کادو (در صورت انتخاب)',
     })
@@ -44,6 +48,7 @@ export class CreateOrderFromCardDto {
     giftWrappingId?: number;
 
     @ApiPropertyOptional({
+        name: 'gift_message',
         example: 'تولدت مبارک! امیدوارم این هدیه رو دوست داشته باشی',
         description: 'پیام هدیه (حداکثر 500 کاراکتر)',
     })

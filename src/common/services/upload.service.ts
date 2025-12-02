@@ -52,13 +52,14 @@ export class UploadService {
                 secure: false,
             });
             
-            // ✅ اضافه شد: GIFT_WRAPPING
+            // ✅ اضافه شد: PAYMENT_RECEIPT
             if (!filePath.startsWith(MediaType.CATEGORY) && 
                 !filePath.startsWith(MediaType.PRODUCT) && 
                 !filePath.startsWith(MediaType.USER) && 
                 !filePath.startsWith(MediaType.BRAND) && 
                 !filePath.startsWith(MediaType.HELPER) && 
-                !filePath.startsWith(MediaType.GIFT_WRAPPING)) {
+                !filePath.startsWith(MediaType.GIFT_WRAPPING) &&
+                !filePath.startsWith(MediaType.PAYMENT_RECEIPT)) {
                 throw new Error('دسترسی غیرمجاز به مسیر فایل');
             }
             

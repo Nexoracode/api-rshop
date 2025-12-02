@@ -9,15 +9,32 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentRecoveryService } from './payment-recovery.service';
 import { PromotionModule } from '../promotion/promotion.module';
 import { IncrementPromotionUsageUseCase } from '../promotion/application/usecases/increment-promotion-usage.usecase';
+import { CardToCardService } from './card-to-card.service';
+import { CardToCardController } from './card-to-card.controller';
+import { CardToCardAdminController } from './card-to-card-admin.controller';
+import { MediaModule } from '../media/media.module';
+import { OrderModule } from '../order/order.module';
+import { Order } from '../order/entities/order.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, PaymentLog]),
+    TypeOrmModule.forFeature([Payment, PaymentLog, Order]),
     ScheduleModule.forRoot(),
-    PromotionModule, // ✅ اضافه شد
+    PromotionModule,
+    MediaModule,     // ✅ برای آپلود رسید
+    OrderModule,     // ✅ برای confirmOrderPayment
   ],
-  controllers: [PaymentController],
-  providers: [PaymentService, InvoiceService, IncrementPromotionUsageUseCase],
-  exports: [PaymentService],
+  controllers: [
+    PaymentController,
+    CardToCardController,        // ✅ کاربر
+    CardToCardAdminController,   // ✅ ادمین
+  ],
+  providers: [
+    PaymentService,
+    InvoiceService,
+    IncrementPromotionUsageUseCase,
+    CardToCardService,             // ✅ سرویس کارت به کارت
+  ],
+  exports: [PaymentService, CardToCardService],
 })
 export class PaymentModule { }

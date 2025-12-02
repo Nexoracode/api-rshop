@@ -5,4 +5,5 @@ export enum MediaType {
     BRAND = 'brand',
     HELPER = 'helper',
     GIFT_WRAPPING = 'gift-wrapping',
+    PAYMENT_RECEIPT = 'payment-receipt',  // ✅ جدید
 }

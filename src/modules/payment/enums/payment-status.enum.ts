@@ -8,7 +8,6 @@ export enum PaymentStatus {
     REFUNDED = 'refunded', // بازگشت وجه
 }
 
-
 export enum PaymentLogStatus {
     INITIATED = 'initiated',
     VERIFIED = 'verified',
@@ -21,4 +20,18 @@ export enum PaymentGateway {
     ZARINPAL = 'zarinpal',
     IDPAY = 'idpay',
     MELAT = 'melat',
+}
+
+// ✅ جدید: نوع پرداخت
+export enum PaymentMethod {
+    ONLINE = 'online',              // پرداخت آنلاین (درگاه)
+    CARD_TO_CARD = 'card_to_card',  // کارت به کارت
+}
+
+// ✅ جدید: وضعیت پرداخت کارت به کارت
+export enum CardToCardStatus {
+    PENDING = 'pending',           // منتظر آپلود رسید
+    UPLOADED = 'uploaded',         // رسید آپلود شده، منتظر تایید
+    APPROVED = 'approved',         // تایید شده توسط ادمین
+    REJECTED = 'rejected',         // رد شده توسط ادمین
 }
