@@ -13,7 +13,10 @@ import { OrderStatus } from "../order/enums/order-status.enum";
 export class InvoiceService {
     constructor(@InjectDataSource() private readonly dataSource: DataSource) { }
 
-    // 🧾 ایجاد فاکتور از سفارش
+    /**
+     * ایجاد فاکتور از سفارش
+     * این متد اطلاعات کامل سفارش شامل تخفیف‌های Promotion را در Invoice ذخیره می‌کند
+     */
     async createFromOrder(manager: EntityManager, orderId: number, user: User) {
         const order = await manager.findOne(Order, {
             where: { id: orderId, user: { id: user.id } },
@@ -25,40 +28,103 @@ export class InvoiceService {
                 ? InvoiceStatus.PAID
                 : InvoiceStatus.PENDING;
 
+        // محاسبه مبلغ نهایی با در نظر گرفتن همه تخفیف‌ها
+        const totalPayable = order.total;
+
         const invoice = manager.create(Invoice, {
             order,
             user,
             subtotal: order.subtotal,
             discountTotal: order.discountTotal,
             total: order.total,
-            totalPayable: order.total,
+            totalPayable,
             status,
+            
+            // اطلاعات Promotion
+            promotionCode: order.promotionCode,
+            promotionDiscountAmount: order.promotionDiscountAmount,
+            promotionDetails: order.promotionDetails,
+            
+            // اطلاعات حمل و نقل
+            shippingCost: order.shippingCost,
         });
 
         const invoiceSave = await manager.save(Invoice, invoice);
         const returnedInvoice = await manager.findOne(Invoice, {
             where: { id: invoiceSave.id },
-            relations: ["order"],
+            relations: ["order", "order.items", "order.items.product", "order.address"],
         });
         return returnedInvoice;
     }
 
-    // 📄 مشاهده فاکتور کاربر
+    /**
+     * مشاهده فاکتورهای کاربر
+     */
     async getUserInvoices(user: User) {
         return this.dataSource.getRepository(Invoice).find({
             where: { user: { id: user.id } },
             order: { createdAt: "DESC" },
-            relations: ["order"],
+            relations: ["order", "order.address"],
         });
     }
 
-    // 🔍 جزئیات فاکتور
+    /**
+     * جزئیات فاکتور
+     */
     async getInvoice(user: User, id: number) {
         const invoice = await this.dataSource.getRepository(Invoice).findOne({
             where: { id, user: { id: user.id } },
-            relations: ["order"],
+            relations: [
+                "order", 
+                "order.items", 
+                "order.items.product",
+                "order.items.product.mediaPinned",
+                "order.items.variant",
+                "order.address"
+            ],
         });
         if (!invoice) throw new NotFoundException("فاکتور یافت نشد.");
         return invoice;
+    }
+
+    /**
+     * دریافت تمام فاکتورها (ادمین)
+     */
+    async getAllInvoices() {
+        return this.dataSource.getRepository(Invoice).find({
+            order: { createdAt: "DESC" },
+            relations: ["order", "user", "order.address"],
+        });
+    }
+
+    /**
+     * بروزرسانی وضعیت فاکتور بعد از پرداخت
+     */
+    async updateInvoiceStatus(
+        manager: EntityManager,
+        orderId: number,
+        status: InvoiceStatus,
+        paymentErrorMessage?: string,
+        paymentErrorCode?: string
+    ): Promise<Invoice | null> {
+        const invoice = await manager.findOne(Invoice, {
+            where: { order: { id: orderId } },
+        });
+
+        if (!invoice) {
+            return null;
+        }
+
+        invoice.status = status;
+        
+        if (paymentErrorMessage) {
+            invoice.paymentErrorMessage = paymentErrorMessage;
+        }
+        
+        if (paymentErrorCode) {
+            invoice.paymentErrorCode = paymentErrorCode;
+        }
+
+        return await manager.save(Invoice, invoice);
     }
 }

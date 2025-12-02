@@ -14,11 +14,8 @@ import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PromotionType } from '../../domain/enums/promotion-type.enum';
 import { ActionType } from '../../domain/enums/action-type.enum';
-import { ConditionType } from '../../domain/enums/confition-type.enum';
+import { ConditionType } from '../../domain/enums/condition-type.enum';
 
-// -----------------------------
-// ProductConditionDto
-// -----------------------------
 export class ProductConditionDto {
     @ApiProperty({ name: 'product_id', example: 12 })
     @IsInt()
@@ -35,9 +32,6 @@ export class ProductConditionDto {
     variantIds?: number[];
 }
 
-// -----------------------------
-// CreatePromotionConditionDto
-// -----------------------------
 export class CreatePromotionConditionDto {
     @ApiProperty({ enum: ConditionType })
     @IsEnum(ConditionType)
@@ -74,9 +68,6 @@ export class CreatePromotionConditionDto {
     minAmount?: number;
 }
 
-// -----------------------------
-// CreatePromotionActionDto
-// -----------------------------
 export class CreatePromotionActionDto {
     @ApiProperty({ enum: ActionType })
     @IsEnum(ActionType)
@@ -94,9 +85,6 @@ export class CreatePromotionActionDto {
     meta?: Record<string, any>;
 }
 
-// -----------------------------
-// CreatePromotionDto
-// -----------------------------
 export class CreatePromotionDto {
     @ApiProperty({ example: '15% off on selected variants' })
     @IsString()

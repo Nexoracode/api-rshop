@@ -16,7 +16,6 @@ export class Invoice {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // 🧾 ارتباط با سفارش
     @ManyToOne(() => Order, (order) => order.invoices, { onDelete: "CASCADE" })
     @JoinColumn({ name: "order_id" })
     order: Order;
@@ -24,7 +23,6 @@ export class Invoice {
     @Column()
     orderId: number;
 
-    // 👤 ارتباط با کاربر
     @ManyToOne(() => User, (user) => user.invoices, { onDelete: "CASCADE" })
     @JoinColumn({ name: "user_id" })
     user: User;
@@ -32,29 +30,39 @@ export class Invoice {
     @Column()
     userId: number;
 
-    // 💰 جمع مبلغ‌ها
+    // 💰 مبالغ
     @Column({ type: 'bigint' })
     subtotal: number;
-
 
     @Column({ type: 'bigint', default: 0 })
     discountTotal: number;
 
-
     @Column({ type: 'bigint' })
     total: number;
 
-    // 🎟 فیلدهای مرتبط با کوپن
-    @Column({ nullable: true })
-    couponCode?: string;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-    couponDiscountAmount?: number;
-
     @Column({ type: "bigint" })
-    totalPayable?: number;
+    totalPayable: number;
 
-    // 💳 وضعیت پرداخت (پرداخت‌شده / در انتظار / لغو)
+    // 🎁 فیلدهای مرتبط با Promotion (جدید)
+    @Column({ type: 'varchar', length: 191, nullable: true })
+    promotionCode?: string | null;
+
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    promotionDiscountAmount: number;
+
+    @Column({ type: 'json', nullable: true })
+    promotionDetails?: {
+        promotionId: number;
+        name: string;
+        type: string;
+        amount: number;
+    }[];
+
+    // 🚚 هزینه حمل و نقل
+    @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+    shippingCost: number;
+
+    // 💳 وضعیت پرداخت
     @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.PENDING })
     status: InvoiceStatus;
 

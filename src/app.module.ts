@@ -23,7 +23,6 @@ import { OrderModule } from './modules/order/order.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { ProductAttributeValueModule } from './modules/product-attribute-value/product-attribute-value.module';
 import { CatalogModule } from './modules/catalogs/catalog.module';
-import { CouponModule } from './modules/coupon/coupon.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { PaymentLogModule } from './modules/payment/payment-log.module';
 import { CatalogImportService } from './modules/catalogs/catalog-import.service';
@@ -60,7 +59,6 @@ import { DocsModule } from './docs/docs.module';
     OrderModule,
     InvoiceModule,
     ProductAttributeValueModule,
-    CouponModule,
     PaymentModule,
     PaymentLogModule,
     ProfileModule,
@@ -76,4 +74,5 @@ import { DocsModule } from './docs/docs.module';
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
 })
+
 export class AppModule { }

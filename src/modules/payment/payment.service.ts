@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { Request } from "express";
@@ -26,6 +27,8 @@ import { PaymentLog } from "./entities/payment-logs.entity";
 import { PaymentResponseMapper } from "./mappers/payment-response.mapper";
 // ✅ اضافه: refId هِلپر
 import { getRefId } from "./helpers/zarinpal.helper";
+// ✅ اضافه: Promotion UseCase
+import { IncrementPromotionUsageUseCase } from "../promotion/application/usecases/increment-promotion-usage.usecase";
 
 // ⚠️ یکدست: address هم به relations افزوده شد تا دیتای کامل باشد
 const relations = [
@@ -40,16 +43,21 @@ const relations = [
   'items.variant.attributes.value'
 ];
 
+const sandBox = process.env.production ? false : true;
+
 const zarinpal = require("zarinpal-checkout").create(
   process.env.ZARINPAL_MERCHANT_ID,
-  true
+  sandBox
 );
 
 @Injectable()
 export class PaymentService {
+  private readonly logger = new Logger(PaymentService.name);
+
   constructor(
     private readonly dataSource: DataSource,
     private readonly invoiceService: InvoiceService,
+    private readonly incrementPromotionUsage: IncrementPromotionUsageUseCase,
   ) { }
 
   // ────────────────────────────────────────────────
@@ -100,6 +108,7 @@ export class PaymentService {
           Mobile: order.user?.phone ?? undefined,
         });
       } catch (e: any) {
+        this.logger.error(`Zarinpal request failed for order ${orderId}`, e);
         await paymentLogRepo.save({
           order,
           user: order.user,
@@ -114,6 +123,7 @@ export class PaymentService {
       }
 
       if (requestResult.status !== 100) {
+        this.logger.warn(`Zarinpal request rejected with status ${requestResult.status} for order ${orderId}`);
         await paymentLogRepo.save({
           order,
           user: order.user,
@@ -130,7 +140,6 @@ export class PaymentService {
         );
       }
 
-      // ⬇️ مستقیم روی IN_PROGRESS ذخیره می‌کنیم؛ ستِ مجدد حذف شد
       await paymentRepo.save({
         user: order.user,
         order,
@@ -155,7 +164,8 @@ export class PaymentService {
         payload: requestResult,
       });
 
-      // ✅ خروجی از طریق Mapper (شکل خروجی دقیقاً مثل قبل نگه داشته شده)
+      this.logger.log(`Payment request created for order ${orderId}, authority: ${requestResult.authority}`);
+
       return PaymentResponseMapper.createPayment(order, requestResult.url, requestResult.authority);
     });
   }
@@ -179,7 +189,10 @@ export class PaymentService {
         where: { authority },
         relations: ['order', 'user'],
       });
-      if (!payment) throw new NotFoundException('تراکنش یافت نشد.');
+      if (!payment) {
+        this.logger.warn(`Payment not found for authority: ${authority}`);
+        throw new NotFoundException('تراکنش یافت نشد.');
+      }
 
       const order = await orderRepo.findOne({
         where: { id: payment.order.id },
@@ -188,6 +201,7 @@ export class PaymentService {
       if (!order) throw new NotFoundException('سفارش یافت نشد.');
 
       if (payment.status === PaymentStatus.SUCCESS) {
+        this.logger.debug(`Payment already verified for authority: ${authority}`);
         return PaymentResponseMapper.alreadyVerified(payment.refId ?? null);
       }
 
@@ -220,6 +234,7 @@ export class PaymentService {
       });
 
       if (status !== 'OK') {
+        this.logger.warn(`Payment cancelled by user for order ${order.id}`);
         order.status = OrderStatus.PAYMENT_FAILED;
         await orderRepo.save(order);
 
@@ -253,6 +268,8 @@ export class PaymentService {
         });
 
         if (verification.status === 100) {
+          this.logger.log(`Payment verified successfully for order ${order.id}, refId: ${getRefId(verification)}`);
+
           order.status = OrderStatus.PREPARING;
           payment.status = PaymentStatus.SUCCESS;
           payment.refId = getRefId(verification);
@@ -283,6 +300,18 @@ export class PaymentService {
             payload: verification,
           });
 
+          // ✅ افزایش شمارنده استفاده از پروموشن‌ها
+          if (order.promotionDetails && order.promotionDetails.length > 0) {
+            const promotionIds = order.promotionDetails.map(p => p.promotionId);
+            try {
+              await this.incrementPromotionUsage.executeMultiple(promotionIds);
+              this.logger.log(`Incremented usage count for ${promotionIds.length} promotion(s) in order ${order.id}`);
+            } catch (error) {
+              this.logger.error(`Failed to increment promotion usage for order ${order.id}`, error.stack);
+              // ادامه می‌دهیم چون پرداخت موفق بوده
+            }
+          }
+
           try {
             const invoice = await this.invoiceService.createFromOrder(
               manager,
@@ -296,6 +325,7 @@ export class PaymentService {
               invoice!.createdAt
             );
           } catch (e) {
+            this.logger.error(`Failed to create invoice for order ${order.id}`, e);
             payment.status = PaymentStatus.VERIFIED;
             payment.message = 'پرداخت تایید شد ولی صدور فاکتور با خطا مواجه شد.';
             await paymentRepo.save(payment);
@@ -316,9 +346,11 @@ export class PaymentService {
         }
 
         if (verification.status === 101) {
+          this.logger.debug(`Payment already verified (101) for authority: ${authority}`);
           return PaymentResponseMapper.alreadyVerified(verification ?? null);
         }
 
+        this.logger.warn(`Payment verification failed with status ${verification.status} for order ${order.id}`);
         order.status = OrderStatus.PAYMENT_FAILED;
         payment.status = PaymentStatus.FAILED;
         payment.message = `تراکنش با وضعیت ${verification.status} بازگشت داده شد.`;
@@ -337,6 +369,7 @@ export class PaymentService {
 
         return PaymentResponseMapper.failed(order.status);
       } catch (e) {
+        this.logger.error(`Zarinpal verification error for order ${order.id}`, e);
         payment.status = PaymentStatus.FAILED;
         payment.message = 'خطا در ارتباط با درگاه پرداخت.';
         await paymentRepo.save(payment);

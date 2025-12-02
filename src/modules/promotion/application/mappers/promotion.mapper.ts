@@ -1,7 +1,5 @@
-// promotion/application/mappers/promotion.mapper.ts
-
 import { PromotionAction } from '../../domain/entities/promotion-action.entity';
-import { PromotionCondition } from '../../domain/entities/promotion-confition.entity';
+import { PromotionCondition } from '../../domain/entities/promotion-condition.entity';
 import { Promotion } from '../../domain/entities/promotion.entity';
 import { PromotionActionOrmEntity } from '../../infrastructure/entities/promotion-action.orm-entity';
 import { PromotionConditionOrmEntity } from '../../infrastructure/entities/promotion-condition.orm-entity';
@@ -111,7 +109,7 @@ export class PromotionMapper {
                 ce.id = c.id!;
                 ce.type = c.type;
                 ce.userId = c.userId ?? null;
-                ce.products = c.products ?? null;               // ✅
+                ce.products = c.products ?? null;
                 ce.categoryIds = c.categoryIds ?? null;
                 ce.minAmount =
                     typeof c.minAmount === 'number'

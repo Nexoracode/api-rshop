@@ -1,4 +1,4 @@
-import { ConditionType } from "../enums/confition-type.enum";
+import { ConditionType } from "../enums/condition-type.enum";
 
 export interface PromotionProductCondition {
     productId: number;
@@ -10,10 +10,7 @@ export class PromotionCondition {
     type: ConditionType;
 
     userId?: number;
-
-    // ✅ مدل جدید: product + variant ها در کنار هم
     products?: PromotionProductCondition[];
-
     categoryIds?: number[];
     minAmount?: number;
 

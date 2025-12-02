@@ -9,12 +9,13 @@ export abstract class PromotionRepository {
     abstract update(id: number, promotion: Promotion): Promise<Promotion>;
     abstract delete(id: number): Promise<void>;
     abstract paginated(query: PaginateQuery): Promise<any>;
+    abstract incrementUsageCount(id: number): Promise<void>;
 }
 
 // یک نوع ساده برای preview سفارش (برای check promo)
 export interface OrderPreview {
     userId: number;
-    isFirstOrder: boolean;   // 🔥 باید وجود داشته باشد
+    isFirstOrder: boolean;
     subtotal: number;
     items: {
         productId: number;
@@ -24,4 +25,3 @@ export interface OrderPreview {
         unitPrice: number;
     }[];
 }
-

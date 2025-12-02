@@ -5,7 +5,7 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PromotionOrmEntity } from './promotion.orm-entity';
-import { ConditionType } from '../../domain/enums/confition-type.enum';
+import { ConditionType } from '../../domain/enums/condition-type.enum';
 
 @Entity('promotion_conditions')
 export class PromotionConditionOrmEntity {
@@ -23,7 +23,6 @@ export class PromotionConditionOrmEntity {
     @Column({ name: 'user_id', type: 'int', nullable: true })
     userId: number | null;
 
-    // ✅ ساختار جدید products: [{ productId, variantIds? }, ...]
     @Column({ name: 'products', type: 'json', nullable: true })
     products:
         | {

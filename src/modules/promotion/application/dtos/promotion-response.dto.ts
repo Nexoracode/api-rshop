@@ -1,9 +1,7 @@
-// src/modules/promotion/application/dtos/promotion-response.dto.ts
-
 import { ApiProperty } from '@nestjs/swagger';
 import { PromotionType } from '../../domain/enums/promotion-type.enum';
 import { ActionType } from '../../domain/enums/action-type.enum';
-import { ConditionType } from '../../domain/enums/confition-type.enum';
+import { ConditionType } from '../../domain/enums/condition-type.enum';
 
 export class PromotionResponseDto {
     @ApiProperty({ example: 1 })
@@ -27,8 +25,6 @@ export class PromotionResponseDto {
     @ApiProperty({ example: true })
     isActive: boolean;
 }
-
-// ✅ برای ادمین: خروجی دیتیل کامل
 
 export class PromotionConditionDetailDto {
     @ApiProperty({ enum: ConditionType })

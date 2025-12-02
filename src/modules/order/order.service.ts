@@ -13,7 +13,6 @@ import { CardItem } from "../card/entities/card-item.entity";
 import { User } from "../user/entities/user.entity";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { CreateOrderFromCardDto } from "./dto/create-from-card.dto";
-import { CouponService } from "../coupon/coupon.service";
 import { FilterOperator, paginate, PaginateQuery } from "nestjs-paginate";
 import { OrderStatus } from "./enums/order-status.enum";
 import { OrderMapper, OrderMapperNew } from "./mappers/order.mapper";
@@ -24,6 +23,8 @@ import { Address } from "../address/entities/address.entity";
 import { Payment } from "../payment/entities/payment.entity";
 import { ManualDiscountType } from "src/common/enums/discount.enum";
 import { CheckPromotionUseCase } from "../promotion/application/usecases/check-promotion.usecase";
+import { VariantProduct } from "../variant-product/entities/variant-product.entity";
+import { PromotionRepository } from "../promotion/domain/interfaces/promotion-repository.interface";
 
 const relations = [
     "user",
@@ -46,9 +47,67 @@ export class OrderService {
         private readonly orderRepo: Repository<Order>,
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
-        private readonly couponService: CouponService,
-        private readonly promotionCheck: CheckPromotionUseCase
+        private readonly promotionCheck: CheckPromotionUseCase,
+        private readonly promotionRepo: PromotionRepository,
     ) { }
+
+    /**
+     * کم کردن موجودی محصولات/واریانت‌ها
+     */
+    private async decreaseStock(manager: any, items: OrderItem[]): Promise<void> {
+        for (const item of items) {
+            if (item.variant) {
+                // کم کردن موجودی واریانت
+                const variant = await manager.findOne(VariantProduct, {
+                    where: { id: item.variant.id },
+                });
+
+                if (!variant) {
+                    throw new BadRequestException(
+                        `واریانت با شناسه ${item.variant.id} یافت نشد`
+                    );
+                }
+
+                if (variant.stock < item.quantity) {
+                    throw new BadRequestException(
+                        `موجودی واریانت ${variant.sku} کافی نیست. موجودی فعلی: ${variant.stock}`
+                    );
+                }
+
+                variant.stock -= item.quantity;
+                await manager.save(VariantProduct, variant);
+            } else if (item.product) {
+                // کم کردن موجودی محصول اصلی
+                const product = await manager.findOne(Product, {
+                    where: { id: item.product.id },
+                });
+
+                if (!product) {
+                    throw new BadRequestException(
+                        `محصول با شناسه ${item.product.id} یافت نشد`
+                    );
+                }
+
+                if (product.stock < item.quantity) {
+                    throw new BadRequestException(
+                        `موجودی محصول "${product.name}" کافی نیست. موجودی فعلی: ${product.stock}`
+                    );
+                }
+
+                product.stock -= item.quantity;
+                await manager.save(Product, product);
+            }
+        }
+    }
+
+    /**
+     * افزایش usage count پروموشن‌ها بعد از پرداخت موفق
+     */
+    private async incrementPromotionUsage(promotionIds: number[]): Promise<void> {
+        for (const id of promotionIds) {
+            await this.promotionRepo.incrementUsageCount(id);
+        }
+    }
 
     // 🧾 دریافت تمام سفارش‌ها (ادمین)
     async getAllOrders(query: PaginateQuery) {
@@ -197,10 +256,9 @@ export class OrderService {
 
     // 🛒 ساخت سفارش از سبد خرید
     private async calculateShippingCost(user: User, address: Address, items: CardItem[]) {
-        return 35000; // اینجا خودت منطق واقعی را پیاده کن
+        return 35000;
     }
 
-    // ساخت سفارش از کارت
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
@@ -224,8 +282,30 @@ export class OrderService {
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
 
-            // سفارش باز قبلی
-            let existingOrder = await orderRepo.findOne({
+            // بررسی موجودی قبل از ساخت سفارش
+            for (const ci of card.items) {
+                if (ci.variant) {
+                    const variant = await manager.findOne(VariantProduct, {
+                        where: { id: ci.variant.id },
+                    });
+                    if (!variant || variant.stock < ci.quantity) {
+                        throw new BadRequestException(
+                            `موجودی واریانت ${variant?.sku || ci.variant.id} کافی نیست`
+                        );
+                    }
+                } else {
+                    const product = await manager.findOne(Product, {
+                        where: { id: ci.product.id },
+                    });
+                    if (!product || product.stock < ci.quantity) {
+                        throw new BadRequestException(
+                            `موجودی محصول "${product?.name || ci.product.id}" کافی نیست`
+                        );
+                    }
+                }
+            }
+
+            const existingOrder = await orderRepo.findOne({
                 where: {
                     user: { id: user.id },
                     status: In([
@@ -237,7 +317,6 @@ export class OrderService {
                 relations: ['user', 'address', "items"],
             });
 
-            // محاسبه هزینه ارسال
             const shippingCost = await this.calculateShippingCost(user, address, card.items);
 
             const previousOrders = await orderRepo.count({
@@ -245,7 +324,6 @@ export class OrderService {
             });
 
             const isFirstOrder = previousOrders === 0;
-
 
             // چک پروموشن‌ها
             const promotionResult = await this.promotionCheck.execute({
@@ -262,7 +340,6 @@ export class OrderService {
                 })),
             });
 
-            // لیست جزئیات پروموشن‌ها
             const promotionDetails = promotionResult.appliedPromotions?.map(ap => ({
                 promotionId: ap.promotion.id!,
                 name: ap.promotion.name,
@@ -270,26 +347,12 @@ export class OrderService {
                 amount: ap.discountAmount,
             })) ?? [];
 
-
             const promotionDiscountAmount = promotionDetails.reduce((a, b) => a + b.amount, 0);
-
-            // فینال‌سازی حمل‌ونقل
             const finalShippingCost = promotionResult.freeShipping ? 0 : shippingCost;
-
-            // تخفیف محصول (از کارت)
             const productDiscount = card.discountTotal;
+            const discountTotal = productDiscount + promotionDiscountAmount;
+            const finalTotal = card.subtotal - discountTotal + finalShippingCost;
 
-            // تخفیف نهایی
-            const discountTotal =
-                productDiscount +
-                promotionDiscountAmount;
-
-            const finalTotal =
-                card.subtotal -
-                discountTotal +
-                finalShippingCost;
-
-            // اگر سفارش باز هست → آپدیت کن
             if (existingOrder) {
                 existingOrder.subtotal = card.subtotal;
                 existingOrder.discountTotal = discountTotal;
@@ -327,11 +390,9 @@ export class OrderService {
                 discountTotal,
                 total: finalTotal,
                 note: dto.note,
-
                 promotionCode: dto.promotionCode ?? null,
                 promotionDiscountAmount,
                 promotionDetails,
-
                 shippingCost: finalShippingCost,
             });
 
@@ -354,6 +415,42 @@ export class OrderService {
         });
     }
 
+    /**
+     * تایید نهایی سفارش و کم کردن موجودی بعد از پرداخت موفق
+     * این متد باید از Payment Service صدا زده بشه
+     */
+    async confirmOrderPayment(orderId: number): Promise<Order> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId },
+                relations: ['items', 'items.product', 'items.variant'],
+            });
+
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
+
+            if (order.status !== OrderStatus.AWAITING_PAYMENT &&
+                order.status !== OrderStatus.PAYMENT_CONFIRMATION_PENDING) {
+                throw new BadRequestException('وضعیت سفارش برای تایید پرداخت مناسب نیست');
+            }
+
+            // کم کردن موجودی
+            await this.decreaseStock(manager, order.items);
+
+            // افزایش usage count پروموشن‌ها
+            if (order.promotionDetails && order.promotionDetails.length > 0) {
+                const promotionIds = order.promotionDetails.map(p => p.promotionId);
+                await this.incrementPromotionUsage(promotionIds);
+            }
+
+            // تغییر وضعیت سفارش
+            order.status = OrderStatus.PREPARING;
+            await manager.save(Order, order);
+
+            return order;
+        });
+    }
 
     // 🧍 سفارش‌های کاربر
     async findAllByUser(userId: number) {
@@ -411,3 +508,4 @@ export class OrderService {
         });
     }
 }
+

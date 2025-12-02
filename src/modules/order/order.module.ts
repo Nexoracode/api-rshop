@@ -8,16 +8,24 @@ import { CardItem } from '../card/entities/card-item.entity';
 import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { OrderItem } from './entities/order-item.entity';
-import { CouponService } from '../coupon/coupon.service';
-import { CouponModule } from '../coupon/coupon.module';
 import { Payment } from '../payment/entities/payment.entity';
-import { CheckPromotionUseCase } from '../promotion/application/usecases/check-promotion.usecase';
 import { PromotionModule } from '../promotion/promotion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem, Card, CardItem, Product, VariantProduct, Payment]), CouponModule, PromotionModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      Card,
+      CardItem,
+      Product,
+      VariantProduct,
+      Payment
+    ]),
+    PromotionModule
+  ],
   controllers: [OrderController],
-  providers: [OrderService, CouponService, CheckPromotionUseCase],
+  providers: [OrderService],
   exports: [OrderService],
 })
 export class OrderModule { }
