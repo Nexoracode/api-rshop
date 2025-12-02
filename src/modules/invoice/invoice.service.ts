@@ -15,11 +15,12 @@ export class InvoiceService {
 
     /**
      * ایجاد فاکتور از سفارش
-     * این متد اطلاعات کامل سفارش شامل تخفیف‌های Promotion را در Invoice ذخیره می‌کند
+     * این متد اطلاعات کامل سفارش شامل تخفیف‌های Promotion و Gift Wrapping را در Invoice ذخیره می‌کند
      */
     async createFromOrder(manager: EntityManager, orderId: number, user: User) {
         const order = await manager.findOne(Order, {
             where: { id: orderId, user: { id: user.id } },
+            relations: ['giftWrapping'],
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
@@ -28,31 +29,36 @@ export class InvoiceService {
                 ? InvoiceStatus.PAID
                 : InvoiceStatus.PENDING;
 
-        // محاسبه مبلغ نهایی با در نظر گرفتن همه تخفیف‌ها
         const totalPayable = order.total;
 
         const invoice = manager.create(Invoice, {
-            order,
-            user,
-            subtotal: order.subtotal,
-            discountTotal: order.discountTotal,
-            total: order.total,
-            totalPayable,
+            orderId: order.id,
+            userId: user.id,
+            subtotal: Number(order.subtotal),
+            discountTotal: Number(order.discountTotal),
+            total: Number(order.total),
+            totalPayable: Number(totalPayable),
             status,
-            
+
             // اطلاعات Promotion
-            promotionCode: order.promotionCode,
-            promotionDiscountAmount: order.promotionDiscountAmount,
-            promotionDetails: order.promotionDetails,
-            
+            promotionCode: order.promotionCode || undefined,
+            promotionDiscountAmount: Number(order.promotionDiscountAmount || 0),
+            promotionDetails: order.promotionDetails || undefined,
+
             // اطلاعات حمل و نقل
-            shippingCost: order.shippingCost,
+            shippingCost: Number(order.shippingCost || 0),
+
+            // 🎁 اطلاعات Gift Wrapping
+            isGift: order.isGift || false,
+            giftWrappingId: order.giftWrappingId || undefined,
+            giftWrappingCost: Number(order.giftWrappingCost || 0),
+            giftMessage: order.giftMessage || undefined,
         });
 
         const invoiceSave = await manager.save(Invoice, invoice);
         const returnedInvoice = await manager.findOne(Invoice, {
             where: { id: invoiceSave.id },
-            relations: ["order", "order.items", "order.items.product", "order.address"],
+            relations: ["order", "order.items", "order.items.product", "order.address", "giftWrapping", "giftWrapping.image"],
         });
         return returnedInvoice;
     }
@@ -64,7 +70,7 @@ export class InvoiceService {
         return this.dataSource.getRepository(Invoice).find({
             where: { user: { id: user.id } },
             order: { createdAt: "DESC" },
-            relations: ["order", "order.address"],
+            relations: ["order", "order.address", "giftWrapping"],
         });
     }
 
@@ -75,12 +81,14 @@ export class InvoiceService {
         const invoice = await this.dataSource.getRepository(Invoice).findOne({
             where: { id, user: { id: user.id } },
             relations: [
-                "order", 
-                "order.items", 
+                "order",
+                "order.items",
                 "order.items.product",
                 "order.items.product.mediaPinned",
                 "order.items.variant",
-                "order.address"
+                "order.address",
+                "giftWrapping",
+                "giftWrapping.image"
             ],
         });
         if (!invoice) throw new NotFoundException("فاکتور یافت نشد.");
@@ -93,7 +101,7 @@ export class InvoiceService {
     async getAllInvoices() {
         return this.dataSource.getRepository(Invoice).find({
             order: { createdAt: "DESC" },
-            relations: ["order", "user", "order.address"],
+            relations: ["order", "user", "order.address", "giftWrapping"],
         });
     }
 
@@ -116,11 +124,11 @@ export class InvoiceService {
         }
 
         invoice.status = status;
-        
+
         if (paymentErrorMessage) {
             invoice.paymentErrorMessage = paymentErrorMessage;
         }
-        
+
         if (paymentErrorCode) {
             invoice.paymentErrorCode = paymentErrorCode;
         }

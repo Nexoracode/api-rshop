@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrderFromCardDto {
     @ApiProperty({
@@ -24,4 +24,30 @@ export class CreateOrderFromCardDto {
     @IsOptional()
     @IsString()
     promotionCode?: string;
+
+    // 🎁 Gift Wrapping Fields
+    @ApiPropertyOptional({
+        example: false,
+        default: false,
+        description: 'آیا این سفارش یک هدیه است؟',
+    })
+    @IsOptional()
+    @IsBoolean()
+    isGift?: boolean;
+
+    @ApiPropertyOptional({
+        example: 1,
+        description: 'شناسه بسته‌بندی کادو (در صورت انتخاب)',
+    })
+    @IsOptional()
+    @IsInt()
+    giftWrappingId?: number;
+
+    @ApiPropertyOptional({
+        example: 'تولدت مبارک! امیدوارم این هدیه رو دوست داشته باشی',
+        description: 'پیام هدیه (حداکثر 500 کاراکتر)',
+    })
+    @IsOptional()
+    @IsString()
+    giftMessage?: string;
 }

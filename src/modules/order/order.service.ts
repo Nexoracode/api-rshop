@@ -25,6 +25,8 @@ import { ManualDiscountType } from "src/common/enums/discount.enum";
 import { CheckPromotionUseCase } from "../promotion/application/usecases/check-promotion.usecase";
 import { VariantProduct } from "../variant-product/entities/variant-product.entity";
 import { PromotionRepository } from "../promotion/domain/interfaces/promotion-repository.interface";
+import { GiftWrapping } from "../gift-wrapping/entities/gift-wrapping.entity";
+import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.enum";
 
 const relations = [
     "user",
@@ -37,6 +39,8 @@ const relations = [
     "items.variant.attributes",
     "items.variant.attributes.attribute",
     "items.variant.attributes.value",
+    "giftWrapping",
+    "giftWrapping.image",
 ];
 
 @Injectable()
@@ -57,7 +61,6 @@ export class OrderService {
     private async decreaseStock(manager: any, items: OrderItem[]): Promise<void> {
         for (const item of items) {
             if (item.variant) {
-                // کم کردن موجودی واریانت
                 const variant = await manager.findOne(VariantProduct, {
                     where: { id: item.variant.id },
                 });
@@ -77,7 +80,6 @@ export class OrderService {
                 variant.stock -= item.quantity;
                 await manager.save(VariantProduct, variant);
             } else if (item.product) {
-                // کم کردن موجودی محصول اصلی
                 const product = await manager.findOne(Product, {
                     where: { id: item.product.id },
                 });
@@ -109,11 +111,44 @@ export class OrderService {
         }
     }
 
+    /**
+     * اعتبارسنجی و محاسبه هزینه Gift Wrapping
+     */
+    private async validateAndCalculateGiftWrapping(
+        manager: any,
+        giftWrappingId?: number,
+    ): Promise<{ giftWrapping: GiftWrapping | null; cost: number }> {
+        if (!giftWrappingId) {
+            return { giftWrapping: null, cost: 0 };
+        }
+
+        const giftWrapping = await manager.findOne(GiftWrapping, {
+            where: { id: giftWrappingId },
+        });
+
+        if (!giftWrapping) {
+            throw new NotFoundException(
+                `بسته‌بندی با شناسه ${giftWrappingId} یافت نشد`
+            );
+        }
+
+        if (giftWrapping.status !== GiftWrappingStatus.ACTIVE) {
+            throw new BadRequestException(
+                `بسته‌بندی "${giftWrapping.name}" غیرفعال است`
+            );
+        }
+
+        return {
+            giftWrapping,
+            cost: Number(giftWrapping.price),
+        };
+    }
+
     // 🧾 دریافت تمام سفارش‌ها (ادمین)
     async getAllOrders(query: PaginateQuery) {
         const orders = await paginate(query, this.orderRepo, {
             sortableColumns: ["id", "createdAt", "total"],
-            relations: ["user", "address", "items", "items.product", "items.product.mediaPinned"],
+            relations: ["user", "address", "items", "items.product", "items.product.mediaPinned", "giftWrapping"],
             defaultSortBy: [["id", "DESC"]],
             searchableColumns: [
                 "id",
@@ -124,12 +159,13 @@ export class OrderService {
             ],
             filterableColumns: {
                 status: [FilterOperator.EQ],
+                isGift: [FilterOperator.EQ],
                 "user.addresses.city": [FilterOperator.EQ],
                 createdAt: [FilterOperator.GTE, FilterOperator.LTE],
             },
         });
         return {
-            message: "محصولات با موفقیت دریافت شد.",
+            message: "سفارش‌ها با موفقیت دریافت شد.",
             data: {
                 items: orders.data.map((order) => OrderMapper.toAllResponse(order)),
                 meta: orders.meta,
@@ -282,7 +318,7 @@ export class OrderService {
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
 
-            // بررسی موجودی قبل از ساخت سفارش
+            // بررسی موجودی
             for (const ci of card.items) {
                 if (ci.variant) {
                     const variant = await manager.findOne(VariantProduct, {
@@ -304,6 +340,10 @@ export class OrderService {
                     }
                 }
             }
+
+            // 🎁 اعتبارسنجی و محاسبه Gift Wrapping
+            const { giftWrapping, cost: giftWrappingCost } =
+                await this.validateAndCalculateGiftWrapping(manager, dto.giftWrappingId);
 
             const existingOrder = await orderRepo.findOne({
                 where: {
@@ -351,7 +391,9 @@ export class OrderService {
             const finalShippingCost = promotionResult.freeShipping ? 0 : shippingCost;
             const productDiscount = card.discountTotal;
             const discountTotal = productDiscount + promotionDiscountAmount;
-            const finalTotal = card.subtotal - discountTotal + finalShippingCost;
+
+            // 🎁 محاسبه مبلغ نهایی با Gift Wrapping
+            const finalTotal = card.subtotal - discountTotal + finalShippingCost + giftWrappingCost;
 
             if (existingOrder) {
                 existingOrder.subtotal = card.subtotal;
@@ -363,6 +405,12 @@ export class OrderService {
                 existingOrder.shippingCost = finalShippingCost;
                 existingOrder.note = dto.note;
                 existingOrder.address = address;
+
+                // 🎁 Gift Wrapping
+                existingOrder.isGift = dto.isGift ?? false;
+                existingOrder.giftWrappingId = dto.giftWrappingId ?? null;
+                existingOrder.giftWrappingCost = giftWrappingCost;
+                existingOrder.giftMessage = dto.giftMessage ?? null;
 
                 await orderItemRepo.delete({ order: { id: existingOrder.id } });
                 for (const ci of card.items) {
@@ -394,6 +442,12 @@ export class OrderService {
                 promotionDiscountAmount,
                 promotionDetails,
                 shippingCost: finalShippingCost,
+
+                // 🎁 Gift Wrapping
+                isGift: dto.isGift ?? false,
+                giftWrappingId: dto.giftWrappingId ?? null,
+                giftWrappingCost,
+                giftMessage: dto.giftMessage ?? null,
             });
 
             await orderRepo.save(newOrder);
@@ -417,7 +471,6 @@ export class OrderService {
 
     /**
      * تایید نهایی سفارش و کم کردن موجودی بعد از پرداخت موفق
-     * این متد باید از Payment Service صدا زده بشه
      */
     async confirmOrderPayment(orderId: number): Promise<Order> {
         return runInTransaction(this.dataSource, async (manager) => {
@@ -435,17 +488,14 @@ export class OrderService {
                 throw new BadRequestException('وضعیت سفارش برای تایید پرداخت مناسب نیست');
             }
 
-            // کم کردن موجودی
             await this.decreaseStock(manager, order.items);
 
-            // افزایش usage count پروموشن‌ها
             if (order.promotionDetails && order.promotionDetails.length > 0) {
                 const promotionIds = order.promotionDetails.map(p => p.promotionId);
                 await this.incrementPromotionUsage(promotionIds);
             }
 
-            // تغییر وضعیت سفارش
-            order.status = OrderStatus.PREPARING;
+            order.status = OrderStatus.AWAITING_PAYMENT;
             await manager.save(Order, order);
 
             return order;
@@ -508,4 +558,3 @@ export class OrderService {
         });
     }
 }
-

@@ -10,6 +10,7 @@ import {
 import { Order } from "src/modules/order/entities/order.entity";
 import { User } from "src/modules/user/entities/user.entity";
 import { InvoiceStatus } from "../enums/invoice-status.enum";
+import { GiftWrapping } from "src/modules/gift-wrapping/entities/gift-wrapping.entity";
 
 @Entity("invoices")
 export class Invoice {
@@ -43,7 +44,14 @@ export class Invoice {
     @Column({ type: "bigint" })
     totalPayable: number;
 
-    // 🎁 فیلدهای مرتبط با Promotion (جدید)
+    // 🎟 فیلدهای مرتبط با کوپن (legacy)
+    @Column({ nullable: true })
+    couponCode?: string;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    couponDiscountAmount?: number;
+
+    // 🎁 فیلدهای مرتبط با Promotion
     @Column({ type: 'varchar', length: 191, nullable: true })
     promotionCode?: string | null;
 
@@ -61,6 +69,23 @@ export class Invoice {
     // 🚚 هزینه حمل و نقل
     @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
     shippingCost: number;
+
+    // 🎁 Gift Wrapping Fields
+    @ManyToOne(() => GiftWrapping, { eager: true, nullable: true })
+    @JoinColumn({ name: 'gift_wrapping_id' })
+    giftWrapping?: GiftWrapping;
+
+    @Column({ name: 'gift_wrapping_id', nullable: true })
+    giftWrappingId?: number;
+
+    @Column({ type: 'bigint', default: 0 })
+    giftWrappingCost: number;
+
+    @Column({ name: 'gift_message', type: 'text', nullable: true })
+    giftMessage?: string;
+
+    @Column({ name: 'is_gift', default: false })
+    isGift: boolean;
 
     // 💳 وضعیت پرداخت
     @Column({ type: "enum", enum: InvoiceStatus, default: InvoiceStatus.PENDING })

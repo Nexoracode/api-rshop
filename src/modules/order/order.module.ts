@@ -10,6 +10,7 @@ import { VariantProduct } from '../variant-product/entities/variant-product.enti
 import { OrderItem } from './entities/order-item.entity';
 import { Payment } from '../payment/entities/payment.entity';
 import { PromotionModule } from '../promotion/promotion.module';
+import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { PromotionModule } from '../promotion/promotion.module';
       CardItem,
       Product,
       VariantProduct,
-      Payment
+      Payment,
+      GiftWrapping,
     ]),
     PromotionModule
   ],

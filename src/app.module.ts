@@ -35,6 +35,7 @@ import { CompareModule } from './modules/compare/compare.module';
 import { OtpModule as OtpModule } from './modules/otps/otps.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
 import { DocsModule } from './docs/docs.module';
+import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { DocsModule } from './docs/docs.module';
     OtpModule,
     PromotionModule,
     DocsModule,
+    GiftWrappingModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

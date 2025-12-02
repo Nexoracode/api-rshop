@@ -3,5 +3,6 @@ export enum MediaType {
     PRODUCT = 'product',
     USER = 'user',
     BRAND = 'brand',
-    HELPER = 'helper'
+    HELPER = 'helper',
+    GIFT_WRAPPING = 'gift-wrapping',
 }
