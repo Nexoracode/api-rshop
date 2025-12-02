@@ -50,7 +50,7 @@ export class CreateProductDto {
     @IsEnum(WeightUnit)
     weightUnit: WeightUnit
 
-    @ApiProperty({ name: 'is_some_day_shipping', default: false })
+    @ApiProperty({ name: 'is_same_day_shipping', default: false })
     @IsOptional()
     @IsBoolean()
     isSameDayShipping: boolean;
