@@ -15,6 +15,7 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Promotion } from '../promotion/domain/entities/promotion.entity';
+import { Card, CardStatus } from '../card/entities/card.entity';
 
 @Injectable()
 export class CardToCardService {
@@ -26,64 +27,83 @@ export class CardToCardService {
         @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly invoiceService: InvoiceService,
-    ) { }
+    ) {}
 
     /**
      * ایجاد پرداخت کارت به کارت
      */
     async initiate(user: User, dto: InitiateCardToCardDto) {
-        const order = await this.orderRepo.findOne({
-            where: { id: dto.orderId, user: { id: user.id } },
-        });
+        return await runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: dto.orderId, user: { id: user.id } },
+            });
 
-        if (!order) {
-            throw new NotFoundException('سفارش یافت نشد');
-        }
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
 
-        if (order.status !== OrderStatus.AWAITING_PAYMENT) {
-            throw new BadRequestException('وضعیت سفارش برای پرداخت مناسب نیست');
-        }
+            if (order.status !== OrderStatus.AWAITING_PAYMENT) {
+                throw new BadRequestException('وضعیت سفارش برای پرداخت مناسب نیست');
+            }
 
-        // بررسی پرداخت pending
-        const existingPayment = await this.paymentRepo.findOne({
-            where: {
-                order: { id: order.id },
+            // بررسی پرداخت pending
+            const existingPayment = await manager.findOne(Payment, {
+                where: { 
+                    order: { id: order.id },
+                    paymentMethod: PaymentMethod.CARD_TO_CARD,
+                    cardToCardStatus: CardToCardStatus.PENDING,
+                },
+            });
+
+            if (existingPayment) {
+                return existingPayment;
+            }
+
+            // بررسی پرداخت uploaded
+            const uploadedPayment = await manager.findOne(Payment, {
+                where: { 
+                    order: { id: order.id },
+                    paymentMethod: PaymentMethod.CARD_TO_CARD,
+                    cardToCardStatus: CardToCardStatus.UPLOADED,
+                },
+                relations: ['receiptImage'],
+            });
+
+            if (uploadedPayment) {
+                return uploadedPayment;
+            }
+
+            // ✅ 1. تغییر وضعیت Order به PAYMENT_CONFIRMATION_PENDING
+            order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
+            await manager.save(Order, order);
+
+            // ✅ 2. لاک کردن Card
+            const card = await manager.findOne(Card, {
+                where: { 
+                    user: { id: user.id },
+                    status: CardStatus.OPEN,
+                },
+            });
+
+            if (card) {
+                card.status = CardStatus.LOCKED;
+                await manager.save(Card, card);
+            }
+
+            // ✅ 3. ایجاد پرداخت جدید
+            const payment = manager.create(Payment, {
+                order,
+                user,
+                amount: Number(order.total),
+                authority: `C2C-${Date.now()}-${order.id}`,
+                status: PaymentStatus.PENDING,
+                message: 'منتظر آپلود رسید',
                 paymentMethod: PaymentMethod.CARD_TO_CARD,
                 cardToCardStatus: CardToCardStatus.PENDING,
-            },
+            });
+
+            return await manager.save(Payment, payment);
         });
-
-        if (existingPayment) {
-            return existingPayment;
-        }
-
-        // بررسی پرداخت uploaded
-        const uploadedPayment = await this.paymentRepo.findOne({
-            where: {
-                order: { id: order.id },
-                paymentMethod: PaymentMethod.CARD_TO_CARD,
-                cardToCardStatus: CardToCardStatus.UPLOADED,
-            },
-            relations: ['receiptImage'],
-        });
-
-        if (uploadedPayment) {
-            return uploadedPayment;
-        }
-
-        // ایجاد پرداخت جدید
-        const payment = this.paymentRepo.create({
-            order,
-            user,
-            amount: Number(order.total),
-            authority: `C2C-${Date.now()}-${order.id}`,
-            status: PaymentStatus.PENDING,
-            message: 'منتظر آپلود رسید',
-            paymentMethod: PaymentMethod.CARD_TO_CARD,
-            cardToCardStatus: CardToCardStatus.PENDING,
-        });
-
-        return await this.paymentRepo.save(payment);
     }
 
     /**
@@ -116,18 +136,18 @@ export class CardToCardService {
         if (receiptImageId) {
             payment.receiptImageId = receiptImageId;
         }
-
+        
         if (dto.sender_card_number) {
             payment.senderCardNumber = dto.sender_card_number;
         }
-
+        
         if (dto.tracking_code) {
             payment.trackingCode = dto.tracking_code;
         }
-
+        
         payment.depositDate = dto.deposit_date ? new Date(dto.deposit_date) : new Date();
         payment.cardToCardStatus = CardToCardStatus.UPLOADED;
-
+        
         // پیام بر اساس نوع ثبت
         if (receiptImageId && (dto.sender_card_number || dto.tracking_code)) {
             payment.message = 'رسید و اطلاعات دستی ثبت شد، منتظر تایید ادمین';
@@ -136,7 +156,7 @@ export class CardToCardService {
         } else {
             payment.message = 'اطلاعات واریز ثبت شد، منتظر تایید ادمین';
         }
-
+        
         payment.status = PaymentStatus.PENDING;
 
         const saved = await this.paymentRepo.save(payment);
@@ -231,11 +251,11 @@ export class CardToCardService {
     ) {
         return await runInTransaction(this.dataSource, async (manager) => {
             const payment = await manager.findOne(Payment, {
-                where: {
+                where: { 
                     id: paymentId,
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
                 },
-                relations: ['order', 'user', 'receiptImage'],
+                relations: ['order', 'order.user', 'user', 'receiptImage'],
             });
 
             if (!payment) {
@@ -254,14 +274,37 @@ export class CardToCardService {
                     throw new BadRequestException('لطفاً دلیل رد را وارد کنید');
                 }
 
+                // ✅ 1. بروزرسانی Payment
                 payment.cardToCardStatus = CardToCardStatus.REJECTED;
                 payment.status = PaymentStatus.FAILED;
                 payment.message = 'رسید رد شد';
                 payment.adminNote = dto.admin_note;
                 payment.reviewedById = admin.id;
                 payment.reviewedAt = new Date();
-
                 await manager.save(Payment, payment);
+
+                // ✅ 2. تغییر وضعیت Order به PAYMENT_FAILED
+                const order = await manager.findOne(Order, {
+                    where: { id: payment.order.id },
+                });
+                
+                if (order) {
+                    order.status = OrderStatus.PAYMENT_FAILED;
+                    await manager.save(Order, order);
+                }
+
+                // ✅ 3. آزاد کردن Card برای تلاش مجدد
+                const card = await manager.findOne(Card, {
+                    where: { 
+                        user: { id: payment.user.id },
+                        status: CardStatus.LOCKED,
+                    },
+                });
+
+                if (card) {
+                    card.status = CardStatus.OPEN;
+                    await manager.save(Card, card);
+                }
 
                 return payment;
             }
@@ -277,26 +320,26 @@ export class CardToCardService {
                     throw new NotFoundException('سفارش یافت نشد');
                 }
 
-                if (order.status !== OrderStatus.AWAITING_PAYMENT) {
+                if (order.status !== OrderStatus.PAYMENT_CONFIRMATION_PENDING) {
                     throw new BadRequestException(
                         'وضعیت سفارش برای تایید پرداخت مناسب نیست. وضعیت فعلی: ' + order.status
                     );
                 }
 
-                // 1. کم کردن موجودی
+                // ✅ 1. کم کردن موجودی
                 await this.decreaseStock(manager, order);
 
-                // 2. افزایش تعداد استفاده از Promotion
+                // ✅ 2. افزایش تعداد استفاده از Promotion
                 if (order.promotionDetails && order.promotionDetails.length > 0) {
                     const promotionIds = order.promotionDetails.map(p => p.promotionId);
                     await this.incrementPromotionUsage(manager, promotionIds);
                 }
 
-                // 3. بروزرسانی وضعیت سفارش
-                order.status = OrderStatus.AWAITING_PAYMENT;
+                // ✅ 3. بروزرسانی وضعیت سفارش به PROCESSING
+                order.status = OrderStatus.PROCESSING;
                 await manager.save(Order, order);
 
-                // 4. بروزرسانی پرداخت
+                // ✅ 4. بروزرسانی پرداخت
                 payment.cardToCardStatus = CardToCardStatus.APPROVED;
                 payment.status = PaymentStatus.SUCCESS;
                 payment.message = 'پرداخت تایید شد';
@@ -304,17 +347,19 @@ export class CardToCardService {
                 payment.reviewedById = admin.id;
                 payment.reviewedAt = new Date();
                 payment.refId = payment.trackingCode || `C2C-${payment.id}`;
-
                 await manager.save(Payment, payment);
 
-                // 5. ایجاد فاکتور
+                // ✅ 5. Card باید LOCKED بمونه (چون سفارش تایید شده)
+                // Card فقط بعد از تحویل یا لغو سفارش آزاد می‌شه
+
+                // ✅ 6. ایجاد فاکتور
                 const invoice = await this.invoiceService.createFromOrder(
                     manager,
                     order.id,
                     payment.user,
                 );
 
-                // 6. بروزرسانی وضعیت invoice به PAID
+                // ✅ 7. بروزرسانی وضعیت invoice به PAID
                 if (invoice) {
                     await this.invoiceService.updateInvoiceStatus(
                         manager,
