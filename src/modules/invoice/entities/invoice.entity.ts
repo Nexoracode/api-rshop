@@ -44,13 +44,6 @@ export class Invoice {
     @Column({ type: "bigint" })
     totalPayable: number;
 
-    // 🎟 فیلدهای مرتبط با کوپن (legacy)
-    @Column({ nullable: true })
-    couponCode?: string;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-    couponDiscountAmount?: number;
-
     // 🎁 فیلدهای مرتبط با Promotion
     @Column({ type: 'varchar', length: 191, nullable: true })
     promotionCode?: string | null;
