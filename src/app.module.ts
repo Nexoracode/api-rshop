@@ -37,6 +37,7 @@ import { PromotionModule } from './modules/promotion/promotion.module';
 import { DocsModule } from './docs/docs.module';
 import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
 import { SettingModule } from './modules/setting/setting.module'; // ✅ اضافه شد
+import { SeoModule } from './modules/seo/seo.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { SettingModule } from './modules/setting/setting.module'; // ✅ اضا�
     DocsModule,
     GiftWrappingModule,
     SettingModule, // ✅ اضافه شد
+    SeoModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

@@ -11,12 +11,14 @@ import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, Pagination
 import { DeleteProductsDto } from './dto/delete-product.dto';
 import { Public } from 'src/common/decorator/public.decorator';
 import { UpdateBulkDto } from './dto/update-bulk.dto';
+import { SeoService } from '../seo/seo.service';
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
     constructor(
         private readonly productService: ProductService,
-        private readonly uploadService: MediaService
+        private readonly uploadService: MediaService,
+        private readonly seoService: SeoService,
     ) { }
 
     @Post('upload')
@@ -69,8 +71,10 @@ export class ProductController {
 
     @Public()
     @Get('site/:id')
-    findOneForSite(@Param('id', ParseIntPipe) id: number) {
-        return this.productService.findOneForSite(id);
+    async findOneForSite(@Param('id', ParseIntPipe) id: number) {
+        const product = await this.productService.findOneForSite(id);
+        const seo = this.seoService.generateProductMeta(product);
+        return { product, seo };
     }
 
     @ApiOperation({

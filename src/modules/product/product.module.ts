@@ -8,13 +8,15 @@ import { VariantAttributeValueModule } from '../attributes/variant-attribute-val
 import { MediaModule } from '../media/media.module';
 import { UploadService } from 'src/common/services/upload.service';
 import { Review } from '../review/entities/review.entity';
+import { SeoModule } from '../seo/seo.module';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Product, Review]),
     CategoryModule,
     VariantAttributeValueModule,
     MediaModule,
-    TypeOrmModule.forFeature([Product, Review]),
+    SeoModule,
   ],
   providers: [ProductService, UploadService],
   controllers: [ProductController],
