@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiPropertyOptional } from '@nestjs/swagger';
 import { SettingService } from './setting.service';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { BulkUpdateSettingsDto } from './dto/bulk-update-settings.dto';
@@ -11,7 +11,7 @@ import { SettingCategory } from './enums/setting-category.enum';
 @UseGuards(AccessGuard)
 @Controller('admin/settings')
 export class SettingAdminController {
-    constructor(private readonly settingService: SettingService) {}
+    constructor(private readonly settingService: SettingService) { }
 
     @Get()
     @ApiOperation({ summary: 'دریافت همه تنظیمات (ادمین)' })
@@ -33,6 +33,18 @@ export class SettingAdminController {
 
     @Post('upsert')
     @ApiOperation({ summary: 'بروزرسانی یا ایجاد تنظیم (ادمین)' })
+    @ApiPropertyOptional({
+        description: 'تنظیمات جدید یا بروزرسانی شده',
+        type: UpdateSettingDto,
+        required: true,
+        enum: SettingCategory,
+        default: SettingCategory.GENERAL,
+        example: {
+            key: 'siteTitle',
+            value: 'My Awesome Site',
+            category: SettingCategory.GENERAL,
+        },
+    })
     upsert(@Body() dto: UpdateSettingDto) {
         return this.settingService.upsert(dto);
     }
