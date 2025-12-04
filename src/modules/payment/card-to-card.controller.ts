@@ -26,15 +26,40 @@ import { MediaService } from '../media/media.service';
 import { MediaType } from 'src/common/enums/media.enum';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { AccessGuard } from 'src/common/guard/access.guard';
+import { SettingService } from '../setting/setting.service';
 
-@ApiTags('21 - 💳 Card to Card Payment')
+@ApiTags('21 - 💳 Card to Card Payment (User)')
+@ApiBearerAuth()
 @Controller('card-to-card')
 @UseGuards(AccessGuard)
 export class CardToCardController {
     constructor(
         private readonly cardToCardService: CardToCardService,
         private readonly mediaService: MediaService,
+        private readonly settingService: SettingService, // ✅ اضافه شد
     ) { }
+
+    /**
+     * دریافت اطلاعات کارت فروشگاه
+     */
+    @Get('shop-card-info')
+    @ApiOperation({
+        summary: 'دریافت اطلاعات کارت فروشگاه',
+        description: 'اطلاعات لازم برای واریز کارت به کارت',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'اطلاعات کارت فروشگاه',
+    })
+    async getShopCardInfo() {
+        const cardInfo = await this.settingService.getCardToCardSettings();
+
+        return {
+            success: true,
+            message: 'اطلاعات کارت فروشگاه',
+            data: cardInfo,
+        };
+    }
 
     /**
      * ایجاد پرداخت کارت به کارت
@@ -54,6 +79,9 @@ export class CardToCardController {
     ) {
         const payment = await this.cardToCardService.initiate(user, dto);
 
+        // ✅ دریافت اطلاعات کارت از تنظیمات
+        const cardInfo = await this.settingService.getCardToCardSettings();
+
         return {
             success: true,
             message: 'پرداخت کارت به کارت ایجاد شد. لطفاً رسید خود را آپلود کنید',
@@ -62,10 +90,8 @@ export class CardToCardController {
                 order_id: payment.order.id,
                 amount: payment.amount,
                 status: payment.cardToCardStatus,
-                // اطلاعات حساب فروشگاه
-                shop_card_number: '6037-9971-2345-6789', // TODO: از تنظیمات بخون
-                shop_card_holder: 'فروشگاه RSHOP',
-                shop_iban: 'IR123456789012345678901234',
+                // ✅ اطلاعات حساب فروشگاه از تنظیمات
+                shop_card_info: cardInfo,
             },
         };
     }

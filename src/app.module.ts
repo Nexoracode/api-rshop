@@ -36,6 +36,7 @@ import { OtpModule as OtpModule } from './modules/otps/otps.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
 import { DocsModule } from './docs/docs.module';
 import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
+import { SettingModule } from './modules/setting/setting.module'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module
     PromotionModule,
     DocsModule,
     GiftWrappingModule,
+    SettingModule, // ✅ اضافه شد
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

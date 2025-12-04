@@ -15,16 +15,18 @@ import { CardToCardAdminController } from './card-to-card-admin.controller';
 import { MediaModule } from '../media/media.module';
 import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
-import { CardModule } from '../card/card.module'; // ✅ اضافه شد
+import { CardModule } from '../card/card.module';
+import { SettingModule } from '../setting/setting.module'; // ✅ اضافه شد
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Payment, PaymentLog, Order]),
     ScheduleModule.forRoot(),
     PromotionModule,
-    MediaModule,     // ✅ برای آپلود رسید
-    OrderModule,     // ✅ برای confirmOrderPayment
-    CardModule,      // ✅ برای CardStatusService
+    MediaModule,
+    OrderModule,
+    CardModule,
+    SettingModule, // ✅ اضافه شد
   ],
   controllers: [
     PaymentController,
@@ -35,7 +37,7 @@ import { CardModule } from '../card/card.module'; // ✅ اضافه شد
     PaymentService,
     InvoiceService,
     IncrementPromotionUsageUseCase,
-    CardToCardService,             // ✅ سرویس کارت به کارت
+    CardToCardService,
   ],
   exports: [PaymentService, CardToCardService],
 })
