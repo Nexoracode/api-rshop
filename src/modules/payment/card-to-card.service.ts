@@ -15,7 +15,7 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Promotion } from '../promotion/domain/entities/promotion.entity';
-import { Card, CardStatus } from '../card/entities/card.entity';
+import { CardStatusService } from '../card/card-status.service';
 
 @Injectable()
 export class CardToCardService {
@@ -27,6 +27,7 @@ export class CardToCardService {
         @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly invoiceService: InvoiceService,
+        private readonly cardStatusService: CardStatusService, // ✅ اضافه شد
     ) {}
 
     /**
@@ -73,22 +74,12 @@ export class CardToCardService {
                 return uploadedPayment;
             }
 
-            // ✅ 1. تغییر وضعیت Order به PAYMENT_CONFIRMATION_PENDING
+            // ✅ 1. تغییر وضعیت Order
             order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
             await manager.save(Order, order);
 
-            // ✅ 2. لاک کردن Card
-            const card = await manager.findOne(Card, {
-                where: { 
-                    user: { id: user.id },
-                    status: CardStatus.OPEN,
-                },
-            });
-
-            if (card) {
-                card.status = CardStatus.LOCKED;
-                await manager.save(Card, card);
-            }
+            // ✅ 2. لاک کردن Cart با استفاده از CardStatusService
+            await this.cardStatusService.lockCart(user.id, manager);
 
             // ✅ 3. ایجاد پرداخت جدید
             const payment = manager.create(Payment, {
@@ -283,7 +274,7 @@ export class CardToCardService {
                 payment.reviewedAt = new Date();
                 await manager.save(Payment, payment);
 
-                // ✅ 2. تغییر وضعیت Order به PAYMENT_FAILED
+                // ✅ 2. تغییر وضعیت Order
                 const order = await manager.findOne(Order, {
                     where: { id: payment.order.id },
                 });
@@ -293,18 +284,8 @@ export class CardToCardService {
                     await manager.save(Order, order);
                 }
 
-                // ✅ 3. آزاد کردن Card برای تلاش مجدد
-                const card = await manager.findOne(Card, {
-                    where: { 
-                        user: { id: payment.user.id },
-                        status: CardStatus.LOCKED,
-                    },
-                });
-
-                if (card) {
-                    card.status = CardStatus.OPEN;
-                    await manager.save(Card, card);
-                }
+                // ✅ 3. آزاد کردن Cart با CardStatusService
+                await this.cardStatusService.unlockCart(payment.user.id, manager);
 
                 return payment;
             }
@@ -349,10 +330,10 @@ export class CardToCardService {
                 payment.refId = payment.trackingCode || `C2C-${payment.id}`;
                 await manager.save(Payment, payment);
 
-                // ✅ 5. Card باید LOCKED بمونه (چون سفارش تایید شده)
-                // Card فقط بعد از تحویل یا لغو سفارش آزاد می‌شه
+                // ✅ 5. Cart باید LOCKED بمونه (تا تحویل)
+                // بعد از DELIVERED با OrderService.markAsDelivered به ABANDONED تبدیل می‌شه
 
-                // ✅ 6. ایجاد فاکتور
+                // ✅ 6. ایجاد Invoice
                 const invoice = await this.invoiceService.createFromOrder(
                     manager,
                     order.id,

@@ -11,4 +11,5 @@ export enum OrderStatus {
     REJECTED = 'rejected', // رد شده
     REFUNDED = "refunded", // عودت وجه
     PAYMENT_FAILED = "payment_failed", // پرداخت ناموفق
+    CANCELLED = 'cancelled', // لغو شده
 }

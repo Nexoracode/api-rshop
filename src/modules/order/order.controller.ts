@@ -52,7 +52,6 @@ export class OrderController {
     return this.orderService.findOneByUser(user, id);
   }
 
-
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     console.log(id);
@@ -60,11 +59,34 @@ export class OrderController {
   }
 
   @Patch(':id/status')
+  @ApiOperation({ summary: 'تغییر وضعیت سفارش (ادمین)' })
   updateStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStatusDto) {
     return this.orderService.updateStatus(id, dto.status);
   }
 
+  // ✅ تحویل سفارش
+  @Post(':id/mark-delivered')
+  @ApiOperation({ summary: 'تحویل سفارش (ادمین)' })
+  markAsDelivered(@Param('id', ParseIntPipe) id: number) {
+    return this.orderService.markAsDelivered(id);
+  }
+
+  // ✅ لغو سفارش
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'لغو سفارش (ادمین یا کاربر)' })
+  cancelOrder(@Param('id', ParseIntPipe) id: number) {
+    return this.orderService.cancelOrder(id);
+  }
+
+  // ✅ بازپرداخت سفارش
+  @Post(':id/refund')
+  @ApiOperation({ summary: 'بازپرداخت سفارش (ادمین)' })
+  refundOrder(@Param('id', ParseIntPipe) id: number) {
+    return this.orderService.refundOrder(id);
+  }
+
   @Delete(':id')
+  @ApiOperation({ summary: 'حذف سفارش (ادمین)' })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.remove(id);
   }

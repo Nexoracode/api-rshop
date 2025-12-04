@@ -11,6 +11,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { Payment } from '../payment/entities/payment.entity';
 import { PromotionModule } from '../promotion/promotion.module';
 import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
+import { CardModule } from '../card/card.module'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
       Payment,
       GiftWrapping,
     ]),
-    PromotionModule
+    PromotionModule,
+    CardModule, // ✅ اضافه شد
   ],
   controllers: [OrderController],
   providers: [OrderService],

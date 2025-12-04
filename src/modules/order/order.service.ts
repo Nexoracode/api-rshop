@@ -27,6 +27,7 @@ import { VariantProduct } from "../variant-product/entities/variant-product.enti
 import { PromotionRepository } from "../promotion/domain/interfaces/promotion-repository.interface";
 import { GiftWrapping } from "../gift-wrapping/entities/gift-wrapping.entity";
 import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.enum";
+import { CardStatusService } from "../card/card-status.service";
 
 const relations = [
     "user",
@@ -53,6 +54,7 @@ export class OrderService {
         private readonly paymentRepo: Repository<Payment>,
         private readonly promotionCheck: CheckPromotionUseCase,
         private readonly promotionRepo: PromotionRepository,
+        private readonly cardStatusService: CardStatusService,
     ) { }
 
     /**
@@ -429,6 +431,8 @@ export class OrderService {
                 return OrderMapperNew.toDetail(existingOrder);
             }
 
+            await this.cardStatusService.lockCart(user.id, manager);
+
             // سفارش جدید
             const newOrder = orderRepo.create({
                 user,
@@ -476,7 +480,7 @@ export class OrderService {
         return runInTransaction(this.dataSource, async (manager) => {
             const order = await manager.findOne(Order, {
                 where: { id: orderId },
-                relations: ['items', 'items.product', 'items.variant'],
+                relations: ['items', 'items.product', 'items.variant', 'user'],
             });
 
             if (!order) {
@@ -488,15 +492,21 @@ export class OrderService {
                 throw new BadRequestException('وضعیت سفارش برای تایید پرداخت مناسب نیست');
             }
 
+            // کم کردن موجودی
             await this.decreaseStock(manager, order.items);
 
+            // افزایش Promotion usage
             if (order.promotionDetails && order.promotionDetails.length > 0) {
                 const promotionIds = order.promotionDetails.map(p => p.promotionId);
                 await this.incrementPromotionUsage(promotionIds);
             }
 
-            order.status = OrderStatus.AWAITING_PAYMENT;
+            // ✅ تغییر وضعیت Order به PROCESSING (نه AWAITING_PAYMENT)
+            order.status = OrderStatus.PROCESSING;
             await manager.save(Order, order);
+
+            // ✅ Cart باید LOCKED بمونه (تا تحویل)
+            // بعداً با markAsDelivered به ABANDONED تبدیل می‌شه
 
             return order;
         });
@@ -557,4 +567,130 @@ export class OrderService {
             return { success: true };
         });
     }
+
+    /**
+ * تحویل سفارش
+ */
+    async markAsDelivered(orderId: number): Promise<Order> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId },
+                relations: ['user'],
+            });
+
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
+
+            if (order.status !== OrderStatus.SHIPPING) {
+                throw new BadRequestException('فقط سفارش‌های در حال ارسال قابل تحویل هستند');
+            }
+
+            // ✅ تغییر وضعیت Order
+            order.status = OrderStatus.DELIVERED;
+            await manager.save(Order, order);
+
+            // ✅ Abandon کردن Cart
+            await this.cardStatusService.abandonCart(order.user.id, manager);
+
+            return order;
+        });
+    }
+
+    /**
+ * لغو سفارش
+ */
+    async cancelOrder(orderId: number): Promise<Order> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId },
+                relations: ['user', 'items', 'items.product', 'items.variant'],
+            });
+
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
+
+            // فقط سفارش‌های خاص قابل لغو هستند
+            const cancellableStatuses = [
+                OrderStatus.AWAITING_PAYMENT,
+                OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+                OrderStatus.PROCESSING,
+                OrderStatus.PREPARING,
+            ];
+
+            if (!cancellableStatuses.includes(order.status)) {
+                throw new BadRequestException('این سفارش قابل لغو نیست');
+            }
+
+            // ✅ 1. اگر پرداخت شده، موجودی رو برگردون
+            if (order.status === OrderStatus.PROCESSING || order.status === OrderStatus.PREPARING) {
+                await this.returnStock(manager, order.items);
+            }
+
+            // ✅ 2. تغییر وضعیت Order
+            order.status = OrderStatus.CANCELLED;
+            await manager.save(Order, order);
+
+            // ✅ 3. Abandon کردن Cart
+            await this.cardStatusService.abandonCart(order.user.id, manager);
+
+            return order;
+        });
+    }
+
+    /**
+     * برگرداندن موجودی (برای لغو یا refund)
+     */
+    private async returnStock(manager: any, items: OrderItem[]): Promise<void> {
+        for (const item of items) {
+            if (item.variant) {
+                await manager.increment(
+                    VariantProduct,
+                    { id: item.variant.id },
+                    'stock',
+                    item.quantity
+                );
+            } else if (item.product) {
+                await manager.increment(
+                    Product,
+                    { id: item.product.id },
+                    'stock',
+                    item.quantity
+                );
+            }
+        }
+    }
+
+    /**
+ * بازپرداخت سفارش
+ */
+    async refundOrder(orderId: number): Promise<Order> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId },
+                relations: ['user', 'items', 'items.product', 'items.variant'],
+            });
+
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
+
+            if (order.status !== OrderStatus.DELIVERED && order.status !== OrderStatus.NOT_DELIVERED) {
+                throw new BadRequestException('فقط سفارش‌های تحویل داده شده قابل بازپرداخت هستند');
+            }
+
+            // ✅ 1. برگرداندن موجودی
+            await this.returnStock(manager, order.items);
+
+            // ✅ 2. تغییر وضعیت Order
+            order.status = OrderStatus.REFUNDED;
+            await manager.save(Order, order);
+
+            // ✅ 3. Cart قبلاً ABANDONED شده، نیازی به تغییر نیست
+
+            return order;
+        });
+    }
+
 }

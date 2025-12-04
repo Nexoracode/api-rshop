@@ -15,6 +15,7 @@ import { CardToCardAdminController } from './card-to-card-admin.controller';
 import { MediaModule } from '../media/media.module';
 import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
+import { CardModule } from '../card/card.module'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { Order } from '../order/entities/order.entity';
     PromotionModule,
     MediaModule,     // ✅ برای آپلود رسید
     OrderModule,     // ✅ برای confirmOrderPayment
+    CardModule,      // ✅ برای CardStatusService
   ],
   controllers: [
     PaymentController,
