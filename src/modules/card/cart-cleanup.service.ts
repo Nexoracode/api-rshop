@@ -21,7 +21,7 @@ export class CartCleanupService {
      * هر 10 دقیقه یکبار Order های منقضی شده رو چک کن
      * Order هایی که بیش از 30 دقیقه در وضعیت AWAITING_PAYMENT هستند
      */
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async handleExpiredOrders() {
         this.logger.log('🕐 Checking for expired orders...');
 
