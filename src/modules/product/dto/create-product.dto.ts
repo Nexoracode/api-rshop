@@ -17,6 +17,10 @@ export class CreateProductDto {
     @IsInt()
     stock: number;
 
+    @ApiProperty()
+    @IsString()
+    sku: string;
+
     @ApiProperty({ name: 'is_limited_stock', default: false })
     @IsOptional()
     @IsBoolean()

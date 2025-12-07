@@ -2,6 +2,7 @@ import { VariantProduct } from "src/modules/variant-product/entities/variant-pro
 import { Product } from "../entities/product.entity";
 import { mapSpecificationsGrouped } from "./spec.mapper";
 import { getAverageRating } from "src/common/helpers/review.helper";
+import { skip } from "node:test";
 
 export class ProductMapper {
     private static uniqVariantAttributes(variant: any) {
@@ -234,6 +235,7 @@ export class ProductMapper {
             description: product.description || "",
             price: product.price,
             stock: product.stock,
+            sku: product.sku || "",
             isLimitedStock: product.isLimitedStock || false,
             isSameDayShipping: product.isSameDayShipping,
             orderLimit: product.orderLimit || null,

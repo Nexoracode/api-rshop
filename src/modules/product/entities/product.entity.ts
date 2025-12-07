@@ -73,6 +73,9 @@ export class Product implements IProduct {
     @Column({ name: 'category_id' })
     categoryId: number;
 
+    @Column({ type: 'varchar', length: 100, unique: true })
+    sku: string;
+
     @OneToMany(() => Media, media => media.product, { cascade: true, eager: true })
     medias: Media[];
 
