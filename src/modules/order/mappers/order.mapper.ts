@@ -2,6 +2,7 @@ import { Payment } from "src/modules/payment/entities/payment.entity";
 import { OrderItem } from "../entities/order-item.entity";
 import { Order } from "../entities/order.entity";
 import { iAllOrderResponse } from "../interfaces/order.interface";
+import { Product } from "src/modules/product/entities/product.entity";
 
 export class OrderMapper {
     static toAllResponse(order: Order): iAllOrderResponse {
@@ -57,6 +58,15 @@ export class OrderMapperNew {
 
     // 🔹 سطح جزئیات (برای مشاهده یک سفارش)
     static toDetail(order: Order, payment?: Payment | null) {
+        const findMax = (items: any[]) => {
+            var pr = 0;
+            items.forEach(item => {
+                if (item.product && item.product.preparationDays > pr) {
+                    pr = item.product.preparationDays;
+                }
+            });
+            return pr;
+        }
         return {
             id: order.id,
             status: order.status,
@@ -64,8 +74,32 @@ export class OrderMapperNew {
             discountTotal: Number(order.discountTotal),
             total: Number(order.total),
             paymentMethod: order.paymentGatewayRef || null,
+            shippingCost: Number(order.shippingCost),
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,
+            customerNote: order.note || null,
+            promotionsDiscount: Number(order.promotionDiscountAmount),
+            promotionCode: order.promotionCode || null,
+            promotions: order.promotionDetails || null,
+            isGift: order.isGift,
+            giftWrapping: order.isGift ? {
+                id: order.giftWrapping!.id,
+                name: order.giftWrapping!.name,
+                image: order.giftWrapping!.image,
+                price: order.giftWrapping!.price,
+                description: order.giftWrapping!.description,
+            } : null,
+            giftMessage: order.giftMessage || null,
+            giftWrappingCost: Number(order.giftWrappingCost),
+            isManual: order.isManual,
+            manualDiscountType: order.manualDiscountType || null,
+            manualDiscountValue: Number(order.manualDiscountValue),
+            manualDiscountApplied: Number(order.manualDiscountApplied),
+            preparationDays: findMax(order.items),
+            totalWeight: order.items?.reduce((sum, item) => {
+                const weight = item.product?.weight || 0;
+                return sum + weight * item.quantity;
+            }, 0) || 0,
             items: order.items?.map((item) => this.mapItem(item)) || [],
             user: {
                 id: order.user.id,

@@ -545,6 +545,7 @@ export class OrderService {
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
         })
+        console.log(order.items[0].product);
         return OrderMapperNew.toDetail(order, payment);
     }
 
