@@ -38,6 +38,7 @@ import { DocsModule } from './docs/docs.module';
 import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
 import { SettingModule } from './modules/setting/setting.module'; // ✅ اضافه شد
 import { SeoModule } from './modules/seo/seo.module';
+import { AccountingModule } from './modules/accounting/accounting.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { SeoModule } from './modules/seo/seo.module';
     GiftWrappingModule,
     SettingModule, // ✅ اضافه شد
     SeoModule,
+    AccountingModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
