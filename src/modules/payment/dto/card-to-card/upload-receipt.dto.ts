@@ -2,6 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsOptional, IsString, Length, Matches, ValidateIf } from 'class-validator';
 
 export class UploadReceiptDto {
+
+    @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })
+    files: any[];
+
     @ApiPropertyOptional({
         example: '6037997123456789',
         description: 'شماره کارت مبدا (16 رقم) - اگر اطلاعات دستی وارد می‌شود، الزامی است',

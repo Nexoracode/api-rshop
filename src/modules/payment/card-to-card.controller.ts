@@ -15,6 +15,7 @@ import { InitiateCardToCardDto } from './dto/card-to-card/initiate-card-to-card.
 import { UploadReceiptDto } from './dto/card-to-card/upload-receipt.dto';
 import {
     ApiBearerAuth,
+    ApiBody,
     ApiConsumes,
     ApiOperation,
     ApiResponse,
@@ -116,6 +117,7 @@ export class CardToCardController {
         description: 'رسید با موفقیت ثبت شد',
     })
     @UseInterceptors(FilesInterceptor('files', 1))
+    @ApiBody({ type: UploadReceiptDto, description: 'فیلدهای مورد نیاز برای آپلود رسید' })
     async uploadReceipt(
         @CurrentUser() user: User,
         @Param('payment_id', ParseIntPipe) paymentId: number,
