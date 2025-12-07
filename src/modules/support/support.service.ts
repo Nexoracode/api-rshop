@@ -170,7 +170,7 @@ export class SupportService {
 
   // 🟢 پاسخ ادمین با rollback ایمن
   async adminReply(admin: RequestUser, supportId: number, dto: CreateAdminReplyDto) {
-    if (admin.role !== Role.ADMIN && admin.role !== Role.SUPER_ADMIN)
+    if (admin.role !== Role.ADMIN, Role.SUPER_ADMIN && admin.role !== Role.SUPER_ADMIN)
       throw new ForbiddenException('دسترسی مجاز نیست');
 
     return runInTransaction(this.dataSource, async (manager) => {

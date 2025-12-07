@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { DataSource, In, Repository } from 'typeorm';
@@ -18,6 +18,25 @@ import { UpdateBulkDto } from './dto/update-bulk.dto';
 import { getAverageRating } from 'src/common/helpers/review.helper';
 import { ReviewMapper } from '../review/mappers/review.mapper';
 import { Review } from '../review/entities/review.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter'; // ✅ اضافه شد
+
+// ✅ اضافه: Event برای انبارداری
+export class ProductCreatedEvent {
+    constructor(
+        public readonly productId: number,
+        public readonly initialStock: number,
+        public readonly userId: number,
+    ) { }
+}
+
+export class ProductStockUpdatedEvent {
+    constructor(
+        public readonly productId: number,
+        public readonly oldStock: number,
+        public readonly newStock: number,
+        public readonly userId: number,
+    ) { }
+}
 
 const relations = [
     "variants",
@@ -37,12 +56,15 @@ const relations = [
 
 @Injectable()
 export class ProductService implements IProductService {
+    private readonly logger = new Logger(ProductService.name); // ✅ اضافه شد
+
     constructor(
         @InjectRepository(Product)
         private readonly productRepo: Repository<Product>,
         @InjectRepository(Review)
         private readonly reviewRepo: Repository<Review>,
         private dataSource: DataSource,
+        private readonly eventEmitter: EventEmitter2, // ✅ اضافه شد
     ) { }
 
     async findAll(query: PaginateQuery): Promise<Object> {
@@ -104,7 +126,7 @@ export class ProductService implements IProductService {
         return ProductMapper.toResponse(product, { cartesian: true });
     }
 
-    async create(data: CreateProductDto): Promise<IProductResponse> {
+    async create(data: CreateProductDto, userId?: number): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
             if (!data.mediaIds) throw new BadRequestException('تصویر محصول خود را مشخص کنید.');
             const duplicate = await manager.findOne(Product, { where: { name: data.name } });
@@ -136,29 +158,48 @@ export class ProductService implements IProductService {
                 relations
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+
+            // ✅✅✅ یکپارچه‌سازی با انبارداری - ثبت موجودی اولیه
+            if (data.stock && data.stock > 0) {
+                try {
+                    this.eventEmitter.emit(
+                        'product.created',
+                        new ProductCreatedEvent(savedProduct.id, data.stock, userId || 1),
+                    );
+                    this.logger.log(`🎉 Event 'product.created' emitted for product ${savedProduct.id} with stock ${data.stock}`);
+                } catch (error) {
+                    this.logger.error(`Failed to emit product.created event for product ${savedProduct.id}`, error.stack);
+                }
+            }
+
             return ProductMapper.toResponse(result, { cartesian: true });
         })
     }
 
 
-    async update(id: number, data: UpdateProductDto): Promise<IProductResponse> {
+    async update(id: number, data: UpdateProductDto, userId?: number): Promise<IProductResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
             // load product with relations so we can manage medias and pinned media
             const product = await manager.findOne(Product, { where: { id }, relations });
             if (!product) throw new NotFoundException('محصول یافت نشد');
-            const duplicate = await manager.findOne(Product, { where: { name: data.name } });
-            if (duplicate && duplicate.id !== id) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
-            const category = await manager.findOne(Category, { where: { id: data.categoryId } })
+            if (data.name) {
+                const duplicate = await manager.findOne(Product, { where: { name: data.name } });
+                if (duplicate && duplicate.id !== id) throw new BadRequestException('این نام محصول از قبل ثبت شده است.')
+            }
+            const category = await manager.findOne(Category, { where: { id: data.categoryId ?? product.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-            if (data.helperId && data.helperId !== 0) {
-                const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
+            if ((data.helperId ?? product.helperId) && (data.helperId ?? product.helperId) !== 0) {
+                const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId ?? product.helperId } })
                 if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
             }
-            if (data.discountAmount && data.discountPercent) {
+            if ((data.discountAmount ?? product.discountAmount) && (data.discountPercent ?? product.discountPercent)) {
                 throw new BadRequestException('نمی توان همزمان تخفیف قیمت ثابت و درصدی را وارد کرد.');
             }
-            const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
+            const brand = await manager.findOne(Brand, { where: { id: data.brandId ?? product.brandId } })
             if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
+
+            // ✅ ذخیره موجودی قدیمی
+            const oldStock = product.stock;
 
             // merge incoming data
             const updated = manager.merge(Product, product, data);
@@ -211,6 +252,20 @@ export class ProductService implements IProductService {
                 relations
             });
             if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+
+            // ✅✅✅ یکپارچه‌سازی با انبارداری - بروزرسانی موجودی
+            if (data.stock != null && data.stock !== oldStock) {
+                try {
+                    this.eventEmitter.emit(
+                        'product.stock.updated',
+                        new ProductStockUpdatedEvent(savedProduct.id, oldStock, data.stock, userId || 1),
+                    );
+                    this.logger.log(`🎉 Event 'product.stock.updated' emitted for product ${savedProduct.id}: ${oldStock} → ${data.stock}`);
+                } catch (error) {
+                    this.logger.error(`Failed to emit product.stock.updated event for product ${savedProduct.id}`, error.stack);
+                }
+            }
+
             return ProductMapper.toResponse(result, { cartesian: true });
         });
     }

@@ -16,7 +16,7 @@ export class OwnerGuard implements CanActivate {
         if (!user) {
             throw new ForbiddenException('Unauthorized');
         }
-        if (user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN) {
+        if (user.role === Role.ADMIN, Role.SUPER_ADMIN || user.role === Role.SUPER_ADMIN) {
             return true;
         }
         if (user.sub === paramId) {

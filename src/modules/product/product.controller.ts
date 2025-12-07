@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseArrayPipe, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseArrayPipe, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors, Req, UseGuards } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,6 +12,10 @@ import { DeleteProductsDto } from './dto/delete-product.dto';
 import { Public } from 'src/common/decorator/public.decorator';
 import { UpdateBulkDto } from './dto/update-bulk.dto';
 import { SeoService } from '../seo/seo.service';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { User } from '../user/entities/user.entity';
+import { AccessGuard } from 'src/common/guard/access.guard';
+
 @ApiTags('08 - 📦 Products')
 @Controller('product')
 export class ProductController {
@@ -55,13 +59,19 @@ export class ProductController {
     }
 
     @Post()
-    create(@Body() data: CreateProductDto) {
-        return this.productService.create(data);
+    @UseGuards(AccessGuard)
+    create(@Body() data: CreateProductDto, @CurrentUser() user: User) {
+        // ✅ ارسال userId به service
+        const userId = user.id;
+        return this.productService.create(data, userId);
     }
 
     @Patch(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductDto) {
-        return this.productService.update(id, data);
+    @UseGuards(AccessGuard)
+    update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductDto, @CurrentUser() user: User) {
+        // ✅ ارسال userId به service
+        const userId = user.id;
+        return this.productService.update(id, data, userId);
     }
 
     @Get(':id')

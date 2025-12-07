@@ -36,6 +36,8 @@ import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { AccessGuard } from 'src/common/guard/access.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @ApiTags('Accounting - Transactions')
 @ApiBearerAuth()
@@ -45,20 +47,20 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT)
   @ApiOperation({ summary: 'ایجاد تراکنش جدید' })
   @ApiResponse({ status: 201, description: 'تراکنش با موفقیت ایجاد شد' })
   @ApiResponse({ status: 400, description: 'داده‌های ورودی نامعتبر' })
   @ApiResponse({ status: 404, description: 'حساب یافت نشد' })
   async create(
     @Body() createDto: CreateTransactionDto,
-    @Request() req,
+    @CurrentUser() user: User
   ) {
-    return this.transactionService.create(createDto, req.user.id);
+    return this.transactionService.create(createDto, user.id);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT, Role.MANAGER)
   @ApiOperation({ summary: 'دریافت لیست تراکنش‌ها با فیلتر' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
@@ -92,7 +94,7 @@ export class TransactionController {
   }
 
   @Get('summary')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT, Role.MANAGER)
   @ApiOperation({ summary: 'دریافت خلاصه تراکنش‌ها' })
   @ApiQuery({ name: 'fromDate', required: false })
   @ApiQuery({ name: 'toDate', required: false })
@@ -113,7 +115,7 @@ export class TransactionController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT, Role.MANAGER)
   @ApiOperation({ summary: 'دریافت جزئیات تراکنش' })
   @ApiResponse({ status: 200, description: 'جزئیات تراکنش' })
   @ApiResponse({ status: 404, description: 'تراکنش یافت نشد' })
@@ -122,20 +124,20 @@ export class TransactionController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT)
   @ApiOperation({ summary: 'بروزرسانی تراکنش' })
   @ApiResponse({ status: 200, description: 'تراکنش بروزرسانی شد' })
   @ApiResponse({ status: 404, description: 'تراکنش یافت نشد' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateTransactionDto,
-    @Request() req,
+    @CurrentUser() user: User
   ) {
-    return this.transactionService.update(id, updateDto, req.user.id);
+    return this.transactionService.update(id, updateDto, user.id);
   }
 
   @Post(':id/approve')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'تایید تراکنش' })
   @ApiResponse({ status: 200, description: 'تراکنش تایید شد' })
@@ -144,13 +146,13 @@ export class TransactionController {
   async approve(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ApproveTransactionDto,
-    @Request() req,
+    @CurrentUser() user: User
   ) {
-    return this.transactionService.approve(id, dto, req.user.id);
+    return this.transactionService.approve(id, dto, user.id);
   }
 
   @Post(':id/reject')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.ACCOUNTANT)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'رد تراکنش' })
   @ApiResponse({ status: 200, description: 'تراکنش رد شد' })
@@ -159,21 +161,21 @@ export class TransactionController {
   async reject(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: RejectTransactionDto,
-    @Request() req,
+    @CurrentUser() user: User
   ) {
-    return this.transactionService.reject(id, dto, req.user.id);
+    return this.transactionService.reject(id, dto, user.id);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'حذف (کنسل) تراکنش' })
   @ApiResponse({ status: 200, description: 'تراکنش حذف شد' })
   @ApiResponse({ status: 400, description: 'تراکنش قابل حذف نیست' })
   @ApiResponse({ status: 404, description: 'تراکنش یافت نشد' })
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req,
+    @CurrentUser() user: User
   ) {
-    return this.transactionService.remove(id, req.user.id);
+    return this.transactionService.remove(id, user.id);
   }
 }

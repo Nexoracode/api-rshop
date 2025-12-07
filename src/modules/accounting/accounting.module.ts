@@ -25,6 +25,11 @@ import { TransactionController } from './controllers/transaction.controller';
 
 // Listeners
 import { OrderAccountingListener } from './listeners/order-accounting.listener';
+import { ProductInventoryListener } from './listeners/product-inventory.listener'; // ✅ اضافه شد
+import { AccountController } from './controllers/account.controller';
+import { WarehouseController } from './controllers/warehouse.controller';
+import { StockMovementController } from './controllers/stock-movment.controller';
+import { ReportController } from './controllers/report.controller';
 
 @Module({
   imports: [
@@ -44,6 +49,10 @@ import { OrderAccountingListener } from './listeners/order-accounting.listener';
   ],
   controllers: [
     TransactionController,
+    AccountController,
+    WarehouseController,
+    StockMovementController,
+    ReportController,
     // سایر Controller ها را بعداً فعال کنید
   ],
   providers: [
@@ -56,6 +65,7 @@ import { OrderAccountingListener } from './listeners/order-accounting.listener';
     OrderAccountingService,
     // Listeners
     OrderAccountingListener,
+    ProductInventoryListener, // ✅ اضافه شد
   ],
   exports: [
     TransactionService,
@@ -63,7 +73,7 @@ import { OrderAccountingListener } from './listeners/order-accounting.listener';
     WarehouseService,
     StockMovementService,
     ReportService,
-    OrderAccountingService, // ✅ Export کردن برای استفاده در ماژول‌های دیگر
+    OrderAccountingService,
   ],
 })
-export class AccountingModule {}
+export class AccountingModule { }

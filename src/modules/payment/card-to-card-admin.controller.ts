@@ -28,7 +28,7 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 @ApiTags('21 - 💳 Card to Card (Admin)')
 @Controller('admin/card-to-card')
 @UseGuards(AccessGuard, RoleGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 export class CardToCardAdminController {
     constructor(
         private readonly cardToCardService: CardToCardService,

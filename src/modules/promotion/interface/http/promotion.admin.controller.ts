@@ -35,7 +35,7 @@ import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('19 - 🎁 Promotions (Admin)')
 @ApiBearerAuth()
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 @Controller('admin/promotions')
 export class PromotionAdminController {
     constructor(

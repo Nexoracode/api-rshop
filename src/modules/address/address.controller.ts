@@ -11,7 +11,7 @@ import { UpdateAddressDto } from "./dto/update-address.dto";
 @Controller('addresses')
 @ApiTags('Addresses')
 @UseGuards(AccessGuard, RoleGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 export class AddressControllerAdmin {
     constructor(
         private readonly addressService: AddressService

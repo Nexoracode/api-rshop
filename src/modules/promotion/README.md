@@ -691,7 +691,7 @@ code: string;
 
 ```typescript
 @ApiBearerAuth()
-@Roles(Role.ADMIN, Role.SUPERADMIN)
+@Roles(Role.ADMIN , Role.SUPER_ADMIN, Role.SUPERADMIN)
 @Controller('admin/promotions')
 export class PromotionAdminController {
     // فقط ادمین‌ها دسترسی دارند

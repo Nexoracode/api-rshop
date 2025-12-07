@@ -20,7 +20,7 @@ import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, Pagination
 @ApiTags('Admin - Support')
 @ApiBearerAuth()
 @UseGuards(AccessGuard, RoleGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 @Controller('admin/support')
 export class SupportAdminController {
     constructor(private readonly supportService: SupportService) { }

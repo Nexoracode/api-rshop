@@ -11,7 +11,7 @@ import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, Pagination
 @ApiTags('Admin - Reviews')
 @ApiBearerAuth('access-token')
 @UseGuards(AccessGuard, RoleGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 @Controller('admin/reviews')
 export class ReviewAdminController {
     constructor(private readonly reviewService: ReviewService) { }

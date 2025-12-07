@@ -33,7 +33,7 @@ import { UploadFilesDto } from '../media/dto/upload-file.dto';
 @ApiTags('20 - 🎁 Gift Wrapping (Admin)')
 @Controller('admin/gift-wrappings')
 @ApiBearerAuth()
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
 export class GiftWrappingAdminController {
     constructor(
         private readonly giftWrappingService: GiftWrappingService,
