@@ -36,12 +36,22 @@ import { OtpModule as OtpModule } from './modules/otps/otps.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
 import { DocsModule } from './docs/docs.module';
 import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
-import { SettingModule } from './modules/setting/setting.module'; // ✅ اضافه شد
+import { SettingModule } from './modules/setting/setting.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { EventEmitterModule } from '@nestjs/event-emitter'; // ✅ اضافه شد
 
 @Module({
   imports: [
+    // ✅ فعال‌سازی Event-Driven Architecture
+    EventEmitterModule.forRoot({
+      // استفاده از wildcard
+      wildcard: false,
+      // حداکثر تعداد listener ها
+      maxListeners: 10,
+      // نمایش warning در صورت memory leak
+      verboseMemoryLeak: true,
+    }),
     AppConfigModule,
     UserModule,
     AddressModule,
@@ -75,9 +85,9 @@ import { AccountingModule } from './modules/accounting/accounting.module';
     PromotionModule,
     DocsModule,
     GiftWrappingModule,
-    SettingModule, // ✅ اضافه شد
+    SettingModule,
     SeoModule,
-    AccountingModule,
+    AccountingModule, // ✅ ماژول حسابداری
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

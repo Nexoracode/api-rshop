@@ -16,7 +16,7 @@ import { MediaModule } from '../media/media.module';
 import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
 import { CardModule } from '../card/card.module';
-import { SettingModule } from '../setting/setting.module'; // ✅ اضافه شد
+import { SettingModule } from '../setting/setting.module';
 
 @Module({
   imports: [
@@ -26,12 +26,13 @@ import { SettingModule } from '../setting/setting.module'; // ✅ اضافه ش�
     MediaModule,
     OrderModule,
     CardModule,
-    SettingModule, // ✅ اضافه شد
+    SettingModule,
+    // ✅ نیازی به import AccountingModule نیست - EventEmitter خودش handle می‌کنه
   ],
   controllers: [
     PaymentController,
-    CardToCardController,        // ✅ کاربر
-    CardToCardAdminController,   // ✅ ادمین
+    CardToCardController,
+    CardToCardAdminController,
   ],
   providers: [
     PaymentService,

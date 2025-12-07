@@ -24,8 +24,26 @@ export enum PaymentGateway {
 
 // ✅ جدید: نوع پرداخت
 export enum PaymentMethod {
-    ONLINE = 'online',              // پرداخت آنلاین (درگاه)
-    CARD_TO_CARD = 'card_to_card',  // کارت به کارت
+    /** آنلاین */
+    ONLINE = 'online',
+
+    /** نقدی */
+    CASH = 'cash',
+
+    /** کارت به کارت */
+    CARD_TO_CARD = 'card_to_card',
+
+    /** چک */
+    CHEQUE = 'cheque',
+
+    /** حواله بانکی */
+    BANK_TRANSFER = 'bank_trasfer',
+
+    /** اعتباری (نسیه) */
+    CREDIT = 'credit',
+
+    /** کیف پول */
+    WALLET = 'wallet'
 }
 
 // ✅ جدید: وضعیت پرداخت کارت به کارت

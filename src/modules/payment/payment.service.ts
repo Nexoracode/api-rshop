@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { Request } from "express";
+import { EventEmitter2 } from "@nestjs/event-emitter"; // ✅ اضافه شد
 
 import { Invoice } from "../invoice/entities/invoice.entity";
 import { Payment } from "./entities/payment.entity";
@@ -23,14 +24,13 @@ import { Card, CardStatus } from "../card/entities/card.entity";
 import { CardItem } from "../card/entities/card-item.entity";
 import { PaymentLog } from "./entities/payment-logs.entity";
 
-// ✅ اضافه: مپر خروجی‌ها
 import { PaymentResponseMapper } from "./mappers/payment-response.mapper";
-// ✅ اضافه: refId هِلپر
 import { getRefId } from "./helpers/zarinpal.helper";
-// ✅ اضافه: Promotion UseCase
 import { IncrementPromotionUsageUseCase } from "../promotion/application/usecases/increment-promotion-usage.usecase";
 
-// ⚠️ یکدست: address هم به relations افزوده شد تا دیتای کامل باشد
+// ✅ اضافه: Event برای یکپارچه‌سازی حسابداری
+import { OrderPaidEvent } from "../accounting/listeners/order-accounting.listener";
+
 const relations = [
   'user',
   'address',
@@ -58,6 +58,7 @@ export class PaymentService {
     private readonly dataSource: DataSource,
     private readonly invoiceService: InvoiceService,
     private readonly incrementPromotionUsage: IncrementPromotionUsageUseCase,
+    private readonly eventEmitter: EventEmitter2, // ✅ اضافه شد
   ) { }
 
   // ────────────────────────────────────────────────
@@ -308,8 +309,19 @@ export class PaymentService {
               this.logger.log(`Incremented usage count for ${promotionIds.length} promotion(s) in order ${order.id}`);
             } catch (error) {
               this.logger.error(`Failed to increment promotion usage for order ${order.id}`, error.stack);
-              // ادامه می‌دهیم چون پرداخت موفق بوده
             }
+          }
+
+          // ✅✅✅ یکپارچه‌سازی با حسابداری و انبارداری - فقط یک خط!
+          try {
+            this.eventEmitter.emit(
+              'order.paid',
+              new OrderPaidEvent(order.id, payment.id, order.user.id),
+            );
+            this.logger.log(`🎉 Event 'order.paid' emitted for order ${order.id}`);
+          } catch (error) {
+            // اگر Event Listener مشکل داشت، پرداخت باز هم موفق است
+            this.logger.error(`Failed to emit order.paid event for order ${order.id}`, error.stack);
           }
 
           try {
