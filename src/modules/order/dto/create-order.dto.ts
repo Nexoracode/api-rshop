@@ -44,12 +44,22 @@ export class ManualProductDto {
     productId: number;
 
     @ApiProperty({
+        example: 5,
+        description: "تعداد محصول (فقط زمانی که variant نداریم)",
+        required: false,
+    })
+    @IsOptional()
+    @IsInt()
+    quantity?: number;
+
+    @ApiProperty({
         type: [ManualVariantDto],
-        description: "لیست واریانت‌ها به‌همراه تعداد هرکدام",
+        description: "لیست واریانت‌ها به‌همراه تعداد هرکدام (اختیاری)",
         example: [
             { id: 3, quantity: 10 },
             { id: 5, quantity: 2 },
         ],
+        required: false,
     })
     @IsArray()
     @IsOptional()
@@ -106,6 +116,7 @@ export class CreateManualOrderDto {
         example: [
             {
                 product_id: 1,
+                quantity: 5,
                 variant_ids: [
                     { id: 3, quantity: 20 },
                     { id: 5, quantity: 3 },
@@ -113,7 +124,7 @@ export class CreateManualOrderDto {
             },
             {
                 product_id: 2,
-                variant_ids: [{ id: 7, quantity: 2 }],
+                quantity: 10
             },
         ],
     })

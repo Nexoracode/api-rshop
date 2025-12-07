@@ -203,6 +203,8 @@ export class OrderService {
                 const discountAmount = Number(product.discountAmount) || 0;
 
                 if (!productItem.variantIds || productItem.variantIds.length === 0) {
+                    // زمانی که فقط محصول داریم بدون variant
+                    const quantity = productItem.quantity ?? 1; // اگر quantity نداشت، پیش‌فرض 1
                     const unitPrice = basePrice;
                     let discount = 0;
                     if (discountPercent && discountPercent > 0)
@@ -211,14 +213,14 @@ export class OrderService {
                         discount = discountAmount;
 
                     const finalUnitPrice = unitPrice - discount;
-                    const lineTotal = finalUnitPrice * 1;
+                    const lineTotal = finalUnitPrice * quantity;
 
-                    subtotal += unitPrice;
-                    discountTotal += discount;
+                    subtotal += unitPrice * quantity;
+                    discountTotal += discount * quantity;
 
                     orderItems.push(
                         manager.create(OrderItem, {
-                            quantity: 1,
+                            quantity: quantity,
                             unitPrice,
                             discount,
                             lineTotal,
