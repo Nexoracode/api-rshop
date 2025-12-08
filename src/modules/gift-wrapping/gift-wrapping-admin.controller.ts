@@ -23,7 +23,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { Role } from 'src/common/enums/role.enum';
-import { Paginate, PaginateQuery } from 'nestjs-paginate';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { MediaService } from '../media/media.service';
 import { MediaType } from 'src/common/enums/media.enum';
@@ -94,11 +94,31 @@ export class GiftWrappingAdminController {
     @Get()
     @ApiOperation({
         summary: 'دریافت لیست تمام بسته‌بندی‌ها',
-        description: 'دریافت لیست تمام بسته‌بندی‌ها شامل فعال و غیرفعال با قابلیت فیلتر و جستجو',
+        description: `
+        دریافت لیست بسته‌بندی‌های کادو با قابلیت جستجو، فیلتر و صفحه‌بندی
+        
+**انواع staus:**
+- \`active\`: فعال
+- \`inactive\`: غیرفعال
+
+**انواع isForGift:**
+- \`true\`: برای هدیه
+- \`false\`: برای غیرهدیه
+        `,
     })
     @ApiResponse({
         status: 200,
         description: 'لیست بسته‌بندی‌ها با موفقیت دریافت شد',
+    })
+    @ApiPaginationQuery({
+        paginationType: PaginationType.CURSOR,
+        sortableColumns: ['id', 'name', 'price', 'displayOrder', 'createdAt'],
+        defaultSortBy: [['displayOrder', 'ASC']],
+        searchableColumns: ['name', 'description'],
+        filterableColumns: {
+            status: [FilterOperator.EQ],
+            isForGift: [FilterOperator.EQ],
+        },
     })
     async findAll(@Paginate() query: PaginateQuery) {
         const result = await this.giftWrappingService.findAll(query);

@@ -12,7 +12,7 @@ export class GiftWrappingService {
     constructor(
         @InjectRepository(GiftWrapping)
         private readonly giftWrappingRepo: Repository<GiftWrapping>,
-    ) {}
+    ) { }
 
     /**
      * ایجاد بسته‌بندی جدید (ادمین)
@@ -35,7 +35,7 @@ export class GiftWrappingService {
      * دریافت تمام بسته‌بندی‌ها با Pagination (ادمین)
      */
     async findAll(query: PaginateQuery) {
-        return paginate(query, this.giftWrappingRepo, {
+        const gifts = await paginate(query, this.giftWrappingRepo, {
             sortableColumns: ['id', 'name', 'price', 'displayOrder', 'createdAt'],
             defaultSortBy: [['displayOrder', 'ASC']],
             searchableColumns: ['name', 'description'],
@@ -45,6 +45,11 @@ export class GiftWrappingService {
             },
             relations: ['image'],
         });
+        return {
+            items: gifts.data,
+            meta: gifts.meta,
+            links: gifts.links,
+        }
     }
 
     /**
@@ -98,10 +103,10 @@ export class GiftWrappingService {
      */
     async toggleStatus(id: number): Promise<GiftWrapping> {
         const giftWrapping = await this.findOne(id);
-        
-        giftWrapping.status = 
-            giftWrapping.status === GiftWrappingStatus.ACTIVE 
-                ? GiftWrappingStatus.INACTIVE 
+
+        giftWrapping.status =
+            giftWrapping.status === GiftWrappingStatus.ACTIVE
+                ? GiftWrappingStatus.INACTIVE
                 : GiftWrappingStatus.ACTIVE;
 
         return await this.giftWrappingRepo.save(giftWrapping);
