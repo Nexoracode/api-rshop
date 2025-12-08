@@ -12,7 +12,6 @@ export class SmsService {
      * ارسال کد OTP به شماره موبایل کاربر
      */
     async sendOtp(phone: string, code: string): Promise<void> {
-        console.log(this.apiKey, this.fromNumber)
         try {
             // شماره را به فرمت بین‌المللی تبدیل می‌کنیم
             const formattedPhone = this.formatPhone(phone);

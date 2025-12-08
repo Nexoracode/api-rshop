@@ -132,7 +132,7 @@ export class AuthService implements IAuthService {
     //             { phone: dto.identifier },
     //             { email: dto.identifier }
     //         ],
-    //         select: ['id', 'phone', 'email', 'role', 'apiToken'],
+    //         select: ['firstName', 'lastName', 'id', 'phone', 'email', 'role'],
     //     });
     //     // if (realCode != dto.identifier) {
     //     //     throw new UnauthorizedException('code is valid')
