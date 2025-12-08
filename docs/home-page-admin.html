@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدیریت صفحه اصلی - پنل ادمین RSHOP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #2d3748;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #3182ce;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2c5282;
+    }
+
+    .btn-success {
+      background: #38a169;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #2f855a;
+    }
+
+    .btn-danger {
+      background: #e53e3e;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c53030;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e0;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* Tabs */
+    .tabs {
+      background: white;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab {
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: #718096;
+    }
+
+    .tab:hover {
+      background: #f7fafc;
+      color: #2d3748;
+    }
+
+    .tab.active {
+      background: #3182ce;
+      color: white;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #f7fafc;
+      padding: 12px;
+      text-align: right;
+      font-weight: 600;
+      color: #4a5568;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+      padding: 16px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tr:hover {
+      background: #f7fafc;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-edit {
+      background: #edf2f7;
+      color: #3182ce;
+    }
+
+    .btn-edit:hover {
+      background: #3182ce;
+      color: white;
+    }
+
+    .btn-delete {
+      background: #fff5f5;
+      color: #e53e3e;
+    }
+
+    .btn-delete:hover {
+      background: #e53e3e;
+      color: white;
+    }
+
+    .btn-view {
+      background: #f0fff4;
+      color: #38a169;
+    }
+
+    .btn-view:hover {
+      background: #38a169;
+      color: white;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .badge-danger {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .badge-warning {
+      background: #feebc8;
+      color: #7c2d12;
+    }
+
+    .badge-info {
+      background: #bee3f8;
+      color: #2c5282;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #718096;
+    }
+
+    .modal-close:hover {
+      color: #2d3748;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 24px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .form-label .required {
+      color: #e53e3e;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #3182ce;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-help {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    .color-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #a0aec0;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #4a5568;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #718096;
+    }
+
+    .spinner {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #3182ce;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Alert */
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 1px solid #9ae6b4;
+    }
+
+    .alert-error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 1px solid #fc8181;
+    }
+
+    .alert-warning {
+      background: #feebc8;
+      color: #7c2d12;
+      border: 1px solid #fbd38d;
+    }
+
+    .alert-close {
+      margin-right: auto;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    /* Image Preview */
+    .image-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #718096;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    /* Product Card */
+    .product-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .product-price {
+      color: #3182ce;
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+
+      .header {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+
+      .tab {
+        white-space: nowrap;
+      }
+
+      .table-container {
+        overflow-x: scroll;
+      }
+
+      .modal-content {
+        width: 95%;
+        max-height: 95vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1 class="header-title">🏠 مدیریت صفحه اصلی</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="window.location.href='/'">
+        🏪 بازگشت به فروشگاه
+      </button>
+      <button class="btn btn-primary" onclick="refreshData()">
+        🔄 بارگذاری مجدد
+      </button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <div class="container">
+    <!-- API Config Alert -->
+    <div id="apiAlert" class="alert alert-warning">
+      <span>⚙️</span>
+      <span>آدرس API: <strong id="currentApi">http://localhost:3000</strong></span>
+      <button class="btn-icon btn-edit" onclick="changeApiUrl()" style="margin-right: auto;">ویرایش</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🎠</div>
+        <div class="stat-label">اسلایدرهای فعال</div>
+        <div class="stat-value" id="statSliders">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-label">بنرهای فعال</div>
+        <div class="stat-value" id="statBanners">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📂</div>
+        <div class="stat-label">دسته‌بندی‌ها</div>
+        <div class="stat-value" id="statCategories">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">بخش‌های محصولات</div>
+        <div class="stat-value" id="statSections">-</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('sliders')">🎠 اسلایدرها</button>
+      <button class="tab" onclick="switchTab('banners')">🎫 بنرها</button>
+      <button class="tab" onclick="switchTab('sections')">📦 بخش‌های محصولات</button>
+      <button class="tab" onclick="switchTab('analytics')">📊 آمار و تحلیل</button>
+    </div>
+
+    <!-- Tab 1: Hero Sliders -->
+    <div id="tab-sliders" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">اسلایدرهای اصلی</h2>
+          <button class="btn btn-success" onclick="openSliderModal()">
+            ➕ افزودن اسلایدر
+          </button>
+        </div>
+
+        <div id="slidersLoading" class="loading">
+          <div class="spinner"></div>
+          در حال بارگذاری...
+        </div>
+
+        <div id="slidersTable" class="table-container" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px;">تصویر</th>
+                <th>عنوان</th>
+                <th>رنگ پس‌زمینه</th>
+                <th style="width: 100px;">ترتیب</th>
+                <th style="width: 100px;">وضعیت</th>
+                <th style="width: 150px;">عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="slidersTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="slidersEmpty" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">🎠</div>
+          <div class="empty-state-title">اسلایدری وجود ندارد</div>
+          <p>برای شروع، اسلایدر جدید اضافه کنید</p>
+          <button class="btn btn-primary" onclick="openSliderModal()" style="margin-top: 16px;">
+            ➕ افزودن اولین اسلایدر
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Side Banners -->
+    <div id="tab-banners" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">بنرهای کناری</h2>
+          <button class="btn btn-success" onclick="openBannerModal()">
+            ➕ افزودن بنر
+          </button>
+        </div>
+
+        <div id="bannersLoading" class="loading">
+          <div class="spinner"></div>
+          در حال بارگذاری...
+        </div>
+
+        <div id="bannersTable" class="table-container" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px;">تصویر</th>
+                <th>عنوان</th>
+                <th>زیرعنوان</th>
+                <th style="width: 120px;">موقعیت</th>
+                <th style="width: 100px;">برچسب</th>
+                <th style="width: 100px;">وضعیت</th>
+                <th style="width: 150px;">عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="bannersTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="bannersEmpty" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">🎫</div>
+          <div class="empty-state-title">بنری وجود ندارد</div>
+          <p>بنرهای کناری برای جذب توجه کاربران</p>
+          <button class="btn btn-primary" onclick="openBannerModal()" style="margin-top: 16px;">
+            ➕ افزودن اولین بنر
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Home Sections -->
+    <div id="tab-sections" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">بخش‌های محصولات</h2>
+          <button class="btn btn-success" onclick="openSectionModal()">
+            ➕ افزودن بخش
+          </button>
+        </div>
+
+        <div id="sectionsLoading" class="loading">
+          <div class="spinner"></div>
+          در حال بارگذاری...
+        </div>
+
+        <div id="sectionsTable" class="table-container" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th>عنوان</th>
+                <th style="width: 150px;">نوع</th>
+                <th style="width: 120px;">استایل نمایش</th>
+                <th style="width: 100px;">تعداد محصول</th>
+                <th style="width: 100px;">ترتیب</th>
+                <th style="width: 100px;">وضعیت</th>
+                <th style="width: 180px;">عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="sectionsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="sectionsEmpty" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">📦</div>
+          <div class="empty-state-title">بخشی وجود ندارد</div>
+          <p>بخش‌های مختلف برای نمایش محصولات</p>
+          <button class="btn btn-primary" onclick="openSectionModal()" style="margin-top: 16px;">
+            ➕ افزودن اولین بخش
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Analytics -->
+    <div id="tab-analytics" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📊 آمار کلیک‌ها</h2>
+          <button class="btn btn-primary" onclick="loadAnalytics()">
+            🔄 بروزرسانی
+          </button>
+        </div>
+
+        <div id="analyticsContent">
+          <div class="alert alert-warning">
+            <span>ℹ️</span>
+            <span>آمار کلیک‌ها به زودی در دسترس خواهد بود</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Slider Form -->
+  <div id="sliderModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="sliderModalTitle">افزودن اسلایدر جدید</h3>
+        <button class="modal-close" onclick="closeSliderModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="sliderForm">
+          <input type="hidden" id="sliderId">
+
+          <div class="form-group">
+            <label class="form-label">عنوان <span class="required">*</span></label>
+            <input type="text" class="form-input" id="sliderTitle" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">توضیحات</label>
+            <textarea class="form-textarea" id="sliderDescription"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">آدرس تصویر <span class="required">*</span></label>
+            <input type="text" class="form-input" id="sliderImage" required placeholder="/uploads/sliders/image.jpg">
+            <div class="form-help">آدرس تصویر آپلود شده را وارد کنید</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">رنگ پس‌زمینه</label>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input type="color" id="sliderBgColor" value="#E8B4D9"
+                style="width: 60px; height: 40px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+              <input type="text" class="form-input" id="sliderBgColorText" value="#E8B4D9"
+                style="flex: 1; font-family: monospace;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">متن دکمه</label>
+            <input type="text" class="form-input" id="sliderButtonText" placeholder="مشاهده محصول">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">لینک دکمه</label>
+            <input type="text" class="form-input" id="sliderButtonLink" placeholder="/products/123">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ترتیب نمایش</label>
+            <input type="number" class="form-input" id="sliderSortOrder" value="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="sliderIsActive" checked>
+              <label for="sliderIsActive">فعال</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSliderModal()">انصراف</button>
+        <button class="btn btn-success" onclick="saveSlider()">💾 ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Banner Form -->
+  <div id="bannerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="bannerModalTitle">افزودن بنر جدید</h3>
+        <button class="modal-close" onclick="closeBannerModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="bannerForm">
+          <input type="hidden" id="bannerId">
+
+          <div class="form-group">
+            <label class="form-label">عنوان <span class="required">*</span></label>
+            <input type="text" class="form-input" id="bannerTitle" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">زیرعنوان</label>
+            <input type="text" class="form-input" id="bannerSubtitle" placeholder="از ۵۴۹ تا ۵۵۹ هزار تومان">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">آدرس تصویر <span class="required">*</span></label>
+            <input type="text" class="form-input" id="bannerImage" required placeholder="/uploads/banners/image.jpg">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">لینک <span class="required">*</span></label>
+            <input type="text" class="form-input" id="bannerLink" required placeholder="/category/quran">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">موقعیت <span class="required">*</span></label>
+            <select class="form-select" id="bannerPosition" required>
+              <option value="top_right">بالای سمت راست</option>
+              <option value="middle_right">وسط سمت راست</option>
+              <option value="bottom_right">پایین سمت راست</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">متن برچسب تخفیف</label>
+            <input type="text" class="form-input" id="bannerBadgeText" placeholder="14%">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">رنگ برچسب</label>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input type="color" id="bannerBadgeColor" value="#FF0000"
+                style="width: 60px; height: 40px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+              <input type="text" class="form-input" id="bannerBadgeColorText" value="#FF0000"
+                style="flex: 1; font-family: monospace;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ترتیب نمایش</label>
+            <input type="number" class="form-input" id="bannerSortOrder" value="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="bannerIsActive" checked>
+              <label for="bannerIsActive">فعال</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeBannerModal()">انصراف</button>
+        <button class="btn btn-success" onclick="saveBanner()">💾 ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Section Form -->
+  <div id="sectionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="sectionModalTitle">افزودن بخش جدید</h3>
+        <button class="modal-close" onclick="closeSectionModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="sectionForm">
+          <input type="hidden" id="sectionId">
+
+          <div class="form-group">
+            <label class="form-label">عنوان <span class="required">*</span></label>
+            <input type="text" class="form-input" id="sectionTitle" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Slug (نامک) <span class="required">*</span></label>
+            <input type="text" class="form-input" id="sectionSlug" required placeholder="featured-products">
+            <div class="form-help">فقط حروف انگلیسی، اعداد و خط تیره (باید یونیک باشد)</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">توضیحات</label>
+            <textarea class="form-textarea" id="sectionDescription"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">نوع بخش <span class="required">*</span></label>
+            <select class="form-select" id="sectionType" required onchange="handleSectionTypeChange()">
+              <option value="featured">محصولات ویژه (Featured)</option>
+              <option value="special_products">محصولات دستی (Special Products)</option>
+              <option value="most_popular">محبوب‌ترین (Most Popular)</option>
+              <option value="category_based">دسته‌بندی محور (Category Based)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="sectionProductIdsGroup" style="display: none;">
+            <label class="form-label">شناسه محصولات <span class="required">*</span></label>
+            <input type="text" class="form-input" id="sectionProductIds" placeholder="1,5,10,15">
+            <div class="form-help">شناسه محصولات را با کاما جدا کنید (مثلاً: 1,5,10)</div>
+          </div>
+
+          <div class="form-group" id="sectionCategoryIdGroup" style="display: none;">
+            <label class="form-label">شناسه دسته‌بندی <span class="required">*</span></label>
+            <input type="number" class="form-input" id="sectionCategoryId" min="1">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">استایل نمایش <span class="required">*</span></label>
+            <select class="form-select" id="sectionDisplayStyle" required>
+              <option value="carousel">اسلایدر افقی (Carousel)</option>
+              <option value="grid">شبکه‌ای (Grid)</option>
+              <option value="list">لیست عمودی (List)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">محدودیت تعداد محصولات</label>
+            <input type="number" class="form-input" id="sectionProductsLimit" value="10" min="1">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ترتیب نمایش</label>
+            <input type="number" class="form-input" id="sectionSortOrder" value="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="sectionShowViewAll">
+              <label for="sectionShowViewAll">نمایش دکمه "مشاهده همه"</label>
+            </div>
+          </div>
+
+          <div class="form-group" id="sectionViewAllLinkGroup" style="display: none;">
+            <label class="form-label">لینک "مشاهده همه"</label>
+            <input type="text" class="form-input" id="sectionViewAllLink" placeholder="/products?featured=true">
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="sectionIsActive" checked>
+              <label for="sectionIsActive">فعال</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSectionModal()">انصراف</button>
+        <button class="btn btn-success" onclick="saveSection()">💾 ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    let API_BASE_URL = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000/api';
+    let AUTH_TOKEN = localStorage.getItem('authToken') || '';
+
+    // Update API display
+    document.getElementById('currentApi').textContent = API_BASE_URL;
+
+    // Data storage
+    let sliders = [];
+    let banners = [];
+    let sections = [];
+    let categories = [];
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tabs
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+
+      // Load data if needed
+      if (tabName === 'analytics') {
+        loadAnalytics();
+      }
+    }
+
+    // Change API URL
+    function changeApiUrl() {
+      const newUrl = prompt('آدرس API را وارد کنید:', API_BASE_URL);
+      if (newUrl && newUrl.trim()) {
+        API_BASE_URL = newUrl.trim();
+        localStorage.setItem('apiBaseUrl', API_BASE_URL);
+        document.getElementById('currentApi').textContent = API_BASE_URL;
+        showAlert('success', 'آدرس API با موفقیت تغییر کرد');
+        refreshData();
+      }
+    }
+
+    // API Helper
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+
+      if (AUTH_TOKEN) {
+        options.headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+      }
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    }
+
+    // Load all data
+    async function refreshData() {
+      await loadSliders();
+      await loadBanners();
+      await loadSections();
+      updateStats();
+    }
+
+    // Update stats
+    function updateStats() {
+      const activeSliders = sliders.filter(s => s.is_active).length;
+      const activeBanners = banners.filter(b => b.is_active).length;
+      const activeSections = sections.filter(s => s.is_active).length;
+
+      document.getElementById('statSliders').textContent = activeSliders;
+      document.getElementById('statBanners').textContent = activeBanners;
+      document.getElementById('statCategories').textContent = '8';
+      document.getElementById('statSections').textContent = activeSections;
+    }
+
+    // ==================== SLIDERS ====================
+
+    async function loadSliders() {
+      const loading = document.getElementById('slidersLoading');
+      const table = document.getElementById('slidersTable');
+      const empty = document.getElementById('slidersEmpty');
+
+      loading.style.display = 'block';
+      table.style.display = 'none';
+      empty.style.display = 'none';
+
+      try {
+        const data = await apiCall('/admin/hero-sliders');
+        sliders = data;
+
+        if (sliders.length === 0) {
+          empty.style.display = 'block';
+        } else {
+          renderSliders();
+          table.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading sliders:', error);
+        showAlert('error', 'خطا در بارگذاری اسلایدرها: ' + error.message);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function renderSliders() {
+      const tbody = document.getElementById('slidersTableBody');
+      tbody.innerHTML = '';
+
+      sliders.forEach(slider => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <img src="${slider.image_url}" class="image-preview" alt="${slider.title}" onerror="this.src='https://via.placeholder.com/100'">
+          </td>
+          <td>
+            <strong>${slider.title}</strong>
+            ${slider.description ? `<br><small style="color: #718096;">${slider.description.substring(0, 50)}...</small>` : ''}
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 30px; height: 30px; background: ${slider.background_color}; border-radius: 6px; border: 2px solid #e2e8f0;"></div>
+              <code style="font-size: 12px;">${slider.background_color}</code>
+            </div>
+          </td>
+          <td>${slider.sort_order}</td>
+          <td>
+            <span class="badge ${slider.is_active ? 'badge-success' : 'badge-danger'}">
+              ${slider.is_active ? '✓ فعال' : '✗ غیرفعال'}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon btn-edit" onclick="editSlider(${slider.id})" title="ویرایش">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" onclick="deleteSlider(${slider.id})" title="حذف">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openSliderModal(slider = null) {
+      document.getElementById('sliderModalTitle').textContent = slider ? 'ویرایش اسلایدر' : 'افزودن اسلایدر جدید';
+
+      if (slider) {
+        document.getElementById('sliderId').value = slider.id;
+        document.getElementById('sliderTitle').value = slider.title;
+        document.getElementById('sliderDescription').value = slider.description || '';
+        document.getElementById('sliderImage').value = slider.image_url;
+        document.getElementById('sliderBgColor').value = slider.background_color;
+        document.getElementById('sliderBgColorText').value = slider.background_color;
+        document.getElementById('sliderButtonText').value = slider.button_text || '';
+        document.getElementById('sliderButtonLink').value = slider.button_link || '';
+        document.getElementById('sliderSortOrder').value = slider.sort_order;
+        document.getElementById('sliderIsActive').checked = slider.is_active;
+      } else {
+        document.getElementById('sliderForm').reset();
+        document.getElementById('sliderId').value = '';
+        document.getElementById('sliderBgColor').value = '#E8B4D9';
+        document.getElementById('sliderBgColorText').value = '#E8B4D9';
+        document.getElementById('sliderIsActive').checked = true;
+      }
+
+      document.getElementById('sliderModal').classList.add('active');
+    }
+
+    function closeSliderModal() {
+      document.getElementById('sliderModal').classList.remove('active');
+    }
+
+    async function saveSlider() {
+      const id = document.getElementById('sliderId').value;
+      const data = {
+        title: document.getElementById('sliderTitle').value,
+        description: document.getElementById('sliderDescription').value || null,
+        image_url: document.getElementById('sliderImage').value,
+        background_color: document.getElementById('sliderBgColorText').value,
+        button_text: document.getElementById('sliderButtonText').value || null,
+        button_link: document.getElementById('sliderButtonLink').value || null,
+        sort_order: parseInt(document.getElementById('sliderSortOrder').value),
+        is_active: document.getElementById('sliderIsActive').checked
+      };
+
+      try {
+        if (id) {
+          await apiCall(`/admin/hero-sliders/${id}`, 'PATCH', data);
+          showAlert('success', 'اسلایدر با موفقیت بروزرسانی شد');
+        } else {
+          await apiCall('/admin/hero-sliders', 'POST', data);
+          showAlert('success', 'اسلایدر با موفقیت ایجاد شد');
+        }
+        closeSliderModal();
+        await loadSliders();
+      } catch (error) {
+        console.error('Error saving slider:', error);
+        showAlert('error', 'خطا در ذخیره اسلایدر: ' + error.message);
+      }
+    }
+
+    async function editSlider(id) {
+      const slider = sliders.find(s => s.id === id);
+      if (slider) {
+        openSliderModal(slider);
+      }
+    }
+
+    async function deleteSlider(id) {
+      if (!confirm('آیا از حذف این اسلایدر اطمینان دارید؟')) return;
+
+      try {
+        await apiCall(`/admin/hero-sliders/${id}`, 'DELETE');
+        showAlert('success', 'اسلایدر با موفقیت حذف شد');
+        await loadSliders();
+      } catch (error) {
+        console.error('Error deleting slider:', error);
+        showAlert('error', 'خطا در حذف اسلایدر: ' + error.message);
+      }
+    }
+
+    // Color sync
+    document.addEventListener('DOMContentLoaded', () => {
+      const colorPicker = document.getElementById('sliderBgColor');
+      const colorText = document.getElementById('sliderBgColorText');
+
+      if (colorPicker && colorText) {
+        colorPicker.addEventListener('input', (e) => {
+          colorText.value = e.target.value;
+        });
+        colorText.addEventListener('input', (e) => {
+          colorPicker.value = e.target.value;
+        });
+      }
+
+      const bannerColorPicker = document.getElementById('bannerBadgeColor');
+      const bannerColorText = document.getElementById('bannerBadgeColorText');
+
+      if (bannerColorPicker && bannerColorText) {
+        bannerColorPicker.addEventListener('input', (e) => {
+          bannerColorText.value = e.target.value;
+        });
+        bannerColorText.addEventListener('input', (e) => {
+          bannerColorPicker.value = e.target.value;
+        });
+      }
+    });
+
+    // ==================== BANNERS ====================
+
+    async function loadBanners() {
+      const loading = document.getElementById('bannersLoading');
+      const table = document.getElementById('bannersTable');
+      const empty = document.getElementById('bannersEmpty');
+
+      loading.style.display = 'block';
+      table.style.display = 'none';
+      empty.style.display = 'none';
+
+      try {
+        const data = await apiCall('/admin/side-banners');
+        banners = data;
+
+        if (banners.length === 0) {
+          empty.style.display = 'block';
+        } else {
+          renderBanners();
+          table.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading banners:', error);
+        showAlert('error', 'خطا در بارگذاری بنرها: ' + error.message);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function renderBanners() {
+      const tbody = document.getElementById('bannersTableBody');
+      tbody.innerHTML = '';
+
+      const positionLabels = {
+        'top_right': 'بالا راست',
+        'middle_right': 'وسط راست',
+        'bottom_right': 'پایین راست'
+      };
+
+      banners.forEach(banner => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <img src="${banner.image_url}" class="image-preview" alt="${banner.title}" onerror="this.src='https://via.placeholder.com/100'">
+          </td>
+          <td><strong>${banner.title}</strong></td>
+          <td>${banner.subtitle || '-'}</td>
+          <td>
+            <span class="badge badge-info">${positionLabels[banner.position]}</span>
+          </td>
+          <td>
+            ${banner.badge_text ? `
+              <div style="display: inline-block; padding: 4px 8px; background: ${banner.badge_color}; color: white; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                ${banner.badge_text}
+              </div>
+            ` : '-'}
+          </td>
+          <td>
+            <span class="badge ${banner.is_active ? 'badge-success' : 'badge-danger'}">
+              ${banner.is_active ? '✓ فعال' : '✗ غیرفعال'}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon btn-edit" onclick="editBanner(${banner.id})" title="ویرایش">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" onclick="deleteBanner(${banner.id})" title="حذف">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openBannerModal(banner = null) {
+      document.getElementById('bannerModalTitle').textContent = banner ? 'ویرایش بنر' : 'افزودن بنر جدید';
+
+      if (banner) {
+        document.getElementById('bannerId').value = banner.id;
+        document.getElementById('bannerTitle').value = banner.title;
+        document.getElementById('bannerSubtitle').value = banner.subtitle || '';
+        document.getElementById('bannerImage').value = banner.image_url;
+        document.getElementById('bannerLink').value = banner.link;
+        document.getElementById('bannerPosition').value = banner.position;
+        document.getElementById('bannerBadgeText').value = banner.badge_text || '';
+        document.getElementById('bannerBadgeColor').value = banner.badge_color || '#FF0000';
+        document.getElementById('bannerBadgeColorText').value = banner.badge_color || '#FF0000';
+        document.getElementById('bannerSortOrder').value = banner.sort_order;
+        document.getElementById('bannerIsActive').checked = banner.is_active;
+      } else {
+        document.getElementById('bannerForm').reset();
+        document.getElementById('bannerId').value = '';
+        document.getElementById('bannerBadgeColor').value = '#FF0000';
+        document.getElementById('bannerBadgeColorText').value = '#FF0000';
+        document.getElementById('bannerIsActive').checked = true;
+      }
+
+      document.getElementById('bannerModal').classList.add('active');
+    }
+
+    function closeBannerModal() {
+      document.getElementById('bannerModal').classList.remove('active');
+    }
+
+    async function saveBanner() {
+      const id = document.getElementById('bannerId').value;
+      const data = {
+        title: document.getElementById('bannerTitle').value,
+        subtitle: document.getElementById('bannerSubtitle').value || null,
+        image_url: document.getElementById('bannerImage').value,
+        link: document.getElementById('bannerLink').value,
+        position: document.getElementById('bannerPosition').value,
+        badge_text: document.getElementById('bannerBadgeText').value || null,
+        badge_color: document.getElementById('bannerBadgeColorText').value || null,
+        sort_order: parseInt(document.getElementById('bannerSortOrder').value),
+        is_active: document.getElementById('bannerIsActive').checked
+      };
+
+      try {
+        if (id) {
+          await apiCall(`/admin/side-banners/${id}`, 'PATCH', data);
+          showAlert('success', 'بنر با موفقیت بروزرسانی شد');
+        } else {
+          await apiCall('/admin/side-banners', 'POST', data);
+          showAlert('success', 'بنر با موفقیت ایجاد شد');
+        }
+        closeBannerModal();
+        await loadBanners();
+      } catch (error) {
+        console.error('Error saving banner:', error);
+        showAlert('error', 'خطا در ذخیره بنر: ' + error.message);
+      }
+    }
+
+    async function editBanner(id) {
+      const banner = banners.find(b => b.id === id);
+      if (banner) {
+        openBannerModal(banner);
+      }
+    }
+
+    async function deleteBanner(id) {
+      if (!confirm('آیا از حذف این بنر اطمینان دارید؟')) return;
+
+      try {
+        await apiCall(`/admin/side-banners/${id}`, 'DELETE');
+        showAlert('success', 'بنر با موفقیت حذف شد');
+        await loadBanners();
+      } catch (error) {
+        console.error('Error deleting banner:', error);
+        showAlert('error', 'خطا در حذف بنر: ' + error.message);
+      }
+    }
+
+    // ==================== SECTIONS ====================
+
+    async function loadSections() {
+      const loading = document.getElementById('sectionsLoading');
+      const table = document.getElementById('sectionsTable');
+      const empty = document.getElementById('sectionsEmpty');
+
+      loading.style.display = 'block';
+      table.style.display = 'none';
+      empty.style.display = 'none';
+
+      try {
+        const data = await apiCall('/admin/home-sections');
+        sections = data;
+
+        if (sections.length === 0) {
+          empty.style.display = 'block';
+        } else {
+          renderSections();
+          table.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading sections:', error);
+        showAlert('error', 'خطا در بارگذاری بخش‌ها: ' + error.message);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function renderSections() {
+      const tbody = document.getElementById('sectionsTableBody');
+      tbody.innerHTML = '';
+
+      const typeLabels = {
+        'featured': 'محصولات ویژه',
+        'special_products': 'محصولات دستی',
+        'most_popular': 'محبوب‌ترین',
+        'category_based': 'دسته‌بندی محور'
+      };
+
+      const styleLabels = {
+        'carousel': 'اسلایدر',
+        'grid': 'شبکه',
+        'list': 'لیست'
+      };
+
+      sections.forEach(section => {
+        const productsCount = section.products ? section.products.length : 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${section.title}</strong>
+            ${section.description ? `<br><small style="color: #718096;">${section.description.substring(0, 40)}...</small>` : ''}
+          </td>
+          <td>
+            <span class="badge badge-info">${typeLabels[section.section_type]}</span>
+          </td>
+          <td>
+            <span class="badge badge-warning">${styleLabels[section.display_style]}</span>
+          </td>
+          <td>${section.products_limit || '-'}</td>
+          <td>${section.sort_order}</td>
+          <td>
+            <span class="badge ${section.is_active ? 'badge-success' : 'badge-danger'}">
+              ${section.is_active ? '✓ فعال' : '✗ غیرفعال'}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-icon btn-view" onclick="viewSectionProducts(${section.id})" title="مشاهده محصولات">
+                👁️
+              </button>
+              <button class="btn-icon btn-edit" onclick="editSection(${section.id})" title="ویرایش">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" onclick="deleteSection(${section.id})" title="حذف">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleSectionTypeChange() {
+      const type = document.getElementById('sectionType').value;
+      const productIdsGroup = document.getElementById('sectionProductIdsGroup');
+      const categoryIdGroup = document.getElementById('sectionCategoryIdGroup');
+
+      productIdsGroup.style.display = type === 'special_products' ? 'block' : 'none';
+      categoryIdGroup.style.display = type === 'category_based' ? 'block' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const showViewAll = document.getElementById('sectionShowViewAll');
+      const viewAllLinkGroup = document.getElementById('sectionViewAllLinkGroup');
+
+      if (showViewAll && viewAllLinkGroup) {
+        showViewAll.addEventListener('change', (e) => {
+          viewAllLinkGroup.style.display = e.target.checked ? 'block' : 'none';
+        });
+      }
+    });
+
+    function openSectionModal(section = null) {
+      document.getElementById('sectionModalTitle').textContent = section ? 'ویرایش بخش' : 'افزودن بخش جدید';
+
+      if (section) {
+        document.getElementById('sectionId').value = section.id;
+        document.getElementById('sectionTitle').value = section.title;
+        document.getElementById('sectionSlug').value = section.slug;
+        document.getElementById('sectionDescription').value = section.description || '';
+        document.getElementById('sectionType').value = section.section_type;
+        document.getElementById('sectionDisplayStyle').value = section.display_style;
+        document.getElementById('sectionProductsLimit').value = section.products_limit;
+        document.getElementById('sectionSortOrder').value = section.sort_order;
+        document.getElementById('sectionShowViewAll').checked = section.show_view_all_button;
+        document.getElementById('sectionViewAllLink').value = section.view_all_link || '';
+        document.getElementById('sectionIsActive').checked = section.is_active;
+
+        if (section.product_ids) {
+          document.getElementById('sectionProductIds').value = section.product_ids.join(',');
+        }
+        if (section.category_id) {
+          document.getElementById('sectionCategoryId').value = section.category_id;
+        }
+
+        handleSectionTypeChange();
+        document.getElementById('sectionViewAllLinkGroup').style.display = section.show_view_all_button ? 'block' : 'none';
+      } else {
+        document.getElementById('sectionForm').reset();
+        document.getElementById('sectionId').value = '';
+        document.getElementById('sectionProductsLimit').value = '10';
+        document.getElementById('sectionIsActive').checked = true;
+        handleSectionTypeChange();
+      }
+
+      document.getElementById('sectionModal').classList.add('active');
+    }
+
+    function closeSectionModal() {
+      document.getElementById('sectionModal').classList.remove('active');
+    }
+
+    async function saveSection() {
+      const id = document.getElementById('sectionId').value;
+      const type = document.getElementById('sectionType').value;
+
+      const data = {
+        title: document.getElementById('sectionTitle').value,
+        slug: document.getElementById('sectionSlug').value,
+        description: document.getElementById('sectionDescription').value || null,
+        section_type: type,
+        display_style: document.getElementById('sectionDisplayStyle').value,
+        products_limit: parseInt(document.getElementById('sectionProductsLimit').value),
+        sort_order: parseInt(document.getElementById('sectionSortOrder').value),
+        show_view_all_button: document.getElementById('sectionShowViewAll').checked,
+        view_all_link: document.getElementById('sectionViewAllLink').value || null,
+        is_active: document.getElementById('sectionIsActive').checked
+      };
+
+      if (type === 'special_products') {
+        const productIdsStr = document.getElementById('sectionProductIds').value;
+        data.product_ids = productIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      }
+
+      if (type === 'category_based') {
+        data.category_id = parseInt(document.getElementById('sectionCategoryId').value);
+      }
+
+      try {
+        if (id) {
+          await apiCall(`/admin/home-sections/${id}`, 'PATCH', data);
+          showAlert('success', 'بخش با موفقیت بروزرسانی شد');
+        } else {
+          await apiCall('/admin/home-sections', 'POST', data);
+          showAlert('success', 'بخش با موفقیت ایجاد شد');
+        }
+        closeSectionModal();
+        await loadSections();
+      } catch (error) {
+        console.error('Error saving section:', error);
+        showAlert('error', 'خطا در ذخیره بخش: ' + error.message);
+      }
+    }
+
+    async function editSection(id) {
+      const section = sections.find(s => s.id === id);
+      if (section) {
+        openSectionModal(section);
+      }
+    }
+
+    async function deleteSection(id) {
+      if (!confirm('آیا از حذف این بخش اطمینان دارید؟')) return;
+
+      try {
+        await apiCall(`/admin/home-sections/${id}`, 'DELETE');
+        showAlert('success', 'بخش با موفقیت حذف شد');
+        await loadSections();
+      } catch (error) {
+        console.error('Error deleting section:', error);
+        showAlert('error', 'خطا در حذف بخش: ' + error.message);
+      }
+    }
+
+    async function viewSectionProducts(id) {
+      try {
+        const products = await apiCall(`/admin/home-sections/${id}/products`);
+        alert(`این بخش ${products.length} محصول دارد.\n\nبرای مشاهده جزئیات، از دکمه ویرایش استفاده کنید.`);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        showAlert('error', 'خطا در بارگذاری محصولات: ' + error.message);
+      }
+    }
+
+    // ==================== ANALYTICS ====================
+
+    function loadAnalytics() {
+      // TODO: Implement analytics loading
+      showAlert('warning', 'آمار و تحلیل به زودی اضافه خواهد شد');
+    }
+
+    // ==================== UTILITIES ====================
+
+    function showAlert(type, message) {
+      const alertTypes = {
+        'success': 'alert-success',
+        'error': 'alert-error',
+        'warning': 'alert-warning'
+      };
+
+      const icons = {
+        'success': '✓',
+        'error': '✗',
+        'warning': '⚠️'
+      };
+
+      const alert = document.createElement('div');
+      alert.className = `alert ${alertTypes[type]}`;
+      alert.innerHTML = `
+        <span>${icons[type]}</span>
+        <span>${message}</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+      `;
+
+      document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    // Initial load
+    window.addEventListener('load', () => {
+      refreshData();
+    });
+  </script>
+</body>
+
+</html>

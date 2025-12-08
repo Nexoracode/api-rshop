@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Side Banner Component - نمونه عملی</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      color: #1e293b;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      font-size: 18px;
+      color: #64748b;
+    }
+
+    .info-box {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-box h2 {
+      color: #0ea5e9;
+      margin-bottom: 16px;
+      font-size: 24px;
+    }
+
+    .info-box pre {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 14px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .info-box code {
+      color: #0ea5e9;
+      font-family: 'Courier New', monospace;
+    }
+
+    .control-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 30px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .control-panel h3 {
+      color: #1e293b;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #0ea5e9;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0284c7;
+    }
+
+    .status {
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    /* ========== استایل‌های Side Banner ========== */
+    .layout-container {
+      display: flex;
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .main-content {
+      flex: 1;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-content h2 {
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+
+    .main-content p {
+      color: #64748b;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .side-banners-container {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .side-banners-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .side-banner {
+      position: relative;
+      display: block;
+      border-radius: 12px;
+      overflow: hidden;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: white;
+    }
+
+    .side-banner:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .banner-image-wrapper {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .banner-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s;
+    }
+
+    .side-banner:hover .banner-image {
+      transform: scale(1.05);
+    }
+
+    .banner-content {
+      padding: 16px;
+    }
+
+    .banner-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      color: #1e293b;
+    }
+
+    .banner-subtitle {
+      font-size: 14px;
+      margin: 0;
+      color: #64748b;
+    }
+
+    .banner-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .position-label {
+      font-size: 12px;
+      color: #0ea5e9;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px dashed #e2e8f0;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .layout-container {
+        flex-direction: column;
+      }
+
+      .side-banners-container {
+        width: 100%;
+      }
+
+      .side-banners-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .side-banner {
+        flex: 1;
+        min-width: 280px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .side-banners-section {
+        flex-direction: column;
+      }
+
+      .banner-image-wrapper {
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎫 Side Banner Component</h1>
+      <p>نمونه کامل بنرهای کناری با سه موقعیت مختلف</p>
+    </div>
+
+    <!-- API Info -->
+    <div class="info-box">
+      <h2>📡 اتصال به API</h2>
+      <p style="margin-bottom: 12px;">این کامپوننت داده‌های خود را از API زیر دریافت می‌کند:</p>
+      <pre><code>GET /home</code></pre>
+      <p style="margin-top: 12px; color: #64748b;">
+        <strong>نکته:</strong> داده‌های بنرها در فیلد <code>sideBanners</code> قرار دارند.
+      </p>
+    </div>
+
+    <!-- Data Structure -->
+    <div class="info-box">
+      <h2>📦 ساختار داده</h2>
+      <pre><code>{
+  "id": 1,
+  "title": "عنوان بنر",
+  "subtitle": "زیرعنوان یا قیمت",
+  "imageUrl": "/uploads/banner.jpg",
+  "link": "/category/quran",
+  "position": "top_right",      // top_right | middle_right | bottom_right
+  "badgeText": "14%",            // اختیاری
+  "badgeColor": "#FF0000"        // اختیاری
+}</code></pre>
+    </div>
+
+    <!-- Positions Info -->
+    <div class="info-box">
+      <h2>📍 انواع موقعیت (Position)</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+        <tr style="background: #f8fafc;">
+          <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">مقدار</th>
+          <th style="padding: 12px; text-align: right; border: 1px solid #e2e8f0;">توضیحات</th>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;"><code>top_right</code></td>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;">بالای سمت راست صفحه</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;"><code>middle_right</code></td>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;">وسط سمت راست صفحه</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;"><code>bottom_right</code></td>
+          <td style="padding: 12px; border: 1px solid #e2e8f0;">پایین سمت راست صفحه</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+      <h3>🎮 کنترل‌ها</h3>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="loadBanners()">🔄 بارگذاری از API</button>
+        <button class="btn btn-primary" onclick="loadSampleData()">📝 داده‌های نمونه</button>
+      </div>
+      <div class="status" id="status">
+        آماده برای بارگذاری...
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="layout-container">
+      <!-- Main Content -->
+      <div class="main-content">
+        <h2>محتوای اصلی صفحه</h2>
+        <p>
+          این بخش نشان‌دهنده محتوای اصلی صفحه شماست. بنرهای کناری در سمت راست این محتوا قرار می‌گیرند.
+        </p>
+        <p>
+          معمولاً در این قسمت اسلایدر اصلی، دسته‌بندی‌ها و بخش‌های مختلف محصولات نمایش داده می‌شوند.
+        </p>
+        <p>
+          بنرهای کناری برای تبلیغات، معرفی دسته‌بندی‌ها یا نمایش تخفیف‌های ویژه استفاده می‌شوند.
+        </p>
+        <div style="height: 200px; background: #f8fafc; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-top: 20px; border: 2px dashed #e2e8f0;">
+          <span style="color: #94a3b8; font-size: 18px;">محتوای نمونه</span>
+        </div>
+      </div>
+
+      <!-- Side Banners -->
+      <div class="side-banners-container">
+        <!-- Top -->
+        <div>
+          <div class="position-label">🔝 بالا (Top Right)</div>
+          <div class="side-banners-section" id="bannersTop">
+            <div class="loading">در حال بارگذاری...</div>
+          </div>
+        </div>
+
+        <!-- Middle -->
+        <div>
+          <div class="position-label">➡️ وسط (Middle Right)</div>
+          <div class="side-banners-section" id="bannersMiddle">
+            <div class="loading">در حال بارگذاری...</div>
+          </div>
+        </div>
+
+        <!-- Bottom -->
+        <div>
+          <div class="position-label">🔻 پایین (Bottom Right)</div>
+          <div class="side-banners-section" id="bannersBottom">
+            <div class="loading">در حال بارگذاری...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Example -->
+    <div class="info-box">
+      <h2>💻 نحوه استفاده</h2>
+      <pre><code>// 1. دریافت داده‌ها
+const response = await fetch('API_URL/home');
+const data = await response.json();
+
+// 2. رندر بنرها
+renderSideBanners(data.sideBanners);
+
+// 3. یا استفاده از تابع آماده
+loadBanners();</code></pre>
+    </div>
+
+    <!-- Features -->
+    <div class="info-box">
+      <h2>✨ ویژگی‌ها</h2>
+      <ul style="padding-right: 24px; color: #475569;">
+        <li style="margin: 8px 0;">✅ سه موقعیت مختلف (Top, Middle, Bottom)</li>
+        <li style="margin: 8px 0;">✅ برچسب تخفیف قابل تنظیم</li>
+        <li style="margin: 8px 0;">✅ Hover Effects و Animations</li>
+        <li style="margin: 8px 0;">✅ Responsive برای موبایل</li>
+        <li style="margin: 8px 0;">✅ پشتیبانی از چند بنر در هر موقعیت</li>
+        <li style="margin: 8px 0;">✅ Analytics و ترک کلیک‌ها</li>
+        <li style="margin: 8px 0;">✅ Empty State برای موقعیت‌های خالی</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // تنظیمات
+    const API_BASE_URL = 'http://localhost:3000';
+
+    // بارگذاری بنرها از API
+    async function loadBanners() {
+      updateStatus('در حال دریافت داده‌ها...');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/home`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const banners = data.sideBanners || [];
+        
+        if (banners.length === 0) {
+          updateStatus('❌ هیچ بنری یافت نشد');
+          showEmptyState();
+          return;
+        }
+        
+        renderSideBanners(banners);
+        updateStatus(`✅ ${banners.length} بنر بارگذاری شد`);
+        
+      } catch (error) {
+        updateStatus(`❌ خطا: ${error.message}`);
+        console.error('Error loading banners:', error);
+        loadSampleData();
+      }
+    }
+
+    // استفاده از داده‌های نمونه
+    function loadSampleData() {
+      updateStatus('📝 استفاده از داده‌های نمونه');
+      
+      const sampleBanners = [
+        {
+          id: 1,
+          title: 'مصحف همراه طلاکوب',
+          subtitle: 'از ۵۴۹ تا ۵۵۹ هزار تومان',
+          imageUrl: 'https://via.placeholder.com/320x200/E8B4D9/1a202c?text=مصحف+طلاکوب',
+          link: '#',
+          position: 'top_right',
+          badgeText: null,
+          badgeColor: null
+        },
+        {
+          id: 2,
+          title: 'تسبیح دست‌ساز',
+          subtitle: 'با تخفیف ویژه',
+          imageUrl: 'https://via.placeholder.com/320x200/B8D4E8/1a202c?text=تسبیح+دست‌ساز',
+          link: '#',
+          position: 'top_right',
+          badgeText: '20%',
+          badgeColor: '#ef4444'
+        },
+        {
+          id: 3,
+          title: 'کتب مذهبی',
+          subtitle: 'مجموعه کامل',
+          imageUrl: 'https://via.placeholder.com/320x200/D4E8B4/1a202c?text=کتب+مذهبی',
+          link: '#',
+          position: 'middle_right',
+          badgeText: 'جدید',
+          badgeColor: '#10b981'
+        },
+        {
+          id: 4,
+          title: 'لوازم نماز',
+          subtitle: 'با کیفیت عالی',
+          imageUrl: 'https://via.placeholder.com/320x200/E8D4B4/1a202c?text=لوازم+نماز',
+          link: '#',
+          position: 'bottom_right',
+          badgeText: '15%',
+          badgeColor: '#f59e0b'
+        },
+        {
+          id: 5,
+          title: 'سجاده فرش',
+          subtitle: 'طرح‌های متنوع',
+          imageUrl: 'https://via.placeholder.com/320x200/E8B4B4/1a202c?text=سجاده+فرش',
+          link: '#',
+          position: 'bottom_right',
+          badgeText: null,
+          badgeColor: null
+        }
+      ];
+      
+      renderSideBanners(sampleBanners);
+    }
+
+    // رندر بنرها
+    function renderSideBanners(banners) {
+      // گروه‌بندی بر اساس موقعیت
+      const grouped = {
+        top_right: [],
+        middle_right: [],
+        bottom_right: []
+      };
+      
+      banners.forEach(banner => {
+        if (grouped[banner.position]) {
+          grouped[banner.position].push(banner);
+        }
+      });
+      
+      // رندر هر گروه
+      renderBannerGroup(grouped.top_right, 'bannersTop');
+      renderBannerGroup(grouped.middle_right, 'bannersMiddle');
+      renderBannerGroup(grouped.bottom_right, 'bannersBottom');
+    }
+
+    // رندر یک گروه بنر
+    function renderBannerGroup(banners, containerId) {
+      const container = document.getElementById(containerId);
+      
+      if (banners.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size: 48px; margin-bottom: 12px;">📭</div>
+            <div>بنری در این موقعیت وجود ندارد</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      banners.forEach(banner => {
+        const bannerEl = document.createElement('a');
+        bannerEl.href = banner.link;
+        bannerEl.className = 'side-banner';
+        bannerEl.setAttribute('data-banner-id', banner.id);
+        bannerEl.onclick = (e) => {
+          e.preventDefault();
+          trackBannerClick(banner.id);
+          updateStatus(`🖱️ کلیک روی بنر: ${banner.title}`);
+        };
+        
+        bannerEl.innerHTML = `
+          <div class="banner-image-wrapper">
+            ${banner.badgeText ? `
+              <div class="banner-badge" style="background-color: ${banner.badgeColor}">
+                ${banner.badgeText}
+              </div>
+            ` : ''}
+            <img src="${banner.imageUrl}" alt="${banner.title}" class="banner-image">
+          </div>
+          <div class="banner-content">
+            <h3 class="banner-title">${banner.title}</h3>
+            ${banner.subtitle ? `<p class="banner-subtitle">${banner.subtitle}</p>` : ''}
+          </div>
+        `;
+        
+        container.appendChild(bannerEl);
+      });
+    }
+
+    // نمایش حالت خالی
+    function showEmptyState() {
+      ['bannersTop', 'bannersMiddle', 'bannersBottom'].forEach(id => {
+        renderBannerGroup([], id);
+      });
+    }
+
+    // ترک کلیک بنر
+    async function trackBannerClick(bannerId) {
+      try {
+        await fetch(`${API_BASE_URL}/home/analytics/track/side_banner/${bannerId}`, {
+          method: 'POST'
+        });
+        updateStatus(`✅ کلیک روی بنر ${bannerId} ثبت شد`);
+      } catch (error) {
+        console.warn('Analytics tracking failed:', error);
+      }
+    }
+
+    // بروزرسانی وضعیت
+    function updateStatus(message) {
+      const status = document.getElementById('status');
+      const timestamp = new Date().toLocaleTimeString('fa-IR');
+      status.textContent = `[${timestamp}] ${message}`;
+    }
+
+    // بارگذاری اولیه
+    window.addEventListener('load', () => {
+      loadSampleData();
+      updateStatus('✅ آماده است - برای بارگذاری از API، دکمه "بارگذاری از API" را بزنید');
+    });
+  </script>
+</body>
+</html>

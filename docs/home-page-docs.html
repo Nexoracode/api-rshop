@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>RSHOP – صفحه اصلی Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #0f172a;
+      --subtext: #475569;
+      --card-bg: #f8fafc;
+      --border: #e2e8f0;
+      --accent: #0ea5e9;
+      --accent-bg: #e0f7ff;
+      --code-bg: #f1f5f9;
+      --sidebar-bg: #f8fafc;
+      --sidebar-border: #e2e8f0;
+    }
+
+    .dark {
+      --bg: #0f172a;
+      --text: #e2e8f0;
+      --subtext: #94a3b8;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent-bg: rgba(56, 189, 248, 0.1);
+      --code-bg: #111827;
+      --sidebar-bg: #0f172a;
+      --sidebar-border: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      z-index: 999999;
+    }
+
+    .sidebar {
+      width: 260px;
+      padding: 24px 22px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--sidebar-border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      font-size: 13px;
+      opacity: .6;
+      margin: 20px 0 10px;
+      font-weight: 600;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      transition: .15s;
+      border: 1px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+    }
+
+    .sidebar a.active {
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .main {
+      flex: 1;
+      padding: 50px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin: 0 0 12px 0;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 40px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 22px;
+      margin: 30px 0 12px 0;
+    }
+
+    h4 {
+      font-size: 18px;
+      margin: 24px 0 10px 0;
+      color: var(--accent);
+    }
+
+    p {
+      line-height: 1.7;
+      color: var(--subtext);
+      margin: 12px 0;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 0 4px;
+    }
+
+    .badge-get {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-post {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .endpoint {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .endpoint-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .endpoint-url {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    ul {
+      line-height: 1.8;
+      color: var(--subtext);
+      padding-right: 24px;
+    }
+
+    .note {
+      background: var(--accent-bg);
+      border-right: 4px solid var(--accent);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-right: 4px solid #f59e0b;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .mockup {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      background: var(--bg);
+    }
+
+    .mockup-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .visual-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .visual-box h3 {
+      margin: 0 0 12px 0;
+      font-size: 24px;
+    }
+
+    .component-preview {
+      border: 3px dashed var(--border);
+      border-radius: 12px;
+      padding: 30px;
+      margin: 20px 0;
+      text-align: center;
+      background: var(--card-bg);
+    }
+
+    .component-preview .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: right;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--card-bg);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+
+      .main {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌓 تغییر تم</button>
+
+  <aside class="sidebar">
+    <h2 style="margin-top: 0;">📄 فهرست مطالب</h2>
+
+    <h3>معرفی</h3>
+    <a href="#overview">نمای کلی</a>
+    <a href="#page-structure">ساختار صفحه</a>
+
+    <h3>بخش ۱: اسلایدر اصلی</h3>
+    <a href="#hero-slider">توضیحات Hero Slider</a>
+    <a href="#hero-slider-api">API و داده‌ها</a>
+    <a href="#hero-slider-design">طراحی و نمای کلی</a>
+
+    <h3>بخش ۲: بنرهای کناری</h3>
+    <a href="#side-banners">توضیحات Side Banners</a>
+    <a href="#side-banners-api">API و داده‌ها</a>
+    <a href="#side-banners-design">طراحی و موقعیت‌ها</a>
+
+    <h3>بخش ۳: دسته‌بندی‌ها</h3>
+    <a href="#categories">توضیحات Categories</a>
+    <a href="#categories-api">API و داده‌ها</a>
+    <a href="#categories-design">طراحی و نمایش</a>
+
+    <h3>بخش ۴: بخش‌های محصولات</h3>
+    <a href="#sections">توضیحات Sections</a>
+    <a href="#sections-types">انواع بخش‌ها</a>
+    <a href="#sections-api">API و داده‌ها</a>
+    <a href="#sections-design">طراحی و استایل‌ها</a>
+
+    <h3>ارتباط با API</h3>
+    <a href="#api-main">دریافت صفحه اصلی</a>
+    <a href="#api-analytics">ثبت کلیک‌ها</a>
+  </aside>
+
+  <main class="main">
+    <h1>📱 مستندات صفحه اصلی (Home Page)</h1>
+    <p style="font-size: 18px; color: var(--subtext);">
+      راهنمای طراحی و پیاده‌سازی صفحه اصلی فروشگاه
+    </p>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>🎯 نمای کلی</h2>
+      <p>
+        صفحه اصلی از چهار بخش اصلی تشکیل شده که تمام داده‌های آن‌ها از یک API واحد دریافت می‌شود:
+      </p>
+
+      <div class="card">
+        <h4>۱. Hero Sliders (اسلایدر اصلی) 🎠</h4>
+        <p>اسلایدرهای بزرگ و جذاب در بالای صفحه - معمولاً 3 تا 5 اسلایدر</p>
+
+        <h4>۲. Side Banners (بنرهای کناری) 🎫</h4>
+        <p>بنرهای کوچک در کنار صفحه - با سه موقعیت: بالا، وسط، پایین</p>
+
+        <h4>۳. Categories (دسته‌بندی‌ها) 📂</h4>
+        <p>8 دسته‌بندی اصلی با آیکون - برای دسترسی سریع</p>
+
+        <h4>۴. Home Sections (بخش‌های محصولات) 📦</h4>
+        <p>بخش‌های مختلف محصولات: ویژه، محبوب، دستی، دسته‌بندی محور</p>
+      </div>
+
+      <div class="note">
+        <strong>💡 نکته کلیدی:</strong> تمام اطلاعات با یک درخواست GET به <code>/home</code> دریافت می‌شود و
+        به مدت 5 دقیقه کش می‌شود.
+      </div>
+    </section>
+
+    <!-- Page Structure -->
+    <section id="page-structure">
+      <h2>🏗️ ساختار کلی صفحه</h2>
+
+      <div class="mockup">
+        <div class="mockup-title">📐 لی‌اوت صفحه</div>
+        <pre style="text-align: left; direction: ltr;">
+┌─────────────────────────────────────────────────┐
+│              HEADER & NAVBAR                     │
+├─────────────────────────────────┬───────────────┤
+│                                 │               │
+│      HERO SLIDER                │  SIDE BANNER  │
+│      (اسلایدر بزرگ)            │  (بالا)       │
+│                                 │               │
+│                                 ├───────────────┤
+│                                 │               │
+│                                 │  SIDE BANNER  │
+│                                 │  (وسط)        │
+├─────────────────────────────────┤               │
+│                                 ├───────────────┤
+│     CATEGORIES (8 عدد)          │               │
+│                                 │  SIDE BANNER  │
+│                                 │  (پایین)      │
+├─────────────────────────────────┴───────────────┤
+│                                                  │
+│          SECTION 1: محصولات ویژه                │
+│          (کاروسل افقی)                          │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│          SECTION 2: پرفروش‌ترین‌ها               │
+│          (گرید 4 ستونی)                         │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│          SECTION 3: محصولات دستی                 │
+│          (لیست عمودی)                            │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                   FOOTER                         │
+└──────────────────────────────────────────────────┘
+        </pre>
+      </div>
+    </section>
+
+    <!-- Hero Slider Section -->
+    <section id="hero-slider">
+      <h2>🎠 بخش ۱: اسلایدر اصلی (Hero Slider)</h2>
+
+      <div class="component-preview">
+        <div class="icon">🎠</div>
+        <h3>اسلایدر بزرگ صفحه اصلی</h3>
+        <p>اسلایدر تمام عرض با ارتفاع حدود 500px</p>
+      </div>
+
+      <h3>📋 توضیحات</h3>
+      <p>
+        اسلایدر اصلی در بالای صفحه قرار می‌گیرد و معمولاً برای:
+      </p>
+      <ul>
+        <li>تبلیغات محصولات ویژه</li>
+        <li>معرفی کمپین‌ها و تخفیف‌های ویژه</li>
+        <li>اطلاع‌رسانی‌های مهم</li>
+        <li>جذب توجه کاربران جدید</li>
+      </ul>
+
+      <h3>✨ ویژگی‌های طراحی</h3>
+      <div class="card">
+        <ul>
+          <li><strong>Auto-play:</strong> تغییر خودکار هر 5 ثانیه</li>
+          <li><strong>Navigation:</strong> فلش‌های چپ/راست برای تغییر دستی</li>
+          <li><strong>Dots:</strong> نقاط پایین برای نمایش موقعیت و کلیک</li>
+          <li><strong>Hover Effect:</strong> توقف auto-play هنگام hover</li>
+          <li><strong>Responsive:</strong> در موبایل به صورت عمودی نمایش داده شود</li>
+        </ul>
+      </div>
+
+      <h3>🎨 المان‌های هر اسلاید</h3>
+      <div class="mockup">
+        <pre style="text-align: left; direction: ltr;">
+┌────────────────────────────────────────────────┐
+│  [با رنگ پس‌زمینه مشخص]                        │
+│                                                │
+│  ┌─────────────────┐    ┌──────────────────┐  │
+│  │                 │    │                  │  │
+│  │   محتوای متنی   │    │   تصویر محصول   │  │
+│  │   - عنوان       │    │                  │  │
+│  │   - توضیحات     │    │                  │  │
+│  │   - دکمه CTA    │    │                  │  │
+│  │                 │    │                  │  │
+│  └─────────────────┘    └──────────────────┘  │
+│                                                │
+│           ⬤ ⬤ ⬤  (Navigation Dots)            │
+│  ❮                                          ❯  │
+└────────────────────────────────────────────────┘
+        </pre>
+      </div>
+    </section>
+
+    <!-- Hero Slider API -->
+    <section id="hero-slider-api">
+      <h2>📡 Hero Slider - API و داده‌ها</h2>
+
+      <h3>ساختار JSON</h3>
+      <pre><code>{
+  "heroSliders": [
+    {
+      "id": 1,
+      "title": "تسبیح تایگر چشم بین",
+      "description": "محصول دست‌ساز با کیفیت عالی",
+      "imageUrl": "/uploads/sliders/slider1.jpg",
+      "backgroundColor": "#E8B4D9",
+      "buttonText": "مشاهده محصول",
+      "buttonLink": "/products/tiger-eye-tasbih"
+    },
+    ...
+  ]
+}</code></pre>
+
+      <h3>📊 فیلدها</h3>
+      <table>
+        <tr>
+          <th style="width: 150px;">فیلد</th>
+          <th style="width: 100px;">نوع</th>
+          <th>توضیحات</th>
+        </tr>
+        <tr>
+          <td><code>id</code></td>
+          <td>number</td>
+          <td>شناسه یونیک - برای analytics</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>عنوان اصلی - فونت بزرگ و Bold</td>
+        </tr>
+        <tr>
+          <td><code>description</code></td>
+          <td>string | null</td>
+          <td>توضیحات کوتاه - اختیاری</td>
+        </tr>
+        <tr>
+          <td><code>imageUrl</code></td>
+          <td>string</td>
+          <td>آدرس تصویر محصول</td>
+        </tr>
+        <tr>
+          <td><code>backgroundColor</code></td>
+          <td>string</td>
+          <td>رنگ پس‌زمینه (مثلاً #E8B4D9)</td>
+        </tr>
+        <tr>
+          <td><code>buttonText</code></td>
+          <td>string | null</td>
+          <td>متن دکمه - اختیاری</td>
+        </tr>
+        <tr>
+          <td><code>buttonLink</code></td>
+          <td>string | null</td>
+          <td>لینک دکمه - اختیاری</td>
+        </tr>
+      </table>
+
+      <div class="note">
+        <strong>💡 نکته:</strong> اگر <code>buttonText</code> و <code>buttonLink</code> مقدار داشتند، دکمه نمایش داده
+        می‌شود. در غیر این صورت فقط عنوان و توضیحات.
+      </div>
+    </section>
+
+    <!-- Hero Slider Design -->
+    <section id="hero-slider-design">
+      <h2>🎨 Hero Slider - راهنمای طراحی</h2>
+
+      <div class="card">
+        <h4>ابعاد و اندازه‌ها</h4>
+        <ul>
+          <li><strong>ارتفاع:</strong> 500px (Desktop) / 400px (Mobile)</li>
+          <li><strong>عرض:</strong> 100% (تمام عرض کانتینر)</li>
+          <li><strong>Border Radius:</strong> 16px</li>
+          <li><strong>Padding داخلی:</strong> 60px (Desktop) / 30px (Mobile)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>رنگ‌ها و فونت‌ها</h4>
+        <ul>
+          <li><strong>عنوان:</strong> 42px, Bold, رنگ #1a202c</li>
+          <li><strong>توضیحات:</strong> 18px, Normal, رنگ #4a5568</li>
+          <li><strong>دکمه:</strong> پس‌زمینه #2563eb, متن سفید, Padding 14px 32px</li>
+          <li><strong>Navigation Arrows:</strong> دایره سفید با سایه</li>
+          <li><strong>Dots:</strong> سفید شفاف، فعال: سفید کامل</li>
+        </ul>
+      </div>
+
+      <div class="warning">
+        <strong>⚠️ نکات مهم:</strong>
+        <ul style="margin: 8px 0 0 0;">
+          <li>حتماً transition نرم برای تغییر اسلایدها (0.5s)</li>
+          <li>تصویر باید aspect ratio حفظ کند</li>
+          <li>در موبایل، محتوا و تصویر زیر هم قرار گیرند</li>
+          <li>دکمه باید وقتی hover میشه، بالا بیاد (translateY)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Side Banners Section -->
+    <section id="side-banners">
+      <h2>🎫 بخش ۲: بنرهای کناری (Side Banners)</h2>
+
+      <div class="component-preview">
+        <div class="icon">🎫</div>
+        <h3>بنرهای کوچک کناری</h3>
+        <p>بنرهای 320px عرض در سمت راست صفحه</p>
+      </div>
+
+      <h3>📋 توضیحات</h3>
+      <p>
+        بنرهای کناری در سمت راست صفحه قرار می‌گیرند و در سه موقعیت مختلف نمایش داده می‌شوند:
+      </p>
+
+      <div class="card">
+        <h4>📍 موقعیت‌ها</h4>
+        <ul>
+          <li><strong>top_right:</strong> بالای سمت راست (کنار اسلایدر)</li>
+          <li><strong>middle_right:</strong> وسط سمت راست (کنار دسته‌بندی‌ها)</li>
+          <li><strong>bottom_right:</strong> پایین سمت راست (کنار بخش اول)</li>
+        </ul>
+      </div>
+
+      <h3>✨ ویژگی‌های طراحی</h3>
+      <div class="card">
+        <ul>
+          <li><strong>عرض ثابت:</strong> 320px در Desktop</li>
+          <li><strong>Badge تخفیف:</strong> در گوشه (اگر داشته باشد)</li>
+          <li><strong>Hover Effect:</strong> بالا آمدن با سایه</li>
+          <li><strong>Responsive:</strong> در موبایل تمام عرض</li>
+          <li><strong>چند بنر:</strong> می‌توان چند بنر در یک موقعیت داشت</li>
+        </ul>
+      </div>
+
+      <h3>🎨 ساختار یک بنر</h3>
+      <div class="mockup">
+        <pre style="text-align: left; direction: ltr;">
+┌──────────────────────┐
+│  [14%] Badge         │  ← برچسب تخفیف (اختیاری)
+│                      │
+│                      │
+│   [Image 200px]      │  ← تصویر بنر
+│                      │
+│                      │
+├──────────────────────┤
+│  عنوان بنر           │  ← عنوان اصلی
+│  محدوده قیمت         │  ← زیرعنوان
+└──────────────────────┘
+        </pre>
+      </div>
+    </section>
+
+    <!-- Side Banners API -->
+    <section id="side-banners-api">
+      <h2>📡 Side Banners - API و داده‌ها</h2>
+
+      <h3>ساختار JSON</h3>
+      <pre><code>{
+  "sideBanners": [
+    {
+      "id": 1,
+      "title": "مصحف همراه طلاکوب",
+      "subtitle": "از ۵۴۹ تا ۵۵۹ هزار تومان",
+      "imageUrl": "/uploads/banners/banner1.jpg",
+      "link": "/category/quran",
+      "position": "top_right",
+      "badgeText": "14%",
+      "badgeColor": "#FF0000"
+    },
+    ...
+  ]
+}</code></pre>
+
+      <h3>📊 فیلدها</h3>
+      <table>
+        <tr>
+          <th style="width: 150px;">فیلد</th>
+          <th style="width: 100px;">نوع</th>
+          <th>توضیحات</th>
+        </tr>
+        <tr>
+          <td><code>id</code></td>
+          <td>number</td>
+          <td>شناسه یونیک</td>
+        </tr>
+        <tr>
+          <td><code>title</code></td>
+          <td>string</td>
+          <td>عنوان بنر</td>
+        </tr>
+        <tr>
+          <td><code>subtitle</code></td>
+          <td>string | null</td>
+          <td>زیرعنوان (محدوده قیمت)</td>
+        </tr>
+        <tr>
+          <td><code>imageUrl</code></td>
+          <td>string</td>
+          <td>آدرس تصویر</td>
+        </tr>
+        <tr>
+          <td><code>link</code></td>
+          <td>string</td>
+          <td>لینک هدف</td>
+        </tr>
+        <tr>
+          <td><code>position</code></td>
+          <td>enum</td>
+          <td>top_right | middle_right | bottom_right</td>
+        </tr>
+        <tr>
+          <td><code>badgeText</code></td>
+          <td>string | null</td>
+          <td>متن برچسب (مثل 14%)</td>
+        </tr>
+        <tr>
+          <td><code>badgeColor</code></td>
+          <td>string | null</td>
+          <td>رنگ برچسب (Hex Color)</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Side Banners Design -->
+    <section id="side-banners-design">
+      <h2>🎨 Side Banners - راهنمای طراحی</h2>
+
+      <div class="card">
+        <h4>ابعاد و اندازه‌ها</h4>
+        <ul>
+          <li><strong>عرض:</strong> 320px (Desktop) / 100% (Mobile)</li>
+          <li><strong>ارتفاع تصویر:</strong> 200px</li>
+          <li><strong>Border Radius:</strong> 12px</li>
+          <li><strong>فاصله بین بنرها:</strong> 16px</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>رنگ‌ها و فونت‌ها</h4>
+        <ul>
+          <li><strong>عنوان:</strong> 18px, Bold, رنگ #1e293b</li>
+          <li><strong>زیرعنوان:</strong> 14px, Normal, رنگ #64748b</li>
+          <li><strong>Badge:</strong> 14px, Bold, سفید روی رنگ مشخص شده</li>
+          <li><strong>Hover:</strong> translateY(-4px) + سایه بزرگتر</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories">
+      <h2>📂 بخش ۳: دسته‌بندی‌ها (Categories)</h2>
+
+      <div class="component-preview">
+        <div class="icon">📂</div>
+        <h3>8 دسته‌بندی اصلی</h3>
+        <p>دسترسی سریع به دسته‌های محصولات</p>
+      </div>
+
+      <h3>📋 توضیحات</h3>
+      <p>
+        8 دسته‌بندی اصلی در یک ردیف افقی نمایش داده می‌شوند. هر دسته شامل:
+      </p>
+      <ul>
+        <li>آیکون یا تصویر دسته</li>
+        <li>نام دسته</li>
+        <li>لینک به صفحه دسته</li>
+      </ul>
+    </section>
+
+    <!-- Categories API -->
+    <section id="categories-api">
+      <h2>📡 Categories - API و داده‌ها</h2>
+
+      <h3>ساختار JSON</h3>
+      <pre><code>{
+  "categories": [
+    {
+      "id": 1,
+      "name": "تسبیح",
+      "slug": "tasbih",
+      "icon": "/uploads/categories/tasbih.svg"
+    },
+    ...
+  ]
+}</code></pre>
+
+      <div class="note">
+        <strong>💡 نکته:</strong> فقط 8 دسته اول برگردانده می‌شود.
+      </div>
+    </section>
+
+    <!-- Categories Design -->
+    <section id="categories-design">
+      <h2>🎨 Categories - راهنمای طراحی</h2>
+
+      <div class="card">
+        <h4>لی‌اوت</h4>
+        <ul>
+          <li><strong>نمایش:</strong> Grid 8 ستونی (Desktop)</li>
+          <li><strong>نمایش موبایل:</strong> Grid 4 ستونی</li>
+          <li><strong>فاصله:</strong> 16px بین آیتم‌ها</li>
+          <li><strong>Hover:</strong> بزرگ شدن کارت + سایه</li>
+        </ul>
+      </div>
+
+      <div class="mockup">
+        <pre style="text-align: left; direction: ltr;">
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│ 🕌 │ 📿 │ 📖 │ 🕯️ │ 🧕 │ 📚 │ 🎁 │ 🕊️ │
+│تسبیح│مصحف│کتب│شمع│پوشش│آموزش│هدایا│نیایش│
+└────┴────┴────┴────┴────┴────┴────┴────┘
+        </pre>
+      </div>
+    </section>
+
+    <!-- Sections -->
+    <section id="sections">
+      <h2>📦 بخش ۴: بخش‌های محصولات (Home Sections)</h2>
+
+      <div class="component-preview">
+        <div class="icon">📦</div>
+        <h3>بخش‌های مختلف محصولات</h3>
+        <p>نمایش محصولات به روش‌های مختلف</p>
+      </div>
+
+      <h3>📋 توضیحات</h3>
+      <p>
+        هر بخش شامل:
+      </p>
+      <ul>
+        <li><strong>هدر:</strong> عنوان، توضیحات، دکمه "مشاهده همه"</li>
+        <li><strong>محصولات:</strong> لیست محصولات با استایل مشخص</li>
+        <li><strong>استایل نمایش:</strong> Carousel یا Grid یا List</li>
+      </ul>
+    </section>
+
+    <!-- Sections Types -->
+    <section id="sections-types">
+      <h2>📑 انواع بخش‌ها (Section Types)</h2>
+
+      <div class="card">
+        <h4>۱. featured - محصولات ویژه</h4>
+        <p>محصولاتی که با علامت ویژه مشخص شده‌اند (<code>isFeatured = true</code>)</p>
+        <ul>
+          <li>به صورت خودکار انتخاب می‌شوند</li>
+          <li>معمولاً در بالای صفحه</li>
+          <li>پیشنهاد: استایل Carousel</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>۲. special_products - محصولات دستی</h4>
+        <p>محصولاتی که ادمین به صورت دستی انتخاب کرده</p>
+        <ul>
+          <li>کنترل کامل روی محصولات</li>
+          <li>برای کمپین‌های خاص</li>
+          <li>پیشنهاد: استایل Grid</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>۳. most_popular - محبوب‌ترین</h4>
+        <p>محصولات بر اساس تعداد فروش (<code>sold_count</code>)</p>
+        <ul>
+          <li>مرتب‌سازی نزولی (پرفروش‌ترین اول)</li>
+          <li>بروزرسانی خودکار</li>
+          <li>پیشنهاد: استایل Grid یا Carousel</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>۴. category_based - دسته‌بندی محور</h4>
+        <p>محصولات یک دسته‌بندی خاص</p>
+        <ul>
+          <li>برای معرفی دسته</li>
+          <li>جدیدترین محصولات آن دسته</li>
+          <li>پیشنهاد: استایل Grid</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Sections API -->
+    <section id="sections-api">
+      <h2>📡 Sections - API و داده‌ها</h2>
+
+      <h3>ساختار JSON</h3>
+      <pre><code>{
+  "sections": [
+    {
+      "id": 1,
+      "title": "محصولات ویژه",
+      "slug": "featured-products",
+      "description": "بهترین محصولات منتخب",
+      "section_type": "featured",
+      "display_style": "carousel",
+      "show_view_all_button": true,
+      "view_all_link": "/products?featured=true",
+      "products": [
+        {
+          "id": 1,
+          "name": "تسبیح عقیق",
+          "slug": "aqiq-tasbih",
+          "price": 250000,
+          "discount_price": 200000,
+          "discount_percentage": 20,
+          "stock": 10,
+          "is_available": true,
+          "image": "/uploads/products/product1.jpg",
+          "category": { "id": 1, "name": "تسبیح", "slug": "tasbih" },
+          "brand": { "id": 1, "name": "برند الف", "slug": "brand-a" }
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}</code></pre>
+
+      <h3>📊 انواع Display Style</h3>
+      <table>
+        <tr>
+          <th>مقدار</th>
+          <th>توضیحات</th>
+        </tr>
+        <tr>
+          <td><code>carousel</code></td>
+          <td>اسلایدر افقی - برای تعداد زیاد محصول</td>
+        </tr>
+        <tr>
+          <td><code>grid</code></td>
+          <td>نمایش شبکه‌ای - Grid 4 ستونی</td>
+        </tr>
+        <tr>
+          <td><code>list</code></td>
+          <td>لیست عمودی - برای مقایسه دقیق</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Sections Design -->
+    <section id="sections-design">
+      <h2>🎨 Sections - راهنمای طراحی</h2>
+
+      <div class="card">
+        <h4>هدر بخش</h4>
+        <ul>
+          <li><strong>عنوان:</strong> 28px, Bold</li>
+          <li><strong>توضیحات:</strong> 16px, رنگ #64748b</li>
+          <li><strong>دکمه "مشاهده همه":</strong> سمت چپ، رنگ accent</li>
+          <li><strong>Border Bottom:</strong> 2px solid #e2e8f0</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>کارت محصول</h4>
+        <ul>
+          <li><strong>تصویر:</strong> 280x280px</li>
+          <li><strong>نام محصول:</strong> 18px, Bold</li>
+          <li><strong>قیمت:</strong> 20px, Bold, رنگ accent</li>
+          <li><strong>تخفیف:</strong> Badge قرمز در گوشه</li>
+          <li><strong>Border:</strong> 1px solid #e2e8f0</li>
+          <li><strong>Hover:</strong> translateY(-4px) + سایه</li>
+        </ul>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-title">کارت محصول</div>
+        <pre style="text-align: left; direction: ltr;">
+┌─────────────────────┐
+│  [20%] ← برچسب تخفیف │
+│                     │
+│     [Image]         │
+│                     │
+├─────────────────────┤
+│ [دسته‌بندی]         │
+│ نام محصول           │
+│ برند (اختیاری)      │
+├─────────────────────┤
+│ ۲۵۰,۰۰۰  ۲۰۰,۰۰۰   │
+│ (قیمت اصلی) (تخفیف) │
+├─────────────────────┤
+│ موجود: ۱۰ عدد       │
+└─────────────────────┘
+        </pre>
+      </div>
+    </section>
+
+    <!-- Main API -->
+    <section id="api-main">
+      <h2>🌐 API اصلی - دریافت صفحه اصلی</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-title">
+          <span class="badge badge-get">GET</span>
+          <code class="endpoint-url">/home</code>
+        </div>
+
+        <p><strong>توضیح:</strong> دریافت تمام اطلاعات صفحه اصلی در یک درخواست</p>
+
+        <h4>Response:</h4>
+        <pre><code>{
+  "heroSliders": [...],
+  "sideBanners": [...],
+  "categories": [...],
+  "sections": [...]
+}</code></pre>
+
+        <div class="note">
+          <strong>💡 کش:</strong> این API به مدت 5 دقیقه کش می‌شود، پس نیازی به نگرانی برای بار سرور نیست.
+        </div>
+      </div>
+    </section>
+
+    <!-- Analytics API -->
+    <section id="api-analytics">
+      <h2>📊 API Analytics - ثبت کلیک‌ها</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-title">
+          <span class="badge badge-post">POST</span>
+          <code class="endpoint-url">/home/analytics/track/:type/:id</code>
+        </div>
+
+        <p><strong>توضیح:</strong> ثبت کلیک کاربر روی اسلایدر یا بنر</p>
+
+        <h4>Parameters:</h4>
+        <ul>
+          <li><code>type</code>: نوع عنصر → <code>hero_slider</code> یا <code>side_banner</code></li>
+          <li><code>id</code>: شناسه عنصر</li>
+        </ul>
+
+        <h4>مثال:</h4>
+        <pre><code>POST /home/analytics/track/hero_slider/1
+POST /home/analytics/track/side_banner/5</code></pre>
+
+        <div class="note">
+          <strong>💡 نکته:</strong> IP و User-Agent به صورت خودکار ثبت می‌شوند. نیازی به ارسال Body نیست.
+        </div>
+      </div>
+
+      <h3>📝 نحوه پیاده‌سازی</h3>
+      <p>
+        هر وقت کاربر روی اسلایدر یا بنر کلیک کرد، درخواست POST ارسال کنید:
+      </p>
+      <pre><code>// وقتی روی اسلایدر کلیک شد
+onClick: () => {
+  fetch('/home/analytics/track/hero_slider/' + sliderId, { method: 'POST' });
+  // سپس به لینک هدایت شود
+}</code></pre>
+
+      <div class="warning">
+        <strong>⚠️ مهم:</strong> اگر درخواست Analytics با خطا مواجه شد، نباید مانع ادامه کار شود. فقط یک
+        console.warn بزنید.
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div
+      style="margin-top: 80px; padding-top: 40px; border-top: 2px solid var(--border); text-align: center; color: var(--subtext);">
+      <p style="font-size: 18px; font-weight: 600;">✅ مستندات کامل صفحه اصلی</p>
+      <p style="font-size: 14px;">تهیه شده برای تیم فرانت‌اند RSHOP</p>
+      <p style="font-size: 13px; margin-top: 20px;">
+        💡 برای هرگونه سوال یا ابهام، با تیم بک‌اند در ارتباط باشید
+      </p>
+    </div>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    document.querySelectorAll('.sidebar a').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetSection = document.querySelector(targetId);
+
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.sidebar a').forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        }
+      });
+    });
+
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section[id]');
+      const scrollPosition = window.scrollY + 100;
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        const sectionId = section.getAttribute('id');
+
+        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+          document.querySelectorAll('.sidebar a').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${sectionId}`) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
