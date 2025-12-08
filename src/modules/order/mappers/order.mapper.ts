@@ -126,6 +126,7 @@ export class OrderMapperNew {
         return {
             id: item.id,
             quantity: item.quantity,
+            discount: item.discount,
             unitPrice: Number(item.unitPrice),
             lineTotal: Number(item.lineTotal),
             product: {
