@@ -60,7 +60,7 @@ export class OrderMapperNew {
     static toDetail(order: Order, payment?: Payment | null) {
         const findMax = (items: any[]) => {
             var pr = 0;
-            items.forEach(item => {
+            items.map(item => {
                 if (item.product && item.product.preparationDays > pr) {
                     pr = item.product.preparationDays;
                 }
@@ -95,7 +95,7 @@ export class OrderMapperNew {
             manualDiscountType: order.manualDiscountType || null,
             manualDiscountValue: Number(order.manualDiscountValue),
             manualDiscountApplied: Number(order.manualDiscountApplied),
-            preparationDays: findMax(order.items),
+            preparationDays: findMax(order.items || []),
             totalWeight: order.items?.reduce((sum, item) => {
                 const weight = item.product?.weight || 0;
                 return sum + weight * item.quantity;
