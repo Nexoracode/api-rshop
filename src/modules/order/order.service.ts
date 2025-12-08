@@ -358,7 +358,7 @@ export class OrderService {
                         OrderStatus.PAYMENT_CONFIRMATION_PENDING,
                     ]),
                 },
-                relations: ['user', 'address', "items"],
+                relations: ['user', 'address', "items", 'giftWrapping'],
             });
 
             const shippingCost = await this.calculateShippingCost(user, address, card.items);
@@ -471,7 +471,14 @@ export class OrderService {
                 await orderItemRepo.save(item);
             }
 
-            return OrderMapperNew.toDetail(newOrder);
+            const returnedOrder = await orderRepo.findOne({
+                where: { id: newOrder.id },
+                relations,
+            });
+
+            if (!returnedOrder) throw new NotFoundException('سفارش یافت نشد')
+
+            return OrderMapperNew.toDetail(returnedOrder);
         });
     }
 
@@ -547,7 +554,6 @@ export class OrderService {
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
         })
-        console.log(order.items[0].product);
         return OrderMapperNew.toDetail(order, payment);
     }
 

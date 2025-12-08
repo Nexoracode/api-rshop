@@ -65,7 +65,7 @@ export class Order {
     // 🎁 Gift Wrapping Fields
     @ManyToOne(() => GiftWrapping, { eager: true, nullable: true })
     @JoinColumn({ name: 'gift_wrapping_id' })
-    giftWrapping?: GiftWrapping;
+    giftWrapping?: GiftWrapping | null;
 
     @Column({ name: 'gift_wrapping_id', nullable: true })
     giftWrappingId?: number | null;

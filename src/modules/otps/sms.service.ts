@@ -17,7 +17,11 @@ export class SmsService {
             const formattedPhone = this.formatPhone(phone);
 
             // پیام اصلی
-            const message = `کد ورود شما: ${code}`;
+            const message = `
+کد تایید شما: ${code}
+شماره همراه: ${phone}
+آکادمی سید کاظم روح بخش
+            `;
 
             // ساخت بدنه درخواست طبق داکیومنت رسمی
             const payload = {

@@ -12,6 +12,8 @@ export class OtpService {
   ) { }
 
   async generate(identifier: string): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    console.log(isDevelopment);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expireAt = new Date(Date.now() + 2 * 60 * 1000); // 2 دقیقه اعتبار
 
@@ -19,7 +21,7 @@ export class OtpService {
 
     const otp = this.otpRepo.create({
       identifier,
-      code,
+      code: isDevelopment ? '123456' : code,
       expireAt: expireAt,
     });
 
@@ -29,8 +31,8 @@ export class OtpService {
     //   expireAt: expireAt,
     // });
     await this.otpRepo.save(otp);
-
-    await this.smsService.sendOtp(identifier, code);
+    if (!isDevelopment)
+      await this.smsService.sendOtp(identifier, code);
   }
 
   async verify(identifier: string, code: string): Promise<boolean> {

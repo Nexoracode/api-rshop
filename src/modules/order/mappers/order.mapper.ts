@@ -83,7 +83,7 @@ export class OrderMapperNew {
             promotions: order.promotionDetails || null,
             isGift: order.isGift,
             giftWrapping: order.isGift ? {
-                id: order.giftWrapping!.id,
+                id: order.giftWrappingId,
                 name: order.giftWrapping!.name,
                 image: order.giftWrapping!.image,
                 price: order.giftWrapping!.price,
