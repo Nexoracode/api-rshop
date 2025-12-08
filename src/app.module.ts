@@ -40,6 +40,7 @@ import { SettingModule } from './modules/setting/setting.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { EventEmitterModule } from '@nestjs/event-emitter'; // ✅ اضافه شد
+import { HomePageModule } from './modules/home-page/home-page.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'; // ✅ اضافه ش
     SettingModule,
     SeoModule,
     AccountingModule, // ✅ ماژول حسابداری
+    HomePageModule, // ✅ ماژول مدیریت صفحه اصلی
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
