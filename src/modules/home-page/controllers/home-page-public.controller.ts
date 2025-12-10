@@ -2,14 +2,17 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HomePageService } from '../home-page.service';
 import { HomePageDataResponseDto } from '../dto/home-page-response.dto';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('Home Page - Public')
 @Controller('home')
+@Public()
 export class HomePagePublicController {
-  constructor(private readonly homePageService: HomePageService) {}
+  constructor(private readonly homePageService: HomePageService) { }
 
   @Get()
-  @ApiOperation({ 
+  @Public()
+  @ApiOperation({
     summary: 'دریافت تمام داده‌های صفحه اصلی',
     description: `
 این API تمام اطلاعات مورد نیاز برای نمایش صفحه اصلی را برمی‌گرداند شامل:
@@ -26,6 +29,7 @@ export class HomePagePublicController {
     description: 'داده‌های صفحه اصلی با موفقیت دریافت شد',
     type: HomePageDataResponseDto,
   })
+
   async getHomePage(): Promise<HomePageDataResponseDto> {
     return await this.homePageService.getHomePageData();
   }

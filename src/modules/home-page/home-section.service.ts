@@ -115,12 +115,12 @@ export class HomeSectionService {
       case SectionType.CATEGORY_BASED:
         // محصولات بر اساس دسته‌بندی
         if (section.categoryId) {
+          console.log(section.categoryId);
           return await this.productRepository.find({
             where: {
               categoryId: section.categoryId,
-              isVisible: true
             },
-            relations: ['medias', 'category', 'brand'],
+            relations: ['medias', 'category', 'brand', 'mediaPinned'],
             order: { createdAt: 'DESC' },
             take: limit,
           });

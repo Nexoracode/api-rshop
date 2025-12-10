@@ -82,7 +82,7 @@ export class HeroSliderAdminController {
    */
   @Post()
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'ایجاد اسلایدر جدید',
     description: `
 ایجاد یک اسلایدر جدید برای صفحه اصلی.
@@ -98,7 +98,7 @@ export class HeroSliderAdminController {
 - اسلایدر بلافاصله در صفحه اصلی نمایش داده می‌شود (اگر فعال باشد)
     `.trim()
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateHeroSliderDto,
     description: 'اطلاعات اسلایدر جدید',
     examples: {
@@ -108,6 +108,7 @@ export class HeroSliderAdminController {
           title: 'تسبیح تایگر چشم بین',
           image_url: '/uploads/sliders/slider1.jpg',
           background_color: '#E8B4D9',
+          is_dark: false,
           sort_order: 1,
           is_active: true
         }
@@ -119,6 +120,7 @@ export class HeroSliderAdminController {
           description: 'بهترین کیفیت چاپ و صحافی',
           image_url: '/uploads/sliders/slider2.jpg',
           background_color: '#B8D4E8',
+          is_dark: false,
           button_text: 'خرید محصول',
           button_link: '/products/golden-quran',
           sort_order: 2,
@@ -127,8 +129,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'اسلایدر با موفقیت ایجاد شد',
     schema: {
       example: {
@@ -141,13 +143,14 @@ export class HeroSliderAdminController {
         button_link: '/products/tiger-eye-tasbih',
         sort_order: 1,
         is_active: true,
+        is_dark: false,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-15T10:30:00.000Z'
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'داده‌های ورودی نامعتبر',
     schema: {
       example: {
@@ -161,8 +164,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: 'کاربر احراز هویت نشده است',
     schema: {
       example: {
@@ -172,8 +175,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 403, 
+  @ApiResponse({
+    status: 403,
     description: 'کاربر دسترسی لازم را ندارد',
     schema: {
       example: {
@@ -219,7 +222,7 @@ export class HeroSliderAdminController {
    * ]
    */
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت لیست تمام اسلایدرها',
     description: `
 دریافت لیست کامل اسلایدرها شامل موارد فعال و غیرفعال.
@@ -234,8 +237,8 @@ export class HeroSliderAdminController {
 - تغییر ترتیب نمایش
     `.trim()
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'لیست اسلایدرها با موفقیت دریافت شد',
     schema: {
       example: [
@@ -285,7 +288,7 @@ export class HeroSliderAdminController {
    * GET /admin/hero-sliders/1
    */
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت یک اسلایدر با شناسه',
     description: `
 دریافت اطلاعات کامل یک اسلایدر مشخص.
@@ -296,14 +299,14 @@ export class HeroSliderAdminController {
 - بررسی وضعیت یک اسلایدر خاص
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه عددی اسلایدر',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'اطلاعات اسلایدر',
     schema: {
       example: {
@@ -321,8 +324,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'اسلایدر یافت نشد',
     schema: {
       example: {
@@ -356,7 +359,7 @@ export class HeroSliderAdminController {
    */
   @Patch(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'بروزرسانی اسلایدر',
     description: `
 ویرایش اطلاعات یک اسلایدر موجود.
@@ -376,13 +379,13 @@ export class HeroSliderAdminController {
 - تغییر ترتیب نمایش
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه اسلایدر',
     example: 1
   })
-  @ApiBody({ 
+  @ApiBody({
     type: UpdateHeroSliderDto,
     description: 'فیلدهایی که باید بروزرسانی شوند (همه اختیاری)',
     examples: {
@@ -420,8 +423,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'اسلایدر با موفقیت بروزرسانی شد',
     schema: {
       example: {
@@ -439,8 +442,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'اسلایدر یافت نشد',
     schema: {
       example: {
@@ -470,7 +473,7 @@ export class HeroSliderAdminController {
    */
   @Delete(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'حذف اسلایدر',
     description: `
 حذف کامل یک اسلایدر از دیتابیس.
@@ -490,14 +493,14 @@ export class HeroSliderAdminController {
 - اسلایدر از صفحه عمومی حذف می‌شود
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه اسلایدر',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'اسلایدر با موفقیت حذف شد',
     schema: {
       example: {
@@ -505,8 +508,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'اسلایدر یافت نشد',
     schema: {
       example: {
@@ -540,7 +543,7 @@ export class HeroSliderAdminController {
    */
   @Post('sort-order')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'بروزرسانی ترتیب نمایش اسلایدرها',
     description: `
 تغییر ترتیب نمایش چندین اسلایدر به صورت یکجا.
@@ -589,8 +592,8 @@ export class HeroSliderAdminController {
       ]
     }
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'ترتیب با موفقیت بروزرسانی شد',
     schema: {
       example: {
@@ -598,8 +601,8 @@ export class HeroSliderAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'داده‌های ورودی نامعتبر',
     schema: {
       example: {

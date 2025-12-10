@@ -8,6 +8,7 @@ import { Category } from '../category/entities/category.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Product } from '../product/entities/product.entity';
+import { format } from 'path';
 
 export interface HomePageData {
   heroSliders: any[];
@@ -75,6 +76,8 @@ export class HomePageService {
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
         const products = await this.homeSectionService.getSectionProducts(section.id);
+        const category = await this.categoryRepository.findOne({ where: { id: section.categoryId }, relations: ['media'] });
+
         return {
           id: section.id,
           title: section.title,
@@ -85,7 +88,8 @@ export class HomePageService {
           showViewAllButton: section.showViewAllButton,
           sortOrder: section.sortOrder,
           viewAllLink: section.viewAllLink,
-          products: products.map(product => this.formatProduct(product)),
+          category: category ? await this.formatCategory(category) : null,
+          products: await Promise.all(products.map(product => this.formatProduct(product))),
         };
       }),
     );
@@ -97,6 +101,7 @@ export class HomePageService {
         description: slider.description,
         imageUrl: slider.imageUrl,
         backgroundColor: slider.backgroundColor,
+        isDark: slider.isDark,
         buttonText: slider.buttonText,
         sortOrder: slider.sortOrder,
         buttonLink: slider.buttonLink,
@@ -118,7 +123,7 @@ export class HomePageService {
         name: category.title,
         slug: category.slug,
         // icon: category.icon,
-        image: category.media,
+        image: category.media.url ?? null,
       })),
       sections: sectionsWithProducts,
     };
@@ -140,7 +145,12 @@ export class HomePageService {
   /**
    * فرمت کردن اطلاعات محصول برای API
    */
-  private formatProduct(product: Product) {
+  private async formatProduct(product: Product) {
+    let categorySlug: any = null;
+    if (product.category) {
+      categorySlug = await this.buildCategoryFullSlug(product.category.id);
+    }
+
     return {
       id: product.id,
       name: product.name,
@@ -148,13 +158,11 @@ export class HomePageService {
       discountAmount: product.discountAmount,
       discountPercent: product.discountPercent,
       stock: product.stock,
-      image: product.medias && product.medias.length > 0
-        ? product.medias[0].url
-        : null,
+      image: product.mediaPinned.url,
       category: product.category ? {
         id: product.category.id,
         name: product.category.title,
-        slug: product.category.slug,
+        slug: categorySlug,
       } : null,
       brand: product.brand ? {
         id: product.brand.id,
@@ -162,5 +170,48 @@ export class HomePageService {
         slug: product.brand.slug,
       } : null,
     };
+  }
+
+  /**
+   * فرمت کردن اطلاعات دسته‌بندی برای API
+   */
+  private async formatCategory(category: Category) {
+    const fullSlug = await this.buildCategoryFullSlug(category.id);
+
+    return {
+      id: category.id,
+      name: category.title,
+      slug: fullSlug,
+      // icon: category.icon,
+      image: category.media.url ?? "",
+    };
+  }
+
+  /**
+   * ساخت slug کامل با تمام والدهای دسته‌بندی
+   * مثال: mohr-tasbih/mohr-tasbih-sub1/mohr-tasbih-sub1-child1
+   */
+  private async buildCategoryFullSlug(categoryId: number): Promise<string> {
+    const slugParts: string[] = [];
+    let currentCategory = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+      relations: ['parent'],
+    });
+
+    // از دسته فعلی شروع کن و به سمت بالا برو
+    while (currentCategory) {
+      slugParts.unshift(currentCategory.slug); // اضافه کردن به ابتدای آرایه
+
+      // اگر والد داشت، برو سراغ والد
+      if (currentCategory.parent && currentCategory.parentId && currentCategory.parentId !== 0) {
+        currentCategory = await this.categoryRepository.findOne({
+          where: { id: currentCategory.parentId },
+          relations: ['parent'],
+        });
+      } else {
+        break;
+      }
+    }
+    return slugParts.join('/');
   }
 }

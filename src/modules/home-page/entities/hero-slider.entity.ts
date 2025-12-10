@@ -23,6 +23,9 @@ export class HeroSlider {
   @Column({ type: 'varchar', length: 7, default: '#FF6B6B' })
   backgroundColor: string;
 
+  @Column({ name: 'is_dark', default: false })
+  isDark: boolean;
+
   @Column({ type: 'varchar', length: 500, nullable: true })
   buttonText: string;
 
