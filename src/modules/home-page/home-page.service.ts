@@ -47,10 +47,13 @@ export class HomePageService {
    * گرفتن تمام داده‌های صفحه اصلی به صورت یکجا
    */
   async getHomePageData(): Promise<HomePageData> {
+    const isDevelpment = process.env.NODE_ENV === 'development';
     // چک کردن کش
-    const cachedData = await this.cacheManager.get<HomePageData>(this.CACHE_KEY);
-    if (cachedData) {
-      return cachedData;
+    if (!isDevelpment) {
+      const cachedData = await this.cacheManager.get<HomePageData>(this.CACHE_KEY);
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     // گرفتن اسلایدرهای فعال
