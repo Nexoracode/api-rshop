@@ -22,7 +22,7 @@ export class UploadImageAdminController {
     @ApiConsumes('multipart/form-data')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @ApiBody({
-        description: 'List of Products',
+        description: 'Upload Slider Images',
         type: UploadFilesDto
     })
     uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
