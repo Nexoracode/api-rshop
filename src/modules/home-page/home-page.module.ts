@@ -24,6 +24,8 @@ import { HomePageAnalyticsController } from './controllers/homepage-analytics.co
 
 // Interceptors
 import { ClearHomePageCacheInterceptor } from './interceptors/clear-homepage-cache.interceptor';
+import { UploadImageAdminController } from './controllers/upload-image-admin.controller';
+import { MediaModule } from '../media/media.module';
 
 @Module({
   imports: [
@@ -39,6 +41,7 @@ import { ClearHomePageCacheInterceptor } from './interceptors/clear-homepage-cac
       ttl: 300, // 5 دقیقه (به ثانیه)
       max: 100, // حداکثر تعداد آیتم در کش
     }),
+    MediaModule
   ],
   controllers: [
     HomePagePublicController,
@@ -46,6 +49,7 @@ import { ClearHomePageCacheInterceptor } from './interceptors/clear-homepage-cac
     SideBannerAdminController,
     HomeSectionAdminController,
     HomePageAnalyticsController,
+    UploadImageAdminController
   ],
   providers: [
     HeroSliderService,
@@ -63,4 +67,4 @@ import { ClearHomePageCacheInterceptor } from './interceptors/clear-homepage-cac
     HomePageAnalyticsService,
   ],
 })
-export class HomePageModule {}
+export class HomePageModule { }
