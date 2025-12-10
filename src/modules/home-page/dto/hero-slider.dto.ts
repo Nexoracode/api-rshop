@@ -12,34 +12,34 @@ export class CreateHeroSliderDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ example: '/uploads/sliders/slider1.jpg' })
+  @ApiProperty({ name: 'image_url', example: '/uploads/sliders/slider1.jpg' })
   @IsString()
-  image_url: string;
+  imageUrl: string;
 
-  @ApiPropertyOptional({ example: '#FF6B6B' })
+  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
   @IsHexColor()
   @IsOptional()
-  background_color?: string;
+  backgroundColor?: string;
 
-  @ApiPropertyOptional({ example: 'مشاهده محصول' })
+  @ApiPropertyOptional({ name: 'button_text', example: 'مشاهده محصول' })
   @IsString()
   @IsOptional()
-  button_text?: string;
+  buttonText?: string;
 
-  @ApiPropertyOptional({ example: '/products/123' })
+  @ApiPropertyOptional({ name: 'button_link', example: '/products/123' })
   @IsString()
   @IsOptional()
-  button_link?: string;
+  buttonLink?: string;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 }
 
 export class UpdateHeroSliderDto {
@@ -54,33 +54,33 @@ export class UpdateHeroSliderDto {
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: '/uploads/sliders/slider1.jpg' })
+  @ApiPropertyOptional({ name: 'image_url', example: '/uploads/sliders/slider1.jpg' })
   @IsString()
   @IsOptional()
-  image_url?: string;
+  imageUrl?: string;
 
-  @ApiPropertyOptional({ example: '#FF6B6B' })
+  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
   @IsHexColor()
   @IsOptional()
-  background_color?: string;
+  backgroundColor?: string;
 
-  @ApiPropertyOptional({ example: 'مشاهده محصول' })
+  @ApiPropertyOptional({ name: 'button_text', example: 'مشاهده محصول' })
   @IsString()
   @IsOptional()
-  button_text?: string;
+  buttonText?: string;
 
-  @ApiPropertyOptional({ example: '/products/123' })
+  @ApiPropertyOptional({ name: 'button_link', example: '/products/123' })
   @IsString()
   @IsOptional()
-  button_link?: string;
+  buttonLink?: string;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 }

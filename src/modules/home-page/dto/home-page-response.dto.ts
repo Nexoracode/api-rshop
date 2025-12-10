@@ -10,16 +10,16 @@ export class HeroSliderResponseDto {
   @ApiProperty({ example: 'لورم صنعت چاپ و از طراحان گرافیک است' })
   description: string;
 
-  @ApiProperty({ example: '/uploads/sliders/slider1.jpg' })
+  @ApiProperty({ name: 'image_url', example: '/uploads/sliders/slider1.jpg' })
   imageUrl: string;
 
-  @ApiProperty({ example: '#E8B4D9' })
+  @ApiProperty({ name: 'background_color', example: '#E8B4D9' })
   backgroundColor: string;
 
-  @ApiProperty({ example: 'مشاهده محصول' })
+  @ApiProperty({ name: 'button_text', example: 'مشاهده محصول' })
   buttonText: string;
 
-  @ApiProperty({ example: '/products/123' })
+  @ApiProperty({ name: 'button_link', example: '/products/123' })
   buttonLink: string;
 }
 
@@ -33,7 +33,7 @@ export class SideBannerResponseDto {
   @ApiProperty({ example: 'از ۵۴۹,۹۱ تا ۵۵۹ هزار تومان' })
   subtitle: string;
 
-  @ApiProperty({ example: '/uploads/banners/banner1.jpg' })
+  @ApiProperty({ name: 'image_url', example: '/uploads/banners/banner1.jpg' })
   imageUrl: string;
 
   @ApiProperty({ example: '/category/quran' })
@@ -42,10 +42,10 @@ export class SideBannerResponseDto {
   @ApiProperty({ example: 'top_right' })
   position: string;
 
-  @ApiProperty({ example: '14%', nullable: true })
+  @ApiProperty({ name: 'badge_text', example: '14%', nullable: true })
   badgeText: string;
 
-  @ApiProperty({ example: '#FF0000', nullable: true })
+  @ApiProperty({ name: 'badge_color', example: '#FF0000', nullable: true })
   badgeColor: string;
 }
 
@@ -76,17 +76,17 @@ export class ProductInSectionDto {
   @ApiProperty({ example: 250000 })
   price: number;
 
-  @ApiProperty({ example: 200000, nullable: true })
-  discount_price: number;
+  @ApiProperty({ name: 'discount_price', example: 200000, nullable: true })
+  discountPrice: number;
 
-  @ApiProperty({ example: 20, nullable: true })
-  discount_percentage: number;
+  @ApiProperty({ name: 'discount_perecntage', example: 20, nullable: true })
+  discountPercentage: number;
 
   @ApiProperty({ example: 10 })
   stock: number;
 
-  @ApiProperty({ example: true })
-  is_available: boolean;
+  @ApiProperty({ name: 'is_avaliable', example: true })
+  isAvailable: boolean;
 
   @ApiProperty({ example: '/uploads/products/product1.jpg', nullable: true })
   image: string;
@@ -115,17 +115,17 @@ export class HomeSectionResponseDto {
   @ApiProperty({ example: 'جدیدترین بندها و رنگ‌ها', nullable: true })
   description: string;
 
-  @ApiProperty({ example: 'special_products' })
-  section_type: string;
+  @ApiProperty({ name: 'section_type', example: 'special_products' })
+  sectionType: string;
 
-  @ApiProperty({ example: 'carousel' })
-  display_style: string;
+  @ApiProperty({ name: 'display_style', example: 'carousel' })
+  displayStyle: string;
 
-  @ApiProperty({ example: true })
-  show_view_all_button: boolean;
+  @ApiProperty({ name: 'show_view_all_button', example: true })
+  showViewAllButton: boolean;
 
-  @ApiProperty({ example: '/products?featured=true' })
-  view_all_link: string;
+  @ApiProperty({ name: 'view_All_link', example: '/products?featured=true' })
+  viewAllLink: string;
 
   @ApiProperty({ type: [ProductInSectionDto] })
   products: ProductInSectionDto[];

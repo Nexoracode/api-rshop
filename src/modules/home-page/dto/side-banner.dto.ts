@@ -13,9 +13,9 @@ export class CreateSideBannerDto {
   @IsOptional()
   subtitle?: string;
 
-  @ApiProperty({ example: '/uploads/banners/banner1.jpg' })
+  @ApiProperty({ name: 'image_url', example: '/uploads/banners/banner1.jpg' })
   @IsString()
-  image_url: string;
+  imageUrl: string;
 
   @ApiPropertyOptional({ example: '/category/religious-books' })
   @IsString()
@@ -26,25 +26,30 @@ export class CreateSideBannerDto {
   @IsEnum(BannerPosition)
   position: BannerPosition;
 
-  @ApiPropertyOptional({ example: '14%' })
-  @IsString()
-  @IsOptional()
-  badge_text?: string;
-
-  @ApiPropertyOptional({ example: '#FF0000' })
+  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
   @IsHexColor()
   @IsOptional()
-  badge_color?: string;
+  backgroundColor?: string;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'bage_text', example: '14%' })
+  @IsString()
+  @IsOptional()
+  badgeText?: string;
+
+  @ApiPropertyOptional({ name: 'badge_color', example: '#FF0000' })
+  @IsHexColor()
+  @IsOptional()
+  badgeColor?: string;
+
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 }
 
 export class UpdateSideBannerDto {
@@ -59,38 +64,43 @@ export class UpdateSideBannerDto {
   @IsOptional()
   subtitle?: string;
 
-  @ApiPropertyOptional({ example: '/uploads/banners/banner1.jpg' })
+  @ApiPropertyOptional({ name: 'image_url', example: '/uploads/banners/banner1.jpg' })
   @IsString()
   @IsOptional()
-  image_url?: string;
+  imageUrl?: string;
 
   @ApiPropertyOptional({ example: '/category/religious-books' })
   @IsString()
   @IsOptional()
   link?: string;
 
-  @ApiPropertyOptional({ enum: BannerPosition, example: BannerPosition.TOP_RIGHT })
+  @ApiPropertyOptional({ enum: BannerPosition, example: BannerPosition.TOP_LEFT })
   @IsEnum(BannerPosition)
   @IsOptional()
   position?: BannerPosition;
 
-  @ApiPropertyOptional({ example: '14%' })
-  @IsString()
-  @IsOptional()
-  badge_text?: string;
-
-  @ApiPropertyOptional({ example: '#FF0000' })
+  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
   @IsHexColor()
   @IsOptional()
-  badge_color?: string;
+  backgroundColor?: string;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'badge_text', example: '14%' })
+  @IsString()
+  @IsOptional()
+  badgeText?: string;
+
+  @ApiPropertyOptional({ name: 'badge_color', example: '#FF0000' })
+  @IsHexColor()
+  @IsOptional()
+  badgeColor?: string;
+
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 }

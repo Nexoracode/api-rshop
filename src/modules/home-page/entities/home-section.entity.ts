@@ -38,41 +38,41 @@ export class HomeSection {
     enum: SectionType,
     default: SectionType.FEATURED,
   })
-  section_type: SectionType;
+  sectionType: SectionType;
 
   @Column({
     type: 'enum',
     enum: SectionDisplayStyle,
     default: SectionDisplayStyle.CAROUSEL,
   })
-  display_style: SectionDisplayStyle;
+  displayStyle: SectionDisplayStyle;
 
   // برای بخش‌های دستی - آیدی محصولات
   @Column({ type: 'json', nullable: true })
-  product_ids: number[];
+  productIds: number[];
 
   // برای بخش‌های بر اساس دسته‌بندی
   @Column({ type: 'int', nullable: true })
-  category_id: number;
+  categoryId: number;
 
   @Column({ type: 'int', default: 10 })
-  products_limit: number;
+  productsLimit: number;
 
   @Column({ type: 'int', default: 0 })
-  sort_order: number;
+  sortOrder: number;
 
   @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  isActive: boolean;
 
   @Column({ type: 'boolean', default: false })
-  show_view_all_button: boolean;
+  showViewAllButton: boolean;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  view_all_link: string;
+  viewAllLink: string;
 
   @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updated_at: Date;
+  updatedAt: Date;
 }

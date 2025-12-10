@@ -16,7 +16,7 @@ export class HomePageAnalyticsService {
   constructor(
     @InjectRepository(HomePageClickAnalytics)
     private clickAnalyticsRepository: Repository<HomePageClickAnalytics>,
-  ) {}
+  ) { }
 
   /**
    * ثبت کلیک روی یک عنصر
@@ -28,10 +28,10 @@ export class HomePageAnalyticsService {
     userAgent: string,
   ): Promise<void> {
     const click = this.clickAnalyticsRepository.create({
-      element_type: elementType,
-      element_id: elementId,
-      user_ip: userIp,
-      user_agent: userAgent,
+      elementType: elementType,
+      elementId: elementId,
+      userIp: userIp,
+      userAgent: userAgent,
     });
 
     await this.clickAnalyticsRepository.save(click);

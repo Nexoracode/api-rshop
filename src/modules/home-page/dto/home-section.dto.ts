@@ -23,49 +23,49 @@ export class CreateHomeSectionDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ enum: SectionType, example: SectionType.FEATURED })
+  @ApiProperty({ name: 'section_type', enum: SectionType, example: SectionType.FEATURED })
   @IsEnum(SectionType)
-  section_type: SectionType;
+  sectionType: SectionType;
 
-  @ApiProperty({ enum: SectionDisplayStyle, example: SectionDisplayStyle.CAROUSEL })
+  @ApiProperty({ name: 'display_style', enum: SectionDisplayStyle, example: SectionDisplayStyle.CAROUSEL })
   @IsEnum(SectionDisplayStyle)
-  display_style: SectionDisplayStyle;
+  displayStyle: SectionDisplayStyle;
 
-  @ApiPropertyOptional({ example: [1, 2, 3, 4, 5] })
+  @ApiPropertyOptional({ name: 'products_ids', example: [1, 2, 3, 4, 5] })
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
-  product_ids?: number[];
+  productIds?: number[];
 
-  @ApiPropertyOptional({ example: 5 })
+  @ApiPropertyOptional({ name: 'category_id', example: 5 })
   @IsInt()
   @IsOptional()
-  category_id?: number;
+  categoryId?: number;
 
-  @ApiPropertyOptional({ example: 10 })
+  @ApiPropertyOptional({ name: 'products_limit', example: 10 })
   @IsInt()
   @IsOptional()
-  products_limit?: number;
+  productsLimit?: number;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'show_view_all_button', example: true })
   @IsBoolean()
   @IsOptional()
-  show_view_all_button?: boolean;
+  showViewAllButton?: boolean;
 
-  @ApiPropertyOptional({ example: '/products?category=special' })
+  @ApiPropertyOptional({ name: 'view_all_link', example: '/products?category=special' })
   @IsString()
   @IsOptional()
-  view_all_link?: string;
+  viewAllLink?: string;
 }
 
 export class UpdateHomeSectionDto {
@@ -86,49 +86,49 @@ export class UpdateHomeSectionDto {
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ enum: SectionType, example: SectionType.FEATURED })
+  @ApiPropertyOptional({ name: 'section_type', enum: SectionType, example: SectionType.FEATURED })
   @IsEnum(SectionType)
   @IsOptional()
-  section_type?: SectionType;
+  sectionType?: SectionType;
 
-  @ApiPropertyOptional({ enum: SectionDisplayStyle, example: SectionDisplayStyle.CAROUSEL })
+  @ApiPropertyOptional({ name: 'display_style', enum: SectionDisplayStyle, example: SectionDisplayStyle.CAROUSEL })
   @IsEnum(SectionDisplayStyle)
   @IsOptional()
-  display_style?: SectionDisplayStyle;
+  displayStyle?: SectionDisplayStyle;
 
-  @ApiPropertyOptional({ example: [1, 2, 3, 4, 5] })
+  @ApiPropertyOptional({ name: 'product_ids', example: [1, 2, 3, 4, 5] })
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
-  product_ids?: number[];
+  productIds?: number[];
 
-  @ApiPropertyOptional({ example: 5 })
+  @ApiPropertyOptional({ name: 'category_id', example: 5 })
   @IsInt()
   @IsOptional()
-  category_id?: number;
+  categoryId?: number;
 
-  @ApiPropertyOptional({ example: 10 })
+  @ApiPropertyOptional({ name: 'products_limit', example: 10 })
   @IsInt()
   @IsOptional()
-  products_limit?: number;
+  productsLimit?: number;
 
-  @ApiPropertyOptional({ example: 1 })
+  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
   @IsInt()
   @IsOptional()
-  sort_order?: number;
+  sortOrder?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean;
+  isActive?: boolean;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({ name: 'show_view_all_button', example: true })
   @IsBoolean()
   @IsOptional()
-  show_view_all_button?: boolean;
+  showViewAllButton?: boolean;
 
-  @ApiPropertyOptional({ example: '/products?category=special' })
+  @ApiPropertyOptional({ name: 'view_all_link', example: '/products?category=special' })
   @IsString()
   @IsOptional()
-  view_all_link?: string;
+  viewAllLink?: string;
 }

@@ -27,7 +27,7 @@ export class SideBanner {
   subtitle: string;
 
   @Column({ type: 'varchar', length: 500 })
-  image_url: string;
+  imageUrl: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   link: string;
@@ -35,25 +35,28 @@ export class SideBanner {
   @Column({
     type: 'enum',
     enum: BannerPosition,
-    default: BannerPosition.TOP_RIGHT,
+    default: BannerPosition.TOP_LEFT,
   })
   position: BannerPosition;
 
+  @Column({ type: 'varchar', length: 7, default: '#FF6B6B' })
+  backgroundColor: string;
+
   @Column({ type: 'varchar', length: 50, nullable: true })
-  badge_text: string;
+  badgeText: string;
 
   @Column({ type: 'varchar', length: 7, nullable: true })
-  badge_color: string;
+  badgeColor: string;
 
   @Column({ type: 'int', default: 0 })
-  sort_order: number;
+  sortOrder: number;
 
   @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  isActive: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updated_at: Date;
+  updatedAt: Date;
 }

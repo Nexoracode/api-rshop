@@ -21,14 +21,14 @@ export class HomeSectionService {
 
   async findAll(): Promise<HomeSection[]> {
     return await this.homeSectionRepository.find({
-      order: { sort_order: 'ASC', created_at: 'DESC' },
+      order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }
 
   async findAllActive(): Promise<HomeSection[]> {
     return await this.homeSectionRepository.find({
-      where: { is_active: true },
-      order: { sort_order: 'ASC' },
+      where: { isActive: true },
+      order: { sortOrder: 'ASC' },
     });
   }
 
@@ -71,15 +71,15 @@ export class HomeSectionService {
    * گرفتن محصولات بر اساس نوع بخش
    */
   private async getProductsBySection(section: HomeSection): Promise<Product[]> {
-    const limit = section.products_limit || 10;
+    const limit = section.productsLimit || 10;
 
-    switch (section.section_type) {
+    switch (section.sectionType) {
       case SectionType.SPECIAL_PRODUCTS:
         // محصولات دستی که ادمین انتخاب کرده
-        if (section.product_ids && section.product_ids.length > 0) {
+        if (section.productIds && section.productIds.length > 0) {
           return await this.productRepository.find({
             where: {
-              id: In(section.product_ids),
+              id: In(section.productIds),
               isVisible: true
             },
             relations: ['medias', 'category', 'brand'],
@@ -114,10 +114,10 @@ export class HomeSectionService {
 
       case SectionType.CATEGORY_BASED:
         // محصولات بر اساس دسته‌بندی
-        if (section.category_id) {
+        if (section.categoryId) {
           return await this.productRepository.find({
             where: {
-              categoryId: section.category_id,
+              categoryId: section.categoryId,
               isVisible: true
             },
             relations: ['medias', 'category', 'brand'],

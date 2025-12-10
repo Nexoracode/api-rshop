@@ -12,8 +12,8 @@ export enum ClickElementType {
 }
 
 @Entity('homepage_click_analytics')
-@Index(['element_type', 'element_id'])
-@Index(['clicked_at'])
+@Index(['elementType', 'elementId'])
+@Index(['clickedAt'])
 export class HomePageClickAnalytics {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,17 +22,17 @@ export class HomePageClickAnalytics {
     type: 'enum',
     enum: ClickElementType,
   })
-  element_type: ClickElementType;
+  elementType: ClickElementType;
 
   @Column({ type: 'int' })
-  element_id: number;
+  elementId: number;
 
   @CreateDateColumn({ type: 'timestamp' })
-  clicked_at: Date;
+  clickedAt: Date;
 
   @Column({ type: 'varchar', length: 45, nullable: true })
-  user_ip: string;
+  userIp: string;
 
   @Column({ type: 'text', nullable: true })
-  user_agent: string;
+  userAgent: string;
 }

@@ -9,7 +9,7 @@ export class SideBannerService {
   constructor(
     @InjectRepository(SideBanner)
     private sideBannerRepository: Repository<SideBanner>,
-  ) {}
+  ) { }
 
   async create(createDto: CreateSideBannerDto): Promise<SideBanner> {
     const banner = this.sideBannerRepository.create(createDto);
@@ -18,21 +18,21 @@ export class SideBannerService {
 
   async findAll(): Promise<SideBanner[]> {
     return await this.sideBannerRepository.find({
-      order: { position: 'ASC', sort_order: 'ASC' },
+      order: { position: 'ASC', sortOrder: 'ASC' },
     });
   }
 
   async findAllActive(): Promise<SideBanner[]> {
     return await this.sideBannerRepository.find({
-      where: { is_active: true },
-      order: { position: 'ASC', sort_order: 'ASC' },
+      where: { isActive: true },
+      order: { position: 'ASC', sortOrder: 'ASC' },
     });
   }
 
   async findByPosition(position: BannerPosition): Promise<SideBanner[]> {
     return await this.sideBannerRepository.find({
-      where: { position, is_active: true },
-      order: { sort_order: 'ASC' },
+      where: { position, isActive: true },
+      order: { sortOrder: 'ASC' },
     });
   }
 

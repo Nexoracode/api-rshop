@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Category } from '../category/entities/category.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { Product } from '../product/entities/product.entity';
 
 export interface HomePageData {
   heroSliders: any[];
@@ -17,10 +18,11 @@ export interface HomePageData {
     title: string;
     slug: string;
     description: string;
-    section_type: string;
-    display_style: string;
-    show_view_all_button: boolean;
-    view_all_link: string;
+    sectionType: string;
+    displayStyle: string;
+    showViewAllButton: boolean;
+    viewAllLink: string;
+    sortOrder: number;
     products: any[];
   }>;
 }
@@ -78,10 +80,11 @@ export class HomePageService {
           title: section.title,
           slug: section.slug,
           description: section.description,
-          section_type: section.section_type,
-          display_style: section.display_style,
-          show_view_all_button: section.show_view_all_button,
-          view_all_link: section.view_all_link,
+          sectionType: section.sectionType,
+          displayStyle: section.displayStyle,
+          showViewAllButton: section.showViewAllButton,
+          sortOrder: section.sortOrder,
+          viewAllLink: section.viewAllLink,
           products: products.map(product => this.formatProduct(product)),
         };
       }),
@@ -92,20 +95,23 @@ export class HomePageService {
         id: slider.id,
         title: slider.title,
         description: slider.description,
-        imageUrl: slider.image_url,
-        backgroundColor: slider.background_color,
-        buttonText: slider.button_text,
-        buttonLink: slider.button_link,
+        imageUrl: slider.imageUrl,
+        backgroundColor: slider.backgroundColor,
+        buttonText: slider.buttonText,
+        sortOrder: slider.sortOrder,
+        buttonLink: slider.buttonLink,
       })),
       sideBanners: sideBanners.map(banner => ({
         id: banner.id,
         title: banner.title,
         subtitle: banner.subtitle,
-        imageUrl: banner.image_url,
+        imageUrl: banner.imageUrl,
+        backgroundColor: banner.backgroundColor,
         link: banner.link,
         position: banner.position,
-        badgeText: banner.badge_text,
-        badgeColor: banner.badge_color,
+        sortOrder: banner.sortOrder,
+        badgeText: banner.badgeText,
+        badgeColor: banner.badgeColor,
       })),
       categories: categories.map(category => ({
         id: category.id,
@@ -134,22 +140,20 @@ export class HomePageService {
   /**
    * فرمت کردن اطلاعات محصول برای API
    */
-  private formatProduct(product: any) {
+  private formatProduct(product: Product) {
     return {
       id: product.id,
       name: product.name,
-      slug: product.slug,
       price: product.price,
-      discount_price: product.discount_price,
-      discount_percentage: product.discount_percentage,
+      discountAmount: product.discountAmount,
+      discountPercent: product.discountPercent,
       stock: product.stock,
-      is_available: product.is_available,
       image: product.medias && product.medias.length > 0
-        ? product.medias[0].path
+        ? product.medias[0].url
         : null,
       category: product.category ? {
         id: product.category.id,
-        name: product.category.name,
+        name: product.category.title,
         slug: product.category.slug,
       } : null,
       brand: product.brand ? {

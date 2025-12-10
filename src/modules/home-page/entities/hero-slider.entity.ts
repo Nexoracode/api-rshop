@@ -18,26 +18,26 @@ export class HeroSlider {
   description: string;
 
   @Column({ type: 'varchar', length: 500 })
-  image_url: string;
+  imageUrl: string;
 
   @Column({ type: 'varchar', length: 7, default: '#FF6B6B' })
-  background_color: string;
+  backgroundColor: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  button_text: string;
+  buttonText: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  button_link: string;
+  buttonLink: string;
 
   @Column({ type: 'int', default: 0 })
-  sort_order: number;
+  sortOrder: number;
 
   @Column({ type: 'boolean', default: true })
-  is_active: boolean;
+  isActive: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updated_at: Date;
+  updatedAt: Date;
 }
