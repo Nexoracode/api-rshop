@@ -26,7 +26,6 @@ export class CategoryAttributeService implements ICategoryAttributeService {
       where: { categoryId: data.categoryId, attributeId: data.attributeId },
       relations: ['attribute', 'attribute.group', 'attribute.values', 'category'],
     })
-    console.log('returnCat', returnCat);
     return CategoryAttributeMapper.toResponse(returnCat!);
   }
 

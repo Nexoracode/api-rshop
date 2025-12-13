@@ -33,7 +33,6 @@ export class SepidarService {
         this.httpService.post(
           'https://sepidar.roohbakhshac.ir/api/Devices/Register', result),
       );
-      console.log(data);
       return {
         message: 'سپیدار',
         data: data,

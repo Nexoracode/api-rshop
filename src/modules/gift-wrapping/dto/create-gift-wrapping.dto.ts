@@ -37,14 +37,13 @@ export class CreateGiftWrappingDto {
     price: number;
 
     @ApiPropertyOptional({
-        enum: GiftWrappingStatus,
-        default: GiftWrappingStatus.ACTIVE,
-        example: GiftWrappingStatus.ACTIVE,
+        name: 'is_active',
+        example: true,
+        default: true,
         description: 'وضعیت بسته‌بندی',
     })
-    @IsEnum(GiftWrappingStatus)
     @IsOptional()
-    status?: GiftWrappingStatus;
+    isActive?: boolean;
 
     @ApiPropertyOptional({
         name: 'image_id',

@@ -26,7 +26,7 @@ export class Category implements ICategory {
     parent: Category | null
 
     @Column({ name: 'parent_id', nullable: true })
-    parentId: number;
+    parentId: number | null;
 
     @OneToMany(() => Product, product => product.category)
     products: Product[]

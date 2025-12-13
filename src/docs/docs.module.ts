@@ -11,4 +11,3 @@ import { join } from 'path';
     ],
 })
 export class DocsModule { }
-console.log(join(__dirname, '../../docs'));

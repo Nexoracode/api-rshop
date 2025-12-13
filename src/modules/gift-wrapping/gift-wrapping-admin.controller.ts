@@ -97,9 +97,9 @@ export class GiftWrappingAdminController {
         description: `
         دریافت لیست بسته‌بندی‌های کادو با قابلیت جستجو، فیلتر و صفحه‌بندی
         
-**انواع staus:**
-- \`active\`: فعال
-- \`inactive\`: غیرفعال
+**انواع isActive:**
+- \`true\`: فعال
+- \`false\`: غیرفعال
 
 **انواع isForGift:**
 - \`true\`: برای هدیه
@@ -116,7 +116,7 @@ export class GiftWrappingAdminController {
         defaultSortBy: [['displayOrder', 'ASC']],
         searchableColumns: ['name', 'description'],
         filterableColumns: {
-            status: [FilterOperator.EQ],
+            isActive: [FilterOperator.EQ],
             isForGift: [FilterOperator.EQ],
         },
     })

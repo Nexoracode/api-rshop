@@ -24,8 +24,8 @@ export class GiftWrapping {
     @Column({ type: 'bigint' })
     price: number;
 
-    @Column({ type: 'enum', enum: GiftWrappingStatus, default: GiftWrappingStatus.ACTIVE })
-    status: GiftWrappingStatus;
+    @Column({ name: 'is_active', default: true })
+    isActive: boolean;
 
     @ManyToOne(() => Media, { eager: true, nullable: true })
     @JoinColumn({ name: 'image_id' })

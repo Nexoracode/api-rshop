@@ -43,7 +43,6 @@ export class StockMovementService {
    */
   async create(createDto: CreateStockMovementDto, userId: number) {
     // بررسی وجود محصول
-    console.log('Creating stock movement:', createDto);
     const product = await this.productRepository.findOne({
       where: { id: createDto.productId },
     });

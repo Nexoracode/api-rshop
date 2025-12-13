@@ -191,7 +191,6 @@ export class CatalogService {
                         qb.addOrderBy('p.created_at', 'DESC');  // Default sorting by ID
                         break;
                 }
-                console.log('🔹 sortBy:', query.sortBy);
             }
         }
 

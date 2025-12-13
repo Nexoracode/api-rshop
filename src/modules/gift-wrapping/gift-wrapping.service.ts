@@ -18,14 +18,20 @@ export class GiftWrappingService {
      * ایجاد بسته‌بندی جدید (ادمین)
      */
     async create(dto: CreateGiftWrappingDto): Promise<GiftWrapping> {
+        const lastAttrValue = await this.giftWrappingRepo.find({
+            order: { displayOrder: 'DESC' },
+            take: 1,
+        })
+        const nextOrder = lastAttrValue.length ? lastAttrValue[0].displayOrder + 1 : 1;
         const giftWrapping = this.giftWrappingRepo.create({
             name: dto.name,
             description: dto.description,
             price: dto.price,
-            status: dto.status || GiftWrappingStatus.ACTIVE,
+            isActive: dto.isActive ?? true,
             imageId: dto.imageId,
             isForGift: dto.isForGift ?? true,
-            displayOrder: dto.displayOrder ?? 0,
+            displayOrder: nextOrder,
+
         });
 
         return await this.giftWrappingRepo.save(giftWrapping);
@@ -40,7 +46,7 @@ export class GiftWrappingService {
             defaultSortBy: [['displayOrder', 'ASC']],
             searchableColumns: ['name', 'description'],
             filterableColumns: {
-                status: [FilterOperator.EQ],
+                isActive: [FilterOperator.EQ],
                 isForGift: [FilterOperator.EQ],
             },
             relations: ['image'],
@@ -57,7 +63,7 @@ export class GiftWrappingService {
      */
     async findAllActive(): Promise<GiftWrapping[]> {
         return await this.giftWrappingRepo.find({
-            where: { status: GiftWrappingStatus.ACTIVE },
+            where: { isActive: true },
             relations: ['image'],
             order: { displayOrder: 'ASC', name: 'ASC' },
         });
@@ -104,10 +110,7 @@ export class GiftWrappingService {
     async toggleStatus(id: number): Promise<GiftWrapping> {
         const giftWrapping = await this.findOne(id);
 
-        giftWrapping.status =
-            giftWrapping.status === GiftWrappingStatus.ACTIVE
-                ? GiftWrappingStatus.INACTIVE
-                : GiftWrappingStatus.ACTIVE;
+        giftWrapping.isActive = !giftWrapping.isActive;
 
         return await this.giftWrappingRepo.save(giftWrapping);
     }

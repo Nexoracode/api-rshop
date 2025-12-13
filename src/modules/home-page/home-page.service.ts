@@ -5,6 +5,7 @@ import { HomeSectionService } from './home-section.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../category/entities/category.entity';
+import { Brand } from '../brand/entities/brand.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Product } from '../product/entities/product.entity';
@@ -14,6 +15,7 @@ export interface HomePageData {
   heroSliders: any[];
   sideBanners: any[];
   categories: any[];
+  brands: any[];
   sections: Array<{
     id: number;
     title: string;
@@ -39,6 +41,8 @@ export class HomePageService {
     private homeSectionService: HomeSectionService,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Brand)
+    private brandRepository: Repository<Brand>,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
   ) { }
@@ -65,11 +69,17 @@ export class HomePageService {
     // گرفتن دسته‌بندی‌های اصلی برای نمایش
     const categories = await this.categoryRepository.find({
       where: {
-        parentId: 0, // فقط دسته‌بندی‌های اصلی
+        parentId: undefined, // فقط دسته‌بندی‌های اصلی
         isActive: true
       },
       order: { displayOrder: 'ASC' },
       take: 8, // 8 دسته‌بندی اول
+    });
+
+    // گرفتن برندهای فعال
+    const brands = await this.brandRepository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' },
     });
 
     // گرفتن بخش‌های مختلف صفحه
@@ -126,7 +136,13 @@ export class HomePageService {
         name: category.title,
         slug: category.slug,
         // icon: category.icon,
-        image: category.media.url ?? null,
+        image: category.media?.[0]?.url ?? null,
+      })),
+      brands: brands.map(brand => ({
+        id: brand.id,
+        name: brand.name,
+        slug: brand.slug,
+        logo: brand.logo,
       })),
       sections: sectionsWithProducts,
     };
@@ -186,7 +202,7 @@ export class HomePageService {
       name: category.title,
       slug: fullSlug,
       // icon: category.icon,
-      image: category.media.url ?? "",
+      image: category.media?.[0]?.url ?? null,
     };
   }
 

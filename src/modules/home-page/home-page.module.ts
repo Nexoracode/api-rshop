@@ -7,6 +7,7 @@ import { HomeSection } from './entities/home-section.entity';
 import { HomePageClickAnalytics } from './entities/homepage-click-analytics.entity';
 import { Product } from '../product/entities/product.entity';
 import { Category } from '../category/entities/category.entity';
+import { Brand } from '../brand/entities/brand.entity';
 
 // Services
 import { HeroSliderService } from './hero-slider.service';
@@ -36,6 +37,7 @@ import { MediaModule } from '../media/media.module';
       HomePageClickAnalytics,
       Product,
       Category,
+      Brand,
     ]),
     CacheModule.register({
       ttl: 300, // 5 دقیقه (به ثانیه)
