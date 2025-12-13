@@ -6,9 +6,10 @@ import { Category } from './entities/category.entity';
 import { MediaModule } from '../media/media.module';
 import { Media } from '../media/entities/image.entity';
 import { UploadService } from 'src/common/services/upload.service';
+import { SeoModule } from '../seo/seo.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category, Media]), MediaModule],
+  imports: [TypeOrmModule.forFeature([Category, Media]), MediaModule, SeoModule],
   controllers: [CategoryController],
   providers: [CategoryService, UploadService],
   exports: [CategoryService]

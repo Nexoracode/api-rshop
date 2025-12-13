@@ -8,6 +8,7 @@ import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Public } from 'src/common/decorator/public.decorator';
+import { SeoService } from '../seo/seo.service';
 
 const MAX_FILE_UPLOAD = 10;
 
@@ -17,6 +18,7 @@ export class CategoryController {
   constructor(
     private readonly categoryService: CategoryService,
     private readonly uploadService: MediaService,
+    private readonly seoService: SeoService,
   ) { }
 
   @Post('upload')
@@ -44,6 +46,14 @@ export class CategoryController {
   @Get('site')
   async findAllTreeSite() {
     return this.categoryService.findAllTreeForSite();
+  }
+
+  @Public()
+  @Get('site/:id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const category = await this.categoryService.findByIdWithDescendants(id);
+    const seo = this.seoService.generateCategoryMeta(category);
+    return { category, seo };
   }
 
   @Get(':id')

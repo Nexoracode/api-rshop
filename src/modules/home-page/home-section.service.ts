@@ -115,7 +115,6 @@ export class HomeSectionService {
       case SectionType.CATEGORY_BASED:
         // محصولات بر اساس دسته‌بندی
         if (section.categoryId) {
-          console.log(section.categoryId);
           return await this.productRepository.find({
             where: {
               categoryId: section.categoryId,

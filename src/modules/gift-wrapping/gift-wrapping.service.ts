@@ -6,12 +6,15 @@ import { CreateGiftWrappingDto } from './dto/create-gift-wrapping.dto';
 import { UpdateGiftWrappingDto } from './dto/update-gift-wrapping.dto';
 import { GiftWrappingStatus } from './enums/gift-wrapping-status.enum';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
+import { Media } from '../media/entities/image.entity';
 
 @Injectable()
 export class GiftWrappingService {
     constructor(
         @InjectRepository(GiftWrapping)
         private readonly giftWrappingRepo: Repository<GiftWrapping>,
+        @InjectRepository(Media)
+        private readonly mediaRepo: Repository<Media>,
     ) { }
 
     /**
@@ -90,10 +93,20 @@ export class GiftWrappingService {
      */
     async update(id: number, dto: UpdateGiftWrappingDto): Promise<GiftWrapping> {
         const giftWrapping = await this.findOne(id);
+        if (!giftWrapping) throw new NotFoundException(`بسته‌بندی با شناسه ${id} یافت نشد`);
+        if (dto.imageId !== null || dto.imageId !== undefined) {
 
-        Object.assign(giftWrapping, dto);
+        }
+        const image = await this.mediaRepo.findOne({ where: { id: dto.imageId } });
+        if (!image) {
+            throw new NotFoundException(`تصویر با شناسه ${dto.imageId} یافت نشد`);
+        }
 
-        return await this.giftWrappingRepo.save(giftWrapping);
+        const updated = this.giftWrappingRepo.merge(giftWrapping, {
+            ...dto,
+            image,
+        });
+        return await this.giftWrappingRepo.save(updated);
     }
 
     /**

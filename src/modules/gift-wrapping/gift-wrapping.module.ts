@@ -5,10 +5,11 @@ import { GiftWrappingController } from './gift-wrapping.controller';
 import { GiftWrappingAdminController } from './gift-wrapping-admin.controller';
 import { GiftWrapping } from './entities/gift-wrapping.entity';
 import { MediaModule } from '../media/media.module';
+import { Media } from '../media/entities/image.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([GiftWrapping]),
+        TypeOrmModule.forFeature([GiftWrapping, Media]),
         MediaModule, // برای آپلود تصویر
     ],
     controllers: [
@@ -18,4 +19,4 @@ import { MediaModule } from '../media/media.module';
     providers: [GiftWrappingService],
     exports: [GiftWrappingService],
 })
-export class GiftWrappingModule {}
+export class GiftWrappingModule { }

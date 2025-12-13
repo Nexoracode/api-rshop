@@ -116,7 +116,6 @@ export class AuthService implements IAuthService {
     //     const code = Math.floor(100000 + Math.random() * 900000).toString();
     //     this.otpService.set('code', code);
     //     this.otpService.set('identifier', dto.identifier);
-    //     console.log(`send code for ${dto.identifier} : ${code}`)
     //     return {
     //         message: 'send code successfully',
     //         data: null

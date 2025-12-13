@@ -54,7 +54,6 @@ export class OrderController {
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
-    console.log(id);
     return this.orderService.findOneById(id);
   }
 

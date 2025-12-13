@@ -10,7 +10,6 @@ export class AccessGuard extends AuthGuard(TokenStrategy.ACCESS) {
 
     handleRequest(err: any, user: any, info: any) {
         if (err || !user) {
-            console.log(user)
             throw new UnauthorizedException('token is missed');
         }
         return user;

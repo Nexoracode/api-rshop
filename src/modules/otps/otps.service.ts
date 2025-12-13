@@ -13,7 +13,6 @@ export class OtpService {
 
   async generate(identifier: string): Promise<void> {
     const isDevelopment = process.env.NODE_ENV === 'development';
-    console.log(isDevelopment);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expireAt = new Date(Date.now() + 2 * 60 * 1000); // 2 دقیقه اعتبار
 

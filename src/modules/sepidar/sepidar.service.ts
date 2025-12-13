@@ -92,7 +92,6 @@ export class SepidarService {
     const publicKeyXml = this.decryptPublicKey(cypher, iv, serial);
     const encArbitraryCode = await this.encryptArbitraryCode(publicKeyXml, arbitraryCode);
     const passwordHash = crypto.createHash('md5').update(password).digest('hex');
-    console.log(passwordHash);
     const headers = {
       GenerationVersion: generationVersion,
       IntegrationID: integrationId,
@@ -103,14 +102,12 @@ export class SepidarService {
       UserName: username,
       PasswordHash: passwordHash,
     };
-    console.log(headers);
 
     const url = 'https://sepidar.roohbakhshac.ir/api/users/Login';
     try {
       const { data } = await firstValueFrom(
         this.httpService.post(url, body, { headers }),
       );
-      console.log(data);
       return {
         message: 'ورود به سپیدار موفقیت آمیز بود',
         data: data,
@@ -122,18 +119,13 @@ export class SepidarService {
 
     // const url = 'https://sepidar.roohbakhshac.ir/api/General/GenerationVersion';
     // try {
-    //   console.log(url);
     //   const { data } = await firstValueFrom(
     //     this.httpService.get(url),
     //   );
-    //   console.log(data);
     // }
     // catch (e) {
     //   console.error(e);
     //   throw new BadRequestException('خطا در ورود به Sepidar');
     // }
-
-
-    // console.log(data);
   }
 }

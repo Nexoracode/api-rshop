@@ -67,20 +67,29 @@ export class OrderMapperNew {
             });
             return pr;
         }
+
+        // 💰 محاسبه breakdown تخفیف‌ها
+        const discountBreakdown = this.calculateDiscountBreakdown(order);
+
         return {
             id: order.id,
             status: order.status,
+
+            // 💵 مبالغ اصلی
             subtotal: Number(order.subtotal),
             discountTotal: Number(order.discountTotal),
             total: Number(order.total),
-            paymentMethod: order.paymentGatewayRef || null,
             shippingCost: Number(order.shippingCost),
-            createdAt: order.createdAt,
-            updatedAt: order.updatedAt,
-            customerNote: order.note || null,
-            promotionsDiscount: Number(order.promotionDiscountAmount),
+            giftWrappingCost: Number(order.giftWrappingCost),
+
+            // 💰 تفکیک کامل تخفیف‌ها
+            discountBreakdown,
+
+            // 🎫 پرومو��ن‌ها
             promotionCode: order.promotionCode || null,
             promotions: order.promotionDetails || null,
+
+            // 🎁 هدیه
             isGift: order.isGift,
             giftWrapping: order.isGift ? {
                 id: order.giftWrappingId,
@@ -90,17 +99,27 @@ export class OrderMapperNew {
                 description: order.giftWrapping!.description,
             } : null,
             giftMessage: order.giftMessage || null,
-            giftWrappingCost: Number(order.giftWrappingCost),
+
+            // 🛠️ تخفیف دستی (Manual)
             isManual: order.isManual,
             manualDiscountType: order.manualDiscountType || null,
             manualDiscountValue: Number(order.manualDiscountValue),
             manualDiscountApplied: Number(order.manualDiscountApplied),
+
+            // 📦 اطلاعات تحویل
             preparationDays: findMax(order.items || []),
             totalWeight: order.items?.reduce((sum, item) => {
                 const weight = item.product?.weight || 0;
                 return sum + weight * item.quantity;
             }, 0) || 0,
-            items: order.items?.map((item) => this.mapItem(item)) || [],
+
+            // 📝 سایر
+            paymentMethod: order.paymentGatewayRef || null,
+            customerNote: order.note || null,
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
+
+            // 👤 کاربر و آدرس
             user: {
                 id: order.user.id,
                 firstName: order.user.firstName,
@@ -110,11 +129,83 @@ export class OrderMapperNew {
                 email: order.user.email || null,
             },
             address: order.address,
+
+            // 🛒 آیتم‌ها
+            items: order.items?.map((item) => this.mapItem(item)) || [],
+
+            // 💳 پرداخت
             payment: payment || null,
         };
     }
 
-    // 🔹 آیتم‌های سفارش
+    /**
+     * 💰 محاسبه و تفکیک کامل تخفیف‌ها
+     */
+    private static calculateDiscountBreakdown(order: Order) {
+        const breakdown = {
+            // 🏷️ تخفیف محصولات (Product/Variant Discounts)
+            productDiscounts: {
+                total: 0,
+            },
+
+            // 🎫 تخفیف پروموشن‌ها
+            promotionDiscounts: {
+                total: Number(order.promotionDiscountAmount) || 0,
+            },
+
+            // 🛠️ تخفیف دستی (Manual by Admin)
+            manualDiscount: {
+                total: Number(order.manualDiscountApplied) || 0,
+                type: order.manualDiscountType || null,
+                value: Number(order.manualDiscountValue) || 0,
+            },
+
+            // 📊 خلاصه
+            summary: {
+                totalProductDiscounts: 0,
+                totalPromotionDiscounts: Number(order.promotionDiscountAmount) || 0,
+                totalManualDiscount: Number(order.manualDiscountApplied) || 0,
+                grandTotalDiscount: Number(order.discountTotal),
+            }
+        };
+
+        // محاسبه تخفیف محصولات از OrderItems
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                const itemDiscount = Number(item.discount) || 0;
+
+                if (itemDiscount > 0) {
+                    const totalItemDiscount = itemDiscount * item.quantity;
+
+                    // تشخیص منبع تخفیف
+                    let source: 'product' | 'variant' | 'category' = 'product';
+
+                    // اگر variant داره و variant تخفیف داره
+                    if (item.variant) {
+                        source = 'variant';
+                    } else if (item.product?.category) {
+                        // بررسی اینکه آیا تخفیف از دسته‌بندی اومده
+                        // اگر محصول خودش تخفیف نداشت ولی discount داره، احتمالاً از دسته‌بندی اومده
+                        const productHasDiscount =
+                            (Number(item.product.discountPercent) > 0) ||
+                            (Number(item.product.discountAmount) > 0);
+
+                        if (!productHasDiscount) {
+                            source = 'category';
+                        }
+                    }
+                    breakdown.productDiscounts.total += totalItemDiscount;
+                }
+            });
+        }
+
+        // بروزرسانی خلاصه
+        breakdown.summary.totalProductDiscounts = breakdown.productDiscounts.total;
+
+        return breakdown;
+    }
+
+    // 🔹 آیتم‌های سفارش با جزئیات تخفیف
     private static mapItem(item: OrderItem) {
         const variantAttributes =
             item.variant?.attributes?.map((attr) => ({
@@ -123,17 +214,35 @@ export class OrderMapperNew {
                 displayColor: attr.value?.displayColor || null,
             })) || [];
 
+        // تشخیص منبع تخفیف برای هر آیتم
+        const discountSource = this.detectDiscountSource(item);
+
         return {
             id: item.id,
             quantity: item.quantity,
-            discount: item.discount,
             unitPrice: Number(item.unitPrice),
+            discount: Number(item.discount),
             lineTotal: Number(item.lineTotal),
+
+            // 💰 اطلاعات تخفیف این آیتم
+            discountInfo: {
+                source: discountSource,
+                discountPerUnit: Number(item.discount),
+                totalDiscount: Number(item.discount) * item.quantity,
+                priceAfterDiscount: Number(item.unitPrice) - Number(item.discount),
+            },
+
             product: {
                 id: item.product.id,
                 name: item.product.name,
                 image: item.product.mediaPinned?.url || null,
+                basePrice: Number(item.product.price),
+                productDiscount: {
+                    percent: Number(item.product.discountPercent) || 0,
+                    amount: Number(item.product.discountAmount) || 0,
+                }
             },
+
             variant: item.variant
                 ? {
                     id: item.variant.id,
@@ -143,5 +252,33 @@ export class OrderMapperNew {
                 }
                 : null,
         };
+    }
+
+    /**
+     * تشخیص منبع تخفیف یک آیتم
+     */
+    private static detectDiscountSource(item: OrderItem): 'none' | 'product' | 'variant' | 'category' {
+        const itemDiscount = Number(item.discount) || 0;
+
+        if (itemDiscount === 0) {
+            return 'none';
+        }
+
+        // اگر variant داره
+        if (item.variant) {
+            return 'variant';
+        }
+
+        // بررسی تخفیف محصول
+        const productHasDiscount =
+            (Number(item.product?.discountPercent) > 0) ||
+            (Number(item.product?.discountAmount) > 0);
+
+        if (productHasDiscount) {
+            return 'product';
+        }
+
+        // اگر هیچ‌کدام نبود، احتمالاً از دسته‌بندی اومده
+        return 'category';
     }
 }

@@ -40,7 +40,6 @@ export class UploadService {
     async deleteFileByUrl(fileUrl: string): Promise<void> {
         try {
             const parsedUrl = new URL(fileUrl);
-            console.log(parsedUrl);
             const filePath = parsedUrl.pathname.startsWith('/')
                 ? parsedUrl.pathname.slice(1)
                 : parsedUrl.pathname;

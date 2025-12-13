@@ -123,7 +123,6 @@ ${urls.join('\n')}
         ? product.medias[0].url
         : `${baseUrl}${product.medias[0].url}`)
       : `${baseUrl}/images/default-product.jpg`;
-    console.log(product.averageRaiting)
 
     return {
       title: this.formatTitle(title),
