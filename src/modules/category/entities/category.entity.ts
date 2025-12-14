@@ -15,6 +15,9 @@ export class Category implements ICategory {
     @Column({ length: 100, unique: true })
     title: string;
 
+    @Column({ type: 'text', nullable: true })
+    description?: string | null;
+
     @Column({ unique: true })
     slug: string;
 

@@ -49,9 +49,9 @@ export class CategoryController {
   }
 
   @Public()
-  @Get('site/:id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const category = await this.categoryService.findByIdWithDescendants(id);
+  @Get('site/:slug')
+  async findOne(@Param('slug') slug: string) {
+    const category = await this.categoryService.findOneSlug(slug);
     const seo = this.seoService.generateCategoryMeta(category);
     return { category, seo };
   }

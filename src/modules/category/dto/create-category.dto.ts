@@ -13,8 +13,13 @@ export class CreateCategoryDto {
     @IsNotEmpty({ message: 'نامک دسته بندی الزامی است' })
     slug: string;
 
-    @ApiProperty({ 
-        name: 'media_id', 
+    @ApiProperty({ name: 'desciption', default: 'توضیحات ( برای سئو )' })
+    @IsString()
+    @IsOptional()
+    description?: string | null;
+
+    @ApiProperty({
+        name: 'media_id',
         example: 0,
         required: false,
         description: 'شناسه تصویر دسته بندی'
@@ -24,7 +29,7 @@ export class CreateCategoryDto {
     @Min(1, { message: 'شناسه مدیا باید بزرگتر از 0 باشد' })
     mediaId?: number | null;
 
-    @ApiProperty({ 
+    @ApiProperty({
         required: false,
         description: 'درصد تخفیف',
         example: '10'
@@ -33,8 +38,8 @@ export class CreateCategoryDto {
     @IsOptional()
     discount?: string;
 
-    @ApiProperty({ 
-        name: 'parent_id', 
+    @ApiProperty({
+        name: 'parent_id',
         example: 0,
         required: false,
         description: 'شناسه دسته والد (0 برای دسته اصلی)'

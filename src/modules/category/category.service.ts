@@ -31,6 +31,14 @@ export class CategoryService implements ICategoryService {
         return category;
     }
 
+    async findOneSlug(slug: string): Promise<Category> {
+        const category = await this.treeCatRepo.findOne({ where: { slug } });
+        if (!category) {
+            throw new NotFoundException(`Category with ID ${slug} not found`);
+        }
+        return category;
+    }
+
     async findAllTree(): Promise<ICategoryResponse[]> {
         const categories = await this.treeCatRepo.findTrees({
             relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']

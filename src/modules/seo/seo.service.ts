@@ -172,16 +172,16 @@ ${urls.join('\n')}
 
   // متادیتا برای دسته‌بندی‌ها
   generateCategoryMeta(category: any) {
-    const title = this.truncate(`${category.name}`, SEO_CONFIG.limits.titleLength);
+    const title = this.truncate(`${category.title}`, SEO_CONFIG.limits.titleLength);
     const description = this.truncate(category.description, SEO_CONFIG.limits.descriptionLength) ||
-      `خرید انواع ${category.name} با بهترین قیمت`;
+      `خرید انواع ${category.title} با بهترین قیمت`;
     const baseUrl = process.env.FRONTEND_URL || 'https://yourdomain.com';
     const categoryUrl = `${baseUrl}/category/${category.slug}`;
 
     return {
       title: this.formatTitle(title),
       description,
-      keywords: `${category.name}, خرید ${category.name}`,
+      keywords: `${category.title}, خرید ${category.title}`,
       canonical: categoryUrl,
       ogTitle: title,
       ogDescription: description,
@@ -190,7 +190,7 @@ ${urls.join('\n')}
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: category.name,
+        name: category.title,
         description: category.description,
         url: categoryUrl,
       }
