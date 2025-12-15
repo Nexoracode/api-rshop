@@ -31,12 +31,191 @@ export class CategoryService implements ICategoryService {
         return category;
     }
 
-    async findOneSlug(slug: string): Promise<Category> {
-        const category = await this.treeCatRepo.findOne({ where: { slug } });
-        if (!category) {
-            throw new NotFoundException(`Category with ID ${slug} not found`);
-        }
+    async findOneSlug(slug: string) {
+        const node = await this.treeCatRepo.findOne({
+            where: { slug },
+            relations: ['parent']
+        })
+        if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
+
+        const category = await this.treeCatRepo.findDescendantsTree(node, {
+            relations: ['parent']
+        });
         return category;
+    }
+
+    /**
+     * پیدا کردن دسته‌بندی با slug به همراه تمام parent ها (بدون children)
+     * برای استفاده در SEO و Breadcrumb
+     * @param slug - نامک دسته‌بندی
+     * @returns دسته‌بندی همراه با آرایه‌ای از تمام parent ها
+     */
+    async findBySlugWithParents(slug: string): Promise<{
+        category: {
+            id: number;
+            title: string;
+            slug: string;
+            description?: string | null;
+            level: number;
+            isActive: boolean;
+            media: any;
+        };
+        parents?: Array<{
+            id: number;
+            title: string;
+            slug: string;
+            description: string | null;
+            level: number;
+        }>;
+        breadcrumb: Array<{
+            id: number;
+            title: string;
+            slug: string;
+            level: number;
+        }>;
+    }> {
+        // پیدا کردن دسته با slug (بدون children)
+        const category = await this.treeCatRepo.findOne({
+            where: { slug },
+            relations: ['media']
+        });
+
+        if (!category) {
+            throw new NotFoundException(`دسته‌بندی با slug "${slug}" یافت نشد.`);
+        }
+
+        // دریافت تمام ancestor ها (parent ها) - بدون children
+        const ancestors = await this.treeCatRepo.findAncestors(category);
+
+        // حذف خود دسته از لیست
+        const parents = ancestors.filter(ancestor => ancestor.id !== category.id);
+
+        // مرتب‌سازی parent ها از بالاترین (root) به پایین‌ترین
+        parents.sort((a, b) => a.level - b.level);
+
+        // ساخت breadcrumb (مسیر کامل)
+        const breadcrumb = [
+            ...parents.map(p => ({
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                level: p.level,
+            })),
+            {
+                id: category.id,
+                title: category.title,
+                slug: category.slug,
+                level: category.level,
+            }
+        ];
+
+        // خروجی تمیز بدون children
+        return {
+            category: {
+                id: category.id,
+                title: category.title,
+                slug: category.slug,
+                description: category.description,
+                level: category.level,
+                isActive: category.isActive,
+                media: category.media,
+            },
+            parents: parents.map(p => ({
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                description: p.description ?? null,
+                level: p.level,
+            })),
+            breadcrumb,
+        };
+    }
+
+    /**
+     * پیدا کردن دسته‌بندی با ID به همراه تمام parent ها (بدون children)
+     * برای استفاده در SEO و Breadcrumb
+     * @param id - شناسه دسته‌بندی
+     * @returns دسته‌بندی همراه با آرایه‌ای از تمام parent ها
+     */
+    async findByIdWithParents(id: number): Promise<{
+        category: {
+            id: number;
+            title: string;
+            slug: string;
+            description?: string | null;
+            level: number;
+            isActive: boolean;
+            media: any;
+        };
+        parents: Array<{
+            id: number;
+            title: string;
+            slug: string;
+            description?: string | null;
+            level: number;
+        }>;
+        breadcrumb: Array<{
+            id: number;
+            title: string;
+            slug: string;
+            level: number;
+        }>;
+    }> {
+        // پیدا کردن دسته (بدون children)
+        const category = await this.treeCatRepo.findOne({
+            where: { id },
+            relations: ['media']
+        });
+
+        if (!category) {
+            throw new NotFoundException(`دسته‌بندی با ID ${id} یافت نشد.`);
+        }
+
+        // دریافت تمام ancestor ها (parent ها) - بدون children
+        const ancestors = await this.treeCatRepo.findAncestors(category);
+
+        // حذف خود دسته از لیست
+        const parents = ancestors.filter(ancestor => ancestor.id !== category.id);
+
+        // مرتب‌سازی parent ها از بالاترین (root) به پایین‌ترین
+        parents.sort((a, b) => a.level - b.level);
+
+        // ساخت breadcrumb
+        const breadcrumb = [
+            ...parents.map(p => ({
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                level: p.level,
+            })),
+            {
+                id: category.id,
+                title: category.title,
+                slug: category.slug,
+                level: category.level,
+            }
+        ];
+
+        // خروجی تمیز بدون children
+        return {
+            category: {
+                id: category.id,
+                title: category.title,
+                slug: category.slug,
+                description: category.description,
+                level: category.level,
+                isActive: category.isActive,
+                media: category.media,
+            },
+            parents: parents.map(p => ({
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                description: p.description,
+                level: p.level,
+            })),
+            breadcrumb,
+        };
     }
 
     async findAllTree(): Promise<ICategoryResponse[]> {

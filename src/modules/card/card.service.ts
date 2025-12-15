@@ -35,6 +35,32 @@ function resolveUnitDiscount(basePrice: number | string, discountAmount?: number
   return { unitPriceSnapshot: price, perUnitDiscount, finalUnit };
 }
 
+/**
+ * تابع جدید برای محاسبه صحیح تخفیف بر اساس variant vs product
+ * اگر variant داریم: فقط تخفیف variant اعمال می‌شه
+ * اگر variant نداریم: تخفیف product اعمال می‌شه
+ */
+function resolveDiscountByVariant(
+  product: Product,
+  variant: VariantProduct | null
+): { basePrice: number; dAmount: number | null; dPercent: number | null } {
+  if (variant) {
+    // اگر variant داریم، فقط از قیمت و تخفیف variant استفاده می‌کنیم
+    return {
+      basePrice: variant.price ?? product.price,
+      dAmount: variant.discountAmount ?? null,
+      dPercent: variant.discountPercent ?? null,
+    };
+  } else {
+    // اگر variant نداریم، از قیمت و تخفیف product استفاده می‌کنیم
+    return {
+      basePrice: product.price,
+      dAmount: product.discountAmount ?? null,
+      dPercent: product.discountPercent ?? null,
+    };
+  }
+}
+
 @Injectable()
 export class CardService {
   constructor(
@@ -104,14 +130,12 @@ export class CardService {
         if (!variant) throw new NotFoundException("تنوع محصول یافت نشد.");
       }
 
-      // ۳️⃣ محاسبه قیمت و تخفیف
-      const basePrice = variant?.price ?? product.price;
-      const dAmount = variant?.discountAmount ?? product.discountAmount;
-      const dPercent = variant?.discountPercent ?? product.discountPercent;
+      // ۳️⃣ محاسبه قیمت و تخفیف (استفاده از تابع جدید)
+      const { basePrice, dAmount, dPercent } = resolveDiscountByVariant(product, variant);
       const { unitPriceSnapshot, perUnitDiscount, finalUnit } = resolveUnitDiscount(
         basePrice,
-        dAmount ?? null,
-        dPercent ?? null
+        dAmount,
+        dPercent
       );
 
       // ۴️⃣ بررسی وجود آیتم قبلی در سبد

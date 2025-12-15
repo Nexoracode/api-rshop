@@ -220,23 +220,14 @@ export class OrderMapperNew {
         return {
             id: item.id,
             quantity: item.quantity,
-            unitPrice: Number(item.unitPrice),
             discount: Number(item.discount),
             lineTotal: Number(item.lineTotal),
-
-            // 💰 اطلاعات تخفیف این آیتم
-            discountInfo: {
-                source: discountSource,
-                discountPerUnit: Number(item.discount),
-                totalDiscount: Number(item.discount) * item.quantity,
-                priceAfterDiscount: Number(item.unitPrice) - Number(item.discount),
-            },
 
             product: {
                 id: item.product.id,
                 name: item.product.name,
                 image: item.product.mediaPinned?.url || null,
-                basePrice: Number(item.product.price),
+                price: Number(item.product.price),
                 productDiscount: {
                     percent: Number(item.product.discountPercent) || 0,
                     amount: Number(item.product.discountAmount) || 0,
@@ -248,6 +239,10 @@ export class OrderMapperNew {
                     id: item.variant.id,
                     sku: item.variant.sku,
                     price: Number(item.variant.price),
+                    variantDiscount: {
+                        percent: Number(item.variant.discountPercent) || 0,
+                        amount: Number(item.variant.discountAmount) || 0,
+                    },
                     attributes: variantAttributes,
                 }
                 : null,

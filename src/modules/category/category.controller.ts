@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Upload
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
@@ -49,11 +49,39 @@ export class CategoryController {
   }
 
   @Public()
-  @Get('site/:slug')
-  async findOne(@Param('slug') slug: string) {
+  @Get('site/seo/:slug')
+  async findOneSeo(@Param('slug') slug: string) {
     const category = await this.categoryService.findOneSlug(slug);
     const seo = this.seoService.generateCategoryMeta(category);
-    return { category, seo };
+    return seo;
+  }
+
+  @Public()
+  @Get('site/:slug')
+  async findOneSlug(@Param('slug') slug: string) {
+    return this.categoryService.findOneSlug(slug);
+  }
+
+  // ✅ اضافه: دریافت دسته با تمام parent ها و breadcrumb
+  @Public()
+  @Get('site/with-parents/slug/:slug')
+  @ApiOperation({
+    summary: 'دریافت دسته‌بندی با slug به همراه تمام parent ها',
+    description: 'این endpoint دسته‌بندی را به همراه آرایه‌ای از تمام parent ها (از بالاترین تا پایین‌ترین) و breadcrumb کامل برمی‌گرداند',
+  })
+  async findBySlugWithParents(@Param('slug') slug: string) {
+    return this.categoryService.findBySlugWithParents(slug);
+  }
+
+  // ✅ اضافه: دریافت دسته با ID به همراه تمام parent ها
+  @Public()
+  @Get('site/with-parents/id/:id')
+  @ApiOperation({
+    summary: 'دریافت دسته‌بندی با ID به همراه تمام parent ها',
+    description: 'این endpoint دسته‌بندی را به همراه آرایه‌ای از تمام parent ها (از بالاترین تا پایین‌ترین) و breadcrumb کامل برمی‌گرداند',
+  })
+  async findByIdWithParents(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.findByIdWithParents(id);
   }
 
   @Get(':id')

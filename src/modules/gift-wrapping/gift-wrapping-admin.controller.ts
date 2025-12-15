@@ -175,7 +175,6 @@ export class GiftWrappingAdminController {
         @Body() updateDto: UpdateGiftWrappingDto,
     ) {
         const giftWrapping = await this.giftWrappingService.update(id, updateDto);
-        console.log('updated gift wrapping:', giftWrapping);
         return {
             success: true,
             message: 'بسته‌بندی با موفقیت بروزرسانی شد',

@@ -44,6 +44,43 @@ const relations = [
     "giftWrapping.image",
 ];
 
+/**
+ * تابع جدید helper برای محاسبه صحیح تخفیف بر اساس variant vs product
+ * اگر variant داریم: فقط تخفیف variant اعمال می‌شه
+ * اگر variant نداریم: تخفیف product اعمال می‌شه
+ */
+function calculateItemDiscount(
+    product: Product,
+    variant: VariantProduct | null,
+    unitPrice: number
+): number {
+    let discount = 0;
+
+    if (variant) {
+        // اگر variant داریم، فقط تخفیف variant رو بررسی می‌کنیم
+        const variantDiscountPercent = Number(variant.discountPercent) || 0;
+        const variantDiscountAmount = Number(variant.discountAmount) || 0;
+
+        if (variantDiscountPercent && variantDiscountPercent > 0) {
+            discount = (unitPrice * variantDiscountPercent) / 100;
+        } else if (variantDiscountAmount && variantDiscountAmount > 0) {
+            discount = variantDiscountAmount;
+        }
+    } else {
+        // اگر variant نداریم، تخفیف product رو بررسی می‌کنیم
+        const productDiscountPercent = Number(product.discountPercent) || 0;
+        const productDiscountAmount = Number(product.discountAmount) || 0;
+
+        if (productDiscountPercent && productDiscountPercent > 0) {
+            discount = (unitPrice * productDiscountPercent) / 100;
+        } else if (productDiscountAmount && productDiscountAmount > 0) {
+            discount = productDiscountAmount;
+        }
+    }
+
+    return discount;
+}
+
 @Injectable()
 export class OrderService {
     constructor(
@@ -204,13 +241,11 @@ export class OrderService {
 
                 if (!productItem.variantIds || productItem.variantIds.length === 0) {
                     // زمانی که فقط محصول داریم بدون variant
-                    const quantity = productItem.quantity ?? 1; // اگر quantity نداشت، پیش‌فرض 1
+                    const quantity = productItem.quantity ?? 1;
                     const unitPrice = basePrice;
-                    let discount = 0;
-                    if (discountPercent && discountPercent > 0)
-                        discount = (unitPrice * discountPercent) / 100;
-                    else if (discountAmount && discountAmount > 0)
-                        discount = discountAmount;
+                    
+                    // استفاده از تابع جدید برای محاسبه تخفیف
+                    const discount = calculateItemDiscount(product, null, unitPrice);
 
                     const finalUnitPrice = unitPrice - discount;
                     const lineTotal = finalUnitPrice * quantity;
@@ -235,11 +270,9 @@ export class OrderService {
                             throw new BadRequestException(`واریانت ${variantObj.id} یافت نشد.`);
 
                         const unitPrice = variant.price ?? product.price;
-                        let discount = 0;
-                        if (product.discountPercent && product.discountPercent > 0)
-                            discount = (unitPrice * product.discountPercent) / 100;
-                        else if (product.discountAmount && product.discountAmount > 0)
-                            discount = product.discountAmount;
+                        
+                        // استفاده از تابع جدید برای محاسبه تخفیف (فقط تخفیف variant)
+                        const discount = calculateItemDiscount(product, variant, unitPrice);
 
                         const finalUnitPrice = unitPrice - discount;
                         const lineTotal = finalUnitPrice * variantObj.quantity;
@@ -296,7 +329,7 @@ export class OrderService {
 
     // 🛒 ساخت سفارش از سبد خرید
     private async calculateShippingCost(user: User, address: Address, items: CardItem[]) {
-        return 35000;
+        return 80000;
     }
 
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
