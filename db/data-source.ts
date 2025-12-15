@@ -26,5 +26,4 @@ export const dataSourceOption: DataSourceOptions = {
 const dataSource = new DataSource(dataSourceOption);
 export default dataSource;
 
-
 console.log(`.env.${process.env.NODE_ENV}`)
