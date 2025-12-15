@@ -91,7 +91,7 @@ export class OrderMapperNew {
 
             // 🎁 هدیه
             isGift: order.isGift,
-            giftWrapping: order.isGift ? {
+            giftWrapping: order.giftWrapping ? {
                 id: order.giftWrappingId,
                 name: order.giftWrapping!.name,
                 image: order.giftWrapping!.image,

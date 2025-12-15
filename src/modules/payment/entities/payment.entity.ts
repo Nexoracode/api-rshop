@@ -13,6 +13,9 @@ export class Payment {
     @ManyToOne(() => Order, { onDelete: "CASCADE" })
     order: Order;
 
+    @Column({ name: 'order_id' })
+    orderId: number;
+
     @ManyToOne(() => User, { onDelete: "CASCADE" })
     user: User;
 
@@ -36,9 +39,9 @@ export class Payment {
     gateway: PaymentGateway;
 
     // ✅ فیلدهای جدید برای کارت به کارت
-    @Column({ 
-        type: 'enum', 
-        enum: PaymentMethod, 
+    @Column({
+        type: 'enum',
+        enum: PaymentMethod,
         default: PaymentMethod.ONLINE,
         name: 'payment_method'
     })
@@ -53,9 +56,9 @@ export class Payment {
     receiptImageId?: number;
 
     // وضعیت کارت به کارت
-    @Column({ 
-        type: 'enum', 
-        enum: CardToCardStatus, 
+    @Column({
+        type: 'enum',
+        enum: CardToCardStatus,
         nullable: true,
         name: 'card_to_card_status'
     })

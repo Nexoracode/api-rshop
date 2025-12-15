@@ -17,6 +17,7 @@ import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
 import { CardModule } from '../card/card.module';
 import { SettingModule } from '../setting/setting.module';
+import { CardService } from '../card/card.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SettingModule } from '../setting/setting.module';
     OrderModule,
     CardModule,
     SettingModule,
+    CardModule,
     // ✅ نیازی به import AccountingModule نیست - EventEmitter خودش handle می‌کنه
   ],
   controllers: [

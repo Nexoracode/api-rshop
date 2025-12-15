@@ -7,7 +7,6 @@ export class UpdateItemDto {
     @IsInt()
     itemId: number;
 
-
     @ApiProperty({ type: 'number', example: 5, description: 'تعداد محصول در کارت' })
     @IsInt()
     @Min(0)

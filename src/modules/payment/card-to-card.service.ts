@@ -28,7 +28,7 @@ export class CardToCardService {
         private readonly dataSource: DataSource,
         private readonly invoiceService: InvoiceService,
         private readonly cardStatusService: CardStatusService, // ✅ اضافه شد
-    ) {}
+    ) { }
 
     /**
      * ایجاد پرداخت کارت به کارت
@@ -49,7 +49,7 @@ export class CardToCardService {
 
             // بررسی پرداخت pending
             const existingPayment = await manager.findOne(Payment, {
-                where: { 
+                where: {
                     order: { id: order.id },
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
                     cardToCardStatus: CardToCardStatus.PENDING,
@@ -62,12 +62,12 @@ export class CardToCardService {
 
             // بررسی پرداخت uploaded
             const uploadedPayment = await manager.findOne(Payment, {
-                where: { 
+                where: {
                     order: { id: order.id },
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
                     cardToCardStatus: CardToCardStatus.UPLOADED,
                 },
-                relations: ['receiptImage'],
+                relations: ['order', 'receiptImage'],
             });
 
             if (uploadedPayment) {
@@ -127,27 +127,27 @@ export class CardToCardService {
         if (receiptImageId) {
             payment.receiptImageId = receiptImageId;
         }
-        
-        if (dto.sender_card_number) {
-            payment.senderCardNumber = dto.sender_card_number;
+
+        if (dto.senderCardNumber) {
+            payment.senderCardNumber = dto.senderCardNumber;
         }
-        
-        if (dto.tracking_code) {
-            payment.trackingCode = dto.tracking_code;
+
+        if (dto.trackingCode) {
+            payment.trackingCode = dto.trackingCode;
         }
-        
-        payment.depositDate = dto.deposit_date ? new Date(dto.deposit_date) : new Date();
+
+        payment.depositDate = dto.depositDate ? new Date(dto.depositDate) : new Date();
         payment.cardToCardStatus = CardToCardStatus.UPLOADED;
-        
+
         // پیام بر اساس نوع ثبت
-        if (receiptImageId && (dto.sender_card_number || dto.tracking_code)) {
+        if (receiptImageId && (dto.senderCardNumber || dto.trackingCode)) {
             payment.message = 'رسید و اطلاعات دستی ثبت شد، منتظر تایید ادمین';
         } else if (receiptImageId) {
             payment.message = 'تصویر رسید آپلود شد، منتظر تایید ادمین';
         } else {
             payment.message = 'اطلاعات واریز ثبت شد، منتظر تایید ادمین';
         }
-        
+
         payment.status = PaymentStatus.PENDING;
 
         const saved = await this.paymentRepo.save(payment);
@@ -242,7 +242,7 @@ export class CardToCardService {
     ) {
         return await runInTransaction(this.dataSource, async (manager) => {
             const payment = await manager.findOne(Payment, {
-                where: { 
+                where: {
                     id: paymentId,
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
                 },
@@ -261,7 +261,7 @@ export class CardToCardService {
 
             // اگر رد شد
             if (dto.status === CardToCardStatus.REJECTED) {
-                if (!dto.admin_note || dto.admin_note.trim().length === 0) {
+                if (!dto.adminNote || dto.adminNote.trim().length === 0) {
                     throw new BadRequestException('لطفاً دلیل رد را وارد کنید');
                 }
 
@@ -269,7 +269,7 @@ export class CardToCardService {
                 payment.cardToCardStatus = CardToCardStatus.REJECTED;
                 payment.status = PaymentStatus.FAILED;
                 payment.message = 'رسید رد شد';
-                payment.adminNote = dto.admin_note;
+                payment.adminNote = dto.adminNote;
                 payment.reviewedById = admin.id;
                 payment.reviewedAt = new Date();
                 await manager.save(Payment, payment);
@@ -278,9 +278,9 @@ export class CardToCardService {
                 const order = await manager.findOne(Order, {
                     where: { id: payment.order.id },
                 });
-                
+
                 if (order) {
-                    order.status = OrderStatus.PAYMENT_FAILED;
+                    order.status = OrderStatus.REJECTED;
                     await manager.save(Order, order);
                 }
 
@@ -324,7 +324,7 @@ export class CardToCardService {
                 payment.cardToCardStatus = CardToCardStatus.APPROVED;
                 payment.status = PaymentStatus.SUCCESS;
                 payment.message = 'پرداخت تایید شد';
-                payment.adminNote = dto.admin_note || 'تایید شده';
+                payment.adminNote = dto.adminNote || 'تایید شده';
                 payment.reviewedById = admin.id;
                 payment.reviewedAt = new Date();
                 payment.refId = payment.trackingCode || `C2C-${payment.id}`;
@@ -332,6 +332,8 @@ export class CardToCardService {
 
                 // ✅ 5. Cart باید LOCKED بمونه (تا تحویل)
                 // بعد از DELIVERED با OrderService.markAsDelivered به ABANDONED تبدیل می‌شه
+                await this.cardStatusService.abandonCart(payment.user.id, manager);
+
 
                 // ✅ 6. ایجاد Invoice
                 const invoice = await this.invoiceService.createFromOrder(

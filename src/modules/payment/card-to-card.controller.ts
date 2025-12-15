@@ -88,7 +88,7 @@ export class CardToCardController {
             message: 'پرداخت کارت به کارت ایجاد شد. لطفاً رسید خود را آپلود کنید',
             data: {
                 payment_id: payment.id,
-                order_id: payment.order.id,
+                order_id: payment.orderId,
                 amount: payment.amount,
                 status: payment.cardToCardStatus,
                 // ✅ اطلاعات حساب فروشگاه از تنظیمات
@@ -116,7 +116,7 @@ export class CardToCardController {
         status: 200,
         description: 'رسید با موفقیت ثبت شد',
     })
-    @UseInterceptors(FilesInterceptor('files', 1))
+    @UseInterceptors(FilesInterceptor('files', 10))
     @ApiBody({ type: UploadReceiptDto, description: 'فیلدهای مورد نیاز برای آپلود رسید' })
     async uploadReceipt(
         @CurrentUser() user: User,
@@ -125,7 +125,7 @@ export class CardToCardController {
         @Body() dto: UploadReceiptDto,
     ) {
         const hasImage = files && files.length > 0;
-        const hasManualData = dto.sender_card_number && dto.tracking_code;
+        const hasManualData = dto.senderCardNumber && dto.trackingCode;
 
         // بررسی: حداقل یکی از دو حالت باید وجود داشته باشه
         if (!hasImage && !hasManualData) {
@@ -143,7 +143,7 @@ export class CardToCardController {
                 MediaType.PAYMENT_RECEIPT,
             );
             receiptImageId = uploadResult.data[0].id;
-            dto.has_receipt_image = true;
+            dto.hasReceiptImage = true;
         }
 
         // بروزرسانی پرداخت

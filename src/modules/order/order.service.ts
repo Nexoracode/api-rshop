@@ -171,7 +171,7 @@ export class OrderService {
             );
         }
 
-        if (giftWrapping.status !== GiftWrappingStatus.ACTIVE) {
+        if (!giftWrapping.isActive) {
             throw new BadRequestException(
                 `بسته‌بندی "${giftWrapping.name}" غیرفعال است`
             );
@@ -236,14 +236,12 @@ export class OrderService {
                     throw new NotFoundException(`محصول ${productItem.productId} یافت نشد.`);
 
                 const basePrice = Number(product.price) || 0;
-                const discountPercent = Number(product.discountPercent) || 0;
-                const discountAmount = Number(product.discountAmount) || 0;
 
                 if (!productItem.variantIds || productItem.variantIds.length === 0) {
                     // زمانی که فقط محصول داریم بدون variant
                     const quantity = productItem.quantity ?? 1;
                     const unitPrice = basePrice;
-                    
+
                     // استفاده از تابع جدید برای محاسبه تخفیف
                     const discount = calculateItemDiscount(product, null, unitPrice);
 
@@ -270,7 +268,7 @@ export class OrderService {
                             throw new BadRequestException(`واریانت ${variantObj.id} یافت نشد.`);
 
                         const unitPrice = variant.price ?? product.price;
-                        
+
                         // استفاده از تابع جدید برای محاسبه تخفیف (فقط تخفیف variant)
                         const discount = calculateItemDiscount(product, variant, unitPrice);
 
@@ -427,7 +425,7 @@ export class OrderService {
             const promotionDiscountAmount = promotionDetails.reduce((a, b) => a + b.amount, 0);
             const finalShippingCost = promotionResult.freeShipping ? 0 : shippingCost;
             const productDiscount = card.discountTotal;
-            const discountTotal = productDiscount + promotionDiscountAmount;
+            const discountTotal = Number(productDiscount) + Number(promotionDiscountAmount);
 
             // 🎁 محاسبه مبلغ نهایی با Gift Wrapping
             const finalTotal = card.subtotal - discountTotal + finalShippingCost + giftWrappingCost;
@@ -466,7 +464,7 @@ export class OrderService {
                 return OrderMapperNew.toDetail(existingOrder);
             }
 
-            await this.cardStatusService.lockCart(user.id, manager);
+            // await this.cardStatusService.lockCart(user.id, manager);
 
             // سفارش جدید
             const newOrder = orderRepo.create({
@@ -483,7 +481,7 @@ export class OrderService {
                 shippingCost: finalShippingCost,
 
                 // 🎁 Gift Wrapping
-                isGift: dto.isGift ?? false,
+                isGift: giftWrapping ? true : false,
                 giftWrappingId: dto.giftWrappingId ?? null,
                 giftWrappingCost,
                 giftMessage: dto.giftMessage ?? null,

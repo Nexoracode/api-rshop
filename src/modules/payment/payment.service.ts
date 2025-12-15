@@ -30,6 +30,7 @@ import { IncrementPromotionUsageUseCase } from "../promotion/application/usecase
 
 // ✅ اضافه: Event برای یکپارچه‌سازی حسابداری
 import { OrderPaidEvent } from "../accounting/listeners/order-accounting.listener";
+import { CardStatusService } from "../card/card-status.service";
 
 const relations = [
   'user',
@@ -59,6 +60,7 @@ export class PaymentService {
     private readonly invoiceService: InvoiceService,
     private readonly incrementPromotionUsage: IncrementPromotionUsageUseCase,
     private readonly eventEmitter: EventEmitter2, // ✅ اضافه شد
+    private readonly cardStatusService: CardStatusService, // ✅ اضافه شد
   ) { }
 
   // ────────────────────────────────────────────────
@@ -153,6 +155,8 @@ export class PaymentService {
 
       order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
       await orderRepo.save(order);
+
+      await this.cardStatusService.lockCart(order.user.id, manager);
 
       await paymentLogRepo.save({
         order,

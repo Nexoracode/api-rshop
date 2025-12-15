@@ -13,10 +13,11 @@ export class ReviewReceiptDto {
     status: CardToCardStatus.APPROVED | CardToCardStatus.REJECTED;
 
     @ApiPropertyOptional({
+        name: 'admin_note',
         example: 'رسید تایید شد',
         description: 'توضیحات ادمین (در صورت رد، الزامی است)',
     })
     @IsString()
     @IsOptional()
-    admin_note?: string;
+    adminNote?: string;
 }

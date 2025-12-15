@@ -190,14 +190,14 @@ export class CardService {
       const itemRepo = m.getRepository(CardItem);
 
       const card = await cardRepo.findOne({
-        where: { user: { id: user.id } },
+        where: { user: { id: user.id }, status: CardStatus.OPEN },
         lock: { mode: 'pessimistic_write' },
       });
       if (!card) throw new NotFoundException('سبد خرید یافت نشد.');
 
 
       const item = await itemRepo.findOne({ where: { id: dto.itemId }, relations: ['card'], lock: { mode: 'pessimistic_write' } });
-      if (!item || item.card.id !== card.id) throw new NotFoundException('موردی برای سبد خرید یافت نشد.');
+      if (!item || item.cardId !== card.id) throw new NotFoundException('موردی برای سبد خرید یافت نشد.');
 
 
       if (dto.quantity === 0) {
