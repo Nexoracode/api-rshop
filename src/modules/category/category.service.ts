@@ -276,7 +276,7 @@ export class CategoryService implements ICategoryService {
             // Create category
             const category = manager.create(Category, {
                 ...data,
-                parent: parent,
+                parentId: parent ? parent.id : null,
                 level: level + 1,
             });
 
@@ -353,7 +353,7 @@ export class CategoryService implements ICategoryService {
             // Merge updates
             const category = manager.merge(Category, existsCategory, {
                 ...data,
-                parent: newParent,
+                parentId: newParent ? newParent.id : null,
                 level: newLevel,
             });
 
