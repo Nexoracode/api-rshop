@@ -21,10 +21,10 @@ export class Category implements ICategory {
     @Column({ unique: true })
     slug: string;
 
-    @TreeChildren({ cascade: true })
+    @TreeChildren()
     children: Category[]
 
-    @TreeParent()
+    @TreeParent({ onDelete: 'CASCADE' })
     @JoinColumn({ name: 'parent_id' })
     parent: Category | null
 

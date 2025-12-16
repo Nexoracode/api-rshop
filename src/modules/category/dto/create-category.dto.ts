@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreateCategoryDto {
 
@@ -37,6 +37,28 @@ export class CreateCategoryDto {
     @IsString()
     @IsOptional()
     discount?: string;
+
+    @ApiProperty({
+        name: 'display_order',
+        example: 0,
+        required: false,
+        description: 'ترتیب نمایش',
+        default: 0
+    })
+    @IsNumber()
+    @IsOptional()
+    displayOrder?: number;
+
+    @ApiProperty({
+        name: 'is_active',
+        example: true,
+        required: false,
+        description: 'وضعیت فعال بودن',
+        default: true
+    })
+    @IsBoolean()
+    @IsOptional()
+    isActive?: boolean;
 
     @ApiProperty({
         name: 'parent_id',

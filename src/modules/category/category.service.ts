@@ -220,42 +220,45 @@ export class CategoryService implements ICategoryService {
 
     async findAllTree(): Promise<ICategoryResponse[]> {
         const categories = await this.treeCatRepo.findTrees({
-            relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
+            relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
         });
-        return categories.map((category) => CategoryMapper.toResponse(category));
+        return CategoryMapper.toResponseList(categories);
     }
 
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
         // TODO: Add caching here for better performance
-        const categories = await this.treeCatRepo.findTrees({ relations: ['parent', 'parent.children'] });
-        return categories.map((category) => CategoryMapper.toResponseSite(category));
+        const categories = await this.treeCatRepo.findTrees();
+        return CategoryMapper.toResponseSiteList(categories);
     }
 
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
         const node = await this.treeCatRepo.findOne({
             where: { id },
-            relations: ['parent', 'children.parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
+            relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
         })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
 
         const category = await this.treeCatRepo.findDescendantsTree(node, {
-            relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
+            relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
         });
-        return CategoryMapper.toResponse(category);
+        return CategoryMapper.toResponseWithDescendants(category);
     }
 
     async create(data: CreateCategoryDto): Promise<ICategoryResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
+            // دریافت TreeRepository از transaction manager
+            const treeRepo = manager.getTreeRepository(Category);
+
             let level = 0;
 
             // Check for duplicate title
-            const existingTitle = await manager.findOne(Category, { where: { title: data.title } });
+            const existingTitle = await treeRepo.findOne({ where: { title: data.title } });
             if (existingTitle) {
                 throw new BadRequestException('عنوان دسته بندی تکراری است.');
             }
 
             // Check for duplicate slug
-            const existingSlug = await manager.findOne(Category, { where: { slug: data.slug } });
+            const existingSlug = await treeRepo.findOne({ where: { slug: data.slug } });
             if (existingSlug) {
                 throw new BadRequestException('نامک دسته بندی تکراری است.');
             }
@@ -263,9 +266,8 @@ export class CategoryService implements ICategoryService {
             // Handle parent and level calculation
             let parent: Category | null = null;
             if (data.parentId && data.parentId !== 0) {
-                parent = await this.treeCatRepo.findOne({
-                    where: { id: data.parentId },
-                    relations: ['parent']
+                parent = await treeRepo.findOne({
+                    where: { id: data.parentId }
                 });
                 if (!parent) {
                     throw new NotFoundException('دسته مادر یافت نشد');
@@ -273,14 +275,20 @@ export class CategoryService implements ICategoryService {
                 level = parent.level;
             }
 
-            // Create category
-            const category = manager.create(Category, {
-                ...data,
-                parentId: parent ? parent.id : null,
+            // Create category با parent relation
+            const category = treeRepo.create({
+                title: data.title,
+                slug: data.slug,
+                description: data.description,
+                discount: data.discount,
+                displayOrder: data.displayOrder,
+                isActive: data.isActive,
+                parent: parent,  // استفاده از relation به جای parentId
                 level: level + 1,
             });
 
-            const savedCategory = await manager.save(Category, category);
+            // ذخیره با TreeRepository برای به‌روزرسانی closure table
+            const savedCategory = await treeRepo.save(category);
 
             // Handle media if provided
             if (data.mediaId) {
@@ -288,18 +296,28 @@ export class CategoryService implements ICategoryService {
                 if (!media) {
                     throw new NotFoundException('فایل مدیا یافت نشد.');
                 }
-                await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
+                media.category = savedCategory;
+                await manager.save(Media, media);
             }
 
-            return CategoryMapper.toResponse(savedCategory);
+            // بارگذاری دوباره با relations برای response
+            const loadedCategory = await treeRepo.findOne({
+                where: { id: savedCategory.id },
+                relations: ['parent', 'media']
+            });
+
+            return CategoryMapper.toResponse(loadedCategory!);
         });
     }
 
     async update(id: number, data: UpdateCategoryDto): Promise<ICategoryResponse> {
         return runInTransaction(this.dataSource, async (manager) => {
-            const existsCategory = await manager.findOne(Category, {
+            // دریافت TreeRepository از transaction manager
+            const treeRepo = manager.getTreeRepository(Category);
+
+            const existsCategory = await treeRepo.findOne({
                 where: { id },
-                relations: ['parent', 'media']
+                relations: ['parent', 'media', 'children']
             });
 
             if (!existsCategory) {
@@ -308,7 +326,7 @@ export class CategoryService implements ICategoryService {
 
             // Check for duplicate title (only if title is being updated)
             if (data.title && data.title !== existsCategory.title) {
-                const existingTitle = await manager.findOne(Category, { where: { title: data.title } });
+                const existingTitle = await treeRepo.findOne({ where: { title: data.title } });
                 if (existingTitle && existingTitle.id !== id) {
                     throw new BadRequestException('عنوان دسته بندی تکراری است.');
                 }
@@ -316,98 +334,164 @@ export class CategoryService implements ICategoryService {
 
             // Check for duplicate slug (only if slug is being updated)
             if (data.slug && data.slug !== existsCategory.slug) {
-                const existingSlug = await manager.findOne(Category, { where: { slug: data.slug } });
+                const existingSlug = await treeRepo.findOne({ where: { slug: data.slug } });
                 if (existingSlug && existingSlug.id !== id) {
                     throw new BadRequestException('نامک دسته بندی تکراری است.');
                 }
             }
 
             // Handle parent update and level recalculation
-            let newParent = existsCategory.parent;
+            let newParent: Category | null = existsCategory.parent;
             let newLevel = existsCategory.level;
+            let parentChanged = false;
 
             if (data.parentId !== undefined) {
                 if (data.parentId === 0 || data.parentId === null) {
-                    newParent = null;
-                    newLevel = 1;
+                    if (existsCategory.parent !== null) {
+                        newParent = null;
+                        newLevel = 1;
+                        parentChanged = true;
+                    }
                 } else {
-                    const parent = await this.treeCatRepo.findOne({
-                        where: { id: data.parentId },
-                        relations: ['parent']
+                    const parent = await treeRepo.findOne({
+                        where: { id: data.parentId }
                     });
 
                     if (!parent) {
                         throw new NotFoundException('دسته مادر یافت نشد');
                     }
 
-                    // Prevent setting a category as its own parent or child
+                    // جلوگیری از تنظیم دسته به عنوان parent خودش
                     if (parent.id === id) {
                         throw new BadRequestException('دسته نمی‌تواند والد خودش باشد');
                     }
 
-                    newParent = parent;
-                    newLevel = parent.level + 1;
+                    // بررسی اینکه آیا parent در descendants این دسته است
+                    const descendants = await treeRepo.findDescendants(existsCategory);
+                    const isDescendant = descendants.some(desc => desc.id === parent.id);
+                    if (isDescendant) {
+                        throw new BadRequestException('دسته نمی‌تواند فرزند خودش را به عنوان والد داشته باشد');
+                    }
+
+                    if (!existsCategory.parent || existsCategory.parent.id !== parent.id) {
+                        newParent = parent;
+                        newLevel = parent.level + 1;
+                        parentChanged = true;
+                    }
                 }
             }
 
-            // Merge updates
-            const category = manager.merge(Category, existsCategory, {
-                ...data,
-                parentId: newParent ? newParent.id : null,
-                level: newLevel,
-            });
+            // به‌روزرسانی فیلدهای ساده
+            if (data.title !== undefined) existsCategory.title = data.title;
+            if (data.slug !== undefined) existsCategory.slug = data.slug;
+            if (data.description !== undefined) existsCategory.description = data.description;
+            if (data.discount !== undefined) existsCategory.discount = data.discount;
+            if (data.displayOrder !== undefined) existsCategory.displayOrder = data.displayOrder;
+            if (data.isActive !== undefined) existsCategory.isActive = data.isActive;
 
-            const savedCategory = await manager.save(Category, category);
+            // اگر parent تغییر کرده، باید level همه descendants به‌روز شود
+            if (parentChanged) {
+                existsCategory.parent = newParent;
+                existsCategory.level = newLevel;
+
+                // ذخیره با TreeRepository برای به‌روزرسانی closure table
+                await treeRepo.save(existsCategory);
+
+                // به‌روزرسانی level همه فرزندان
+                if (existsCategory.children && existsCategory.children.length > 0) {
+                    await this.updateDescendantsLevel(treeRepo, existsCategory);
+                }
+            } else {
+                // ذخیره عادی
+                await treeRepo.save(existsCategory);
+            }
 
             // Handle media updates
             if (data.mediaId !== undefined) {
-                // Remove old media association
+                // حذف ارتباط media قبلی
                 const oldMedia = await manager.findOne(Media, { where: { category: { id } } });
                 if (oldMedia) {
                     oldMedia.category = null;
                     await manager.save(Media, oldMedia);
                 }
 
-                // Add new media association
+                // اضافه کردن media جدید
                 if (data.mediaId) {
                     const newMedia = await manager.findOne(Media, { where: { id: data.mediaId } });
                     if (!newMedia) {
                         throw new NotFoundException('فایل مدیا یافت نشد.');
                     }
-                    await manager.update(Media, { id: data.mediaId }, { category: savedCategory });
+                    newMedia.category = existsCategory;
+                    await manager.save(Media, newMedia);
                 }
             }
 
-            return CategoryMapper.toResponse(savedCategory);
+            // بارگذاری دوباره با relations کامل
+            const updatedCategory = await treeRepo.findOne({
+                where: { id },
+                relations: ['parent', 'media']
+            });
+
+            return CategoryMapper.toResponse(updatedCategory!);
         });
+    }
+
+    /**
+     * به‌روزرسانی بازگشتی level تمام فرزندان
+     */
+    private async updateDescendantsLevel(
+        treeRepo: TreeRepository<Category>,
+        parent: Category
+    ): Promise<void> {
+        const children = await treeRepo.find({
+            where: { parent: { id: parent.id } },
+            relations: ['children']
+        });
+
+        for (const child of children) {
+            child.level = parent.level + 1;
+            await treeRepo.save(child);
+
+            if (child.children && child.children.length > 0) {
+                await this.updateDescendantsLevel(treeRepo, child);
+            }
+        }
     }
 
     async remove(id: number): Promise<Object> {
         return runInTransaction(this.dataSource, async (manager) => {
-            const node = await this.treeCatRepo.findOne({ where: { id } })
+            // دریافت TreeRepository از transaction manager
+            const treeRepo = manager.getTreeRepository(Category);
+
+            const node = await treeRepo.findOne({
+                where: { id },
+                relations: ['children', 'products']
+            });
+
             if (!node) {
                 throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
             }
 
-            const category = await this.treeCatRepo.findDescendantsTree(node);
-            const mapper = CategoryMapper.toResponse(category);
-
-            if (!mapper.isDelete) {
-                throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل زیرمجموعه یا آیتم است');
+            // بررسی اینکه آیا دسته فرزند دارد
+            const descendants = await treeRepo.findDescendants(node);
+            if (descendants.length > 1) { // خودش + فرزندان
+                throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل زیرمجموعه است');
             }
 
-            // Remove associated media
+            // بررسی اینکه آیا دسته محصول دارد
+            if (node.products && node.products.length > 0) {
+                throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل محصول است');
+            }
+
+            // حذف ارتباط media
             const media = await manager.findOne(Media, { where: { category: { id } } });
             if (media) {
                 media.category = null;
                 await manager.save(Media, media);
             }
 
-            const deleted = await manager.delete(Category, id);
-
-            if (deleted.affected === 0) {
-                throw new BadRequestException('حذف انجام نشد، خطایی رخ داده است');
-            }
+            // حذف دسته - closure table به صورت خودکار پاک می‌شود
+            await treeRepo.remove(node);
 
             return { message: 'دسته با موفقیت حذف شد', data: null };
         })

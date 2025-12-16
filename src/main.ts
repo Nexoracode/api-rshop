@@ -38,7 +38,9 @@ async function bootstrap() {
       'http://cms.rshop.roohbakhshac.ir',
       'http://app-front-rshop-next.roohbakhshac.com',
       'http://app-front-rshop-next.roohbakhshac.com',
-      'http://app-cms-rshop-next.roohbakhshac.com'
+      'http://app-cms-rshop-next.roohbakhshac.com',
+      'https://edge.ippanel.com',
+      'https://api2.ippanel.com'
     ]
   })
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());

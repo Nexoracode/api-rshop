@@ -4,7 +4,7 @@ import { Category } from "../entities/category.entity";
 import { ICategoryResponse, ICategoryResponseSite } from "./category.response.interface";
 
 export interface ICategoryService {
-    findOne(id: number): Promise<Category>;
+    findOne(id: number);
     findAllTree(): Promise<ICategoryResponse[]>;
     findAllTreeForSite(): Promise<ICategoryResponseSite[]>;
     remove(id: number): Promise<Object>;
