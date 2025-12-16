@@ -2,6 +2,7 @@
 
 import { Order } from 'src/modules/order/entities/order.entity';
 import { Payment } from '../entities/payment.entity';
+import { OrderMapper } from 'src/modules/order/mappers/order.mapper';
 
 export class PaymentResponseMapper {
     // createPayment -> بازگشت لینک درگاه
@@ -43,7 +44,7 @@ export class PaymentResponseMapper {
             message: 'پرداخت با موفقیت انجام شد.',
             refId,
             invoiceDate,
-            order,
+            order: OrderMapper.toAllResponse(order),
             payment,
         };
     }
@@ -54,7 +55,7 @@ export class PaymentResponseMapper {
             success: true,
             message: 'پرداخت تایید شد اما فاکتور صادر نشد.',
             refId,
-            order,
+            order: OrderMapper.toAllResponse(order),
         };
     }
 

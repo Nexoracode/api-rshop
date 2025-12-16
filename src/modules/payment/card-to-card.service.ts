@@ -74,10 +74,6 @@ export class CardToCardService {
                 return uploadedPayment;
             }
 
-            // ✅ 1. تغییر وضعیت Order
-            order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
-            await manager.save(Order, order);
-
             // ✅ 2. لاک کردن Cart با استفاده از CardStatusService
             await this.cardStatusService.lockCart(user.id, manager);
 
@@ -106,57 +102,75 @@ export class CardToCardService {
         receiptImageId: number | undefined,
         dto: UploadReceiptDto,
     ) {
-        const payment = await this.paymentRepo.findOne({
-            where: {
-                id: paymentId,
-                user: { id: user.id },
-                paymentMethod: PaymentMethod.CARD_TO_CARD,
-            },
-            relations: ['order', 'receiptImage'],
-        });
+        return await runInTransaction(this.dataSource, async (manager) => {
+            const paymentRepo = manager.getRepository(Payment);
+            const orderRepo = manager.getRepository(Order);
 
-        if (!payment) {
-            throw new NotFoundException('پرداخت یافت نشد');
-        }
 
-        if (payment.cardToCardStatus === CardToCardStatus.APPROVED) {
-            throw new BadRequestException('این پرداخت قبلاً تایید شده است');
-        }
+            const payment = await paymentRepo.findOne({
+                where: {
+                    id: paymentId,
+                    user: { id: user.id },
+                    paymentMethod: PaymentMethod.CARD_TO_CARD,
+                },
+                relations: ['order', 'receiptImage'],
+            });
 
-        // بروزرسانی اطلاعات
-        if (receiptImageId) {
-            payment.receiptImageId = receiptImageId;
-        }
+            if (!payment) {
+                throw new NotFoundException('پرداخت یافت نشد');
+            }
+            const order = await manager.findOne(Order, {
+                where: { id: payment.orderId, user: { id: user.id } },
+            });
 
-        if (dto.senderCardNumber) {
-            payment.senderCardNumber = dto.senderCardNumber;
-        }
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
 
-        if (dto.trackingCode) {
-            payment.trackingCode = dto.trackingCode;
-        }
+            if (payment.cardToCardStatus === CardToCardStatus.APPROVED) {
+                throw new BadRequestException('این پرداخت قبلاً تایید شده است');
+            }
 
-        payment.depositDate = dto.depositDate ? new Date(dto.depositDate) : new Date();
-        payment.cardToCardStatus = CardToCardStatus.UPLOADED;
+            // بروزرسانی اطلاعات
+            if (receiptImageId) {
+                payment.receiptImageId = receiptImageId;
+            }
 
-        // پیام بر اساس نوع ثبت
-        if (receiptImageId && (dto.senderCardNumber || dto.trackingCode)) {
-            payment.message = 'رسید و اطلاعات دستی ثبت شد، منتظر تایید ادمین';
-        } else if (receiptImageId) {
-            payment.message = 'تصویر رسید آپلود شد، منتظر تایید ادمین';
-        } else {
-            payment.message = 'اطلاعات واریز ثبت شد، منتظر تایید ادمین';
-        }
+            if (dto.senderCardNumber) {
+                payment.senderCardNumber = dto.senderCardNumber;
+            }
 
-        payment.status = PaymentStatus.PENDING;
+            if (dto.trackingCode) {
+                payment.trackingCode = dto.trackingCode;
+            }
 
-        const saved = await this.paymentRepo.save(payment);
+            payment.depositDate = dto.depositDate ? new Date(dto.depositDate) : new Date();
+            payment.cardToCardStatus = CardToCardStatus.UPLOADED;
 
-        // بارگذاری مجدد با relation
-        return await this.paymentRepo.findOne({
-            where: { id: saved.id },
-            relations: ['order', 'receiptImage'],
-        });
+            // پیام بر اساس نوع ثبت
+            if (receiptImageId && (dto.senderCardNumber || dto.trackingCode)) {
+                payment.message = 'رسید و اطلاعات دستی ثبت شد، منتظر تایید ادمین';
+            } else if (receiptImageId) {
+                payment.message = 'تصویر رسید آپلود شد، منتظر تایید ادمین';
+            } else {
+                payment.message = 'اطلاعات واریز ثبت شد، منتظر تایید ادمین';
+            }
+
+            payment.status = PaymentStatus.PENDING;
+
+            const saved = await paymentRepo.save(payment);
+
+            // ✅ 1. تغییر وضعیت Order
+            order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
+            await orderRepo.save(order);
+
+
+            // بارگذاری مجدد با relation
+            return await paymentRepo.findOne({
+                where: { id: saved.id },
+                relations: ['order', 'receiptImage'],
+            });
+        })
     }
 
     /**
