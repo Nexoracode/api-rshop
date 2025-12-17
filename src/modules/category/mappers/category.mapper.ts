@@ -12,9 +12,10 @@ export class CategoryMapper {
             slug: category.slug,
             discount: category.discount,
             level: category.level,
+            isActive: category.isActive,
             parentId: category.parent?.id || 0,
-            children: category.children?.map((child) => this.toResponse(child)) ?? [],
             isDelete: !category.children || category.children.length === 0,
+            children: category.children?.map((child) => this.toResponse(child)) ?? [],
             media: category.media ?? null,
             products: category.products || [],
         };
@@ -43,6 +44,7 @@ export class CategoryMapper {
             title: category.title,
             slug: category.slug,
             level: category.level,
+            isActive: category.isActive,
             parentId: category.parent?.id || 0,
             children: category.children?.map((child) => this.toResponseSite(child)) ?? [],
         };

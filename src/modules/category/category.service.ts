@@ -9,6 +9,7 @@ import { ICategoryService } from './interfaces/category.service.interface';
 import { Media } from '../media/entities/image.entity';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { FilterOperator, paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Injectable()
 export class CategoryService implements ICategoryService {
@@ -218,11 +219,114 @@ export class CategoryService implements ICategoryService {
         };
     }
 
-    async findAllTree(): Promise<ICategoryResponse[]> {
-        const categories = await this.treeCatRepo.findTrees({
-            relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
-        });
-        return CategoryMapper.toResponseList(categories);
+    // متد کمکی برای استخراج فیلترهای discount
+    private extractDiscountFilters(query: PaginateQuery): { min?: number; max?: number; eq?: number } {
+        const filters: { min?: number; max?: number; eq?: number } = {};
+
+        if (query.filter?.discount) {
+            const discountFilter = query.filter.discount;
+
+            if (Array.isArray(discountFilter)) {
+                discountFilter.forEach(filter => {
+                    if (typeof filter === 'string') {
+                        if (filter.startsWith('$gte:')) {
+                            filters.min = Number(filter.replace('$gte:', ''));
+                        } else if (filter.startsWith('$lte:')) {
+                            filters.max = Number(filter.replace('$lte:', ''));
+                        } else if (filter.startsWith('$eq:')) {
+                            filters.eq = Number(filter.replace('$eq:', ''));
+                        }
+                    }
+                });
+            }
+        }
+
+        return filters;
+    }
+
+    // متد کمکی برای فیلتر کردن tree
+    private filterTreeByDiscount(
+        category: Category,
+        filters: { min?: number; max?: number; eq?: number }
+    ): Category | null {
+        // اگر فیلتری نیست، همه رو برگردون
+        if (!filters.min && !filters.max && filters.eq === undefined) {
+            return category;
+        }
+
+        // چک کردن discount این category
+        const discount = category.discount || 0;
+        let matchesFilter = true;
+
+        if (filters.eq !== undefined) {
+            matchesFilter = discount === filters.eq;
+        } else {
+            if (filters.min !== undefined && Number(discount) < filters.min) {
+                matchesFilter = false;
+            }
+            if (filters.max !== undefined && Number(discount) > filters.max) {
+                matchesFilter = false;
+            }
+        }
+
+        // اگر این category مطابقت نداره، null برگردون
+        if (!matchesFilter) {
+            return null;
+        }
+
+        // فیلتر کردن children ها
+        if (category.children && category.children.length > 0) {
+            category.children = category.children
+                .map(child => this.filterTreeByDiscount(child, filters))
+                .filter(child => child !== null);
+        }
+
+        return category;
+    }
+
+    async findAllTree(query: PaginateQuery) {
+        const config: PaginateConfig<Category> = {
+            sortableColumns: ['id', 'title', 'level', 'displayOrder', 'displayOrder'],
+            defaultSortBy: [['displayOrder', 'ASC'], ['displayOrder', 'ASC']],
+            searchableColumns: ['title', 'description', 'slug'],
+            filterableColumns: {
+                isActive: [FilterOperator.EQ],
+                level: [FilterOperator.EQ],
+                discount: [FilterOperator.GTE, FilterOperator.LTE],
+            },
+        };
+
+        const queryBuilder = this.treeCatRepo
+            .createQueryBuilder('category')
+            .leftJoinAndSelect('category.media', 'media')
+            .where('category.parentId IS NULL');
+
+        const paginatedRoots: Paginated<Category> = await paginate(
+            query,
+            queryBuilder,
+            config
+        );
+
+        // استخراج فیلترهای discount از query
+        const discountFilters = this.extractDiscountFilters(query);
+
+        // برای هر root، دریافت tree و اعمال فیلتر روی children
+        const categoriesWithChildren = await Promise.all(
+            paginatedRoots.data.map(async (root) => {
+                const fullTree = await this.treeCatRepo.findDescendantsTree(root, {
+                    relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
+                });
+
+                // فیلتر کردن tree
+                return this.filterTreeByDiscount(fullTree, discountFilters);
+            })
+        );
+
+        return {
+            items: CategoryMapper.toResponseList(categoriesWithChildren.filter((cat) => cat !== null)),
+            meta: paginatedRoots.meta,
+            links: paginatedRoots.links,
+        };
     }
 
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {

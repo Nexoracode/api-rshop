@@ -27,7 +27,7 @@ import { DeletePromotionUseCase } from '../../application/usecases/delete-promot
 import { ListPromotionsUseCase } from '../../application/usecases/list-promotion.usecase';
 import { CreatePromotionDto } from '../../application/dtos/create-promotion.dto';
 import { UpdatePromotionDto } from '../../application/dtos/update-promotion.dto';
-import { ApiPaginationQuery, FilterOperator, PaginateQuery } from 'nestjs-paginate';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery } from 'nestjs-paginate';
 import { GetPromotionByIdUseCase } from '../../application/usecases/get-promotion-by-id.usecase';
 import { PromotionDetailResponseDto, PromotionResponseDto } from '../../application/dtos/promotion-response.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
@@ -226,7 +226,7 @@ export class PromotionAdminController {
             }
         }
     })
-    list(@Query() query: PaginateQuery) {
+    list(@Paginate() query: PaginateQuery) {
         return this.listUseCase.execute(query);
     }
 

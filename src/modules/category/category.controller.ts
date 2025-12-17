@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -9,6 +9,7 @@ import { MediaService } from '../media/media.service';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Public } from 'src/common/decorator/public.decorator';
 import { SeoService } from '../seo/seo.service';
+import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 
 const MAX_FILE_UPLOAD = 10;
 
@@ -38,8 +39,18 @@ export class CategoryController {
   }
 
   @Get()
-  async findAllTree() {
-    return this.categoryService.findAllTree();
+  @ApiPaginationQuery({
+    paginationType: PaginationType.CURSOR,
+    sortableColumns: ['id', 'title', 'level', 'displayOrder'],
+    defaultSortBy: [['displayOrder', 'ASC']],
+    filterableColumns: {
+      isActive: [FilterOperator.EQ],
+      discount: [FilterOperator.GTE, FilterOperator.LTE],
+    },
+    searchableColumns: ['title', 'description', 'slug'],
+  })
+  async findAllTree(@Paginate() query: PaginateQuery) {
+    return this.categoryService.findAllTree(query);
   }
 
   @Public()

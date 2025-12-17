@@ -10,6 +10,7 @@ export interface ICategoryResponse {
     isDelete: boolean;
     title: string;
     slug: string;
+    isActive: boolean;
     media: Media | null;
     products: Product[];
 }
@@ -21,4 +22,5 @@ export interface ICategoryResponseSite {
     parentId?: number;
     title: string;
     slug: string;
+    isActive?: boolean;
 }
