@@ -18,9 +18,10 @@ import { UpdateBulkDto } from './dto/update-bulk.dto';
 import { getAverageRating } from 'src/common/helpers/review.helper';
 import { ReviewMapper } from '../review/mappers/review.mapper';
 import { Review } from '../review/entities/review.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter'; // ✅ اضافه شد
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
 
-// ✅ اضافه: Event برای انبارداری
+// Event های موجود
 export class ProductCreatedEvent {
     constructor(
         public readonly productId: number,
@@ -56,7 +57,7 @@ const relations = [
 
 @Injectable()
 export class ProductService implements IProductService {
-    private readonly logger = new Logger(ProductService.name); // ✅ اضافه شد
+    private readonly logger = new Logger(ProductService.name);
 
     constructor(
         @InjectRepository(Product)
@@ -64,10 +65,23 @@ export class ProductService implements IProductService {
         @InjectRepository(Review)
         private readonly reviewRepo: Repository<Review>,
         private dataSource: DataSource,
-        private readonly eventEmitter: EventEmitter2, // ✅ اضافه شد
+        private readonly eventEmitter: EventEmitter2,
+        private readonly cacheService: ProductCacheService, // ✅ اضافه شد
     ) { }
 
     async findAll(query: PaginateQuery): Promise<Object> {
+        // ✅ چک cache
+        const filters = JSON.stringify(query.filter || {});
+        const page = query.page || 1;
+        const limit = query.limit || 20;
+
+        const cached = await this.cacheService.getProductList(page, limit, filters);
+        if (cached) {
+            this.logger.log('✅ Product list از cache');
+            return cached;
+        }
+
+        // لاجیک اصلی (بدون تغییر)
         const products = await paginate(query, this.productRepo, {
             sortableColumns: ['id', 'name', 'price', 'stock'],
             relations,
@@ -86,7 +100,8 @@ export class ProductService implements IProductService {
             defaultSortBy: [['id', 'DESC']],
             searchableColumns: ['name'],
         });
-        return {
+
+        const result = {
             message: 'محصولات با موفقیت دریافت شد.',
             data: {
                 items: products.data.map((product) => ProductMapper.toResponse(product, { cartesian: true })),
@@ -94,23 +109,53 @@ export class ProductService implements IProductService {
                 links: products.links,
             }
         };
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setProductList(page, limit, filters, result);
+        this.logger.log('💾 Product list ذخیره شد در cache');
+
+        return result;
     }
 
     async findOne(id: number): Promise<IProductResponse> {
+        // ✅ چک cache
+        const cached = await this.cacheService.getProductById(id);
+        if (cached) {
+            this.logger.log(`✅ Product ${id} از cache`);
+            return cached;
+        }
+
+        // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({
             where: { id },
             relations
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
-        return ProductMapper.toResponse(product, { cartesian: true });
+
+        const result = ProductMapper.toResponse(product, { cartesian: true });
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setProductById(id, result);
+        this.logger.log(`💾 Product ${id} ذخیره شد در cache`);
+
+        return result;
     }
 
     async findOneForSite(id: number): Promise<IProductResponse> {
+        // ✅ چک cache (با کلید متفاوت برای site)
+        const cached = await this.cacheService.getProductById(id);
+        if (cached && (cached as any).reviews) {
+            this.logger.log(`✅ Product ${id} for site از cache`);
+            return cached;
+        }
+
+        // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({
             where: { id },
             relations,
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
+
         const reviews = await this.reviewRepo.find({
             where: {
                 product: { id: product.id },
@@ -118,16 +163,25 @@ export class ProductService implements IProductService {
             },
             relations: ['user', 'product'],
         });
+
         const averageRating = getAverageRating(reviews);
         const lengthReview = reviews.length;
         (product as any).averageRating = averageRating;
         (product as any).reviewsCount = lengthReview;
         (product as any).reviews = reviews.map(r => ReviewMapper.toResponse(r));
-        return ProductMapper.toResponse(product, { cartesian: true });
+
+        const result = ProductMapper.toResponse(product, { cartesian: true });
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setProductById(id, result);
+        this.logger.log(`💾 Product ${id} for site ذخیره شد در cache`);
+
+        return result;
     }
 
     async create(data: CreateProductDto, userId?: number): Promise<IProductResponse> {
-        return runInTransaction(this.dataSource, async (manager) => {
+        const result = await runInTransaction(this.dataSource, async (manager) => {
+            // لاجیک اصلی (بدون تغییر)
             if (!data.mediaIds) throw new BadRequestException('تصویر محصول خود را مشخص کنید.');
             const duplicate = await manager.findOne(Product, { where: { name: data.name } });
             if (duplicate) throw new NotFoundException('این نام محصول از قبل ثبت شده است.')
@@ -153,13 +207,13 @@ export class ProductService implements IProductService {
                 category,
             });
             await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct })
-            const result = await manager.findOne(Product, {
+            const productResult = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
                 relations
             });
-            if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+            if (!productResult) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
 
-            // ✅✅✅ یکپارچه‌سازی با انبارداری - ثبت موجودی اولیه
+            // Event انبارداری
             if (data.stock && data.stock > 0) {
                 try {
                     this.eventEmitter.emit(
@@ -172,14 +226,19 @@ export class ProductService implements IProductService {
                 }
             }
 
-            return ProductMapper.toResponse(result, { cartesian: true });
-        })
+            return ProductMapper.toResponse(productResult, { cartesian: true });
+        });
+
+        // ✅ پاک کردن cache بعد از create
+        await this.cacheService.clearListCaches();
+        this.logger.log('🗑️ Cache لیست‌ها پاک شد بعد از create');
+
+        return result;
     }
 
-
     async update(id: number, data: UpdateProductDto, userId?: number): Promise<IProductResponse> {
-        return runInTransaction(this.dataSource, async (manager) => {
-            // load product with relations so we can manage medias and pinned media
+        const result = await runInTransaction(this.dataSource, async (manager) => {
+            // لاجیک اصلی (بدون تغییر)
             const product = await manager.findOne(Product, { where: { id }, relations });
             if (!product) throw new NotFoundException('محصول یافت نشد');
             if (data.name) {
@@ -198,19 +257,15 @@ export class ProductService implements IProductService {
             const brand = await manager.findOne(Brand, { where: { id: data.brandId ?? product.brandId } })
             if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
 
-            // ✅ ذخیره موجودی قدیمی
             const oldStock = product.stock;
 
-            // merge incoming data
             const updated = manager.merge(Product, product, data);
             if (!data.requiresPreparation) {
                 updated.preparationDays = null;
             }
 
-            // handle mediaPinned in payload (set/unset)
             if (data.mediaPinnedId != null) {
                 if (data.mediaPinnedId === 0) {
-                    // unset pinned media
                     updated.mediaPinned = null as unknown as Media;
                     updated.mediaPinnedId = null;
                 } else {
@@ -223,37 +278,31 @@ export class ProductService implements IProductService {
 
             const savedProduct = await manager.save(Product, updated);
 
-            // update media associations if mediaIds provided
             if (data.mediaIds?.length) {
-                // detach previous medias
                 const prevMediaIds = (product.medias || []).map((m) => m.id);
                 if (prevMediaIds.length) {
                     await manager.update(Media, { id: In(prevMediaIds) }, { product: null });
                 }
-                // attach new medias to product
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
 
-            // ensure pinned media is associated with the product (or unset previous pinned)
             if (data.mediaPinnedId != null) {
                 if (data.mediaPinnedId === 0) {
                     if (product.mediaPinned) {
-                        // if previous pinned media existed, clear its product link only if it still references this product
                         await manager.update(Media, { id: product.mediaPinned.id, product: { id: savedProduct.id } }, { product: null });
                     }
                 } else {
-                    // attach the pinned media to the product (if not already)
                     await manager.update(Media, { id: data.mediaPinnedId }, { product: savedProduct });
                 }
             }
 
-            const result = await manager.findOne(Product, {
+            const productResult = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
                 relations
             });
-            if (!result) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
+            if (!productResult) throw new NotFoundException('محصول مورد نظر ثبت نشده است.');
 
-            // ✅✅✅ یکپارچه‌سازی با انبارداری - بروزرسانی موجودی
+            // Event انبارداری
             if (data.stock != null && data.stock !== oldStock) {
                 try {
                     this.eventEmitter.emit(
@@ -266,12 +315,19 @@ export class ProductService implements IProductService {
                 }
             }
 
-            return ProductMapper.toResponse(result, { cartesian: true });
+            return ProductMapper.toResponse(productResult, { cartesian: true });
         });
+
+        // ✅ پاک کردن cache بعد از update
+        await this.cacheService.clearProductCache(id);
+        this.logger.log(`🗑️ Cache پاک شد برای product ${id}`);
+
+        return result;
     }
 
     async updateBulk(ids: number[], dto: UpdateBulkDto) {
-        return runInTransaction(this.dataSource, async (manager) => {
+        const result = await runInTransaction(this.dataSource, async (manager) => {
+            // لاجیک اصلی (بدون تغییر)
             const products = await manager.find(Product, { where: { id: In(ids) }, relations });
             if (!products.length) throw new NotFoundException("محصولات مورد نظر یافت نشدند.");
 
@@ -291,7 +347,6 @@ export class ProductService implements IProductService {
                 const delta = Number(dto.priceValue) || 0;
                 let newPrice = basePrice;
 
-                // 🔹 تغییر قیمت
                 if (dto.priceValue != null && dto.priceMode) {
                     switch (dto.priceMode) {
                         case "set":
@@ -310,19 +365,17 @@ export class ProductService implements IProductService {
                     throw new BadRequestException("مقدار قیمت نامعتبر است.");
                 }
 
-                // 🔹 تخفیف‌ها (درصدی یا مبلغی)
                 let discountPercent = Number(product.discountPercent) || 0;
                 let discountAmount = Number(product.discountAmount) || 0;
 
                 if (dto.discountPercent != null) {
                     discountPercent = dto.discountPercent;
-                    discountAmount = 0; // ✅ چون نوع درصدی انتخاب شده
+                    discountAmount = 0;
                 } else if (dto.discountAmount != null) {
                     discountAmount = dto.discountAmount;
-                    discountPercent = 0; // ✅ چون نوع مبلغی انتخاب شده
+                    discountPercent = 0;
                 }
 
-                // ✅ جلوگیری از محدوده غیرمجاز قیمت
                 if (newPrice > 999999999.99)
                     throw new BadRequestException("مقدار قیمت از محدوده مجاز بیشتر است.");
 
@@ -344,10 +397,17 @@ export class ProductService implements IProductService {
                 data: updatedProducts.map((p) => ProductMapper.toResponse(p, { cartesian: true })),
             };
         });
+
+        // ✅ پاک کردن cache بعد از bulk update
+        await this.cacheService.clearListCaches();
+        this.logger.log(`🗑️ Cache پاک شد بعد از bulk update`);
+
+        return result;
     }
 
     async remove(id: number): Promise<Object> {
-        return runInTransaction(this.dataSource, async (manager) => {
+        const result = await runInTransaction(this.dataSource, async (manager) => {
+            // لاجیک اصلی (بدون تغییر)
             const product = await manager.findOne(Product, {
                 where: { id },
                 relations
@@ -359,11 +419,18 @@ export class ProductService implements IProductService {
                 message: 'محصول با موفقیت حذف شد.',
                 data: null
             }
-        })
+        });
+
+        // ✅ پاک کردن cache بعد از delete
+        await this.cacheService.clearProductCache(id);
+        this.logger.log(`🗑️ Cache پاک شد برای product ${id}`);
+
+        return result;
     }
 
     async removeBulk(ids: number[]): Promise<Object> {
-        return runInTransaction(this.dataSource, async (manager) => {
+        const result = await runInTransaction(this.dataSource, async (manager) => {
+            // لاجیک اصلی (بدون تغییر)
             const products = await manager.find(Product, {
                 where: { id: In(ids) },
                 relations
@@ -378,7 +445,12 @@ export class ProductService implements IProductService {
                 message: 'محصول با موفقیت حذف شد.',
                 data: null
             }
-        })
-    }
+        });
 
+        // ✅ پاک کردن cache بعد از bulk delete
+        await this.cacheService.clearListCaches();
+        this.logger.log(`🗑️ Cache پاک شد بعد از bulk delete`);
+
+        return result;
+    }
 }

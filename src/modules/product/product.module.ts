@@ -9,6 +9,7 @@ import { MediaModule } from '../media/media.module';
 import { UploadService } from 'src/common/services/upload.service';
 import { Review } from '../review/entities/review.entity';
 import { SeoModule } from '../seo/seo.module';
+import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -18,7 +19,11 @@ import { SeoModule } from '../seo/seo.module';
     MediaModule,
     SeoModule,
   ],
-  providers: [ProductService, UploadService],
+  providers: [
+    ProductService, 
+    UploadService,
+    ProductCacheService, // ✅ اضافه شد
+  ],
   controllers: [ProductController],
   exports: [ProductService],
 })
