@@ -12,51 +12,123 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
 import { ZarinpalExceptionFilter } from 'src/common/exceptions/zarinpal-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-store';
+import * as redisStore from 'cache-manager-redis-store';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
+// تشخیص محیط اجرا
+const isProduction = process.env.NODE_ENV === 'production';
 
 @Module({
     imports: [
+        // TypeORM Configuration
         TypeOrmModule.forRoot(dataSourceOption),
+
+        // Auth Module
         AuthModule,
+
+        // Config Module - Global
         ConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: `.env.${process.env.NODE_ENV || "development"}`
+            envFilePath: `.env.${process.env.NODE_ENV || "development"}`,
+            cache: true, // کش کردن env variables برای بهبود performance
         }),
+
+        // JWT Module - با تنظیمات متفاوت برای dev/prod
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
+            global: true,
             useFactory: (configService: ConfigService) => ({
                 secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: configService.get<string>('JWT_EXPIRATION') }
+                signOptions: {
+                    expiresIn: configService.get<string>('JWT_EXPIRATION'),
+                    issuer: 'rshop-api',
+                    audience: 'rshop-client',
+                }
             }),
         }),
-        CacheModule.register({
-            store: redisStore,
-            host: 'localhost',
-            port: 6379,
-            ttl: 300,
-            max: 1000,
+
+        // Redis Cache - با تنظیمات متفاوت برای dev/prod
+        CacheModule.registerAsync({
+            isGlobal: true,
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => {
+                const config: any = {
+                    store: redisStore as any,
+                    host: configService.get<string>('REDIS_HOST', 'localhost'),
+                    port: configService.get<number>('REDIS_PORT', 6379),
+                    ttl: configService.get<number>('REDIS_TTL', 300),
+                    max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
+                };
+
+                // تنظیمات اضافی برای production
+                if (isProduction) {
+                    config.password = configService.get<string>('REDIS_PASSWORD');
+                    config.db = configService.get<number>('REDIS_DB', 0);
+
+                    // پشتیبانی از TLS در production
+                    if (configService.get<boolean>('REDIS_TLS')) {
+                        config.tls = {};
+                    }
+
+                    // Retry strategy برای production
+                    config.retryStrategy = (times: number) => {
+                        const delay = Math.min(times * 50, 2000);
+                        return delay;
+                    };
+                    config.enableReadyCheck = true;
+                    config.maxRetriesPerRequest = 3;
+                }
+
+                return config;
+            },
         }),
-        // ThrottlerModule.forRoot([{
-        //     ttl: 60000,
-        //     limit: 20,
-        // }])
+
+        // Rate Limiting - فقط در production
+        ...(isProduction ? [
+            ThrottlerModule.forRootAsync({
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => [{
+                    ttl: configService.get<number>('THROTTLE_TTL', 60000), // 60 ثانیه
+                    limit: configService.get<number>('THROTTLE_LIMIT', 100), // 100 درخواست
+                    // نادیده گرفتن بات‌های جستجوگر
+                    ignoreUserAgents: [
+                        /googlebot/gi,
+                        /bingbot/gi,
+                    ],
+                }]
+            })
+        ] : []),
     ],
     providers: [
-        // {
-        //     provide: APP_GUARD,
-        //     useClass: ThrottlerGuard
-        // },
+        // Rate Limiting Guard - فقط در production
+        ...(isProduction ? [
+            {
+                provide: APP_GUARD,
+                useClass: ThrottlerGuard
+            }
+        ] : []),
+
+        // Exception Filter - برای همه محیط‌ها
         {
             provide: APP_FILTER,
             useClass: ZarinpalExceptionFilter,
         },
+
+        // Auto Refresh Guard - برای همه محیط‌ها
         {
             provide: APP_GUARD,
-            useFactory: (configService: JwtUtil, authService: AuthService, reflector: Reflector) => new AutoRefreshGuard(configService, authService, reflector),
+            useFactory: (
+                jwtUtil: JwtUtil,
+                authService: AuthService,
+                reflector: Reflector
+            ) => new AutoRefreshGuard(jwtUtil, authService, reflector),
             inject: [JwtUtil, AuthService, Reflector],
         },
+
+        // Utilities and Strategies
         JwtUtil,
         ConfigService,
         AccessStrategy,
@@ -64,4 +136,14 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     ],
     exports: [ConfigService]
 })
-export class AppConfigModule { }
+export class AppConfigModule {
+    constructor() {
+        // لاگ کردن تنظیمات هنگام شروع
+        console.log('🚀 RSHOP API Configuration');
+        console.log('📝 Environment:', process.env.NODE_ENV || 'development');
+        console.log('🔒 Rate Limiting:', isProduction ? 'Enabled ✅' : 'Disabled ❌');
+        console.log('💾 Redis Cache:', 'Enabled ✅');
+        console.log('🔑 JWT:', 'Enabled ✅');
+        console.log('=======================================');
+    }
+}
