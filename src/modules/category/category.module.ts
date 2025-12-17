@@ -7,11 +7,16 @@ import { MediaModule } from '../media/media.module';
 import { Media } from '../media/entities/image.entity';
 import { UploadService } from 'src/common/services/upload.service';
 import { SeoModule } from '../seo/seo.module';
+import { CategoryCacheService } from './cache/category-cache.service'; // ✅ اضافه شد
 
 @Module({
   imports: [TypeOrmModule.forFeature([Category, Media]), MediaModule, SeoModule],
   controllers: [CategoryController],
-  providers: [CategoryService, UploadService],
+  providers: [
+    CategoryService, 
+    UploadService,
+    CategoryCacheService, // ✅ اضافه شد
+  ],
   exports: [CategoryService]
 })
 export class CategoryModule { }

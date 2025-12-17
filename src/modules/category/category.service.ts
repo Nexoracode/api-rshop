@@ -10,16 +10,19 @@ import { Media } from '../media/entities/image.entity';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FilterOperator, paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { CategoryCacheService } from './cache/category-cache.service';
 
 @Injectable()
 export class CategoryService implements ICategoryService {
     private treeCatRepo: TreeRepository<Category>
+
     constructor(
         @InjectRepository(Category)
         private readonly catRepo: Repository<Category>,
         @InjectRepository(Media)
         private readonly mediaRepo: Repository<Media>,
         private dataSource: DataSource,
+        private readonly cacheService: CategoryCacheService, // ✅ اضافه شد
     ) {
         this.treeCatRepo = this.dataSource.getTreeRepository(Category);
     }
@@ -45,12 +48,6 @@ export class CategoryService implements ICategoryService {
         return category;
     }
 
-    /**
-     * پیدا کردن دسته‌بندی با slug به همراه تمام parent ها (بدون children)
-     * برای استفاده در SEO و Breadcrumb
-     * @param slug - نامک دسته‌بندی
-     * @returns دسته‌بندی همراه با آرایه‌ای از تمام parent ها
-     */
     async findBySlugWithParents(slug: string): Promise<{
         category: {
             id: number;
@@ -75,7 +72,6 @@ export class CategoryService implements ICategoryService {
             level: number;
         }>;
     }> {
-        // پیدا کردن دسته با slug (بدون children)
         const category = await this.treeCatRepo.findOne({
             where: { slug },
             relations: ['media']
@@ -85,16 +81,10 @@ export class CategoryService implements ICategoryService {
             throw new NotFoundException(`دسته‌بندی با slug "${slug}" یافت نشد.`);
         }
 
-        // دریافت تمام ancestor ها (parent ها) - بدون children
         const ancestors = await this.treeCatRepo.findAncestors(category);
-
-        // حذف خود دسته از لیست
         const parents = ancestors.filter(ancestor => ancestor.id !== category.id);
-
-        // مرتب‌سازی parent ها از بالاترین (root) به پایین‌ترین
         parents.sort((a, b) => a.level - b.level);
 
-        // ساخت breadcrumb (مسیر کامل)
         const breadcrumb = [
             ...parents.map(p => ({
                 id: p.id,
@@ -110,7 +100,6 @@ export class CategoryService implements ICategoryService {
             }
         ];
 
-        // خروجی تمیز بدون children
         return {
             category: {
                 id: category.id,
@@ -132,12 +121,6 @@ export class CategoryService implements ICategoryService {
         };
     }
 
-    /**
-     * پیدا کردن دسته‌بندی با ID به همراه تمام parent ها (بدون children)
-     * برای استفاده در SEO و Breadcrumb
-     * @param id - شناسه دسته‌بندی
-     * @returns دسته‌بندی همراه با آرایه‌ای از تمام parent ها
-     */
     async findByIdWithParents(id: number): Promise<{
         category: {
             id: number;
@@ -162,7 +145,6 @@ export class CategoryService implements ICategoryService {
             level: number;
         }>;
     }> {
-        // پیدا کردن دسته (بدون children)
         const category = await this.treeCatRepo.findOne({
             where: { id },
             relations: ['media']
@@ -172,16 +154,10 @@ export class CategoryService implements ICategoryService {
             throw new NotFoundException(`دسته‌بندی با ID ${id} یافت نشد.`);
         }
 
-        // دریافت تمام ancestor ها (parent ها) - بدون children
         const ancestors = await this.treeCatRepo.findAncestors(category);
-
-        // حذف خود دسته از لیست
         const parents = ancestors.filter(ancestor => ancestor.id !== category.id);
-
-        // مرتب‌سازی parent ها از بالاترین (root) به پایین‌ترین
         parents.sort((a, b) => a.level - b.level);
 
-        // ساخت breadcrumb
         const breadcrumb = [
             ...parents.map(p => ({
                 id: p.id,
@@ -197,7 +173,6 @@ export class CategoryService implements ICategoryService {
             }
         ];
 
-        // خروجی تمیز بدون children
         return {
             category: {
                 id: category.id,
@@ -219,7 +194,6 @@ export class CategoryService implements ICategoryService {
         };
     }
 
-    // متد کمکی برای استخراج فیلترهای discount
     private extractDiscountFilters(query: PaginateQuery): { min?: number; max?: number; eq?: number } {
         const filters: { min?: number; max?: number; eq?: number } = {};
 
@@ -244,17 +218,14 @@ export class CategoryService implements ICategoryService {
         return filters;
     }
 
-    // متد کمکی برای فیلتر کردن tree
     private filterTreeByDiscount(
         category: Category,
         filters: { min?: number; max?: number; eq?: number }
     ): Category | null {
-        // اگر فیلتری نیست، همه رو برگردون
         if (!filters.min && !filters.max && filters.eq === undefined) {
             return category;
         }
 
-        // چک کردن discount این category
         const discount = category.discount || 0;
         let matchesFilter = true;
 
@@ -269,12 +240,10 @@ export class CategoryService implements ICategoryService {
             }
         }
 
-        // اگر این category مطابقت نداره، null برگردون
         if (!matchesFilter) {
             return null;
         }
 
-        // فیلتر کردن children ها
         if (category.children && category.children.length > 0) {
             category.children = category.children
                 .map(child => this.filterTreeByDiscount(child, filters))
@@ -284,10 +253,26 @@ export class CategoryService implements ICategoryService {
         return category;
     }
 
+    /**
+     * دریافت tree با pagination و cache
+     */
     async findAllTree(query: PaginateQuery) {
+        // ساخت کلید cache با filters
+        const filters = JSON.stringify(query.filter || {});
+        const page = query.page || 1;
+        const limit = query.limit || 10;
+
+        // ✅ چک کردن cache
+        const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters);
+        if (cached) {
+            console.log('✅ Category tree paginated از cache');
+            return cached;
+        }
+
+        // اجرای query
         const config: PaginateConfig<Category> = {
-            sortableColumns: ['id', 'title', 'level', 'displayOrder', 'displayOrder'],
-            defaultSortBy: [['displayOrder', 'ASC'], ['displayOrder', 'ASC']],
+            sortableColumns: ['id', 'title', 'level', 'displayOrder'],
+            defaultSortBy: [['displayOrder', 'ASC']],
             searchableColumns: ['title', 'description', 'slug'],
             filterableColumns: {
                 isActive: [FilterOperator.EQ],
@@ -307,35 +292,61 @@ export class CategoryService implements ICategoryService {
             config
         );
 
-        // استخراج فیلترهای discount از query
         const discountFilters = this.extractDiscountFilters(query);
 
-        // برای هر root، دریافت tree و اعمال فیلتر روی children
         const categoriesWithChildren = await Promise.all(
             paginatedRoots.data.map(async (root) => {
                 const fullTree = await this.treeCatRepo.findDescendantsTree(root, {
                     relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
                 });
-
-                // فیلتر کردن tree
                 return this.filterTreeByDiscount(fullTree, discountFilters);
             })
         );
 
-        return {
+        const result = {
             items: CategoryMapper.toResponseList(categoriesWithChildren.filter((cat) => cat !== null)),
             meta: paginatedRoots.meta,
             links: paginatedRoots.links,
         };
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setCategoryTreePaginated(page, limit, result, filters);
+        console.log('💾 Category tree paginated ذخیره شد در cache');
+
+        return result;
     }
 
+    /**
+     * دریافت tree برای سایت با cache
+     */
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
-        // TODO: Add caching here for better performance
+        // ✅ چک کردن cache
+        const cached = await this.cacheService.getCategoryTree();
+        if (cached) {
+            console.log('✅ Category tree for site از cache');
+            return cached as any;
+        }
+
+        // دریافت از دیتابیس
         const categories = await this.treeCatRepo.findTrees();
-        return CategoryMapper.toResponseSiteList(categories);
+        const result = CategoryMapper.toResponseSiteList(categories);
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setCategoryTree(result as any);
+        console.log('💾 Category tree for site ذخیره شد در cache');
+
+        return result;
     }
 
     async findByIdWithDescendants(id: number): Promise<ICategoryResponse> {
+        // ✅ چک کردن cache
+        const cached = await this.cacheService.getCategoryWithProducts(id);
+        if (cached) {
+            console.log(`✅ Category ${id} with descendants از cache`);
+            return cached;
+        }
+
+        // دریافت از دیتابیس
         const node = await this.treeCatRepo.findOne({
             where: { id },
             relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
@@ -345,29 +356,32 @@ export class CategoryService implements ICategoryService {
         const category = await this.treeCatRepo.findDescendantsTree(node, {
             relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
         });
-        return CategoryMapper.toResponseWithDescendants(category);
+
+        const result = CategoryMapper.toResponseWithDescendants(category);
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setCategoryWithProducts(id, result);
+        console.log(`💾 Category ${id} with descendants ذخیره شد در cache`);
+
+        return result;
     }
 
     async create(data: CreateCategoryDto): Promise<ICategoryResponse> {
-        return runInTransaction(this.dataSource, async (manager) => {
-            // دریافت TreeRepository از transaction manager
+        const result = await runInTransaction(this.dataSource, async (manager) => {
             const treeRepo = manager.getTreeRepository(Category);
 
             let level = 0;
 
-            // Check for duplicate title
             const existingTitle = await treeRepo.findOne({ where: { title: data.title } });
             if (existingTitle) {
                 throw new BadRequestException('عنوان دسته بندی تکراری است.');
             }
 
-            // Check for duplicate slug
             const existingSlug = await treeRepo.findOne({ where: { slug: data.slug } });
             if (existingSlug) {
                 throw new BadRequestException('نامک دسته بندی تکراری است.');
             }
 
-            // Handle parent and level calculation
             let parent: Category | null = null;
             if (data.parentId && data.parentId !== 0) {
                 parent = await treeRepo.findOne({
@@ -379,7 +393,6 @@ export class CategoryService implements ICategoryService {
                 level = parent.level;
             }
 
-            // Create category با parent relation
             const category = treeRepo.create({
                 title: data.title,
                 slug: data.slug,
@@ -387,14 +400,12 @@ export class CategoryService implements ICategoryService {
                 discount: data.discount,
                 displayOrder: data.displayOrder,
                 isActive: data.isActive,
-                parent: parent,  // استفاده از relation به جای parentId
+                parent: parent,
                 level: level + 1,
             });
 
-            // ذخیره با TreeRepository برای به‌روزرسانی closure table
             const savedCategory = await treeRepo.save(category);
 
-            // Handle media if provided
             if (data.mediaId) {
                 const media = await manager.findOne(Media, { where: { id: data.mediaId } });
                 if (!media) {
@@ -404,7 +415,6 @@ export class CategoryService implements ICategoryService {
                 await manager.save(Media, media);
             }
 
-            // بارگذاری دوباره با relations برای response
             const loadedCategory = await treeRepo.findOne({
                 where: { id: savedCategory.id },
                 relations: ['parent', 'media']
@@ -412,11 +422,16 @@ export class CategoryService implements ICategoryService {
 
             return CategoryMapper.toResponse(loadedCategory!);
         });
+
+        // ✅ پاک کردن cache بعد از create
+        await this.cacheService.clearAllCategoryCache();
+        console.log('🗑️ Cache پاک شد بعد از create');
+
+        return result;
     }
 
     async update(id: number, data: UpdateCategoryDto): Promise<ICategoryResponse> {
-        return runInTransaction(this.dataSource, async (manager) => {
-            // دریافت TreeRepository از transaction manager
+        const result = await runInTransaction(this.dataSource, async (manager) => {
             const treeRepo = manager.getTreeRepository(Category);
 
             const existsCategory = await treeRepo.findOne({
@@ -428,7 +443,6 @@ export class CategoryService implements ICategoryService {
                 throw new NotFoundException('دسته مورد نظر یافت نشد');
             }
 
-            // Check for duplicate title (only if title is being updated)
             if (data.title && data.title !== existsCategory.title) {
                 const existingTitle = await treeRepo.findOne({ where: { title: data.title } });
                 if (existingTitle && existingTitle.id !== id) {
@@ -436,7 +450,6 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
-            // Check for duplicate slug (only if slug is being updated)
             if (data.slug && data.slug !== existsCategory.slug) {
                 const existingSlug = await treeRepo.findOne({ where: { slug: data.slug } });
                 if (existingSlug && existingSlug.id !== id) {
@@ -444,7 +457,6 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
-            // Handle parent update and level recalculation
             let newParent: Category | null = existsCategory.parent;
             let newLevel = existsCategory.level;
             let parentChanged = false;
@@ -465,12 +477,10 @@ export class CategoryService implements ICategoryService {
                         throw new NotFoundException('دسته مادر یافت نشد');
                     }
 
-                    // جلوگیری از تنظیم دسته به عنوان parent خودش
                     if (parent.id === id) {
                         throw new BadRequestException('دسته نمی‌تواند والد خودش باشد');
                     }
 
-                    // بررسی اینکه آیا parent در descendants این دسته است
                     const descendants = await treeRepo.findDescendants(existsCategory);
                     const isDescendant = descendants.some(desc => desc.id === parent.id);
                     if (isDescendant) {
@@ -485,7 +495,6 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
-            // به‌روزرسانی فیلدهای ساده
             if (data.title !== undefined) existsCategory.title = data.title;
             if (data.slug !== undefined) existsCategory.slug = data.slug;
             if (data.description !== undefined) existsCategory.description = data.description;
@@ -493,33 +502,25 @@ export class CategoryService implements ICategoryService {
             if (data.displayOrder !== undefined) existsCategory.displayOrder = data.displayOrder;
             if (data.isActive !== undefined) existsCategory.isActive = data.isActive;
 
-            // اگر parent تغییر کرده، باید level همه descendants به‌روز شود
             if (parentChanged) {
                 existsCategory.parent = newParent;
                 existsCategory.level = newLevel;
-
-                // ذخیره با TreeRepository برای به‌روزرسانی closure table
                 await treeRepo.save(existsCategory);
 
-                // به‌روزرسانی level همه فرزندان
                 if (existsCategory.children && existsCategory.children.length > 0) {
                     await this.updateDescendantsLevel(treeRepo, existsCategory);
                 }
             } else {
-                // ذخیره عادی
                 await treeRepo.save(existsCategory);
             }
 
-            // Handle media updates
             if (data.mediaId !== undefined) {
-                // حذف ارتباط media قبلی
                 const oldMedia = await manager.findOne(Media, { where: { category: { id } } });
                 if (oldMedia) {
                     oldMedia.category = null;
                     await manager.save(Media, oldMedia);
                 }
 
-                // اضافه کردن media جدید
                 if (data.mediaId) {
                     const newMedia = await manager.findOne(Media, { where: { id: data.mediaId } });
                     if (!newMedia) {
@@ -530,7 +531,6 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
-            // بارگذاری دوباره با relations کامل
             const updatedCategory = await treeRepo.findOne({
                 where: { id },
                 relations: ['parent', 'media']
@@ -538,11 +538,14 @@ export class CategoryService implements ICategoryService {
 
             return CategoryMapper.toResponse(updatedCategory!);
         });
+
+        // ✅ پاک کردن cache بعد از update
+        await this.cacheService.clearCategoryCache(id, data.slug);
+        console.log(`🗑️ Cache پاک شد برای category ${id}`);
+
+        return result;
     }
 
-    /**
-     * به‌روزرسانی بازگشتی level تمام فرزندان
-     */
     private async updateDescendantsLevel(
         treeRepo: TreeRepository<Category>,
         parent: Category
@@ -563,8 +566,7 @@ export class CategoryService implements ICategoryService {
     }
 
     async remove(id: number): Promise<Object> {
-        return runInTransaction(this.dataSource, async (manager) => {
-            // دریافت TreeRepository از transaction manager
+        const result = await runInTransaction(this.dataSource, async (manager) => {
             const treeRepo = manager.getTreeRepository(Category);
 
             const node = await treeRepo.findOne({
@@ -576,28 +578,30 @@ export class CategoryService implements ICategoryService {
                 throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
             }
 
-            // بررسی اینکه آیا دسته فرزند دارد
             const descendants = await treeRepo.findDescendants(node);
-            if (descendants.length > 1) { // خودش + فرزندان
+            if (descendants.length > 1) {
                 throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل زیرمجموعه است');
             }
 
-            // بررسی اینکه آیا دسته محصول دارد
             if (node.products && node.products.length > 0) {
                 throw new BadRequestException('حذف امکان‌پذیر نیست، دسته شامل محصول است');
             }
 
-            // حذف ارتباط media
             const media = await manager.findOne(Media, { where: { category: { id } } });
             if (media) {
                 media.category = null;
                 await manager.save(Media, media);
             }
 
-            // حذف دسته - closure table به صورت خودکار پاک می‌شود
             await treeRepo.remove(node);
 
             return { message: 'دسته با موفقیت حذف شد', data: null };
-        })
+        });
+
+        // ✅ پاک کردن cache بعد از delete
+        await this.cacheService.clearCategoryCache(id);
+        console.log(`🗑️ Cache پاک شد برای category ${id}`);
+
+        return result;
     }
 }
