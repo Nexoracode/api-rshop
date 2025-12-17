@@ -18,8 +18,8 @@ export enum PaymentLogStatus {
 
 export enum PaymentGateway {
     ZARINPAL = 'zarinpal',
-    IDPAY = 'idpay',
     MELAT = 'melat',
+    MELI = 'meli',
 }
 
 // ✅ جدید: نوع پرداخت
