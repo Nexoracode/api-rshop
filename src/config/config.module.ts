@@ -38,16 +38,16 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
             ttl: 300,
             max: 1000,
         }),
-        ThrottlerModule.forRoot([{
-            ttl: 60000,
-            limit: 20,
-        }])
+        // ThrottlerModule.forRoot([{
+        //     ttl: 60000,
+        //     limit: 20,
+        // }])
     ],
     providers: [
-        {
-            provide: APP_GUARD,
-            useClass: ThrottlerGuard
-        },
+        // {
+        //     provide: APP_GUARD,
+        //     useClass: ThrottlerGuard
+        // },
         {
             provide: APP_FILTER,
             useClass: ZarinpalExceptionFilter,
