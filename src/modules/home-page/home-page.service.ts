@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { HeroSliderService } from './hero-slider.service';
 import { SideBannerService } from './side-banner.service';
 import { HomeSectionService } from './home-section.service';
@@ -6,10 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../category/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { Product } from '../product/entities/product.entity';
-import { format } from 'path';
+import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
 
 export interface HomePageData {
   heroSliders: any[];
@@ -32,8 +30,7 @@ export interface HomePageData {
 
 @Injectable()
 export class HomePageService {
-  private readonly CACHE_KEY = 'homepage:data';
-  private readonly CACHE_TTL = 300; // 5 دقیقه
+  private readonly logger = new Logger(HomePageService.name); // ✅ اضافه شد
 
   constructor(
     private heroSliderService: HeroSliderService,
@@ -43,53 +40,51 @@ export class HomePageService {
     private categoryRepository: Repository<Category>,
     @InjectRepository(Brand)
     private brandRepository: Repository<Brand>,
-    @Inject(CACHE_MANAGER)
-    private cacheManager: Cache,
+    private readonly cacheService: HomePageCacheService, // ✅ تغییر یافت
   ) { }
 
   /**
    * گرفتن تمام داده‌های صفحه اصلی به صورت یکجا
    */
   async getHomePageData(): Promise<HomePageData> {
-    const isDevelpment = process.env.NODE_ENV === 'development';
-    // چک کردن کش
-    if (!isDevelpment) {
-      const cachedData = await this.cacheManager.get<HomePageData>(this.CACHE_KEY);
-      if (cachedData) {
-        return cachedData;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // ✅ چک cache (در development غیرفعال)
+    if (!isDevelopment) {
+      const cached = await this.cacheService.getHomePageData();
+      if (cached) {
+        this.logger.log('✅ Home page data از cache');
+        return cached;
       }
     }
 
-    // گرفتن اسلایدرهای فعال
+    // لاجیک اصلی (بدون تغییر)
     const heroSliders = await this.heroSliderService.findAllActive();
-
-    // گرفتن بنرهای کناری فعال
     const sideBanners = await this.sideBannerService.findAllActive();
 
-    // گرفتن دسته‌بندی‌های اصلی برای نمایش
     const categories = await this.categoryRepository.find({
       where: {
-        parentId: undefined, // فقط دسته‌بندی‌های اصلی
+        parentId: undefined,
         isActive: true
       },
       order: { displayOrder: 'ASC' },
-      take: 8, // 8 دسته‌بندی اول
+      take: 8,
     });
 
-    // گرفتن برندهای فعال
     const brands = await this.brandRepository.find({
       where: { isActive: true },
       order: { name: 'ASC' },
     });
 
-    // گرفتن بخش‌های مختلف صفحه
     const sections = await this.homeSectionService.findAllActive();
 
-    // گرفتن محصولات هر بخش
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
         const products = await this.homeSectionService.getSectionProducts(section.id);
-        const category = await this.categoryRepository.findOne({ where: { id: section.categoryId }, relations: ['media'] });
+        const category = await this.categoryRepository.findOne({ 
+          where: { id: section.categoryId }, 
+          relations: ['media'] 
+        });
 
         return {
           id: section.id,
@@ -135,7 +130,6 @@ export class HomePageService {
         id: category.id,
         name: category.title,
         slug: category.slug,
-        // icon: category.icon,
         image: category.media?.[0]?.url ?? null,
       })),
       brands: brands.map(brand => ({
@@ -147,18 +141,20 @@ export class HomePageService {
       sections: sectionsWithProducts,
     };
 
-    // ذخیره در کش
-    await this.cacheManager.set(this.CACHE_KEY, result, this.CACHE_TTL * 1000);
+    // ✅ ذخیره در cache
+    await this.cacheService.setHomePageData(result);
+    this.logger.log('💾 Home page data ذخیره شد در cache');
 
     return result;
   }
 
   /**
-   * پاک کردن کش صفحه اصلی
+   * پاک کردن cache صفحه اصلی
    * این متد باید بعد از هر تغییر در اسلایدرها، بنرها یا بخش‌ها صدا زده شود
    */
   async clearCache(): Promise<void> {
-    await this.cacheManager.del(this.CACHE_KEY);
+    await this.cacheService.clearHomePageData();
+    this.logger.log('🗑️ Home page cache پاک شد');
   }
 
   /**
@@ -201,7 +197,6 @@ export class HomePageService {
       id: category.id,
       name: category.title,
       slug: fullSlug,
-      // icon: category.icon,
       image: category.media?.[0]?.url ?? null,
     };
   }
@@ -217,11 +212,9 @@ export class HomePageService {
       relations: ['parent'],
     });
 
-    // از دسته فعلی شروع کن و به سمت بالا برو
     while (currentCategory) {
-      slugParts.unshift(currentCategory.slug); // اضافه کردن به ابتدای آرایه
+      slugParts.unshift(currentCategory.slug);
 
-      // اگر والد داشت، برو سراغ والد
       if (currentCategory.parent && currentCategory.parentId && currentCategory.parentId !== 0) {
         currentCategory = await this.categoryRepository.findOne({
           where: { id: currentCategory.parentId },

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CacheModule } from '@nestjs/cache-manager';
 import { HeroSlider } from './entities/hero-slider.entity';
 import { SideBanner } from './entities/side-banner.entity';
 import { HomeSection } from './entities/home-section.entity';
@@ -15,6 +14,7 @@ import { SideBannerService } from './side-banner.service';
 import { HomeSectionService } from './home-section.service';
 import { HomePageService } from './home-page.service';
 import { HomePageAnalyticsService } from './homepage-analytics.service';
+import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
 
 // Controllers
 import { HomePagePublicController } from './controllers/home-page-public.controller';
@@ -39,10 +39,6 @@ import { MediaModule } from '../media/media.module';
       Category,
       Brand,
     ]),
-    CacheModule.register({
-      ttl: 300, // 5 دقیقه (به ثانیه)
-      max: 100, // حداکثر تعداد آیتم در کش
-    }),
     MediaModule
   ],
   controllers: [
@@ -59,6 +55,7 @@ import { MediaModule } from '../media/media.module';
     HomeSectionService,
     HomePageService,
     HomePageAnalyticsService,
+    HomePageCacheService, // ✅ اضافه شد
     ClearHomePageCacheInterceptor,
   ],
   exports: [
