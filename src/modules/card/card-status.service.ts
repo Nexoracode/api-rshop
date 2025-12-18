@@ -1,27 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, In } from 'typeorm';
 import { Card, CardStatus } from './entities/card.entity';
-import { Order } from '../order/entities/order.entity';
-import { OrderStatus } from '../order/enums/order-status.enum';
 
 @Injectable()
 export class CardStatusService {
     constructor(
         @InjectRepository(Card)
         private readonly cardRepo: Repository<Card>,
-    ) {}
+    ) { }
 
     /**
      * لاک کردن Cart وقتی Order ایجاد می‌شه
      */
     async lockCart(userId: number, manager?: EntityManager): Promise<void> {
         const repo = manager ? manager.getRepository(Card) : this.cardRepo;
-        
+
         await repo.update(
-            { 
+            {
                 user: { id: userId },
-                status: CardStatus.OPEN 
+                status: CardStatus.OPEN
             },
             { status: CardStatus.LOCKED }
         );
@@ -36,11 +34,11 @@ export class CardStatusService {
      */
     async unlockCart(userId: number, manager?: EntityManager): Promise<void> {
         const repo = manager ? manager.getRepository(Card) : this.cardRepo;
-        
+
         await repo.update(
-            { 
+            {
                 user: { id: userId },
-                status: CardStatus.LOCKED 
+                status: CardStatus.LOCKED
             },
             { status: CardStatus.OPEN }
         );
@@ -52,14 +50,15 @@ export class CardStatusService {
      * - سفارش تحویل داده شد (DELIVERED)
      * - سفارش لغو شد (CANCELLED)
      * - سفارش refund شد (REFUNDED)
+     * - پرداخت موفق شد (کارت به کارت تایید شد)
      */
     async abandonCart(userId: number, manager?: EntityManager): Promise<void> {
         const repo = manager ? manager.getRepository(Card) : this.cardRepo;
-        
+
         await repo.update(
-            { 
+            {
                 user: { id: userId },
-                status: CardStatus.LOCKED 
+                status: CardStatus.LOCKED
             },
             { status: CardStatus.ABANDONED }
         );
@@ -67,11 +66,12 @@ export class CardStatusService {
 
     /**
      * ایجاد Cart جدید و Abandon کردن Cart قبلی
+     * ✅ FIX: حالا ABANDONED cart ها رو هم handle می‌کنه
      */
     async getOrCreateOpenCart(userId: number, manager?: EntityManager): Promise<Card> {
         const repo = manager ? manager.getRepository(Card) : this.cardRepo;
 
-        // بررسی Cart باز
+        // ✅ 1. بررسی Cart باز
         let openCart = await repo.findOne({
             where: {
                 user: { id: userId },
@@ -83,10 +83,17 @@ export class CardStatusService {
             return openCart;
         }
 
-        // Abandon کردن Cart های LOCKED قدیمی
-        await this.abandonCart(userId, manager);
+        // ✅ 2. Abandon کردن Cart های LOCKED یا ABANDONED قدیمی
+        // (اگه کاربر Cart قدیمی ABANDONED داره، اون رو نگه می‌داریم)
+        await repo.update(
+            {
+                user: { id: userId },
+                status: In([CardStatus.LOCKED, CardStatus.OPEN]), // ✅ OPEN هم شامل میشه (برای safety)
+            },
+            { status: CardStatus.ABANDONED }
+        );
 
-        // ایجاد Cart جدید
+        // ✅ 3. ایجاد Cart جدید
         const newCart = repo.create({
             user: { id: userId },
             status: CardStatus.OPEN,
@@ -98,5 +105,24 @@ export class CardStatusService {
         });
 
         return await repo.save(newCart);
+    }
+
+    /**
+     * ✅ NEW: پاک کردن Cart های قدیمی ABANDONED
+     * می‌تونه توسط Cron Job روزانه اجرا بشه
+     */
+    async cleanupAbandonedCarts(daysOld: number = 30): Promise<number> {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.setDate(cutoffDate.getDate() - daysOld));
+
+        const result = await this.cardRepo
+            .createQueryBuilder()
+            .delete()
+            .from(Card)
+            .where('status = :status', { status: CardStatus.ABANDONED })
+            .andWhere('updated_at < :cutoffDate', { cutoffDate })
+            .execute();
+
+        return result.affected || 0;
     }
 }

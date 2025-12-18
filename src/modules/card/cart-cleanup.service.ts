@@ -137,4 +137,26 @@ export class CartCleanupService {
             this.logger.error('❌ Error generating stats:', error);
         }
     }
+
+    /**
+     * ✅ NEW: هر روز ساعت 3 صبح Cart های ABANDONED قدیمی‌تر از 30 روز رو پاک کن
+     * این کار برای کاهش حجم دیتابیس و بهبود performance است
+     */
+    @Cron(CronExpression.EVERY_DAY_AT_3AM)
+    async cleanupOldAbandonedCarts() {
+        this.logger.log('🗑️ Cleaning up old abandoned carts...');
+
+        try {
+            const daysOld = 30;
+            const deleted = await this.cardStatusService.cleanupAbandonedCarts(daysOld);
+
+            if (deleted > 0) {
+                this.logger.log(`✅ Successfully deleted ${deleted} abandoned carts older than ${daysOld} days`);
+            } else {
+                this.logger.log(`ℹ️ No abandoned carts older than ${daysOld} days found`);
+            }
+        } catch (error) {
+            this.logger.error('❌ Error cleaning up abandoned carts:', error);
+        }
+    }
 }

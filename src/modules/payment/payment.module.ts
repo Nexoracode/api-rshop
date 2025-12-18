@@ -41,6 +41,7 @@ import { CardService } from '../card/card.service';
     InvoiceService,
     IncrementPromotionUsageUseCase,
     CardToCardService,
+    PaymentRecoveryService, // ✅ اضافه شد
   ],
   exports: [PaymentService, CardToCardService],
 })

@@ -24,7 +24,7 @@ export class PaymentRecoveryService {
      * 🕓 Cron Job: بررسی پرداخت‌های VERIFIED بدون فاکتور
      * اجرا روزانه ساعت ۳ صبح
      */
-    @Cron(CronExpression.EVERY_DAY_AT_3AM)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async recoverUninvoicedPayments() {
         this.logger.log('🔎 در حال بررسی پرداخت‌های بدون فاکتور...');
 
