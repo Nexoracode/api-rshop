@@ -24,18 +24,25 @@ export class PaymentRecoveryService {
      * 🕓 Cron Job: بررسی پرداخت‌های VERIFIED بدون فاکتور
      * اجرا روزانه ساعت ۳ صبح
      */
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_DAY_AT_3AM) // ✅ اصلاح شد: از EVERY_5_MINUTES به روزانه
     async recoverUninvoicedPayments() {
         this.logger.log('🔎 در حال بررسی پرداخت‌های بدون فاکتور...');
 
-        // ۱️⃣ پیدا کردن پرداخت‌های VERIFIED که فاکتور ندارند
-        const payments = await this.paymentRepo.find({
-            where: { status: PaymentStatus.VERIFIED },
-            relations: ['order', 'user'],
-        });
+        // ۱️⃣ پیدا کردن پرداخت‌های موفق (SUCCESS یا VERIFIED) که ممکنه فاکتور نداشته باشن
+        const payments = await this.paymentRepo
+            .createQueryBuilder('payment')
+            .leftJoin('payment.order', 'order')
+            .leftJoin('order.invoice', 'invoice')
+            .leftJoinAndSelect('payment.order', 'orderRelation')
+            .leftJoinAndSelect('payment.user', 'user')
+            .where('payment.status IN (:...statuses)', { 
+                statuses: [PaymentStatus.SUCCESS, PaymentStatus.VERIFIED] 
+            })
+            .andWhere('invoice.id IS NULL') // ✅ فقط کسایی که Invoice ندارن
+            .getMany();
 
         if (!payments.length) {
-            this.logger.log('✅ هیچ پرداخت در حالت VERIFIED یافت نشد.');
+            this.logger.log('✅ همه پرداخت‌های موفق دارای فاکتور هستند.');
             return;
         }
 
