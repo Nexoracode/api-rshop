@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
+import { PaymentLog } from './entities/payment-logs.entity';
 import { Order } from '../order/entities/order.entity';
 import { User } from '../user/entities/user.entity';
-import { CardToCardStatus, PaymentMethod, PaymentStatus } from './enums/payment-status.enum';
+import { CardToCardStatus, PaymentMethod, PaymentStatus, PaymentLogStatus } from './enums/payment-status.enum';
 import { InitiateCardToCardDto } from './dto/card-to-card/initiate-card-to-card.dto';
 import { UploadReceiptDto } from './dto/card-to-card/upload-receipt.dto';
 import { ReviewReceiptDto } from './dto/card-to-card/review-receipt.dto';
@@ -19,9 +20,13 @@ import { CardStatusService } from '../card/card-status.service';
 
 @Injectable()
 export class CardToCardService {
+    private readonly logger = new Logger(CardToCardService.name);
+
     constructor(
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
+        @InjectRepository(PaymentLog)
+        private readonly paymentLogRepo: Repository<PaymentLog>,
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
         @InjectDataSource()
@@ -89,7 +94,22 @@ export class CardToCardService {
                 cardToCardStatus: CardToCardStatus.PENDING,
             });
 
-            return await manager.save(Payment, payment);
+            const savedPayment = await manager.save(Payment, payment);
+
+            // ✅ 4. ثبت لاگ
+            await this.paymentLogRepo.save({
+                order,
+                payment: savedPayment,
+                user,
+                authority: savedPayment.authority,
+                status: PaymentLogStatus.INITIATED,
+                message: 'پرداخت کارت به کارت ایجاد شد، در انتظار آپلود رسید',
+                payload: { orderId: order.id, amount: order.total },
+            });
+
+            this.logger.log(`Card-to-card payment initiated for order ${order.id}`);
+
+            return savedPayment;
         });
     }
 
@@ -164,6 +184,23 @@ export class CardToCardService {
             order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
             await orderRepo.save(order);
 
+            // ✅ 2. ثبت لاگ
+            await this.paymentLogRepo.save({
+                order,
+                payment: saved,
+                user,
+                authority: saved.authority,
+                status: PaymentLogStatus.CALLBACK_RECEIVED,
+                message: 'رسید آپلود شد، در انتظار بررسی ادمین',
+                payload: {
+                    hasImage: !!receiptImageId,
+                    hasCardNumber: !!dto.senderCardNumber,
+                    hasTrackingCode: !!dto.trackingCode,
+                    depositDate: dto.depositDate,
+                },
+            });
+
+            this.logger.log(`Receipt uploaded for payment ${saved.id}`);
 
             // بارگذاری مجدد با relation
             return await paymentRepo.findOne({
@@ -301,6 +338,19 @@ export class CardToCardService {
                 // ✅ 3. آزاد کردن Cart با CardStatusService
                 await this.cardStatusService.unlockCart(payment.user.id, manager);
 
+                // ✅ 4. ثبت لاگ
+                await this.paymentLogRepo.save({
+                    order: payment.order,
+                    payment,
+                    user: payment.user,
+                    authority: payment.authority,
+                    status: PaymentLogStatus.FAILED,
+                    message: `رسید توسط ادمین رد شد: ${dto.adminNote}`,
+                    payload: { adminId: admin.id, reason: dto.adminNote },
+                });
+
+                this.logger.warn(`Payment ${payment.id} rejected by admin ${admin.id}`);
+
                 return payment;
             }
 
@@ -364,6 +414,24 @@ export class CardToCardService {
                         InvoiceStatus.PAID,
                     );
                 }
+
+                // ✅ 8. ثبت لاگ
+                await this.paymentLogRepo.save({
+                    order,
+                    payment,
+                    user: payment.user,
+                    authority: payment.authority,
+                    status: PaymentLogStatus.VERIFIED,
+                    message: 'پرداخت توسط ادمین تایید شد و فاکتور صادر شد',
+                    payload: {
+                        adminId: admin.id,
+                        invoiceId: invoice?.id,
+                        refId: payment.refId,
+                        adminNote: dto.adminNote,
+                    },
+                });
+
+                this.logger.log(`Payment ${payment.id} approved by admin ${admin.id}, invoice ${invoice?.id} created`);
 
                 return payment;
             }
