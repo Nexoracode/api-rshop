@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CatalogCacheService } from './services/catalog-cache.service';
+import { CatalogCacheService } from './cache/catalog-cache.service'; // ✅ تغییر مسیر
 import { CatalogQueryService } from './services/catalog-query.service';
 
 // Entities
@@ -10,7 +10,6 @@ import { Product } from '../product/entities/product.entity';
 
 // Mapper
 import { CatalogMapper } from './mappers/catalog.mapper';
-import { CacheModule } from '@nestjs/cache-manager';
 import { CatalogController } from './catalog.controller';
 import { CatalogService } from './catalog.service';
 import { CatalogSearchService } from './services/catalog-search.service';
@@ -19,23 +18,17 @@ import { CatalogSearchService } from './services/catalog-search.service';
     imports: [
         // TypeORM entities used in queries
         TypeOrmModule.forFeature([Category, Brand, Product]),
-
-        // Global cache for smartSearch results
-        CacheModule.register({
-            isGlobal: false,
-            ttl: 300, // default TTL 5 min
-        }),
     ],
     controllers: [CatalogController],
     providers: [
         CatalogService,
-        CatalogCacheService,
+        CatalogCacheService, // ✅ از cache/ directory
         CatalogQueryService,
         CatalogSearchService,
         CatalogMapper,
     ],
     exports: [
-        CatalogService, // export if other modules (e.g., product page) need it
+        CatalogService,
     ],
 })
 export class CatalogModule { }

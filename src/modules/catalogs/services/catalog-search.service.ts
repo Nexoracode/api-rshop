@@ -1,25 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { Cache } from 'cache-manager';
-import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CatalogCacheService } from '../cache/catalog-cache.service'; // ✅ تغییر مسیر
 import { CatalogSearchSuggestion, CatalogSearchResult } from '../interfaces/catalog-search.interface';
 
 @Injectable()
 export class CatalogSearchService {
+  private readonly logger = new Logger(CatalogSearchService.name); // ✅ اضافه شد
+
   constructor(
     private readonly dataSource: DataSource,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly cacheService: CatalogCacheService, // ✅ تغییر یافت
   ) { }
 
   // 🔹 پیشنهادات سریع برای autocomplete
   async getSuggestions(term: string): Promise<CatalogSearchSuggestion> {
     if (!term || term.trim().length < 2) return { term, suggestions: [] };
 
-    const key = `search:suggest:${term.toLowerCase()}`;
-    const cached = await this.cacheManager.get<CatalogSearchSuggestion>(key);
-    if (cached) return cached;
+    // ✅ چک cache
+    const cached = await this.cacheService.getSearchSuggestions(term);
+    if (cached) {
+      this.logger.log(`✅ Search suggestions "${term}" از cache`);
+      return cached;
+    }
 
+    // لاجیک اصلی (بدون تغییر)
     const suggestions = await this.dataSource.query(
       `
       SELECT DISTINCT p.name
@@ -38,7 +42,10 @@ export class CatalogSearchService {
       suggestions: suggestions.map((s) => s.name),
     };
 
-    await this.cacheManager.set(key, result, 120);
+    // ✅ ذخیره در cache
+    await this.cacheService.setSearchSuggestions(term, result);
+    this.logger.log(`💾 Search suggestions "${term}" ذخیره شد در cache`);
+
     return result;
   }
 
@@ -48,12 +55,16 @@ export class CatalogSearchService {
       return { term, products: [], categories: [], brands: [] };
     }
 
-    const key = `search:full:${term.toLowerCase()}:${limit}`;
-    const cached = await this.cacheManager.get<CatalogSearchResult>(key);
-    if (cached) return cached;
+    // ✅ چک cache
+    const cached = await this.cacheService.getSearchResults(term, limit);
+    if (cached) {
+      this.logger.log(`✅ Search results "${term}" از cache`);
+      return cached;
+    }
 
     const likeTerm = `%${term}%`;
 
+    // لاجیک اصلی (بدون تغییر)
     // 🧠 محصولات
     const products = await this.dataSource.query(
       `
@@ -151,7 +162,10 @@ export class CatalogSearchService {
       categories: categories.map((c) => ({ id: c.id, title: c.title, slug: c.slug })),
     };
 
-    await this.cacheManager.set(key, result, 300);
+    // ✅ ذخیره در cache
+    await this.cacheService.setSearchResults(term, limit, result);
+    this.logger.log(`💾 Search results "${term}" ذخیره شد در cache`);
+
     return result;
   }
 }

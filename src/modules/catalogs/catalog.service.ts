@@ -1,9 +1,9 @@
 // catalog.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PaginateQuery, PaginationType, paginate } from 'nestjs-paginate';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
-import { CatalogCacheService } from './services/catalog-cache.service';
+import { CatalogCacheService } from './cache/catalog-cache.service'; // ✅ تغییر مسیر
 import { Category } from '../category/entities/category.entity';
 import { Product } from '../product/entities/product.entity';
 import { extractCategoryIds } from './utils/category-tree.util';
@@ -24,6 +24,8 @@ const relations = [
 
 @Injectable()
 export class CatalogService {
+    private readonly logger = new Logger(CatalogService.name); // ✅ اضافه شد
+
     constructor(
         private readonly queryService: CatalogQueryService,
         private readonly cacheService: CatalogCacheService,
@@ -35,11 +37,13 @@ export class CatalogService {
         query: PaginateQuery,
     ): Promise<any> {
         // ------------------------------------------
-        // ۱. بررسی کش
+        // ۱. بررسی cache (بهبود یافته)
         // ------------------------------------------
-        const cacheKey = `catalog:category:${slug}:${JSON.stringify(query)}`;
-        const cached = await this.cacheService.get<any>(cacheKey);
-        if (cached) return cached;
+        const cached = await this.cacheService.getCategoryProducts(slug, query);
+        if (cached) {
+            this.logger.log(`✅ Category products ${slug} از cache`);
+            return cached;
+        }
 
         // ------------------------------------------
         // ۲. یافتن دسته فعلی و ساخت مسیر
@@ -120,22 +124,20 @@ export class CatalogService {
         // ------------------------------------------
         // 7. محصولات ارسال امروز
         // ------------------------------------------
-
         if (query['filter[same_day_shipping]'] === '1') {
             qb.andWhere('(p.is_same_day_shipping > 0)');
         }
 
         // ------------------------------------------
-        // 7. محصولات ارسال موجود در انبار
+        // 7. محصولات موجود در انبار
         // ------------------------------------------
-
         if (query['filter[in_stock]'] === '1') {
             qb.andWhere('(p.stock > 0)');
         }
 
-        // Support sorting by stock descending when sortBy is provided as a string ('stock_desc')
-        // or as an array of [column, direction] pairs (e.g. [['stock','DESC']])
-
+        // ------------------------------------------
+        // 8. Sorting
+        // ------------------------------------------
         if (query.sortBy) {
             const sortEnum: SortEnum[] = Object.values(SortEnum);
             if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
@@ -149,6 +151,7 @@ export class CatalogService {
                             "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
                             "ASC"
                         );
+                        break;
 
                     case SortEnum.BESTSELLING:
                         qb.addSelect(subQuery => {
@@ -188,15 +191,14 @@ export class CatalogService {
                         break;
 
                     default:
-                        qb.addOrderBy('p.created_at', 'DESC');  // Default sorting by ID
+                        qb.addOrderBy('p.created_at', 'DESC');
                         break;
                 }
             }
         }
 
-
         // ------------------------------------------
-        // 8. فیلتر attributeها
+        // 9. فیلتر attributeها
         // ------------------------------------------
         const rawMap = parseAttributeFilter(query['filter[attributes]']);
         const attrIds = Object.keys(rawMap).map((k) => +k).filter(Boolean);
@@ -244,26 +246,24 @@ export class CatalogService {
         }
 
         // ------------------------------------------
-        // 9. اجرای paginate
+        // 10. اجرای paginate
         // ------------------------------------------
         const paginated = await paginate(query, qb, {
             sortableColumns: ['id', 'price', 'createdAt'],
             searchableColumns: ['name', 'description'],
             defaultSortBy: [['id', 'DESC']],
-            // return result for all page for test
-            // paginationType: PaginationType.LIMIT_AND_OFFSET,
             relations,
             defaultLimit: query.limit,
             maxLimit: 100,
         });
 
         // ------------------------------------------
-        // 10. مپ محصولات
+        // 11. مپ محصولات
         // ------------------------------------------
         const products = paginated.data.map(CatalogMapper.toProduct);
 
         // ------------------------------------------
-        // 🔟 فیلترها (شامل breadcrumb + tree)
+        // 12. فیلترها (شامل breadcrumb + tree)
         // ------------------------------------------
         const filters = await this.queryService.buildFilters(categoryNode, categoryIdsForAttributes);
 
@@ -271,14 +271,16 @@ export class CatalogService {
         // ✅ خروجی نهایی
         // ------------------------------------------
         const result = {
-            // data: { count: products.length, products },
             items_count: paginated.meta.totalItems,
             data: products,
             meta: paginated.meta,
             filters,
         };
 
-        await this.cacheService.set(cacheKey, result, 300);
+        // ✅ ذخیره در cache (بهبود یافته)
+        await this.cacheService.setCategoryProducts(slug, query, result);
+        this.logger.log(`💾 Category products ${slug} ذخیره شد در cache`);
+
         return result;
     }
 }
