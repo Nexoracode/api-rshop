@@ -98,7 +98,7 @@ export class SideBannerAdminController {
    */
   @Post()
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'ایجاد بنر کناری جدید',
     description: `
 ایجاد یک بنر کناری جدید برای صفحه اصلی.
@@ -125,7 +125,7 @@ export class SideBannerAdminController {
 - بنر بلافاصله در موقعیت مشخص شده نمایش داده می‌شود (اگر فعال باشد)
     `.trim()
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateSideBannerDto,
     description: 'اطلاعات بنر جدید',
     examples: {
@@ -136,6 +136,7 @@ export class SideBannerAdminController {
           subtitle: 'بهترین کیفیت چاپ',
           image_url: '/uploads/banners/banner1.jpg',
           link: '/category/quran',
+          backbround_color: '#FFFFFF',
           position: 'top_right',
           is_active: true
         }
@@ -146,6 +147,7 @@ export class SideBannerAdminController {
           title: 'تسبیح چشم بیر',
           subtitle: 'تخفیف ویژه محصولات',
           image_url: '/uploads/banners/banner2.jpg',
+          backbround_color: '#FFFFFF',
           link: '/category/tasbih',
           position: 'middle_right',
           badge_text: '20%',
@@ -160,6 +162,7 @@ export class SideBannerAdminController {
           title: 'کتب مذهبی',
           subtitle: 'جدیدترین عناوین',
           image_url: '/uploads/banners/banner3.jpg',
+          backbround_color: '#FFFFFF',
           link: '/category/books',
           position: 'bottom_right',
           badge_text: 'جدید',
@@ -170,8 +173,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'بنر با موفقیت ایجاد شد',
     schema: {
       example: {
@@ -179,6 +182,7 @@ export class SideBannerAdminController {
         title: 'مصحف همراه (طلاکوب)',
         subtitle: 'از ۵۴۹ تا ۵۵۹ هزار تومان',
         image_url: '/uploads/banners/banner1.jpg',
+        backbround_color: '#FFFFFF',
         link: '/category/quran',
         position: 'top_right',
         badge_text: '14%',
@@ -190,8 +194,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'داده‌های ورودی نامعتبر',
     schema: {
       example: {
@@ -230,7 +234,7 @@ export class SideBannerAdminController {
    * GET /admin/side-banners?position=top_right
    */
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت لیست بنرهای کناری',
     description: `
 دریافت لیست بنرها با قابلیت فیلتر.
@@ -262,8 +266,8 @@ export class SideBannerAdminController {
     example: 'top_right',
     enumName: 'BannerPosition'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'لیست بنرها',
     schema: {
       example: [
@@ -272,6 +276,7 @@ export class SideBannerAdminController {
           title: 'مصحف همراه',
           subtitle: 'قیمت ویژه',
           image_url: '/uploads/banners/banner1.jpg',
+          backbround_color: '#FFFFFF',
           link: '/category/quran',
           position: 'top_right',
           badge_text: null,
@@ -286,6 +291,7 @@ export class SideBannerAdminController {
           title: 'تسبیح چشم بیر',
           subtitle: 'محصولات جدید',
           image_url: '/uploads/banners/banner2.jpg',
+          backbround_color: '#FFFFFF',
           link: '/category/tasbih',
           position: 'top_right',
           badge_text: '14%',
@@ -318,7 +324,7 @@ export class SideBannerAdminController {
    * GET /admin/side-banners/1
    */
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت یک بنر با شناسه',
     description: `
 دریافت اطلاعات کامل یک بنر مشخص.
@@ -330,14 +336,14 @@ export class SideBannerAdminController {
 - مشاهده تنظیمات برچسب تخفیف
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه عددی بنر',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'اطلاعات بنر',
     schema: {
       example: {
@@ -345,6 +351,7 @@ export class SideBannerAdminController {
         title: 'مصحف همراه (طلاکوب)',
         subtitle: 'از ۵۴۹ تا ۵۵۹ هزار تومان',
         image_url: '/uploads/banners/banner1.jpg',
+        backbround_color: '#FFFFFF',
         link: '/category/quran',
         position: 'top_right',
         badge_text: '14%',
@@ -356,8 +363,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بنر یافت نشد',
     schema: {
       example: {
@@ -397,7 +404,7 @@ export class SideBannerAdminController {
    */
   @Patch(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'بروزرسانی بنر',
     description: `
 ویرایش اطلاعات یک بنر موجود.
@@ -427,13 +434,13 @@ export class SideBannerAdminController {
 - تغییر ترتیب نمایش
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه بنر',
     example: 1
   })
-  @ApiBody({ 
+  @ApiBody({
     type: UpdateSideBannerDto,
     description: 'فیلدهایی که باید بروزرسانی شوند (همه اختیاری)',
     examples: {
@@ -477,6 +484,7 @@ export class SideBannerAdminController {
           title: 'عنوان بروز شده',
           subtitle: 'زیرعنوان جدید',
           image_url: '/uploads/banners/new-banner.jpg',
+          backbround_color: '#FFFFFF',
           link: '/new-category',
           position: 'middle_right',
           badge_text: '30%',
@@ -487,8 +495,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'بنر با موفقیت بروزرسانی شد',
     schema: {
       example: {
@@ -496,6 +504,7 @@ export class SideBannerAdminController {
         title: 'عنوان بروز شده',
         subtitle: 'زیرعنوان جدید',
         image_url: '/uploads/banners/new-banner.jpg',
+        backbround_color: '#FFFFFF',
         link: '/new-category',
         position: 'middle_right',
         badge_text: '30%',
@@ -507,8 +516,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بنر یافت نشد',
     schema: {
       example: {
@@ -542,7 +551,7 @@ export class SideBannerAdminController {
    */
   @Delete(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'حذف بنر',
     description: `
 حذف کامل یک بنر از دیتابیس.
@@ -563,14 +572,14 @@ export class SideBannerAdminController {
 - ترتیب نمایش سایر بنرها تغییر نمی‌کند
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه بنر',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'بنر با موفقیت حذف شد',
     schema: {
       example: {
@@ -578,8 +587,8 @@ export class SideBannerAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بنر یافت نشد',
     schema: {
       example: {
