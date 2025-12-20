@@ -211,18 +211,45 @@ export class CategoryCacheService {
      */
     async clearPaginationCache(): Promise<void> {
         try {
+            // ✅ چک کردن اینکه store موجود باشه
+            if (!this.cacheManager.stores || typeof this.cacheManager.stores.keys !== 'function') {
+                console.warn('⚠️ Cache store.keys() موجود نیست، از روش جایگزین استفاده می‌شود');
+
+                // ✅ روش جایگزین: پاک کردن با الگوهای شناخته‌شده
+                // چون نمی‌تونیم keys رو بگیریم، فقط tree اصلی رو پاک می‌کنیم
+                await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
+                await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
+                return;
+            }
+
             // @ts-ignore - cache-manager store.keys() might not be in types
             const keys = await this.cacheManager.store.keys();
+
+            if (!keys || !Array.isArray(keys)) {
+                console.warn('⚠️ Cache keys دریافت نشد');
+                return;
+            }
+
             const paginationKeys = keys.filter((key: string) =>
                 key.startsWith('category:tree:') &&
                 key !== this.CACHE_KEYS.CATEGORY_TREE
             );
 
-            await Promise.all(
-                paginationKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (paginationKeys.length > 0) {
+                await Promise.all(
+                    paginationKeys.map((key: string) => this.cacheManager.del(key))
+                );
+                console.log(`✅ ${paginationKeys.length} کلید pagination پاک شد`);
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache pagination:', error);
+            console.error('❌ خطا در پاک کردن cache pagination:', error);
+            // ✅ در صورت خطا، حداقل tree اصلی رو پاک کن
+            try {
+                await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
+                await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
+            } catch (fallbackError) {
+                console.error('❌ خطا در fallback پاک کردن cache:', fallbackError);
+            }
         }
     }
 
