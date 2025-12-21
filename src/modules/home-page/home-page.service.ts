@@ -48,7 +48,7 @@ export class HomePageService {
    */
   async getHomePageData(): Promise<HomePageData> {
     const isDevelopment = process.env.NODE_ENV === 'development';
-    
+
     // ✅ چک cache (در development غیرفعال)
     if (!isDevelopment) {
       const cached = await this.cacheService.getHomePageData();
@@ -67,8 +67,9 @@ export class HomePageService {
         parentId: undefined,
         isActive: true
       },
+      relations: ['media'],
       order: { displayOrder: 'ASC' },
-      take: 8,
+      take: 18,
     });
 
     const brands = await this.brandRepository.find({
@@ -81,9 +82,9 @@ export class HomePageService {
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
         const products = await this.homeSectionService.getSectionProducts(section.id);
-        const category = await this.categoryRepository.findOne({ 
-          where: { id: section.categoryId }, 
-          relations: ['media'] 
+        const category = await this.categoryRepository.findOne({
+          where: { id: section.categoryId },
+          relations: ['media']
         });
 
         return {
@@ -121,6 +122,7 @@ export class HomePageService {
         imageUrl: banner.imageUrl,
         backgroundColor: banner.backgroundColor,
         link: banner.link,
+        isActive: banner.isActive,
         position: banner.position,
         sortOrder: banner.sortOrder,
         badgeText: banner.badgeText,
@@ -130,7 +132,7 @@ export class HomePageService {
         id: category.id,
         name: category.title,
         slug: category.slug,
-        image: category.media?.[0]?.url ?? null,
+        image: category.media?.url ?? null,
       })),
       brands: brands.map(brand => ({
         id: brand.id,

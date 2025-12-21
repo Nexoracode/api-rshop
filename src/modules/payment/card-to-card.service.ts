@@ -17,7 +17,7 @@ import { Product } from '../product/entities/product.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Promotion } from '../promotion/domain/entities/promotion.entity';
 import { CardStatusService } from '../card/card-status.service';
-
+import { Request } from 'express';
 @Injectable()
 export class CardToCardService {
     private readonly logger = new Logger(CardToCardService.name);
@@ -25,11 +25,6 @@ export class CardToCardService {
     constructor(
         @InjectRepository(Payment)
         private readonly paymentRepo: Repository<Payment>,
-        @InjectRepository(PaymentLog)
-        private readonly paymentLogRepo: Repository<PaymentLog>,
-        @InjectRepository(Order)
-        private readonly orderRepo: Repository<Order>,
-        @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly invoiceService: InvoiceService,
         private readonly cardStatusService: CardStatusService, // ✅ اضافه شد
@@ -38,8 +33,10 @@ export class CardToCardService {
     /**
      * ایجاد پرداخت کارت به کارت
      */
-    async initiate(user: User, dto: InitiateCardToCardDto) {
+    async initiate(user: User, dto: InitiateCardToCardDto, req: Request) {
         return await runInTransaction(this.dataSource, async (manager) => {
+            const paymentRepo = manager.getRepository(Payment);
+            const paymentLogRepo = manager.getRepository(PaymentLog);
             const order = await manager.findOne(Order, {
                 where: { id: dto.orderId, user: { id: user.id } },
             });
@@ -53,7 +50,7 @@ export class CardToCardService {
             }
 
             // بررسی پرداخت pending
-            const existingPayment = await manager.findOne(Payment, {
+            const existingPayment = await paymentRepo.findOne({
                 where: {
                     order: { id: order.id },
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
@@ -66,7 +63,7 @@ export class CardToCardService {
             }
 
             // بررسی پرداخت uploaded
-            const uploadedPayment = await manager.findOne(Payment, {
+            const uploadedPayment = await paymentRepo.findOne({
                 where: {
                     order: { id: order.id },
                     paymentMethod: PaymentMethod.CARD_TO_CARD,
@@ -83,7 +80,7 @@ export class CardToCardService {
             await this.cardStatusService.lockCart(user.id, manager);
 
             // ✅ 3. ایجاد پرداخت جدید
-            const payment = manager.create(Payment, {
+            const payment = await paymentRepo.save({
                 order,
                 user,
                 amount: Number(order.total),
@@ -94,15 +91,17 @@ export class CardToCardService {
                 cardToCardStatus: CardToCardStatus.PENDING,
             });
 
-            const savedPayment = await manager.save(Payment, payment);
+            const savedPayment = await paymentRepo.save(payment);
 
             // ✅ 4. ثبت لاگ
-            await this.paymentLogRepo.save({
+            await paymentLogRepo.save({
                 order,
                 payment: savedPayment,
                 user,
+                ip: req.ip,
                 authority: savedPayment.authority,
                 status: PaymentLogStatus.INITIATED,
+                userAgent: req.headers['user-agent'],
                 message: 'پرداخت کارت به کارت ایجاد شد، در انتظار آپلود رسید',
                 payload: { orderId: order.id, amount: order.total },
             });
@@ -124,6 +123,7 @@ export class CardToCardService {
     ) {
         return await runInTransaction(this.dataSource, async (manager) => {
             const paymentRepo = manager.getRepository(Payment);
+            const paymentLogRepo = manager.getRepository(PaymentLog);
             const orderRepo = manager.getRepository(Order);
 
 
@@ -185,7 +185,7 @@ export class CardToCardService {
             await orderRepo.save(order);
 
             // ✅ 2. ثبت لاگ
-            await this.paymentLogRepo.save({
+            await paymentLogRepo.save({
                 order,
                 payment: saved,
                 user,
@@ -292,6 +292,7 @@ export class CardToCardService {
         dto: ReviewReceiptDto,
     ) {
         return await runInTransaction(this.dataSource, async (manager) => {
+            const paymentLogRepo = manager.getRepository(PaymentLog);
             const payment = await manager.findOne(Payment, {
                 where: {
                     id: paymentId,
@@ -309,6 +310,8 @@ export class CardToCardService {
                     'این پرداخت در وضعیت مناسب برای بررسی نیست. وضعیت فعلی: ' + payment.cardToCardStatus
                 );
             }
+
+            console.log(admin, paymentId, dto);
 
             // اگر رد شد
             if (dto.status === CardToCardStatus.REJECTED) {
@@ -339,7 +342,7 @@ export class CardToCardService {
                 await this.cardStatusService.unlockCart(payment.user.id, manager);
 
                 // ✅ 4. ثبت لاگ
-                await this.paymentLogRepo.save({
+                await paymentLogRepo.save({
                     order: payment.order,
                     payment,
                     user: payment.user,
@@ -391,12 +394,12 @@ export class CardToCardService {
                 payment.adminNote = dto.adminNote || 'تایید شده';
                 payment.reviewedById = admin.id;
                 payment.reviewedAt = new Date();
-                payment.refId = payment.trackingCode || `C2C-${payment.id}`;
+                payment.refId = payment.trackingCode || `${payment.id}${order.id}`;
                 await manager.save(Payment, payment);
 
                 // ✅ 5. Cart باید LOCKED بمونه (تا تحویل)
                 // بعد از DELIVERED با OrderService.markAsDelivered به ABANDONED تبدیل می‌شه
-                await this.cardStatusService.abandonCart(payment.user.id, manager);
+                await this.cardStatusService.lockCart(payment.user.id, manager);
 
 
                 // ✅ 6. ایجاد Invoice
@@ -416,7 +419,7 @@ export class CardToCardService {
                 }
 
                 // ✅ 8. ثبت لاگ
-                await this.paymentLogRepo.save({
+                await paymentLogRepo.save({
                     order,
                     payment,
                     user: payment.user,

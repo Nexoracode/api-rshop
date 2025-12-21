@@ -6,12 +6,12 @@ import { OrderMapper } from 'src/modules/order/mappers/order.mapper';
 
 export class PaymentResponseMapper {
     // createPayment -> بازگشت لینک درگاه
-    static createPayment(order: Order, paymentUrl: string, authority: string) {
+    static createPayment(order: Order, authority: string) {
         return {
             success: true,
             message: 'کاربر به درگاه پرداخت منتقل می‌شود.',
             authority,
-            paymentUrl,
+            paymentUrl: `${process.env.ZARINPAL_PAYMENT_URL}/${authority}`,
             amount: order.total,
             orderId: order.id,
             orderStatus: order.status,

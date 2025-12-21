@@ -8,7 +8,6 @@ import { DataSource } from "typeorm";
 import { Request } from "express";
 import { EventEmitter2 } from "@nestjs/event-emitter"; // ✅ اضافه شد
 
-import { Invoice } from "../invoice/entities/invoice.entity";
 import { Payment } from "./entities/payment.entity";
 import { Order } from "../order/entities/order.entity";
 
@@ -31,6 +30,7 @@ import { IncrementPromotionUsageUseCase } from "../promotion/application/usecase
 // ✅ اضافه: Event برای یکپارچه‌سازی حسابداری
 import { OrderPaidEvent } from "../accounting/listeners/order-accounting.listener";
 import { CardStatusService } from "../card/card-status.service";
+import ZarinPal from "zarinpal-node-sdk";
 
 const relations = [
   'user',
@@ -44,12 +44,10 @@ const relations = [
   'items.variant.attributes.value'
 ];
 
-const sandBox = process.env.production ? false : true;
-
-const zarinpal = require("zarinpal-checkout").create(
-  process.env.ZARINPAL_MERCHANT_ID,
-  sandBox
-);
+const zarinpal = new ZarinPal({
+  merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
+  sandbox: process.env.ZARINPAL_SANDBOX === 'true',
+})
 
 @Injectable()
 export class PaymentService {
@@ -67,6 +65,7 @@ export class PaymentService {
   // 💰 مرحله 1: ایجاد درخواست پرداخت در زرین‌پال
   // ────────────────────────────────────────────────
   async createPayment(callbackUrl: string, orderId: number, req: Request) {
+    console.log('sand box -> ', process.env.ZARINPAL_SANDBOX);
     return runInTransaction(this.dataSource, async (manager) => {
       const orderRepo = manager.getRepository(Order);
       const paymentRepo = manager.getRepository(Payment);
@@ -103,13 +102,15 @@ export class PaymentService {
 
       let requestResult: any;
       try {
-        requestResult = await zarinpal.PaymentRequest({
-          Amount: order.total,
-          CallbackURL: callbackUrl,
-          Description: `پرداخت سفارش شماره ${order.id}`,
-          Email: order.user?.email ?? undefined,
-          Mobile: order.user?.phone ?? undefined,
+        requestResult = await zarinpal.payments.create({
+          amount: order.total,
+          callback_url: callbackUrl,
+          description: `پرداخت سفارش شماره ${order.id}`,
+          mobile: order.user?.phone ?? null,
+          email: order.user?.email ?? null,
+          referrer_id: order.user?.phone ?? null,
         });
+        console.log('requestResult -> ', requestResult);
       } catch (e: any) {
         this.logger.error(`Zarinpal request failed for order ${orderId}`, e);
         await paymentLogRepo.save({
@@ -125,28 +126,28 @@ export class PaymentService {
         throw new ZarinpalException(e.errors?.code ?? -50, e.errors?.message);
       }
 
-      if (requestResult.status !== 100) {
+      if (requestResult.data.code !== 100) {
         this.logger.warn(`Zarinpal request rejected with status ${requestResult.status} for order ${orderId}`);
         await paymentLogRepo.save({
           order,
           user: order.user,
-          authority: requestResult.authority ?? '',
+          authority: requestResult.data.authority ?? '',
           status: PaymentLogStatus.FAILED,
-          message: `درخواست پرداخت رد شد (${requestResult.status})`,
+          message: `درخواست پرداخت رد شد : (${requestResult.data.message})`,
           ip: req.ip,
           userAgent: req.headers['user-agent'],
           payload: requestResult,
         });
         throw new ZarinpalException(
-          requestResult.status,
-          ZarinpalErrorMessage[requestResult.status],
+          requestResult.data.code,
+          ZarinpalErrorMessage[requestResult.data.code] || 'خطای نامشخص در درگاه پرداخت',
         );
       }
 
       await paymentRepo.save({
         user: order.user,
         order,
-        authority: requestResult.authority,
+        authority: requestResult.data.authority,
         amount: order.total,
         status: PaymentStatus.IN_PROGRESS,
         message: 'در انتظار پرداخت کاربر...',
@@ -161,7 +162,7 @@ export class PaymentService {
       await paymentLogRepo.save({
         order,
         user: order.user,
-        authority: requestResult.authority,
+        authority: requestResult.data.authority,
         status: PaymentLogStatus.INITIATED,
         message: 'لینک پرداخت ایجاد شد، در انتظار پرداخت کاربر',
         ip: req.ip,
@@ -171,7 +172,7 @@ export class PaymentService {
 
       this.logger.log(`Payment request created for order ${orderId}, authority: ${requestResult.authority}`);
 
-      return PaymentResponseMapper.createPayment(order, requestResult.url, requestResult.authority);
+      return PaymentResponseMapper.createPayment(order, requestResult.data.authority);
     });
   }
 
@@ -267,17 +268,19 @@ export class PaymentService {
       }
 
       try {
-        const verification = await zarinpal.PaymentVerification({
-          Amount: order.total,
-          Authority: authority,
+        const verification = await zarinpal.verifications.verify({
+          amount: order.total,
+          authority: authority,
         });
 
-        if (verification.status === 100) {
-          this.logger.log(`Payment verified successfully for order ${order.id}, refId: ${getRefId(verification)}`);
+        console.log('verification -> ', verification);
+
+        if (verification.data.code === 100) {
+          this.logger.log(`Payment verified successfully for order ${order.id}, refId: ${getRefId(verification.data)}`);
 
           order.status = OrderStatus.PREPARING;
           payment.status = PaymentStatus.SUCCESS;
-          payment.refId = getRefId(verification);
+          payment.refId = getRefId(verification.data);
           payment.message = 'پرداخت با موفقیت تایید شد.';
           await orderRepo.save(order);
           await paymentRepo.save(payment);
@@ -302,7 +305,7 @@ export class PaymentService {
             message: 'پرداخت با موفقیت تایید شد.',
             ip: req.ip,
             userAgent: req.headers['user-agent'],
-            payload: verification,
+            payload: verification.data,
           });
 
           // ✅ افزایش شمارنده استفاده از پروموشن‌ها
@@ -337,7 +340,7 @@ export class PaymentService {
             return PaymentResponseMapper.verifiedWithInvoice(
               order,
               payment,
-              payment.refId ?? getRefId(verification),
+              payment.refId ?? getRefId(verification.data),
               invoice!.createdAt
             );
           } catch (e) {
@@ -356,20 +359,20 @@ export class PaymentService {
             });
             return PaymentResponseMapper.verifiedNoInvoice(
               order,
-              payment.refId ?? getRefId(verification)
+              payment.refId ?? getRefId(verification.data)
             );
           }
         }
 
-        if (verification.status === 101) {
+        if (verification.data.code === 101) {
           this.logger.debug(`Payment already verified (101) for authority: ${authority}`);
           return PaymentResponseMapper.alreadyVerified(verification ?? null);
         }
 
-        this.logger.warn(`Payment verification failed with status ${verification.status} for order ${order.id}`);
+        this.logger.warn(`Payment verification failed with status ${verification.data.code} for order ${order.id}`);
         order.status = OrderStatus.PAYMENT_FAILED;
         payment.status = PaymentStatus.FAILED;
-        payment.message = `تراکنش با وضعیت ${verification.status} بازگشت داده شد.`;
+        payment.message = `تراکنش با وضعیت ${verification.data.code} بازگشت داده شد.`;
         await orderRepo.save(order);
         await paymentRepo.save(payment);
 
@@ -379,8 +382,8 @@ export class PaymentService {
           payment,
           authority,
           status: PaymentLogStatus.FAILED,
-          message: `پرداخت ناموفق (${verification.status})`,
-          payload: verification,
+          message: `پرداخت ناموفق (${verification.data.code})`,
+          payload: verification.data,
         });
 
         return PaymentResponseMapper.failed(order.status);

@@ -21,6 +21,10 @@ export class CreateHeroSliderDto {
   @IsOptional()
   backgroundColor?: string;
 
+  @IsBoolean()
+  @ApiProperty({ name: 'is_dark', default: false })
+  isDark?: boolean;
+
   @ApiPropertyOptional({ name: 'button_text', example: 'مشاهده محصول' })
   @IsString()
   @IsOptional()

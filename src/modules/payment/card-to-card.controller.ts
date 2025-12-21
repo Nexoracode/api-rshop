@@ -9,6 +9,7 @@ import {
     UploadedFiles,
     BadRequestException,
     UseGuards,
+    Req,
 } from '@nestjs/common';
 import { CardToCardService } from './card-to-card.service';
 import { InitiateCardToCardDto } from './dto/card-to-card/initiate-card-to-card.dto';
@@ -28,6 +29,7 @@ import { MediaType } from 'src/common/enums/media.enum';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { AccessGuard } from 'src/common/guard/access.guard';
 import { SettingService } from '../setting/setting.service';
+import { Request } from 'express';
 
 @ApiTags('21 - 💳 Card to Card Payment (User)')
 @ApiBearerAuth()
@@ -75,10 +77,11 @@ export class CardToCardController {
         description: 'پرداخت ایجاد شد، منتظر آپلود رسید',
     })
     async initiate(
+        @Req() req: Request,
         @CurrentUser() user: User,
         @Body() dto: InitiateCardToCardDto,
     ) {
-        const payment = await this.cardToCardService.initiate(user, dto);
+        const payment = await this.cardToCardService.initiate(user, dto, req);
 
         // ✅ دریافت اطلاعات کارت از تنظیمات
         const cardInfo = await this.settingService.getCardToCardSettings();
