@@ -131,6 +131,19 @@ export class ProductService implements IProductService {
             relations
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
+        const reviews = await this.reviewRepo.find({
+            where: {
+                product: { id: product.id },
+                isApproved: true,
+            },
+            relations: ['user', 'product'],
+        });
+
+        const averageRating = getAverageRating(reviews);
+        const lengthReview = reviews.length;
+        (product as any).averageRating = averageRating;
+        (product as any).reviewsCount = lengthReview;
+        (product as any).reviews = reviews.map(r => ReviewMapper.toResponse(r));
 
         const result = ProductMapper.toResponse(product, { cartesian: true });
 

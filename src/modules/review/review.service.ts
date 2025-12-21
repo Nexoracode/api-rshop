@@ -43,7 +43,7 @@ export class ReviewService {
     const reviews = await paginate(query, this.reviewRepo, {
       sortableColumns: ['createdAt', 'id'],
       relations: ['user'],
-      where: { productId }
+      where: { productId, isApproved: true }
     })
     return {
       averegeRating: getAverageRating(reviews.data),
