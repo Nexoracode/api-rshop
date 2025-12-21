@@ -8,6 +8,7 @@ export class PaymentResponseMapper {
     // createPayment -> بازگشت لینک درگاه
     static createPayment(order: Order, authority: string) {
         return {
+            code: 100,
             success: true,
             message: 'کاربر به درگاه پرداخت منتقل می‌شود.',
             authority,
@@ -21,6 +22,7 @@ export class PaymentResponseMapper {
     // verifyPayment -> پرداخت قبلاً تایید شده
     static alreadyVerified(verification: any | null) {
         return {
+            code: 101,
             success: true,
             status: verification.status,
             message: 'این پرداخت قبلاً تایید شده است.',
@@ -31,6 +33,7 @@ export class PaymentResponseMapper {
     // verifyPayment -> کاربر لغو کرده
     static userCancelled(orderStatus: string) {
         return {
+            code: -50,
             success: false,
             message: 'پرداخت توسط کاربر لغو شد.',
             orderStatus,
@@ -40,6 +43,7 @@ export class PaymentResponseMapper {
     // verifyPayment -> موفق + اینوویس موفق
     static verifiedWithInvoice(order: Order, payment: Payment, refId: string | undefined, invoiceDate: Date) {
         return {
+            code: 102,
             success: true,
             message: 'پرداخت با موفقیت انجام شد.',
             refId,
@@ -52,6 +56,7 @@ export class PaymentResponseMapper {
     // verifyPayment -> موفق ولی اینوویس صادر نشد
     static verifiedNoInvoice(order: Order, refId: string | undefined) {
         return {
+            code: 103,
             success: true,
             message: 'پرداخت تایید شد اما فاکتور صادر نشد.',
             refId,
@@ -62,6 +67,7 @@ export class PaymentResponseMapper {
     // verifyPayment -> ناموفق (غیر از لغو کاربر)
     static failed(orderStatus: string) {
         return {
+            code: -51,
             success: false,
             message: 'پرداخت ناموفق بود.',
             orderStatus,

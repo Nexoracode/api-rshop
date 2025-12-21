@@ -110,7 +110,6 @@ export class PaymentService {
           email: order.user?.email ?? null,
           referrer_id: order.user?.phone ?? null,
         });
-        console.log('requestResult -> ', requestResult);
       } catch (e: any) {
         this.logger.error(`Zarinpal request failed for order ${orderId}`, e);
         await paymentLogRepo.save({
@@ -285,16 +284,7 @@ export class PaymentService {
           await orderRepo.save(order);
           await paymentRepo.save(payment);
 
-          if (card) {
-            await cardItemRepo.delete({ cardId: card.id });
-            card.itemsCount = 0;
-            card.totalQuantity = 0;
-            card.subtotal = 0;
-            card.discountTotal = 0;
-            card.total = 0;
-            card.status = CardStatus.ABANDONED;
-            await cardRepo.save(card);
-          }
+          await this.cardStatusService.abandonCart(order.user.id, manager);
 
           await paymentLogRepo.save({
             order,
