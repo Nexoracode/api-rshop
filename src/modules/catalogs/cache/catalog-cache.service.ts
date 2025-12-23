@@ -35,16 +35,17 @@ export class CatalogCacheService {
     };
 
     /**
-     * مدت زمان Cache (به ثانیه)
+     * مدت زمان Cache (به میلی‌ثانیه)
+     * ⚠️ توجه: cache-manager-redis-yet از میلی‌ثانیه استفاده می‌کند
      */
     private readonly CACHE_TTL = {
-        CATEGORY_PRODUCTS: 300,      // 5 دقیقه (تغییرات زیاد)
-        CATEGORY_FILTERS: 1800,      // 30 دقیقه (کمتر تغییر می‌کند)
-        SEARCH_RESULTS: 300,         // 5 دقیقه
-        SEARCH_SUGGESTIONS: 120,     // 2 دقیقه (سریع و کوچک)
-        BRAND_LIST: 1800,            // 30 دقیقه
-        PRICE_RANGE: 600,            // 10 دقیقه
-        ATTRIBUTE_VALUES: 1800,      // 30 دقیقه
+        CATEGORY_PRODUCTS: 300 * 1000,      // 5 دقیقه (تغییرات زیاد)
+        CATEGORY_FILTERS: 1800 * 1000,      // 30 دقیقه (کمتر تغییر می‌کند)
+        SEARCH_RESULTS: 300 * 1000,         // 5 دقیقه
+        SEARCH_SUGGESTIONS: 120 * 1000,     // 2 دقیقه (سریع و کوچک)
+        BRAND_LIST: 1800 * 1000,            // 30 دقیقه
+        PRICE_RANGE: 600 * 1000,            // 10 دقیقه
+        ATTRIBUTE_VALUES: 1800 * 1000,      // 30 دقیقه
     };
 
     constructor(

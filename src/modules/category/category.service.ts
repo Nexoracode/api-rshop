@@ -327,6 +327,8 @@ export class CategoryService implements ICategoryService {
             return cached as any;
         }
 
+        console.log(cached);
+
         // دریافت از دیتابیس
         const categories = await this.treeCatRepo.findTrees();
         const result = CategoryMapper.toResponseSiteList(categories);

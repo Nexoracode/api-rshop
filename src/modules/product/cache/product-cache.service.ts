@@ -45,14 +45,15 @@ export class ProductCacheService {
     };
 
     /**
-     * مدت زمان Cache (به ثانیه)
+     * مدت زمان Cache (به میلی‌ثانیه)
+     * ⚠️ توجه: cache-manager-redis-yet از میلی‌ثانیه استفاده می‌کند
      */
     private readonly CACHE_TTL = {
-        PRODUCT_LIST: 600,        // 10 دقیقه
-        PRODUCT_DETAIL: 1800,     // 30 دقیقه
-        FEATURED: 3600,           // 1 ساعت
-        SPECIAL_LISTS: 1800,      // 30 دقیقه (new, bestsellers, etc)
-        SEARCH: 300,              // 5 دقیقه
+        PRODUCT_LIST: 600 * 1000,        // 10 دقیقه
+        PRODUCT_DETAIL: 1800 * 1000,     // 30 دقیقه
+        FEATURED: 3600 * 1000,           // 1 ساعت
+        SPECIAL_LISTS: 1800 * 1000,      // 30 دقیقه (new, bestsellers, etc)
+        SEARCH: 300 * 1000,              // 5 دقیقه
     };
 
     constructor(

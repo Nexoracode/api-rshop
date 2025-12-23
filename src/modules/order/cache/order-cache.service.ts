@@ -43,14 +43,15 @@ export class OrderCacheService {
     };
 
     /**
-     * مدت زمان Cache (به ثانیه)
+     * مدت زمان Cache (به میلی‌ثانیه)
+     * ⚠️ توجه: cache-manager-redis-yet از میلی‌ثانیه استفاده می‌کند
      */
     private readonly CACHE_TTL = {
-        ADMIN_LIST: 300,         // 5 دقیقه - لیست ادمین
-        USER_LIST: 600,          // 10 دقیقه - لیست کاربر
-        ORDER_DETAIL: 600,       // 10 دقیقه - جزئیات سفارش
-        STATS: 900,              // 15 دقیقه - آمار
-        PENDING_ORDER: 60,       // 1 دقیقه - سفارش در انتظار (کوتاه‌مدت)
+        ADMIN_LIST: 300 * 1000,         // 5 دقیقه - لیست ادمین
+        USER_LIST: 600 * 1000,          // 10 دقیقه - لیست کاربر
+        ORDER_DETAIL: 600 * 1000,       // 10 دقیقه - جزئیات سفارش
+        STATS: 900 * 1000,              // 15 دقیقه - آمار
+        PENDING_ORDER: 60 * 1000,       // 1 دقیقه - سفارش در انتظار (کوتاه‌مدت)
     };
 
     constructor(
@@ -77,18 +78,23 @@ export class OrderCacheService {
     // ==================== لیست سفارشات کاربر ====================
 
     async getUserOrderList(userId: number): Promise<any> {
-        return await this.cacheManager.get(
-            this.CACHE_KEYS.USER_ORDER_LIST(userId)
-        );
+        const key = this.CACHE_KEYS.USER_ORDER_LIST(userId);
+        console.log('🔍 [GET] Key:', key);
+
+        const result = await this.cacheManager.get(key);
+        console.log('📦 [GET] Result:', result ? 'موجوده ✅' : 'خالیه ❌');
+
+        return result;
     }
 
     async setUserOrderList(userId: number, data: any): Promise<void> {
-        console.log('cash saved');
-        await this.cacheManager.set(
-            this.CACHE_KEYS.USER_ORDER_LIST(userId),
-            data,
-            this.CACHE_TTL.USER_LIST
-        );
+        const key = this.CACHE_KEYS.USER_ORDER_LIST(userId);
+        console.log('💾 [SET] Key:', key);
+        console.log('💾 [SET] Data length:', data?.length);
+
+        await this.cacheManager.set(key, data, this.CACHE_TTL.USER_LIST);
+
+        console.log('✅ [SET] Saved!');
     }
 
     // ==================== جزئیات سفارش ====================

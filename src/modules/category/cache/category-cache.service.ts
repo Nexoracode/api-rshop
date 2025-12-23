@@ -23,12 +23,13 @@ export class CategoryCacheService {
     };
 
     /**
-     * مدت زمان Cache (به ثانیه)
+     * مدت زمان Cache (به میلی‌ثانیه)
+     * ⚠️ توجه: cache-manager-redis-yet از میلی‌ثانیه استفاده می‌کند
      */
     private readonly CACHE_TTL = {
-        CATEGORY_TREE: 3600,      // 1 ساعت
-        CATEGORY_DETAIL: 1800,    // 30 دقیقه
-        CATEGORY_LIST: 600,       // 10 دقیقه
+        CATEGORY_TREE: 3600 * 1000,      // 1 ساعت
+        CATEGORY_DETAIL: 1800 * 1000,    // 30 دقیقه
+        CATEGORY_LIST: 600 * 1000,       // 10 دقیقه
     };
 
     constructor(

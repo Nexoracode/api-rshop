@@ -32,13 +32,14 @@ export class HomePageCacheService {
     };
 
     /**
-     * مدت زمان Cache (به ثانیه)
+     * مدت زمان Cache (به میلی‌ثانیه)
+     * ⚠️ توجه: cache-manager-redis-yet از میلی‌ثانیه استفاده می‌کند
      */
     private readonly CACHE_TTL = {
-        HOME_PAGE_FULL: 1800,     // 30 دقیقه
-        ACTIVE_ITEMS: 3600,       // 1 ساعت (برای آیتم‌های فعال)
-        ALL_ITEMS: 600,           // 10 دقیقه (برای لیست کامل ادمین)
-        SINGLE_ITEM: 1800,        // 30 دقیقه
+        HOME_PAGE_FULL: 1800 * 1000,     // 30 دقیقه
+        ACTIVE_ITEMS: 3600 * 1000,       // 1 ساعت (برای آیتم‌های فعال)
+        ALL_ITEMS: 600 * 1000,           // 10 دقیقه (برای لیست کامل ادمین)
+        SINGLE_ITEM: 1800 * 1000,        // 30 دقیقه
     };
 
     constructor(

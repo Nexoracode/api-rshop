@@ -12,7 +12,7 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
 import { ZarinpalExceptionFilter } from 'src/common/exceptions/zarinpal-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-yet'; // ✅ تغییر از cache-manager-redis-store
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 // تشخیص محیط اجرا
@@ -48,40 +48,72 @@ const isProduction = process.env.NODE_ENV === 'production';
             }),
         }),
 
-        // Redis Cache - با تنظیمات متفاوت برای dev/prod
+        // ✅ Redis Cache - آپدیت شده با cache-manager-redis-yet
         CacheModule.registerAsync({
             isGlobal: true,
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
-                const config: any = {
-                    store: redisStore as any,
-                    host: configService.get<string>('REDIS_HOST', 'localhost'),
-                    port: configService.get<number>('REDIS_PORT', 6379),
-                    ttl: configService.get<number>('REDIS_TTL', 300),
-                    max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
+                // ✅ تنظیمات پایه برای همه محیط‌ها
+                const redisConfig: any = {
+                    socket: {
+                        host: configService.get<string>('REDIS_HOST', 'localhost'),
+                        port: configService.get<number>('REDIS_PORT', 6379),
+                        
+                        // ✅ Retry Strategy
+                        reconnectStrategy: (retries: number) => {
+                            const delay = Math.min(retries * 50, 2000);
+                            console.log(`🔄 Redis reconnect attempt ${retries}, delay: ${delay}ms`);
+                            return delay;
+                        },
+                    },
+                    
+                    // ✅ TTL به میلی‌ثانیه (300 ثانیه = 300000 ms)
+                    ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                 };
 
-                // تنظیمات اضافی برای production
+                // ✅ تنظیمات اضافی برای Production
                 if (isProduction) {
-                    config.password = configService.get<string>('REDIS_PASSWORD');
-                    config.db = configService.get<number>('REDIS_DB', 0);
-
-                    // پشتیبانی از TLS در production
-                    if (configService.get<boolean>('REDIS_TLS')) {
-                        config.tls = {};
+                    const password = configService.get<string>('REDIS_PASSWORD');
+                    if (password) {
+                        redisConfig.password = password;
                     }
 
-                    // Retry strategy برای production
-                    config.retryStrategy = (times: number) => {
-                        const delay = Math.min(times * 50, 2000);
-                        return delay;
-                    };
-                    config.enableReadyCheck = true;
-                    config.maxRetriesPerRequest = 3;
+                    // Database number
+                    const db = configService.get<number>('REDIS_DB', 0);
+                    if (db) {
+                        redisConfig.database = db;
+                    }
+
+                    // ✅ پشتیبانی از TLS
+                    if (configService.get<boolean>('REDIS_TLS')) {
+                        redisConfig.socket.tls = true;
+                        redisConfig.socket.rejectUnauthorized = false; // در صورت نیاز
+                    }
+
+                    // ✅ تنظیمات امنیتی Production
+                    redisConfig.enableReadyCheck = true;
+                    redisConfig.maxRetriesPerRequest = 3;
+                    redisConfig.enableOfflineQueue = false;
+                    redisConfig.lazyConnect = false;
+                    
+                    console.log('🔐 Production Redis config loaded');
                 }
 
-                return config;
+                // ✅ ایجاد Store
+                try {
+                    const store = await redisStore(redisConfig);
+                    console.log('✅ Redis Store initialized successfully');
+                    
+                    return {
+                        store: store as any,
+                        ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
+                    };
+                } catch (error) {
+                    console.error('❌ Redis Store initialization failed:', error);
+                    throw error;
+                }
             },
         }),
 
