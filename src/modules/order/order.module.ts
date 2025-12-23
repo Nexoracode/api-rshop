@@ -12,6 +12,7 @@ import { Payment } from '../payment/entities/payment.entity';
 import { PromotionModule } from '../promotion/promotion.module';
 import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
 import { CardModule } from '../card/card.module'; // ✅ اضافه شد
+import { OrderCacheService } from './cache/order-cache.service'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -29,7 +30,10 @@ import { CardModule } from '../card/card.module'; // ✅ اضافه شد
     CardModule, // ✅ اضافه شد
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [
+    OrderService,
+    OrderCacheService, // ✅ اضافه شد
+  ],
   exports: [OrderService],
 })
 export class OrderModule { }

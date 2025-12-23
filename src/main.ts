@@ -49,7 +49,7 @@ async function bootstrap() {
   });
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3001)
 }
 
 bootstrap();

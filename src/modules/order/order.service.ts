@@ -28,6 +28,7 @@ import { PromotionRepository } from "../promotion/domain/interfaces/promotion-re
 import { GiftWrapping } from "../gift-wrapping/entities/gift-wrapping.entity";
 import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.enum";
 import { CardStatusService } from "../card/card-status.service";
+import { OrderCacheService } from "./cache/order-cache.service";
 
 const relations = [
     "user",
@@ -92,6 +93,7 @@ export class OrderService {
         private readonly promotionCheck: CheckPromotionUseCase,
         private readonly promotionRepo: PromotionRepository,
         private readonly cardStatusService: CardStatusService,
+        private readonly orderCacheService: OrderCacheService, // ✅ اضافه شد
     ) { }
 
     /**
@@ -183,8 +185,28 @@ export class OrderService {
         };
     }
 
-    // 🧾 دریافت تمام سفارش‌ها (ادمین)
+    // 🧾 دریافت تمام سفارش‌ها (ادمین) - با Cache
     async getAllOrders(query: PaginateQuery) {
+        // ✅ ساخت کلید cache
+        const cacheKey = JSON.stringify({
+            page: query.page || 1,
+            limit: query.limit || 10,
+            filters: query.filter || {},
+            sortBy: query.sortBy || [],
+        });
+
+        // ✅ چک cache
+        const cached = await this.orderCacheService.getAdminOrderList(
+            query.page || 1,
+            query.limit || 10,
+            cacheKey
+        );
+
+        if (cached) {
+            return cached; // Cache Hit 🚀
+        }
+
+        // Cache Miss - Query از DB
         const orders = await paginate(query, this.orderRepo, {
             sortableColumns: ["id", "createdAt", "total"],
             relations: ["user", "address", "items", "items.product", "items.product.mediaPinned", "giftWrapping"],
@@ -203,7 +225,8 @@ export class OrderService {
                 createdAt: [FilterOperator.GTE, FilterOperator.LTE],
             },
         });
-        return {
+
+        const result = {
             message: "سفارش‌ها با موفقیت دریافت شد.",
             data: {
                 items: orders.data.map((order) => OrderMapper.toAllResponse(order)),
@@ -211,6 +234,16 @@ export class OrderService {
                 links: orders.links,
             },
         };
+
+        // ✅ ذخیره در cache
+        await this.orderCacheService.setAdminOrderList(
+            query.page || 1,
+            query.limit || 10,
+            cacheKey,
+            result
+        );
+
+        return result;
     }
 
     async createManualOrder(dto: CreateManualOrderDto) {
@@ -238,13 +271,9 @@ export class OrderService {
                 const basePrice = Number(product.price) || 0;
 
                 if (!productItem.variantIds || productItem.variantIds.length === 0) {
-                    // زمانی که فقط محصول داریم بدون variant
                     const quantity = productItem.quantity ?? 1;
                     const unitPrice = basePrice;
-
-                    // استفاده از تابع جدید برای محاسبه تخفیف
                     const discount = calculateItemDiscount(product, null, unitPrice);
-
                     const finalUnitPrice = unitPrice - discount;
                     const lineTotal = finalUnitPrice * quantity;
 
@@ -268,10 +297,7 @@ export class OrderService {
                             throw new BadRequestException(`واریانت ${variantObj.id} یافت نشد.`);
 
                         const unitPrice = variant.price ?? product.price;
-
-                        // استفاده از تابع جدید برای محاسبه تخفیف (فقط تخفیف variant)
                         const discount = calculateItemDiscount(product, variant, unitPrice);
-
                         const finalUnitPrice = unitPrice - discount;
                         const lineTotal = finalUnitPrice * variantObj.quantity;
 
@@ -321,6 +347,10 @@ export class OrderService {
             });
 
             await manager.save(order);
+
+            // ✅ پاک کردن cache بعد از ایجاد
+            await this.orderCacheService.clearCacheAfterCreate(dto.userId);
+
             return order;
         });
     }
@@ -376,7 +406,6 @@ export class OrderService {
                 }
             }
 
-            // 🎁 اعتبارسنجی و محاسبه Gift Wrapping
             const { giftWrapping, cost: giftWrappingCost } =
                 await this.validateAndCalculateGiftWrapping(manager, dto.giftWrappingId);
 
@@ -393,14 +422,11 @@ export class OrderService {
             });
 
             const shippingCost = await this.calculateShippingCost(user, address, card.items);
-
             const previousOrders = await orderRepo.count({
                 where: { user: { id: user.id } }
             });
-
             const isFirstOrder = previousOrders === 0;
 
-            // چک پروموشن‌ها
             const promotionResult = await this.promotionCheck.execute({
                 userId: user.id,
                 code: dto.promotionCode,
@@ -426,8 +452,6 @@ export class OrderService {
             const finalShippingCost = promotionResult.freeShipping ? 0 : shippingCost;
             const productDiscount = card.discountTotal;
             const discountTotal = Number(productDiscount) + Number(promotionDiscountAmount);
-
-            // 🎁 محاسبه مبلغ نهایی با Gift Wrapping
             const finalTotal = card.subtotal - discountTotal + finalShippingCost + giftWrappingCost;
 
             if (existingOrder) {
@@ -440,8 +464,6 @@ export class OrderService {
                 existingOrder.shippingCost = finalShippingCost;
                 existingOrder.note = dto.note;
                 existingOrder.address = address;
-
-                // 🎁 Gift Wrapping
                 existingOrder.isGift = dto.isGift ?? false;
                 existingOrder.giftWrappingId = dto.giftWrappingId ?? null;
                 existingOrder.giftWrappingCost = giftWrappingCost;
@@ -461,12 +483,12 @@ export class OrderService {
                     await orderItemRepo.save(item);
                 }
 
+                // ✅ پاک کردن cache
+                await this.orderCacheService.clearCacheAfterCreate(user.id);
+
                 return OrderMapperNew.toDetail(existingOrder);
             }
 
-            // await this.cardStatusService.lockCart(user.id, manager);
-
-            // سفارش جدید
             const newOrder = orderRepo.create({
                 user,
                 address,
@@ -479,8 +501,6 @@ export class OrderService {
                 promotionDiscountAmount,
                 promotionDetails,
                 shippingCost: finalShippingCost,
-
-                // 🎁 Gift Wrapping
                 isGift: giftWrapping ? true : false,
                 giftWrappingId: dto.giftWrappingId ?? null,
                 giftWrappingCost,
@@ -509,6 +529,9 @@ export class OrderService {
 
             if (!returnedOrder) throw new NotFoundException('سفارش یافت نشد')
 
+            // ✅ پاک کردن cache بعد از ایجاد
+            await this.orderCacheService.clearCacheAfterCreate(user.id);
+
             return OrderMapperNew.toDetail(returnedOrder);
         });
     }
@@ -532,85 +555,136 @@ export class OrderService {
                 throw new BadRequestException('وضعیت سفارش برای تایید پرداخت مناسب نیست');
             }
 
-            // کم کردن موجودی
             await this.decreaseStock(manager, order.items);
 
-            // افزایش Promotion usage
             if (order.promotionDetails && order.promotionDetails.length > 0) {
                 const promotionIds = order.promotionDetails.map(p => p.promotionId);
                 await this.incrementPromotionUsage(promotionIds);
             }
 
-            // ✅ تغییر وضعیت Order به PROCESSING (نه AWAITING_PAYMENT)
             order.status = OrderStatus.PROCESSING;
             await manager.save(Order, order);
 
-            // ✅ Cart باید LOCKED بمونه (تا تحویل)
-            // بعداً با markAsDelivered به ABANDONED تبدیل می‌شه
+            // ✅ پاک کردن cache بعد از تغییر وضعیت
+            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
     }
 
-    // 🧍 سفارش‌های کاربر
+    // 🧍 سفارش‌های کاربر - با Cache
     async findAllByUser(userId: number) {
+        // ✅ چک cache
+        const cached = await this.orderCacheService.getUserOrderList(userId);
+        if (cached) return cached;
+
+        console.log(cached);
+
+        // Cache Miss - Query از DB
         const orders = await this.dataSource.getRepository(Order).find({
             where: { user: { id: userId } },
             relations,
             order: { createdAt: "DESC" },
         });
-        return orders.map((order) => OrderMapperNew.toDetail(order));
+
+        const result = orders.map((order) => OrderMapperNew.toDetail(order));
+
+        // ✅ ذخیره در cache
+        await this.orderCacheService.setUserOrderList(userId, result);
+
+        return result;
     }
 
-    // 🔍 جزئیات سفارش خاص
+    // 🔍 جزئیات سفارش خاص - با Cache
     async findOneById(id: number) {
+        // ✅ چک cache
+        const cached = await this.orderCacheService.getOrderDetail(id);
+        if (cached) return cached;
+
+        // Cache Miss - Query از DB
         const order = await this.orderRepo.findOne({
             where: { id },
             relations,
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
-        })
-        return OrderMapperNew.toDetail(order, payment);
+        });
+
+        const result = OrderMapperNew.toDetail(order, payment);
+
+        // ✅ ذخیره در cache
+        await this.orderCacheService.setOrderDetail(id, result);
+
+        return result;
     }
 
-    // 📦 جزئیات سفارش
+    // 📦 جزئیات سفارش - با Cache
     async findOneByUser(user: RequestUser, id: number) {
+        // ✅ چک cache
+        const cached = await this.orderCacheService.getUserOrderDetail(user.id, id);
+        if (cached) return cached;
+
+        // Cache Miss - Query از DB
         const order = await this.orderRepo.findOne({
             where: { id, user: { id: user.id } },
             relations,
         });
         if (!order) throw new NotFoundException("سفارش یافت نشد");
+
         const payment = await this.paymentRepo.findOne({
             where: { order: { id: order.id } }
-        })
-        return OrderMapperNew.toDetail(order, payment);
+        });
+
+        const result = OrderMapperNew.toDetail(order, payment);
+
+        // ✅ ذخیره در cache
+        await this.orderCacheService.setUserOrderDetail(user.id, id, result);
+
+        return result;
     }
 
     // 💳 تغییر وضعیت سفارش (ادمین)
     async updateStatus(id: number, status: OrderStatus) {
         return runInTransaction(this.dataSource, async (manager) => {
-            const order = await manager.findOne(Order, { where: { id } });
+            const order = await manager.findOne(Order, {
+                where: { id },
+                relations: ['user'] // ✅ نیاز به user برای cache
+            });
             if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
             order.status = status;
-            return manager.save(order);
+            const result = await manager.save(order);
+
+            // ✅ پاک کردن cache بعد از تغییر وضعیت
+            await this.orderCacheService.clearCacheAfterStatusChange(id, order.user.id);
+
+            return result;
         });
     }
 
     // 🗑 حذف سفارش (ادمین)
     async remove(id: number) {
         return runInTransaction(this.dataSource, async (manager) => {
-            const order = await manager.findOne(Order, { where: { id } });
+            const order = await manager.findOne(Order, {
+                where: { id },
+                relations: ['user'] // ✅ نیاز به user برای cache
+            });
             if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
             await manager.remove(Order, order);
+
+            // ✅ پاک کردن cache بعد از حذف
+            await this.orderCacheService.clearCacheAfterDelete(id, order.user.id);
+
             return { success: true };
         });
     }
 
     /**
- * تحویل سفارش
- */
+     * تحویل سفارش
+     */
     async markAsDelivered(orderId: number): Promise<Order> {
         return runInTransaction(this.dataSource, async (manager) => {
             const order = await manager.findOne(Order, {
@@ -626,20 +700,20 @@ export class OrderService {
                 throw new BadRequestException('فقط سفارش‌های در حال ارسال قابل تحویل هستند');
             }
 
-            // ✅ تغییر وضعیت Order
             order.status = OrderStatus.DELIVERED;
             await manager.save(Order, order);
-
-            // ✅ Abandon کردن Cart
             await this.cardStatusService.abandonCart(order.user.id, manager);
+
+            // ✅ پاک کردن cache
+            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
     }
 
     /**
- * لغو سفارش
- */
+     * لغو سفارش
+     */
     async cancelOrder(orderId: number): Promise<Order> {
         return runInTransaction(this.dataSource, async (manager) => {
             const order = await manager.findOne(Order, {
@@ -651,7 +725,6 @@ export class OrderService {
                 throw new NotFoundException('سفارش یافت نشد');
             }
 
-            // فقط سفارش‌های خاص قابل لغو هستند
             const cancellableStatuses = [
                 OrderStatus.AWAITING_PAYMENT,
                 OrderStatus.PAYMENT_CONFIRMATION_PENDING,
@@ -663,17 +736,16 @@ export class OrderService {
                 throw new BadRequestException('این سفارش قابل لغو نیست');
             }
 
-            // ✅ 1. اگر پرداخت شده، موجودی رو برگردون
             if (order.status === OrderStatus.PROCESSING || order.status === OrderStatus.PREPARING) {
                 await this.returnStock(manager, order.items);
             }
 
-            // ✅ 2. تغییر وضعیت Order
             order.status = OrderStatus.CANCELLED;
             await manager.save(Order, order);
-
-            // ✅ 3. Abandon کردن Cart
             await this.cardStatusService.abandonCart(order.user.id, manager);
+
+            // ✅ پاک کردن cache
+            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
@@ -703,8 +775,8 @@ export class OrderService {
     }
 
     /**
- * بازپرداخت سفارش
- */
+     * بازپرداخت سفارش
+     */
     async refundOrder(orderId: number): Promise<Order> {
         return runInTransaction(this.dataSource, async (manager) => {
             const order = await manager.findOne(Order, {
@@ -720,17 +792,15 @@ export class OrderService {
                 throw new BadRequestException('فقط سفارش‌های تحویل داده شده قابل بازپرداخت هستند');
             }
 
-            // ✅ 1. برگرداندن موجودی
             await this.returnStock(manager, order.items);
 
-            // ✅ 2. تغییر وضعیت Order
             order.status = OrderStatus.REFUNDED;
             await manager.save(Order, order);
 
-            // ✅ 3. Cart قبلاً ABANDONED شده، نیازی به تغییر نیست
+            // ✅ پاک کردن cache
+            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
     }
-
 }
