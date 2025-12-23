@@ -48,7 +48,7 @@ export class SeoService {
     categories.forEach(category => {
       urls.push(
         this.createUrlEntry(
-          `${baseUrl}/category/${category.slug}`,
+          `${baseUrl}/collection/${category.slug}`,
           category.updatedAt,
           SEO_CONFIG.sitemap.changefreq.categories,
           SEO_CONFIG.sitemap.priority.categories
@@ -176,7 +176,7 @@ ${urls.join('\n')}
     const description = this.truncate(category.description, SEO_CONFIG.limits.descriptionLength) ||
       `خرید انواع ${category.title} با بهترین قیمت`;
     const baseUrl = process.env.FRONTEND_URL || 'https://yourdomain.com';
-    const categoryUrl = `${baseUrl}/category/${category.slug}`;
+    const categoryUrl = `${baseUrl}/collection/${category.slug}`;
 
     return {
       title: this.formatTitle(title),
@@ -191,7 +191,7 @@ ${urls.join('\n')}
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: category.title,
-        description: category.description,
+        description: description,
         url: categoryUrl,
       }
     };
