@@ -16,19 +16,16 @@ export class OtpService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expireAt = new Date(Date.now() + 2 * 60 * 1000); // 2 دقیقه اعتبار
 
-    await this.otpRepo.delete({ identifier }); // حذف OTPهای قبلی
+    const otpDublicate = await this.otpRepo.findOne({ where: { identifier } })
+    if (otpDublicate) {
+      await this.otpRepo.delete({ identifier }); // حذف OTPهای قبلی
+    }
 
     const otp = this.otpRepo.create({
       identifier,
       code: isDevelopment ? '123456' : code,
       expireAt: expireAt,
     });
-
-    // const otp = this.otpRepo.create({
-    //   identifier,
-    //   code: '123456',
-    //   expireAt: expireAt,
-    // });
     await this.otpRepo.save(otp);
     if (!isDevelopment)
       await this.smsService.sendOtp(identifier, code);
