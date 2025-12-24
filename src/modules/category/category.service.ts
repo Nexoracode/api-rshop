@@ -27,7 +27,7 @@ export class CategoryService implements ICategoryService {
         this.treeCatRepo = this.dataSource.getTreeRepository(Category);
     }
 
-    async findOne(id: number): Promise<Category> {
+    async findOne(id: number) {
         const category = await this.treeCatRepo.findOne({ where: { id } });
         if (!category) {
             throw new NotFoundException(`Category with ID ${id} not found`);
@@ -326,8 +326,6 @@ export class CategoryService implements ICategoryService {
             console.log('✅ Category tree for site از cache');
             return cached as any;
         }
-
-        console.log(cached);
 
         // دریافت از دیتابیس
         const categories = await this.treeCatRepo.findTrees();

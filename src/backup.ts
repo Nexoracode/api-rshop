@@ -12,8 +12,7 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { AutoRefreshGuard } from 'src/common/guard/auto-refresh';
 import { ZarinpalExceptionFilter } from 'src/common/exceptions/zarinpal-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
-import KeyvRedis from '@keyv/redis';
-import Keyv from 'keyv';
+import { redisStore } from 'cache-manager-redis-yet';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 // تشخیص محیط اجرا
@@ -48,7 +47,6 @@ const isProduction = process.env.NODE_ENV === 'production';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
-                // تنظیمات پایه redis (همیشگی)
                 const redisConfig: any = {
                     socket: {
                         host: configService.get<string>('REDIS_HOST', 'localhost'),
@@ -56,14 +54,13 @@ const isProduction = process.env.NODE_ENV === 'production';
                     },
                 };
 
-                // فقط در production تنظیمات اضافی اضافه می‌شه (دقیقاً مثل کد قبلی)
                 if (isProduction) {
                     const password = configService.get<string>('REDIS_PASSWORD');
                     if (password) {
                         redisConfig.password = password;
                     }
                     const db = configService.get<number>('REDIS_DB', 0);
-                    if (db !== undefined && db !== 0) { // فقط اگر صریحاً ست شده باشه (مثل کد قبلی)
+                    if (db) {
                         redisConfig.database = db;
                     }
                     const useTLS = configService.get<string>('REDIS_TLS');
@@ -74,35 +71,11 @@ const isProduction = process.env.NODE_ENV === 'production';
                 }
 
                 try {
-                    // ساخت URL یا گزینه‌های اتصال برای KeyvRedis
-                    const redisUrl = `redis://${redisConfig.socket.host}:${redisConfig.socket.port}`;
-
-                    const keyvRedisOptions: any = {};
-
-                    // فقط اگر در production تعریف شده باشه، اضافه کن
-                    if (isProduction) {
-                        if (redisConfig.password) {
-                            keyvRedisOptions.password = redisConfig.password;
-                        }
-                        if (redisConfig.database !== undefined) {
-                            keyvRedisOptions.db = redisConfig.database;
-                        }
-                    } else {
-                        // در development صریحاً db=0 (اختیاری، ولی برای اطمینان)
-                        keyvRedisOptions.db = 0;
-                    }
-
-                    const keyvRedis = new KeyvRedis(redisUrl, keyvRedisOptions);
-
-                    console.log('✅ Redis connected successfully (KeyvRedis)');
+                    const store = await redisStore(redisConfig);
+                    console.log('✅ Redis connected successfully'); // ← این خط جدید
 
                     return {
-                        stores: [
-                            new Keyv({
-                                store: keyvRedis,
-                                namespace: 'rshop',
-                            }),
-                        ],
+                        store: store as any,
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
