@@ -31,6 +31,21 @@ export class HomePagePublicController {
   })
 
   async getHomePage(): Promise<HomePageDataResponseDto> {
-    return await this.homePageService.getHomePageData();
+    return await this.homePageService.getHomePageData(false);
+  }
+
+  @Get('admin')
+  @Public()
+  @ApiOperation({
+    summary: 'دریافت تمام داده‌های صفحه اصلی برای ادمین',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'داده‌های صفحه اصلی با موفقیت دریافت شد',
+    type: HomePageDataResponseDto,
+  })
+
+  async getHomePageAdmin(): Promise<HomePageDataResponseDto> {
+    return await this.homePageService.getHomePageData(true);
   }
 }

@@ -20,8 +20,8 @@ export class HeroSlider {
   @Column({ type: 'varchar', length: 500 })
   imageUrl: string;
 
-  @Column({ type: 'varchar', length: 7, default: '#FF6B6B' })
-  backgroundColor: string;
+  @Column({ type: 'varchar', length: 7, nullable: true })
+  backgroundColor?: string | null;
 
   @Column({ name: 'is_dark', default: false })
   isDark: boolean;

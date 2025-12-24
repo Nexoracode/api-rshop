@@ -47,7 +47,7 @@ export class SideBannerService {
     return result;
   }
 
-  async findAllActive(): Promise<SideBanner[]> {
+  async findAllActive(isActive: boolean): Promise<SideBanner[]> {
     // ✅ چک cache
     const cached = await this.cacheService.getActiveSideBanners();
     if (cached) {
@@ -57,7 +57,7 @@ export class SideBannerService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.sideBannerRepository.find({
-      where: { isActive: true },
+      where: { isActive: isActive ? undefined : true, },
       order: { position: 'ASC', sortOrder: 'ASC' },
     });
 

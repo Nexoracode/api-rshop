@@ -50,7 +50,7 @@ export class HomeSectionService {
     return result;
   }
 
-  async findAllActive(): Promise<HomeSection[]> {
+  async findAllActive(isActive: boolean): Promise<HomeSection[]> {
     // ✅ چک cache
     const cached = await this.cacheService.getActiveHomeSections();
     if (cached) {
@@ -60,7 +60,7 @@ export class HomeSectionService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.homeSectionRepository.find({
-      where: { isActive: true },
+      where: { isActive: isActive ? undefined : true, },
       order: { sortOrder: 'ASC' },
     });
 

@@ -46,26 +46,22 @@ export class HomePageService {
   /**
    * گرفتن تمام داده‌های صفحه اصلی به صورت یکجا
    */
-  async getHomePageData(): Promise<HomePageData> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-
+  async getHomePageData(isActive: boolean): Promise<HomePageData> {
     // ✅ چک cache (در development غیرفعال)
-    if (!isDevelopment) {
-      const cached = await this.cacheService.getHomePageData();
-      if (cached) {
-        this.logger.log('✅ Home page data از cache');
-        return cached;
-      }
+    const cached = await this.cacheService.getHomePageData();
+    if (cached) {
+      this.logger.log('✅ Home page data از cache');
+      return cached;
     }
 
     // لاجیک اصلی (بدون تغییر)
-    const heroSliders = await this.heroSliderService.findAllActive();
-    const sideBanners = await this.sideBannerService.findAllActive();
+    const heroSliders = await this.heroSliderService.findAllActive(isActive);
+    const sideBanners = await this.sideBannerService.findAllActive(isActive);
 
     const categories = await this.categoryRepository.find({
       where: {
         parentId: undefined,
-        isActive: true
+        isActive: isActive ? undefined : true,
       },
       relations: ['media'],
       order: { displayOrder: 'ASC' },
@@ -73,11 +69,11 @@ export class HomePageService {
     });
 
     const brands = await this.brandRepository.find({
-      where: { isActive: true },
+      where: { isActive: isActive ? undefined : true, },
       order: { name: 'ASC' },
     });
 
-    const sections = await this.homeSectionService.findAllActive();
+    const sections = await this.homeSectionService.findAllActive(isActive);
 
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
@@ -111,6 +107,7 @@ export class HomePageService {
         imageUrl: slider.imageUrl,
         backgroundColor: slider.backgroundColor,
         isDark: slider.isDark,
+        isActive: slider.isActive,
         buttonText: slider.buttonText,
         sortOrder: slider.sortOrder,
         buttonLink: slider.buttonLink,
