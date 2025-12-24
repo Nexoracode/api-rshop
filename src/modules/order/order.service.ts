@@ -188,23 +188,23 @@ export class OrderService {
     // 🧾 دریافت تمام سفارش‌ها (ادمین) - با Cache
     async getAllOrders(query: PaginateQuery) {
         // ✅ ساخت کلید cache
-        const cacheKey = JSON.stringify({
-            page: query.page || 1,
-            limit: query.limit || 10,
-            filters: query.filter || {},
-            sortBy: query.sortBy || [],
-        });
+        // const cacheKey = JSON.stringify({
+        //     page: query.page || 1,
+        //     limit: query.limit || 10,
+        //     filters: query.filter || {},
+        //     sortBy: query.sortBy || [],
+        // });
 
         // ✅ چک cache
-        const cached = await this.orderCacheService.getAdminOrderList(
-            query.page || 1,
-            query.limit || 10,
-            cacheKey
-        );
+        // const cached = await this.orderCacheService.getAdminOrderList(
+        //     query.page || 1,
+        //     query.limit || 10,
+        //     cacheKey
+        // );
 
-        if (cached) {
-            return cached; // Cache Hit 🚀
-        }
+        // if (cached) {
+        //     return cached; // Cache Hit 🚀
+        // }
 
         // Cache Miss - Query از DB
         const orders = await paginate(query, this.orderRepo, {
@@ -236,12 +236,12 @@ export class OrderService {
         };
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setAdminOrderList(
-            query.page || 1,
-            query.limit || 10,
-            cacheKey,
-            result
-        );
+        // await this.orderCacheService.setAdminOrderList(
+        //     query.page || 1,
+        //     query.limit || 10,
+        //     cacheKey,
+        //     result
+        // );
 
         return result;
     }
@@ -349,7 +349,7 @@ export class OrderService {
             await manager.save(order);
 
             // ✅ پاک کردن cache بعد از ایجاد
-            await this.orderCacheService.clearCacheAfterCreate(dto.userId);
+            // await this.orderCacheService.clearCacheAfterCreate(dto.userId);
 
             return order;
         });
@@ -484,7 +484,7 @@ export class OrderService {
                 }
 
                 // ✅ پاک کردن cache
-                await this.orderCacheService.clearCacheAfterCreate(user.id);
+                // await this.orderCacheService.clearCacheAfterCreate(user.id);
 
                 return OrderMapperNew.toDetail(existingOrder);
             }
@@ -566,7 +566,7 @@ export class OrderService {
             await manager.save(Order, order);
 
             // ✅ پاک کردن cache بعد از تغییر وضعیت
-            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
+            // await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
@@ -574,11 +574,11 @@ export class OrderService {
 
     // 🧍 سفارش‌های کاربر - با Cache
     async findAllByUser(userId: number) {
-        // ✅ چک cache
-        const cached = await this.orderCacheService.getUserOrderList(userId);
-        if (cached) return cached;
+        // // ✅ چک cache
+        // const cached = await this.orderCacheService.getUserOrderList(userId);
+        // if (cached) return cached;
 
-        console.log(cached);
+        // console.log(cached);
 
         // Cache Miss - Query از DB
         const orders = await this.dataSource.getRepository(Order).find({
@@ -590,7 +590,7 @@ export class OrderService {
         const result = orders.map((order) => OrderMapperNew.toDetail(order));
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setUserOrderList(userId, result);
+        // await this.orderCacheService.setUserOrderList(userId, result);
 
         return result;
     }
@@ -598,8 +598,8 @@ export class OrderService {
     // 🔍 جزئیات سفارش خاص - با Cache
     async findOneById(id: number) {
         // ✅ چک cache
-        const cached = await this.orderCacheService.getOrderDetail(id);
-        if (cached) return cached;
+        // const cached = await this.orderCacheService.getOrderDetail(id);
+        // if (cached) return cached;
 
         // Cache Miss - Query از DB
         const order = await this.orderRepo.findOne({
@@ -615,7 +615,7 @@ export class OrderService {
         const result = OrderMapperNew.toDetail(order, payment);
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setOrderDetail(id, result);
+        // await this.orderCacheService.setOrderDetail(id, result);
 
         return result;
     }
@@ -623,8 +623,8 @@ export class OrderService {
     // 📦 جزئیات سفارش - با Cache
     async findOneByUser(user: RequestUser, id: number) {
         // ✅ چک cache
-        const cached = await this.orderCacheService.getUserOrderDetail(user.id, id);
-        if (cached) return cached;
+        // const cached = await this.orderCacheService.getUserOrderDetail(user.id, id);
+        // if (cached) return cached;
 
         // Cache Miss - Query از DB
         const order = await this.orderRepo.findOne({
@@ -640,7 +640,7 @@ export class OrderService {
         const result = OrderMapperNew.toDetail(order, payment);
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setUserOrderDetail(user.id, id, result);
+        // await this.orderCacheService.setUserOrderDetail(user.id, id, result);
 
         return result;
     }
@@ -658,7 +658,7 @@ export class OrderService {
             const result = await manager.save(order);
 
             // ✅ پاک کردن cache بعد از تغییر وضعیت
-            await this.orderCacheService.clearCacheAfterStatusChange(id, order.user.id);
+            // await this.orderCacheService.clearCacheAfterStatusChange(id, order.user.id);
 
             return result;
         });
@@ -676,7 +676,7 @@ export class OrderService {
             await manager.remove(Order, order);
 
             // ✅ پاک کردن cache بعد از حذف
-            await this.orderCacheService.clearCacheAfterDelete(id, order.user.id);
+            // await this.orderCacheService.clearCacheAfterDelete(id, order.user.id);
 
             return { success: true };
         });
@@ -705,7 +705,7 @@ export class OrderService {
             await this.cardStatusService.abandonCart(order.user.id, manager);
 
             // ✅ پاک کردن cache
-            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
+            // await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
@@ -745,7 +745,7 @@ export class OrderService {
             await this.cardStatusService.abandonCart(order.user.id, manager);
 
             // ✅ پاک کردن cache
-            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
+            // await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
@@ -798,7 +798,7 @@ export class OrderService {
             await manager.save(Order, order);
 
             // ✅ پاک کردن cache
-            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
+            // await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
 
             return order;
         });
