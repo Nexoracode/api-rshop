@@ -59,7 +59,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                     socket: {
                         host: configService.get<string>('REDIS_HOST', 'localhost'),
                         port: configService.get<number>('REDIS_PORT', 6379),
-                        
+
                         // ✅ Retry Strategy
                         reconnectStrategy: (retries: number) => {
                             const delay = Math.min(retries * 50, 2000);
@@ -67,7 +67,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                             return delay;
                         },
                     },
-                    
+
                     // ✅ TTL به میلی‌ثانیه (300 ثانیه = 300000 ms)
                     ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                 };
@@ -85,10 +85,16 @@ const isProduction = process.env.NODE_ENV === 'production';
                         redisConfig.database = db;
                     }
 
-                    // ✅ پشتیبانی از TLS
-                    if (configService.get<boolean>('REDIS_TLS')) {
+                    // ✅ پشتیبانی از TLS (فقط اگه صریحاً true باشه)
+                    const useTLS = configService.get<string>('REDIS_TLS');
+                    if (useTLS === 'true') {
                         redisConfig.socket.tls = true;
-                        redisConfig.socket.rejectUnauthorized = false; // در صورت نیاز
+                        redisConfig.socket.rejectUnauthorized = false;
+                        console.log('🔒 Redis TLS enabled');
+                    } else {
+                        // ✅ صریحاً TLS رو غیرفعال کن
+                        redisConfig.socket.tls = false;
+                        console.log('🔓 Redis TLS disabled');
                     }
 
                     // ✅ تنظیمات امنیتی Production
@@ -96,15 +102,26 @@ const isProduction = process.env.NODE_ENV === 'production';
                     redisConfig.maxRetriesPerRequest = 3;
                     redisConfig.enableOfflineQueue = false;
                     redisConfig.lazyConnect = false;
-                    
+
                     console.log('🔐 Production Redis config loaded');
+                    console.log('📡 Redis Host:', configService.get<string>('REDIS_HOST'));
+                    console.log('🔌 Redis Port:', configService.get<number>('REDIS_PORT'));
                 }
 
                 // ✅ ایجاد Store
                 try {
+                    console.log('🔄 Connecting to Redis...');
+                    console.log('📋 Redis Config:', JSON.stringify({
+                        host: redisConfig.socket.host,
+                        port: redisConfig.socket.port,
+                        tls: redisConfig.socket.tls,
+                        hasPassword: !!redisConfig.password,
+                        database: redisConfig.database,
+                    }));
+
                     const store = await redisStore(redisConfig);
                     console.log('✅ Redis Store initialized successfully');
-                    
+
                     return {
                         store: store as any,
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
@@ -112,6 +129,8 @@ const isProduction = process.env.NODE_ENV === 'production';
                     };
                 } catch (error) {
                     console.error('❌ Redis Store initialization failed:', error);
+                    console.error('💡 Hint: Check if Redis is running and accessible');
+                    console.error('💡 Hint: If using Caprover, ensure Redis app is deployed');
                     throw error;
                 }
             },
