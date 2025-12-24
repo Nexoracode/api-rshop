@@ -237,14 +237,16 @@ const isProduction = process.env.NODE_ENV === 'production';
 
                     return {
                         store: store as any,
-                        ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        // ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        ttl: 0,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
                 } catch (error) {
                     console.error('❌ Redis connection failed:', error.message);
                     console.warn('⚠️ Falling back to memory cache');
                     return {
-                        ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        // ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        ttl: 0,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
                 }

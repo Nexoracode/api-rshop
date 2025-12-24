@@ -20,7 +20,7 @@ import { ProductCacheService } from './cache/product-cache.service'; // ✅ اض
     SeoModule,
   ],
   providers: [
-    ProductService, 
+    ProductService,
     UploadService,
     ProductCacheService, // ✅ اضافه شد
   ],

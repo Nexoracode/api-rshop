@@ -13,7 +13,7 @@ import { CategoryCacheService } from './cache/category-cache.service'; // ✅ ا
   imports: [TypeOrmModule.forFeature([Category, Media]), MediaModule, SeoModule],
   controllers: [CategoryController],
   providers: [
-    CategoryService, 
+    CategoryService,
     UploadService,
     CategoryCacheService, // ✅ اضافه شد
   ],
