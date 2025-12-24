@@ -41,7 +41,7 @@ const isProduction = process.env.NODE_ENV === 'production';
             }),
         }),
 
-        // ✅ Redis Cache
+        // ✅ Redis Cache - ساده و کاربردی
         CacheModule.registerAsync({
             isGlobal: true,
             imports: [ConfigModule],
@@ -51,14 +51,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                     socket: {
                         host: configService.get<string>('REDIS_HOST', 'localhost'),
                         port: configService.get<number>('REDIS_PORT', 6379),
-                        tls: false, // ✅ Force disable TLS
-                        reconnectStrategy: (retries: number) => {
-                            const delay = Math.min(retries * 50, 2000);
-                            console.log(`🔄 Redis reconnect attempt ${retries}, delay: ${delay}ms`);
-                            return delay;
-                        },
                     },
-                    ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                 };
 
                 if (isProduction) {
@@ -72,41 +65,16 @@ const isProduction = process.env.NODE_ENV === 'production';
                         redisConfig.database = db;
                     }
 
-                    // ✅ TLS handling - فقط اگه صریحاً true باشه
                     const useTLS = configService.get<string>('REDIS_TLS');
                     if (useTLS === 'true') {
                         redisConfig.socket.tls = true;
                         redisConfig.socket.rejectUnauthorized = false;
-                        console.log('🔒 Redis TLS enabled');
-                    } else {
-                        // ✅ Force disable TLS
-                        redisConfig.socket.tls = false;
-                        redisConfig.socket.enableTLSForSentinelMode = false;
-                        console.log('🔓 Redis TLS disabled (forced)');
                     }
-
-                    redisConfig.enableReadyCheck = true;
-                    redisConfig.maxRetriesPerRequest = 3;
-                    redisConfig.enableOfflineQueue = false;
-                    redisConfig.lazyConnect = false;
-
-                    console.log('🔐 Production Redis config:');
-                    console.log('   Host:', configService.get<string>('REDIS_HOST'));
-                    console.log('   Port:', configService.get<number>('REDIS_PORT'));
-                    console.log('   TLS:', redisConfig.socket.tls);
-                    console.log('   Password:', !!redisConfig.password);
-                    console.log('   Database:', redisConfig.database || 0);
-                } else {
-                    // Development: Force disable TLS
-                    redisConfig.socket.tls = false;
-                    console.log('🔧 Development: TLS disabled');
                 }
 
                 try {
-                    console.log('🔄 Connecting to Redis...');
                     const store = await redisStore(redisConfig);
-                    console.log('✅ Redis Store initialized successfully!');
-
+                    
                     return {
                         store: store as any,
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
@@ -114,12 +82,12 @@ const isProduction = process.env.NODE_ENV === 'production';
                     };
                 } catch (error) {
                     console.error('❌ Redis connection failed:', error.message);
-                    console.error('📋 Config:', {
-                        host: redisConfig.socket.host,
-                        port: redisConfig.socket.port,
-                        tls: redisConfig.socket.tls,
-                    });
-                    throw error;
+                    // Fallback to memory cache
+                    console.warn('⚠️ Falling back to memory cache');
+                    return {
+                        ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
+                        max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
+                    };
                 }
             },
         }),
@@ -163,11 +131,6 @@ const isProduction = process.env.NODE_ENV === 'production';
 })
 export class AppConfigModule {
     constructor() {
-        console.log('🚀 RSHOP API Configuration');
-        console.log('📝 Environment:', process.env.NODE_ENV || 'development');
-        console.log('🔒 Rate Limiting:', isProduction ? 'Enabled ✅' : 'Disabled ❌');
-        console.log('💾 Redis Cache:', 'Enabled ✅');
-        console.log('🔑 JWT:', 'Enabled ✅');
-        console.log('=======================================');
+        console.log('🚀 RSHOP API started successfully');
     }
 }

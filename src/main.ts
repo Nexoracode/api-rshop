@@ -44,12 +44,10 @@ async function bootstrap() {
     ]
   })
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());
-  app.setGlobalPrefix('api', {
-    exclude: ['/docs/(.*)'],
-  });
+  app.setGlobalPrefix('api');
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3001)
 }
 
 bootstrap();
