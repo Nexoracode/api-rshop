@@ -321,19 +321,19 @@ export class CategoryService implements ICategoryService {
      */
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
         // ✅ چک کردن cache
-        const cached = await this.cacheService.getCategoryTree();
-        if (cached) {
-            console.log('✅ Category tree for site از cache');
-            return cached as any;
-        }
+        // const cached = await this.cacheService.getCategoryTree();
+        // if (cached) {
+        //     console.log('✅ Category tree for site از cache');
+        //     return cached as any;
+        // }
 
         // دریافت از دیتابیس
         const categories = await this.treeCatRepo.findTrees();
         const result = CategoryMapper.toResponseSiteList(categories);
 
         // ✅ ذخیره در cache
-        await this.cacheService.setCategoryTree(result as any);
-        console.log('💾 Category tree for site ذخیره شد در cache');
+        // await this.cacheService.setCategoryTree(result as any);
+        // console.log('💾 Category tree for site ذخیره شد در cache');
 
         return result;
     }
