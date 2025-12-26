@@ -40,6 +40,7 @@ import { SettingModule } from './modules/setting/setting.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { HomePageModule } from './modules/home-page/home-page.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { HomePageModule } from './modules/home-page/home-page.module';
     SeoModule,
     AccountingModule,
     HomePageModule,
+    HealthModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

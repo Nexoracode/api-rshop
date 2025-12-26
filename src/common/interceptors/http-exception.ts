@@ -1,64 +1,61 @@
+// src/common/filters/http-exception.filter.ts
 import {
     ExceptionFilter,
     Catch,
     ArgumentsHost,
     HttpException,
     HttpStatus,
+    Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
-export class HttpExceptionFilter implements ExceptionFilter {
-    catch(exception: HttpException, host: ArgumentsHost) {
+export class AllExceptionsFilter implements ExceptionFilter {
+    private readonly logger = new Logger(AllExceptionsFilter.name);
+
+    catch(exception: unknown, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
 
         let status = HttpStatus.INTERNAL_SERVER_ERROR;
-        let message = 'خطایی در سرور رخ داده است';
-        let errors: Record<string, string[]> | null | string = exception.toString();
-
+        let message = 'خطای داخلی سرور';
+        let error = 'Internal Server Error';
 
         if (exception instanceof HttpException) {
             status = exception.getStatus();
-            const res = exception.getResponse();
+            const exceptionResponse = exception.getResponse();
 
-            if (typeof res === 'string') {
-                message = res;
-            } else if (typeof res === 'object' && res !== null) {
-                const resObj = res as any;
-                message = resObj.message || message;
+            if (typeof exceptionResponse === 'object') {
+                message = (exceptionResponse as any).message || message;
+                error = (exceptionResponse as any).error || error;
+            } else {
+                message = exceptionResponse;
+            }
+        } else if (exception instanceof Error) {
+            message = exception.message;
+            error = exception.name;
 
-                // handle validation error message array
-                if (Array.isArray(resObj.message)) {
-                    if (resObj.message[0]?.constraints) {
-                        errors = this.formatValidationErrors(resObj.message);
-                    } else {
-                        errors = resObj.message;
-                    }
-                }
+            // ✅ لاگ خطاهای Redis
+            if (message.includes('Redis') || message.includes('ECONNREFUSED')) {
+                this.logger.error(`❌ [Redis Error] ${message}`);
+                message = 'خطا در اتصال به کش. لطفاً دوباره تلاش کنید';
             }
         }
 
+        this.logger.error(
+            `❌ [${request.method}] ${request.url} - Status: ${status} - Error: ${message}`,
+            exception instanceof Error ? exception.stack : ''
+        );
+
+        // ✅ همیشه JSON برمی‌گردونه، نه HTML
         response.status(status).json({
-            success: false,
             statusCode: status,
-            message,
-            errors,
-            path: request.url,
             timestamp: new Date().toISOString(),
+            path: request.url,
+            method: request.method,
+            message,
+            error,
         });
-    }
-
-    private formatValidationErrors(messages: any[]) {
-        const result: Record<string, string[]> = {};
-
-        for (const msg of messages) {
-            if (msg.constraints) {
-                result[msg.property] = Object.values(msg.constraints);
-            }
-        }
-
-        return result;
     }
 }

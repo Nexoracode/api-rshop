@@ -1,25 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ResponseSnakeCaseInterceptor } from './common/interceptors/response.interceptor';
 import { SnakeToCamelInterceptor } from './common/interceptors/snake-case.interceptor';
 import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
+import { AllExceptionsFilter } from './common/interceptors/http-exception';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }));
+  app.useGlobalFilters(new AllExceptionsFilter()),
+    app.useGlobalPipes(new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }));
   app.enableCors({
     credentials: true,
     origin: [
@@ -44,6 +47,19 @@ async function bootstrap() {
     ]
   })
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());
+  // ✅ Graceful Shutdown
+  app.enableShutdownHooks();
+
+  // ✅ Handle signals
+  process.on('SIGTERM', async () => {
+    logger.warn('⚠️ SIGTERM signal received: closing HTTP server');
+    await app.close();
+  });
+
+  process.on('SIGINT', async () => {
+    logger.warn('⚠️ SIGINT signal received: closing HTTP server');
+    await app.close();
+  });
   app.setGlobalPrefix('api');
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();

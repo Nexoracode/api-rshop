@@ -22,5 +22,9 @@ RUN npm install --only=production
 # فایل‌های بیلد شده را از مرحله قبل کپی کنید
 COPY --from=builder /usr/src/app/dist ./dist
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+
+
 # اپلیکیشن بیلد شده را اجرا کنید
 CMD [ "node", "dist/src/main.js" ]
