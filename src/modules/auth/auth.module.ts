@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { JwtUtil } from 'src/common/utils/jwt.util';
-import { OtpModule } from '../otps/otps.module';
+import { OtpService } from '../otps/otps.service';
+import { Otp } from '../otps/entities/otp.entity';
+import { SmsService } from '../otps/sms.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), OtpModule],
-  providers: [AuthService, JwtService, JwtUtil],
+  imports: [TypeOrmModule.forFeature([User, Otp])],
+  providers: [OtpService, SmsService, AuthService, JwtService, JwtUtil],
   controllers: [AuthController],
   exports: [AuthService],
 })

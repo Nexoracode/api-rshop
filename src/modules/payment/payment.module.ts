@@ -17,12 +17,10 @@ import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
 import { CardModule } from '../card/card.module';
 import { SettingModule } from '../setting/setting.module';
-import { CardService } from '../card/card.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Payment, PaymentLog, Order]),
-    ScheduleModule.forRoot(),
     PromotionModule,
     MediaModule,
     OrderModule,

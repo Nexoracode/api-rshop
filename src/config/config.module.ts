@@ -15,14 +15,26 @@ import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
 import Keyv from 'keyv';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // تشخیص محیط اجرا
 const isProduction = process.env.NODE_ENV === 'production';
 
 @Module({
     imports: [
-        TypeOrmModule.forRoot(dataSourceOption),
         AuthModule,
+        ScheduleModule.forRoot(),
+        // ✅ فعال‌سازی Event-Driven Architecture
+        EventEmitterModule.forRoot({
+            // استفاده از wildcard
+            wildcard: false,
+            // حداکثر تعداد listener ها
+            maxListeners: 10,
+            // نمایش warning در صورت memory leak
+            verboseMemoryLeak: true,
+        }),
+        TypeOrmModule.forRoot(dataSourceOption),
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: `.env.${process.env.NODE_ENV || "development"}`,

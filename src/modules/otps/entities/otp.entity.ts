@@ -1,6 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
 
 @Entity('otps')
+@Index(['identifier', 'verified', 'expireAt']) // ✅ Composite index برای query های مهم
+@Index(['createdAt']) // ✅ برای cleanup
 export class Otp {
     @PrimaryGeneratedColumn()
     id: number;
@@ -11,12 +13,12 @@ export class Otp {
     @Column()
     code: string;
 
-    @Column({ type: 'datetime' })
-    expireAt: Date;
-
     @Column({ default: false })
     verified: boolean;
 
-    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'timestamp' })
+    expireAt: Date;
+
+    @CreateDateColumn()
     createdAt: Date;
 }

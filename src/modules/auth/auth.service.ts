@@ -5,15 +5,13 @@ import { Repository } from 'typeorm';
 import { RequestDto } from './dto/request.dto';
 import { VerifyOtpDto } from './dto/verify.dto';
 import { JwtTypeToken as TypeToken, JwtUtil, JwtTypeToken } from 'src/common/utils/jwt.util';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import { IAuthService } from './interfaces/auth.service.interface';
 import { RegisterDto } from './dto/register.dto';
 import { IAuthResponse } from './interfaces/auth-response.interface';
-import { UserMapper } from '../user/mappers/user.mapper';
 import { AuthMapper } from './mappers/auth.mapper';
 import { LoginDto } from './dto/login.dto';
-import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { OtpService } from '../otps/otps.service';
 @Injectable()
 export class AuthService implements IAuthService {

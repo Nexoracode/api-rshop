@@ -32,27 +32,17 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { RecentViewModule } from './modules/recent-view/recent-view.module';
 import { SupportModule } from './modules/support/support.module';
 import { CompareModule } from './modules/compare/compare.module';
-import { OtpModule as OtpModule } from './modules/otps/otps.module';
+import { OtpModule } from './modules/otps/otps.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
 import { DocsModule } from './docs/docs.module';
 import { GiftWrappingModule } from './modules/gift-wrapping/gift-wrapping.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
-import { EventEmitterModule } from '@nestjs/event-emitter'; // ✅ اضافه شد
 import { HomePageModule } from './modules/home-page/home-page.module';
 
 @Module({
   imports: [
-    // ✅ فعال‌سازی Event-Driven Architecture
-    EventEmitterModule.forRoot({
-      // استفاده از wildcard
-      wildcard: false,
-      // حداکثر تعداد listener ها
-      maxListeners: 10,
-      // نمایش warning در صورت memory leak
-      verboseMemoryLeak: true,
-    }),
     AppConfigModule,
     UserModule,
     AddressModule,
@@ -88,8 +78,8 @@ import { HomePageModule } from './modules/home-page/home-page.module';
     GiftWrappingModule,
     SettingModule,
     SeoModule,
-    AccountingModule, // ✅ ماژول حسابداری
-    HomePageModule, // ✅ ماژول مدیریت صفحه اصلی
+    AccountingModule,
+    HomePageModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
