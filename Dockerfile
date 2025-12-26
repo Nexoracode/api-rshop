@@ -23,8 +23,8 @@ RUN npm install --only=production
 COPY --from=builder /usr/src/app/dist ./dist
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
-
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+EXPOSE 3000
 
 # اپلیکیشن بیلد شده را اجرا کنید
 CMD [ "node", "dist/src/main.js" ]
