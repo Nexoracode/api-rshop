@@ -163,14 +163,14 @@ export class ProductService implements IProductService {
 
         // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({
-            where: { id },
+            where: { id, isVisible: true },
             relations,
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
 
         const reviews = await this.reviewRepo.find({
             where: {
-                product: { id: product.id },
+                product: { id: product.id, isVisible: true },
                 isApproved: true,
             },
             relations: ['user', 'product'],
