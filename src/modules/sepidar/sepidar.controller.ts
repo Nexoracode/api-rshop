@@ -15,4 +15,9 @@ export class SepidarController {
   login() {
     return this.sepidarService.login();
   }
+
+  @Get()
+  getLogin() {
+    return this.sepidarService.register();
+  }
 }
