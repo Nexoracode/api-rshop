@@ -14,7 +14,6 @@ export class HealthController {
     async check() {
         try {
             const redisHealth = await this.categoryCacheService.checkRedisHealth();
-
             return {
                 status: redisHealth.isConnected ? 'ok' : 'degraded',
                 timestamp: new Date().toISOString(),

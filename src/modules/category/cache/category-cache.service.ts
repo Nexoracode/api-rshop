@@ -434,6 +434,9 @@ export class CategoryCacheService {
     /**
      * بررسی سلامت Redis
      */
+    /**
+ * بررسی سلامت Redis با تست واقعی cache
+ */
     async checkRedisHealth(): Promise<{
         isConnected: boolean;
         canRead: boolean;
@@ -442,53 +445,68 @@ export class CategoryCacheService {
         message: string;
     }> {
         try {
-            const store = this.getStore();
-            const redisClient = this.getRedisClient();
-
-            if (!store) {
-                return {
-                    isConnected: false,
-                    canRead: false,
-                    canWrite: false,
-                    storeType: 'none',
-                    message: '❌ Store موجود نیست'
-                };
-            }
-
-            if (!redisClient) {
-                return {
-                    isConnected: false,
-                    canRead: false,
-                    canWrite: false,
-                    storeType: 'memory',
-                    message: '⚠️ Redis Client موجود نیست - احتمالاً از memory cache استفاده می‌شود'
-                };
-            }
+            // ✅ تست واقعی Read/Write
+            const testKey = 'health:check:test';
+            const testValue = `test-${Date.now()}`;
 
             // تست نوشتن
-            const testKey = 'health:check:test';
-            await this.cacheManager.set(testKey, 'test', 5000);
+            await this.cacheManager.set(testKey, testValue, 5000);
 
             // تست خواندن
-            const testValue = await this.cacheManager.get(testKey);
+            const retrievedValue = await this.cacheManager.get(testKey);
 
-            // پاک کردن کلید تست
+            // پاک کردن
             await this.cacheManager.del(testKey);
+
+            // بررسی نتیجه
+            const isWorking = retrievedValue === testValue;
+
+            if (!isWorking) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'unknown',
+                    message: '❌ تست Read/Write ناموفق بود'
+                };
+            }
+
+            // ✅ اگر کار کرد، ببین Redis هست یا Memory
+            const store = this.getStore();
+            let storeType = 'unknown';
+
+            // چک کردن نوع store
+            if (store) {
+                // اگر هر یک از اینا وجود داشت، Redis هست
+                if (
+                    store.redis ||
+                    store.opts?.store?.redis ||
+                    store._store?.redis ||
+                    store.client ||
+                    store.opts?.store?.client
+                ) {
+                    storeType = 'redis';
+                } else {
+                    storeType = 'memory';
+                }
+            }
 
             return {
                 isConnected: true,
-                canRead: testValue === 'test',
+                canRead: true,
                 canWrite: true,
-                storeType: 'redis',
-                message: '✅ Redis سالم است و به درستی کار می‌کند'
+                storeType: storeType,
+                message: storeType === 'redis'
+                    ? '✅ Redis سالم است و به درستی کار می‌کند'
+                    : '⚠️ Cache کار می‌کند اما از Memory استفاده می‌شود'
             };
         } catch (error) {
-            console.error('❌ خطا در بررسی سلامت Redis:', error);
+            console.error('❌ خطا در بررسی سلامت cache:', error);
             return {
                 isConnected: false,
                 canRead: false,
                 canWrite: false,
-                storeType: 'unknown',
+                storeType: 'error',
                 message: `❌ خطا: ${error.message}`
             };
         }
