@@ -16,29 +16,29 @@ export class ProductCacheService {
         // لیست محصولات
         PRODUCT_LIST: (page: number, limit: number, filters: string) =>
             `product:list:${page}:${limit}:${filters}`,
-        
+
         // جزئیات محصول
         PRODUCT_BY_ID: (id: number) => `product:${id}`,
         PRODUCT_BY_SLUG: (slug: string) => `product:slug:${slug}`,
-        
+
         // محصولات ویژه
         FEATURED_PRODUCTS: (limit: number) => `product:featured:${limit}`,
         NEW_PRODUCTS: (limit: number) => `product:new:${limit}`,
         BEST_SELLERS: (limit: number) => `product:bestsellers:${limit}`,
         ON_SALE: (limit: number) => `product:onsale:${limit}`,
-        
+
         // محصولات دسته‌بندی
         CATEGORY_PRODUCTS: (categoryId: number, page: number, limit: number) =>
             `product:category:${categoryId}:${page}:${limit}`,
-        
+
         // محصولات برند
         BRAND_PRODUCTS: (brandId: number, page: number, limit: number) =>
             `product:brand:${brandId}:${page}:${limit}`,
-        
+
         // محصولات مرتبط
         RELATED_PRODUCTS: (productId: number, limit: number) =>
             `product:related:${productId}:${limit}`,
-        
+
         // جستجو
         SEARCH_RESULTS: (query: string, page: number, limit: number) =>
             `product:search:${query}:${page}:${limit}`,
@@ -56,10 +56,48 @@ export class ProductCacheService {
         SEARCH: 300 * 1000,              // 5 دقیقه
     };
 
+    /**
+     * Namespace برای Redis (از config شما)
+     */
+    private readonly NAMESPACE = 'rshop';
+
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
     ) { }
+
+    /**
+     * دریافت store اول از لیست stores
+     */
+    private getStore(): any {
+        const stores: any = this.cacheManager.stores;
+
+        // اگر stores یک آرایه است، اولین store رو برمی‌گردونه
+        if (Array.isArray(stores) && stores.length > 0) {
+            return stores[0];
+        }
+
+        // اگر stores یک شیء است
+        if (stores && typeof stores === 'object') {
+            return stores;
+        }
+
+        return null;
+    }
+
+    /**
+     * دریافت Redis Client از store
+     */
+    private getRedisClient(): any {
+        const store = this.getStore();
+
+        // در Keyv، Redis client در store.redis قرار داره
+        if (store?.redis) {
+            return store.redis;
+        }
+
+        return null;
+    }
 
     // ==================== لیست محصولات ====================
 
@@ -266,19 +304,52 @@ export class ProductCacheService {
      */
     async clearAllProductCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const productKeys = keys.filter((key: string) =>
-                key.startsWith('product:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                productKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                console.log('🔍 پاک کردن تمام cache محصولات با Redis...');
 
-            console.log(`🗑️ پاک شد ${productKeys.length} کلید cache محصول`);
+                const pattern = `${this.NAMESPACE}:product:*`;
+                const keys = await redisClient.keys(pattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید cache محصول پاک شد`);
+                } else {
+                    console.log('ℹ️ هیچ کلید محصولی برای پاک کردن پیدا نشد');
+                }
+                return;
+            }
+
+            // فال‌بک: استفاده از Iterator
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                console.log('🔍 پاک کردن cache محصولات با Iterator...');
+
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('product:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید cache محصول پاک شد`);
+                }
+                return;
+            }
+
+            console.warn('⚠️ امکان پاک کردن کامل cache موجود نیست');
         } catch (error) {
-            console.error('خطا در پاک کردن cache محصولات:', error);
+            console.error('❌ خطا در پاک کردن cache محصولات:', error);
         }
     }
 
@@ -286,18 +357,22 @@ export class ProductCacheService {
      * پاک کردن cache یک محصول خاص
      */
     async clearProductCache(productId: number, slug?: string): Promise<void> {
-        // پاک کردن cache این محصول
-        await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_ID(productId));
+        try {
+            // پاک کردن cache این محصول
+            await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_ID(productId));
 
-        // پاک کردن cache slug
-        if (slug) {
-            await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_SLUG(slug));
+            // پاک کردن cache slug
+            if (slug) {
+                await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_SLUG(slug));
+            }
+
+            // پاک کردن لیست‌ها (چون محصول تغییر کرده)
+            await this.clearListCaches();
+
+            console.log(`✅ Cache محصول ${productId} پاک شد`);
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache محصول ${productId}:`, error);
         }
-
-        // پاک کردن لیست‌ها (چون محصول تغییر کرده)
-        await this.clearListCaches();
-
-        console.log(`🗑️ Cache پاک شد برای محصول ${productId}`);
     }
 
     /**
@@ -305,24 +380,70 @@ export class ProductCacheService {
      */
     async clearListCaches(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const listKeys = keys.filter((key: string) =>
-                key.startsWith('product:list:') ||
-                key.startsWith('product:featured:') ||
-                key.startsWith('product:new:') ||
-                key.startsWith('product:bestsellers:') ||
-                key.startsWith('product:onsale:') ||
-                key.startsWith('product:category:') ||
-                key.startsWith('product:brand:') ||
-                key.startsWith('product:search:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                listKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                console.log('🔍 پاک کردن cache لیست‌های محصولات...');
+
+                const patterns = [
+                    `${this.NAMESPACE}:product:list:*`,
+                    `${this.NAMESPACE}:product:featured:*`,
+                    `${this.NAMESPACE}:product:new:*`,
+                    `${this.NAMESPACE}:product:bestsellers:*`,
+                    `${this.NAMESPACE}:product:onsale:*`,
+                    `${this.NAMESPACE}:product:category:*`,
+                    `${this.NAMESPACE}:product:brand:*`,
+                    `${this.NAMESPACE}:product:search:*`,
+                ];
+
+                let totalDeleted = 0;
+
+                for (const pattern of patterns) {
+                    const keys = await redisClient.keys(pattern);
+                    if (keys && keys.length > 0) {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                        totalDeleted += keys.length;
+                    }
+                }
+
+                console.log(`✅ ${totalDeleted} کلید لیست پاک شد`);
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                console.log('🔍 پاک کردن لیست‌ها با Iterator...');
+
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (
+                        key.startsWith('product:list:') ||
+                        key.startsWith('product:featured:') ||
+                        key.startsWith('product:new:') ||
+                        key.startsWith('product:bestsellers:') ||
+                        key.startsWith('product:onsale:') ||
+                        key.startsWith('product:category:') ||
+                        key.startsWith('product:brand:') ||
+                        key.startsWith('product:search:')
+                    ) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید لیست پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache لیست‌ها:', error);
+            console.error('❌ خطا در پاک کردن cache لیست‌ها:', error);
         }
     }
 
@@ -331,19 +452,43 @@ export class ProductCacheService {
      */
     async clearCategoryProductsCache(categoryId: number): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const categoryKeys = keys.filter((key: string) =>
-                key.startsWith(`product:category:${categoryId}:`)
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                categoryKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:product:category:${categoryId}:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ Cache محصولات دسته ${categoryId} پاک شد`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith(`product:category:${categoryId}:`)) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache محصولات دسته:', error);
+            console.error(`❌ خطا در پاک کردن cache محصولات دسته ${categoryId}:`, error);
         }
     }
 
@@ -352,19 +497,43 @@ export class ProductCacheService {
      */
     async clearBrandProductsCache(brandId: number): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const brandKeys = keys.filter((key: string) =>
-                key.startsWith(`product:brand:${brandId}:`)
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                brandKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:product:brand:${brandId}:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ Cache محصولات برند ${brandId} پاک شد`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید محصولات برند ${brandId} پاک شد`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith(`product:brand:${brandId}:`)) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید محصولات برند ${brandId} پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache محصولات برند:', error);
+            console.error(`❌ خطا در پاک کردن cache محصولات برند ${brandId}:`, error);
         }
     }
 
@@ -373,19 +542,71 @@ export class ProductCacheService {
      */
     async clearSearchCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const searchKeys = keys.filter((key: string) =>
-                key.startsWith('product:search:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                searchKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:product:search:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log('🗑️ Cache جستجو پاک شد');
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید جستجو پاک شد`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('product:search:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید جستجو پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache جستجو:', error);
+            console.error('❌ خطا در پاک کردن cache جستجو:', error);
+        }
+    }
+
+    /**
+     * پاک کردن cache با pattern
+     */
+    async clearCacheByPattern(pattern: string): Promise<number> {
+        try {
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const keys = await redisClient.keys(fullPattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                    return keys.length;
+                }
+            }
+
+            return 0;
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
+            return 0;
         }
     }
 
@@ -399,40 +620,125 @@ export class ProductCacheService {
         specialKeys: number;
     }> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const productKeys = keys.filter((key: string) =>
-                key.startsWith('product:')
-            );
+            const redisClient = this.getRedisClient();
 
-            const detailKeys = productKeys.filter((key: string) =>
-                key.match(/^product:\d+$/) || key.startsWith('product:slug:')
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:product:*`;
+                const keys = await redisClient.keys(pattern);
 
-            const listKeys = productKeys.filter((key: string) =>
-                key.startsWith('product:list:')
-            );
+                if (!keys || keys.length === 0) {
+                    return {
+                        totalKeys: 0,
+                        detailKeys: 0,
+                        listKeys: 0,
+                        specialKeys: 0,
+                    };
+                }
 
-            const specialKeys = productKeys.filter((key: string) =>
-                key.startsWith('product:featured:') ||
-                key.startsWith('product:new:') ||
-                key.startsWith('product:bestsellers:') ||
-                key.startsWith('product:onsale:')
-            );
+                // حذف namespace از کلیدها برای بررسی
+                const cleanKeys = keys.map((key: string) =>
+                    key.replace(`${this.NAMESPACE}:`, '')
+                );
 
-            return {
-                totalKeys: productKeys.length,
-                detailKeys: detailKeys.length,
-                listKeys: listKeys.length,
-                specialKeys: specialKeys.length,
-            };
-        } catch (error) {
-            console.error('خطا در گرفتن آمار cache:', error);
+                const detailKeys = cleanKeys.filter((key: string) =>
+                    key.match(/^product:\d+$/) || key.startsWith('product:slug:')
+                );
+
+                const listKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('product:list:')
+                );
+
+                const specialKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('product:featured:') ||
+                    key.startsWith('product:new:') ||
+                    key.startsWith('product:bestsellers:') ||
+                    key.startsWith('product:onsale:')
+                );
+
+                return {
+                    totalKeys: keys.length,
+                    detailKeys: detailKeys.length,
+                    listKeys: listKeys.length,
+                    specialKeys: specialKeys.length,
+                };
+            }
+
             return {
                 totalKeys: 0,
                 detailKeys: 0,
                 listKeys: 0,
                 specialKeys: 0,
+            };
+        } catch (error) {
+            console.error('❌ خطا در گرفتن آمار cache:', error);
+            return {
+                totalKeys: 0,
+                detailKeys: 0,
+                listKeys: 0,
+                specialKeys: 0,
+            };
+        }
+    }
+
+    /**
+     * بررسی سلامت Redis
+     */
+    async checkRedisHealth(): Promise<{
+        isConnected: boolean;
+        canRead: boolean;
+        canWrite: boolean;
+        storeType: string;
+        message: string;
+    }> {
+        try {
+            const store = this.getStore();
+            const redisClient = this.getRedisClient();
+
+            if (!store) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'none',
+                    message: '❌ Store موجود نیست'
+                };
+            }
+
+            if (!redisClient) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'memory',
+                    message: '⚠️ Redis Client موجود نیست - احتمالاً از memory cache استفاده می‌شود'
+                };
+            }
+
+            // تست نوشتن
+            const testKey = 'health:check:product:test';
+            await this.cacheManager.set(testKey, 'test', 5000);
+
+            // تست خواندن
+            const testValue = await this.cacheManager.get(testKey);
+
+            // پاک کردن کلید تست
+            await this.cacheManager.del(testKey);
+
+            return {
+                isConnected: true,
+                canRead: testValue === 'test',
+                canWrite: true,
+                storeType: 'redis',
+                message: '✅ Redis سالم است و به درستی کار می‌کند'
+            };
+        } catch (error) {
+            console.error('❌ خطا در بررسی سلامت Redis:', error);
+            return {
+                isConnected: false,
+                canRead: false,
+                canWrite: false,
+                storeType: 'unknown',
+                message: `❌ خطا: ${error.message}`
             };
         }
     }

@@ -54,20 +54,60 @@ export class OrderCacheService {
         PENDING_ORDER: 60 * 1000,       // 1 دقیقه - سفارش در انتظار (کوتاه‌مدت)
     };
 
+    /**
+     * Namespace برای Redis (از config شما)
+     */
+    private readonly NAMESPACE = 'rshop';
+
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
     ) { }
 
+    /**
+     * دریافت store اول از لیست stores
+     */
+    private getStore(): any {
+        const stores: any = this.cacheManager.stores;
+
+        // اگر stores یک آرایه است، اولین store رو برمی‌گردونه
+        if (Array.isArray(stores) && stores.length > 0) {
+            return stores[0];
+        }
+
+        // اگر stores یک شیء است
+        if (stores && typeof stores === 'object') {
+            return stores;
+        }
+
+        return null;
+    }
+
+    /**
+     * دریافت Redis Client از store
+     */
+    private getRedisClient(): any {
+        const store = this.getStore();
+
+        // در Keyv، Redis client در store.redis قرار داره
+        if (store?.redis) {
+            return store.redis;
+        }
+
+        return null;
+    }
+
     // ==================== لیست سفارشات ادمین ====================
 
     async getAdminOrderList(page: number, limit: number, filters: string): Promise<any> {
+        console.log('✅ get order list in catch');
         return await this.cacheManager.get(
             this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters)
         );
     }
 
     async setAdminOrderList(page: number, limit: number, filters: string, data: any): Promise<void> {
+        console.log('📦 save order in catch')
         await this.cacheManager.set(
             this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters),
             data,
@@ -148,7 +188,8 @@ export class OrderCacheService {
     // ==================== آمار سفارشات کاربر ====================
 
     async getUserOrderStats(userId: number): Promise<any> {
-        return await this.cacheManager.get(this.CACHE_KEYS.USER_ORDER_STATS(userId)
+        return await this.cacheManager.get(
+            this.CACHE_KEYS.USER_ORDER_STATS(userId)
         );
     }
 
@@ -184,17 +225,50 @@ export class OrderCacheService {
      */
     async clearAllOrderCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const orderKeys = keys.filter((key: string) =>
-                key.startsWith('order:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                orderKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                console.log('🔍 پاک کردن تمام cache سفارشات با Redis...');
 
-            console.log(`🗑️ [OrderCache] پاک شد ${orderKeys.length} کلید cache سفارش`);
+                const pattern = `${this.NAMESPACE}:order:*`;
+                const keys = await redisClient.keys(pattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید cache سفارش پاک شد`);
+                } else {
+                    console.log('ℹ️ هیچ کلید سفارشی برای پاک کردن پیدا نشد');
+                }
+                return;
+            }
+
+            // فال‌بک: استفاده از Iterator
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                console.log('🔍 پاک کردن cache سفارشات با Iterator...');
+
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('order:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید cache سفارش پاک شد`);
+                }
+                return;
+            }
+
+            console.warn('⚠️ امکان پاک کردن کامل cache موجود نیست');
         } catch (error) {
             console.error('❌ [OrderCache] خطا در پاک کردن کامل cache:', error);
         }
@@ -216,7 +290,7 @@ export class OrderCacheService {
                 );
             }
 
-            console.log(`🗑️ [OrderCache] Cache پاک شد برای سفارش ${orderId}`);
+            console.log(`✅ [OrderCache] Cache سفارش ${orderId} پاک شد`);
         } catch (error) {
             console.error(`❌ [OrderCache] خطا در پاک کردن cache سفارش ${orderId}:`, error);
         }
@@ -238,17 +312,39 @@ export class OrderCacheService {
             await this.cacheManager.del(this.CACHE_KEYS.USER_PENDING_ORDER(userId));
 
             // پاک کردن همه جزئیات سفارشات این کاربر
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const userDetailKeys = keys.filter((key: string) =>
-                key.startsWith(`order:user:${userId}:detail:`)
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                userDetailKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:order:user:${userId}:detail:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ [OrderCache] Cache کاربر ${userId} پاک شد`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+                }
+            } else {
+                // فال‌بک با Iterator
+                const store = this.getStore();
+
+                if (store && typeof store.iterator === 'function') {
+                    const keysToDelete: string[] = [];
+
+                    for await (const [key] of store.iterator(this.NAMESPACE)) {
+                        if (key.startsWith(`order:user:${userId}:detail:`)) {
+                            keysToDelete.push(key);
+                        }
+                    }
+
+                    if (keysToDelete.length > 0) {
+                        await Promise.allSettled(
+                            keysToDelete.map(key => this.cacheManager.del(key))
+                        );
+                    }
+                }
+            }
+
+            console.log(`✅ [OrderCache] Cache کاربر ${userId} پاک شد`);
         } catch (error) {
             console.error(`❌ [OrderCache] خطا در پاک کردن cache کاربر ${userId}:`, error);
         }
@@ -260,17 +356,41 @@ export class OrderCacheService {
      */
     async clearAdminListCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const adminListKeys = keys.filter((key: string) =>
-                key.startsWith('order:admin:list:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                adminListKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:order:admin:list:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ [OrderCache] Cache لیست ادمین پاک شد (${adminListKeys.length} کلید)`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ [OrderCache] Cache لیست ادمین پاک شد (${keys.length} کلید)`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('order:admin:list:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ [OrderCache] Cache لیست ادمین پاک شد (${keysToDelete.length} کلید)`);
+                }
+            }
         } catch (error) {
             console.error('❌ [OrderCache] خطا در پاک کردن cache لیست ادمین:', error);
         }
@@ -282,17 +402,41 @@ export class OrderCacheService {
      */
     async clearStatsCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const statsKeys = keys.filter((key: string) =>
-                key.startsWith('order:stats:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                statsKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:order:stats:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ [OrderCache] Cache آمار پاک شد`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ [OrderCache] Cache آمار پاک شد`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('order:stats:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ [OrderCache] Cache آمار پاک شد`);
+                }
+            }
         } catch (error) {
             console.error('❌ [OrderCache] خطا در پاک کردن cache آمار:', error);
         }
@@ -340,6 +484,34 @@ export class OrderCacheService {
     }
 
     /**
+     * پاک کردن cache با pattern
+     */
+    async clearCacheByPattern(pattern: string): Promise<number> {
+        try {
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const keys = await redisClient.keys(fullPattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                    return keys.length;
+                }
+            }
+
+            return 0;
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
+            return 0;
+        }
+    }
+
+    /**
      * گرفتن آمار cache
      */
     async getCacheStats(): Promise<{
@@ -350,35 +522,59 @@ export class OrderCacheService {
         statsKeys: number;
     }> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const orderKeys = keys.filter((key: string) =>
-                key.startsWith('order:')
-            );
+            const redisClient = this.getRedisClient();
 
-            const adminListKeys = orderKeys.filter((key: string) =>
-                key.startsWith('order:admin:list:')
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:order:*`;
+                const keys = await redisClient.keys(pattern);
 
-            const userListKeys = orderKeys.filter((key: string) =>
-                key.startsWith('order:user:') && key.includes(':list')
-            );
+                if (!keys || keys.length === 0) {
+                    return {
+                        totalKeys: 0,
+                        adminListKeys: 0,
+                        userListKeys: 0,
+                        detailKeys: 0,
+                        statsKeys: 0,
+                    };
+                }
 
-            const detailKeys = orderKeys.filter((key: string) =>
-                key.startsWith('order:detail:') ||
-                key.includes(':detail:')
-            );
+                // حذف namespace از کلیدها برای بررسی
+                const cleanKeys = keys.map((key: string) =>
+                    key.replace(`${this.NAMESPACE}:`, '')
+                );
 
-            const statsKeys = orderKeys.filter((key: string) =>
-                key.startsWith('order:stats:')
-            );
+                const adminListKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('order:admin:list:')
+                );
+
+                const userListKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('order:user:') && key.includes(':list')
+                );
+
+                const detailKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('order:detail:') ||
+                    key.includes(':detail:')
+                );
+
+                const statsKeys = cleanKeys.filter((key: string) =>
+                    key.startsWith('order:stats:')
+                );
+
+                return {
+                    totalKeys: keys.length,
+                    adminListKeys: adminListKeys.length,
+                    userListKeys: userListKeys.length,
+                    detailKeys: detailKeys.length,
+                    statsKeys: statsKeys.length,
+                };
+            }
 
             return {
-                totalKeys: orderKeys.length,
-                adminListKeys: adminListKeys.length,
-                userListKeys: userListKeys.length,
-                detailKeys: detailKeys.length,
-                statsKeys: statsKeys.length,
+                totalKeys: 0,
+                adminListKeys: 0,
+                userListKeys: 0,
+                detailKeys: 0,
+                statsKeys: 0,
             };
         } catch (error) {
             console.error('❌ [OrderCache] خطا در گرفتن آمار cache:', error);
@@ -388,6 +584,69 @@ export class OrderCacheService {
                 userListKeys: 0,
                 detailKeys: 0,
                 statsKeys: 0,
+            };
+        }
+    }
+
+    /**
+     * بررسی سلامت Redis
+     */
+    async checkRedisHealth(): Promise<{
+        isConnected: boolean;
+        canRead: boolean;
+        canWrite: boolean;
+        storeType: string;
+        message: string;
+    }> {
+        try {
+            const store = this.getStore();
+            const redisClient = this.getRedisClient();
+
+            if (!store) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'none',
+                    message: '❌ Store موجود نیست'
+                };
+            }
+
+            if (!redisClient) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'memory',
+                    message: '⚠️ Redis Client موجود نیست - احتمالاً از memory cache استفاده می‌شود'
+                };
+            }
+
+            // تست نوشتن
+            const testKey = 'health:check:order:test';
+            await this.cacheManager.set(testKey, 'test', 5000);
+
+            // تست خواندن
+            const testValue = await this.cacheManager.get(testKey);
+
+            // پاک کردن کلید تست
+            await this.cacheManager.del(testKey);
+
+            return {
+                isConnected: true,
+                canRead: testValue === 'test',
+                canWrite: true,
+                storeType: 'redis',
+                message: '✅ Redis سالم است و به درستی کار می‌کند'
+            };
+        } catch (error) {
+            console.error('❌ [OrderCache] خطا در بررسی سلامت Redis:', error);
+            return {
+                isConnected: false,
+                canRead: false,
+                canWrite: false,
+                storeType: 'unknown',
+                message: `❌ خطا: ${error.message}`
             };
         }
     }

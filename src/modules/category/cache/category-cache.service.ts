@@ -32,10 +32,48 @@ export class CategoryCacheService {
         CATEGORY_LIST: 600 * 1000,       // 10 دقیقه
     };
 
+    /**
+     * Namespace برای Redis (از config شما)
+     */
+    private readonly NAMESPACE = 'rshop';
+
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
     ) { }
+
+    /**
+     * دریافت store اول از لیست stores
+     */
+    private getStore(): any {
+        const stores: any = this.cacheManager.stores;
+
+        // اگر stores یک آرایه است، اولین store رو برمی‌گردونه
+        if (Array.isArray(stores) && stores.length > 0) {
+            return stores[0];
+        }
+
+        // اگر stores یک شیء است
+        if (stores && typeof stores === 'object') {
+            return stores;
+        }
+
+        return null;
+    }
+
+    /**
+     * دریافت Redis Client از store
+     */
+    private getRedisClient(): any {
+        const store = this.getStore();
+
+        // در Keyv، Redis client در store.redis قرار داره
+        if (store?.redis) {
+            return store.redis;
+        }
+
+        return null;
+    }
 
     /**
      * دریافت tree کامل از cache
@@ -176,81 +214,179 @@ export class CategoryCacheService {
      * پاک کردن کامل cache دسته‌بندی‌ها
      */
     async clearAllCategoryCache(): Promise<void> {
-        // پاک کردن tree
-        await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
+        try {
+            // پاک کردن tree
+            await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
 
-        // پاک کردن active categories
-        await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
+            // پاک کردن active categories
+            await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
 
-        // پاک کردن تمام کلیدهای pagination
-        await this.clearPaginationCache();
+            // پاک کردن تمام کلیدهای pagination
+            await this.clearPaginationCache();
+
+            console.log('✅ تمام cache دسته‌بندی‌ها پاک شد');
+        } catch (error) {
+            console.error('❌ خطا در پاک کردن کامل cache:', error);
+        }
     }
 
     /**
      * پاک کردن cache یک دسته‌بندی خاص
      */
     async clearCategoryCache(categoryId: number, slug?: string): Promise<void> {
-        // پاک کردن cache این category
-        await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_BY_ID(categoryId));
+        try {
+            // پاک کردن cache این category
+            await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_BY_ID(categoryId));
 
-        // پاک کردن cache slug
-        if (slug) {
-            await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_BY_SLUG(slug));
+            // پاک کردن cache slug
+            if (slug) {
+                await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_BY_SLUG(slug));
+            }
+
+            // پاک کردن cache محصولات این category
+            await this.cacheManager.del(
+                this.CACHE_KEYS.CATEGORY_WITH_PRODUCTS(categoryId)
+            );
+
+            // پاک کردن tree و active categories چون تغییر کرده
+            await this.clearAllCategoryCache();
+
+            console.log(`✅ Cache دسته‌بندی ${categoryId} پاک شد`);
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache دسته‌بندی ${categoryId}:`, error);
         }
-
-        // پاک کردن cache محصولات این category
-        await this.cacheManager.del(
-            this.CACHE_KEYS.CATEGORY_WITH_PRODUCTS(categoryId)
-        );
-
-        // پاک کردن tree و active categories چون تغییر کرده
-        await this.clearAllCategoryCache();
     }
 
     /**
-     * پاک کردن cache pagination
+     * پاک کردن cache pagination با استفاده از Redis Client
+     * ✅ این متد با Keyv + Redis و stores کار می‌کنه
      */
     async clearPaginationCache(): Promise<void> {
         try {
-            // ✅ چک کردن اینکه store موجود باشه
-            if (!this.cacheManager.stores || typeof this.cacheManager.stores.keys !== 'function') {
-                console.warn('⚠️ Cache store.keys() موجود نیست، از روش جایگزین استفاده می‌شود');
+            const redisClient = this.getRedisClient();
 
-                // ✅ روش جایگزین: پاک کردن با الگوهای شناخته‌شده
-                // چون نمی‌تونیم keys رو بگیریم، فقط tree اصلی رو پاک می‌کنیم
-                await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
-                await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
+            // روش 1: استفاده از Redis Client (بهترین روش)
+            if (redisClient && typeof redisClient.keys === 'function') {
+                console.log('🔍 استفاده از Redis Client برای پاک کردن cache...');
+
+                // الگوی جستجو با namespace
+                const pattern = `${this.NAMESPACE}:category:tree:*`;
+                const keys = await redisClient.keys(pattern);
+
+                if (keys && keys.length > 0) {
+                    console.log(`📋 ${keys.length} کلید pagination پیدا شد`);
+
+                    // استفاده از pipeline برای سرعت بیشتر
+                    const pipeline = redisClient.pipeline();
+
+                    keys.forEach((key: string) => {
+                        pipeline.del(key);
+                    });
+
+                    await pipeline.exec();
+                    console.log(`✅ ${keys.length} کلید pagination با Redis پاک شد`);
+                } else {
+                    console.log('ℹ️ هیچ کلید pagination‌ای برای پاک کردن پیدا نشد');
+                }
+
+                // پاک کردن کلیدهای اصلی
+                await this.clearMainKeys();
                 return;
             }
 
-            // @ts-ignore - cache-manager store.keys() might not be in types
-            const keys = await this.cacheManager.store.keys();
+            // روش 2: استفاده از Keyv Iterator (فال‌بک)
+            const store = this.getStore();
 
-            if (!keys || !Array.isArray(keys)) {
-                console.warn('⚠️ Cache keys دریافت نشد');
-                return;
+            if (store && typeof store.iterator === 'function') {
+                console.log('🔍 استفاده از Keyv Iterator برای پاک کردن cache...');
+
+                const keysToDelete: string[] = [];
+
+                try {
+                    // دریافت تمام کلیدها
+                    for await (const [key] of store.iterator(this.NAMESPACE)) {
+                        // فیلتر کلیدهای pagination
+                        if (key.includes('category:tree:') &&
+                            key !== this.CACHE_KEYS.CATEGORY_TREE) {
+                            keysToDelete.push(key);
+                        }
+                    }
+
+                    if (keysToDelete.length > 0) {
+                        await Promise.allSettled(
+                            keysToDelete.map(key => this.cacheManager.del(key))
+                        );
+                        console.log(`✅ ${keysToDelete.length} کلید pagination با Iterator پاک شد`);
+                    } else {
+                        console.log('ℹ️ هیچ کلید pagination‌ای برای پاک کردن پیدا نشد');
+                    }
+
+                    await this.clearMainKeys();
+                    return;
+                } catch (iteratorError) {
+                    console.warn('⚠️ خطا در استفاده از Iterator:', iteratorError.message);
+                }
             }
 
-            const paginationKeys = keys.filter((key: string) =>
-                key.startsWith('category:tree:') &&
-                key !== this.CACHE_KEYS.CATEGORY_TREE
-            );
+            // روش 3: فال‌بک نهایی - پاک کردن فقط کلیدهای اصلی
+            console.warn('⚠️ Redis Client و Iterator موجود نیست، فقط کلیدهای اصلی پاک می‌شوند');
+            await this.clearMainKeys();
 
-            if (paginationKeys.length > 0) {
-                await Promise.all(
-                    paginationKeys.map((key: string) => this.cacheManager.del(key))
-                );
-                console.log(`✅ ${paginationKeys.length} کلید pagination پاک شد`);
-            }
         } catch (error) {
             console.error('❌ خطا در پاک کردن cache pagination:', error);
-            // ✅ در صورت خطا، حداقل tree اصلی رو پاک کن
+
+            // فال‌بک نهایی
             try {
-                await this.cacheManager.del(this.CACHE_KEYS.CATEGORY_TREE);
-                await this.cacheManager.del(this.CACHE_KEYS.ACTIVE_CATEGORIES);
+                await this.clearMainKeys();
             } catch (fallbackError) {
                 console.error('❌ خطا در fallback پاک کردن cache:', fallbackError);
             }
+        }
+    }
+
+    /**
+     * پاک کردن کلیدهای اصلی cache
+     * متد کمکی برای استفاده در clearPaginationCache
+     */
+    private async clearMainKeys(): Promise<void> {
+        const mainKeys = [
+            this.CACHE_KEYS.CATEGORY_TREE,
+            this.CACHE_KEYS.ACTIVE_CATEGORIES,
+        ];
+
+        await Promise.allSettled(
+            mainKeys.map(key => this.cacheManager.del(key))
+        );
+
+        console.log('✅ کلیدهای اصلی cache پاک شد');
+    }
+
+    /**
+     * پاک کردن تمام cache‌های مرتبط با یک pattern خاص
+     * متد عمومی برای استفاده در جاهای دیگر
+     */
+    async clearCacheByPattern(pattern: string): Promise<number> {
+        try {
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const keys = await redisClient.keys(fullPattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                    return keys.length;
+                }
+            }
+
+            return 0;
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
+            return 0;
         }
     }
 
@@ -260,17 +396,101 @@ export class CategoryCacheService {
     async getCacheStats(): Promise<{
         hasTree: boolean;
         hasActiveCategories: boolean;
+        totalPaginationKeys?: number;
         message: string;
     }> {
-        const tree = await this.getCategoryTree();
-        const active = await this.getActiveCategories();
+        try {
+            const tree = await this.getCategoryTree();
+            const active = await this.getActiveCategories();
 
-        return {
-            hasTree: !!tree,
-            hasActiveCategories: !!active,
-            message: tree
-                ? `Tree شامل ${tree.length} دسته‌بندی در cache است`
-                : 'هیچ داده‌ای در cache نیست'
-        };
+            // شمارش کلیدهای pagination
+            let totalPaginationKeys = 0;
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:category:tree:*`;
+                const keys = await redisClient.keys(pattern);
+                totalPaginationKeys = keys ? keys.length : 0;
+            }
+
+            return {
+                hasTree: !!tree,
+                hasActiveCategories: !!active,
+                totalPaginationKeys,
+                message: tree
+                    ? `Tree شامل ${tree.length} دسته‌بندی در cache است ${totalPaginationKeys ? `و ${totalPaginationKeys} صفحه pagination` : ''}`
+                    : 'هیچ داده‌ای در cache نیست'
+            };
+        } catch (error) {
+            console.error('❌ خطا در دریافت آمار cache:', error);
+            return {
+                hasTree: false,
+                hasActiveCategories: false,
+                message: 'خطا در دریافت آمار cache'
+            };
+        }
+    }
+
+    /**
+     * بررسی سلامت Redis
+     */
+    async checkRedisHealth(): Promise<{
+        isConnected: boolean;
+        canRead: boolean;
+        canWrite: boolean;
+        storeType: string;
+        message: string;
+    }> {
+        try {
+            const store = this.getStore();
+            const redisClient = this.getRedisClient();
+
+            if (!store) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'none',
+                    message: '❌ Store موجود نیست'
+                };
+            }
+
+            if (!redisClient) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'memory',
+                    message: '⚠️ Redis Client موجود نیست - احتمالاً از memory cache استفاده می‌شود'
+                };
+            }
+
+            // تست نوشتن
+            const testKey = 'health:check:test';
+            await this.cacheManager.set(testKey, 'test', 5000);
+
+            // تست خواندن
+            const testValue = await this.cacheManager.get(testKey);
+
+            // پاک کردن کلید تست
+            await this.cacheManager.del(testKey);
+
+            return {
+                isConnected: true,
+                canRead: testValue === 'test',
+                canWrite: true,
+                storeType: 'redis',
+                message: '✅ Redis سالم است و به درستی کار می‌کند'
+            };
+        } catch (error) {
+            console.error('❌ خطا در بررسی سلامت Redis:', error);
+            return {
+                isConnected: false,
+                canRead: false,
+                canWrite: false,
+                storeType: 'unknown',
+                message: `❌ خطا: ${error.message}`
+            };
+        }
     }
 }

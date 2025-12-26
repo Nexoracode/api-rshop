@@ -74,11 +74,11 @@ export class ProductService implements IProductService {
         const filters = JSON.stringify(query.filter || {});
         const page = query.page || 1;
         const limit = query.limit || 20;
-        // const cached = await this.cacheService.getProductList(page, limit, filters);
-        // if (cached) {
-        //     this.logger.log('✅ Product list از cache');
-        //     return cached;
-        // }
+        const cached = await this.cacheService.getProductList(page, limit, filters);
+        if (cached) {
+            this.logger.log('✅ Product list از cache');
+            return cached;
+        }
 
         // لاجیک اصلی (بدون تغییر)
         const products = await paginate(query, this.productRepo, {
@@ -110,19 +110,19 @@ export class ProductService implements IProductService {
         };
 
         // ✅ ذخیره در cache
-        // await this.cacheService.setProductList(page, limit, filters, result);
-        // this.logger.log('💾 Product list ذخیره شد در cache');
+        await this.cacheService.setProductList(page, limit, filters, result);
+        this.logger.log('💾 Product list ذخیره شد در cache');
 
         return result;
     }
 
     async findOne(id: number): Promise<IProductResponse> {
         // ✅ چک cache
-        // const cached = await this.cacheService.getProductById(id);
-        // if (cached) {
-        //     this.logger.log(`✅ Product ${id} از cache`);
-        //     return cached;
-        // }
+        const cached = await this.cacheService.getProductById(id);
+        if (cached) {
+            this.logger.log(`✅ Product ${id} از cache`);
+            return cached;
+        }
 
         // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({
@@ -147,8 +147,8 @@ export class ProductService implements IProductService {
         const result = ProductMapper.toResponse(product, { cartesian: true });
 
         // ✅ ذخیره در cache
-        // await this.cacheService.setProductById(id, result);
-        // this.logger.log(`💾 Product ${id} ذخیره شد در cache`);
+        await this.cacheService.setProductById(id, result);
+        this.logger.log(`💾 Product ${id} ذخیره شد در cache`);
 
         return result;
     }
