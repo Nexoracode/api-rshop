@@ -1,6 +1,7 @@
 // src/health/health.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { CategoryCacheService } from '../category/cache';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @Controller('health') // ✅ بدون 'api' prefix
 export class HealthController {
@@ -8,6 +9,7 @@ export class HealthController {
         private categoryCacheService: CategoryCacheService,
     ) { }
 
+    @Public()
     @Get()
     async check() {
         try {
@@ -36,6 +38,7 @@ export class HealthController {
         }
     }
 
+    @Public()
     @Get('simple')
     simple() {
         return {
