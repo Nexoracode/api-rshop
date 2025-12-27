@@ -10,6 +10,7 @@ import { UploadService } from 'src/common/services/upload.service';
 import { Review } from '../review/entities/review.entity';
 import { SeoModule } from '../seo/seo.module';
 import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
+import { CatalogCacheService } from '../catalogs/cache';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProductCacheService } from './cache/product-cache.service'; // ✅ اض
     ProductService,
     UploadService,
     ProductCacheService, // ✅ اضافه شد
+    CatalogCacheService,
   ],
   controllers: [ProductController],
   exports: [ProductService],

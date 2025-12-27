@@ -69,9 +69,7 @@ export class ProductController {
     @Patch(':id')
     @UseGuards(AccessGuard)
     update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductDto, @CurrentUser() user: User) {
-        // ✅ ارسال userId به service
-        const userId = user.id;
-        return this.productService.update(id, data, userId);
+        return this.productService.update(id, data, user.id);
     }
 
     @Get(':id')

@@ -21,6 +21,7 @@ import { Review } from '../review/entities/review.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
 import e from 'express';
+import { CatalogCacheService } from '../catalogs/cache';
 
 // Event های موجود
 export class ProductCreatedEvent {
@@ -68,6 +69,7 @@ export class ProductService implements IProductService {
         private dataSource: DataSource,
         private readonly eventEmitter: EventEmitter2,
         private readonly cacheService: ProductCacheService, // ✅ اضافه شد
+        private readonly catalogCatchService: CatalogCacheService
     ) { }
 
     async findAll(query: PaginateQuery): Promise<Object> {
@@ -264,6 +266,7 @@ export class ProductService implements IProductService {
 
         // ✅ پاک کردن cache بعد از create
         await this.cacheService.clearListCaches();
+        await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log('🗑️ Cache لیست‌ها پاک شد بعد از create');
 
         return result;
@@ -353,6 +356,7 @@ export class ProductService implements IProductService {
 
         // ✅ پاک کردن cache بعد از update
         await this.cacheService.clearProductCache(id);
+        await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log(`🗑️ Cache پاک شد برای product ${id}`);
 
         return result;
@@ -433,6 +437,7 @@ export class ProductService implements IProductService {
 
         // ✅ پاک کردن cache بعد از bulk update
         await this.cacheService.clearListCaches();
+        await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log(`🗑️ Cache پاک شد بعد از bulk update`);
 
         return result;
@@ -456,6 +461,7 @@ export class ProductService implements IProductService {
 
         // ✅ پاک کردن cache بعد از delete
         await this.cacheService.clearProductCache(id);
+        await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log(`🗑️ Cache پاک شد برای product ${id}`);
 
         return result;
@@ -482,6 +488,7 @@ export class ProductService implements IProductService {
 
         // ✅ پاک کردن cache بعد از bulk delete
         await this.cacheService.clearListCaches();
+        await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log(`🗑️ Cache پاک شد بعد از bulk delete`);
 
         return result;
