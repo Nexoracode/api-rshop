@@ -83,7 +83,10 @@ export class ProductController {
     @Get('site/:id')
     async findOneForSite(@Param('id', ParseIntPipe) id: number) {
         const product = await this.productService.findOneForSite(id);
-        const seo = this.seoService.generateProductMeta(product);
+        let seo: any = null;
+        if (product.isVisible) {
+            seo = this.seoService.generateProductMeta(product);
+        }
         return { product, seo };
     }
 

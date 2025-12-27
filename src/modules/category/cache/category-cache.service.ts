@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ICategoryResponse } from '../interfaces/category.response.interface';
+import { Category } from '../entities/category.entity';
 
 /**
  * سرویس مدیریت Cache برای Category
@@ -160,7 +161,7 @@ export class CategoryCacheService {
     /**
      * ذخیره category با slug در cache
      */
-    async setCategoryBySlug(slug: string, data: ICategoryResponse): Promise<void> {
+    async setCategoryBySlug(slug: string, data: Category): Promise<void> {
         await this.cacheManager.set(
             this.CACHE_KEYS.CATEGORY_BY_SLUG(slug),
             data,

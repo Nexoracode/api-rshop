@@ -20,6 +20,7 @@ import { ReviewMapper } from '../review/mappers/review.mapper';
 import { Review } from '../review/entities/review.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
+import e from 'express';
 
 // Event های موجود
 export class ProductCreatedEvent {
@@ -153,24 +154,44 @@ export class ProductService implements IProductService {
         return result;
     }
 
-    async findOneForSite(id: number): Promise<IProductResponse> {
+    async findOneForSite(id: number) {
         // ✅ چک cache (با کلید متفاوت برای site)
         const cached = await this.cacheService.getProductById(id);
-        if (cached && (cached as any).reviews) {
-            this.logger.log(`✅ Product ${id} for site از cache`);
-            return cached;
+        if (cached) {
+            // اگر در cache موجود است، بررسی وضعیت visibility
+            if ((cached as any).product && (cached as any).product.isVisible === false) {
+                return {
+                    message: 'این محصول در حال حاضر قابل نمایش نیست',
+                    isVisible: false
+                };
+            }
+
+            if (cached && (cached as any).reviews) {
+                this.logger.log(`✅ Product ${id} for site از cache`);
+                return cached;
+            }
         }
 
-        // لاجیک اصلی (بدون تغییر)
+        // لاجیک اصلی
         const product = await this.productRepo.findOne({
-            where: { id, isVisible: true },
+            where: { id },
             relations,
         });
+
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
 
+        // بررسی visibility
+        if (!product.isVisible) {
+            return {
+                message: 'این محصول در حال حاضر قابل نمایش نیست',
+                isVisible: false
+            };
+        }
+
+        // ادامه لاجیک برای محصولات visible
         const reviews = await this.reviewRepo.find({
             where: {
-                product: { id: product.id, isVisible: true },
+                product: { id: product.id },
                 isApproved: true,
             },
             relations: ['user', 'product'],

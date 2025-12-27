@@ -30,7 +30,7 @@ export class RecentViewMapper {
                 discountPercent,
                 finalPrice,
                 image: product.mediaPinned?.url || null,
-                isAvailable: product.isActive,
+                isAvailable: product.isVisible && product.stock > 0,
             },
         };
     }

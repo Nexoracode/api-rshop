@@ -36,6 +36,11 @@ export class CategoryService implements ICategoryService {
     }
 
     async findOneSlug(slug: string) {
+        const cached = await this.cacheService.getCategoryBySlug(slug);
+        if (cached) {
+            console.log(`✅ Category slgu ${slug} for site to cache`);
+            return cached as any;
+        }
         const node = await this.treeCatRepo.findOne({
             where: { slug },
             relations: ['parent']
@@ -45,6 +50,8 @@ export class CategoryService implements ICategoryService {
         const category = await this.treeCatRepo.findDescendantsTree(node, {
             relations: ['parent']
         });
+        await this.cacheService.setCategoryBySlug(slug, category);
+        console.log(`💾 Category slug ${slug} for site ذخیره شد در cache`);
         return category;
     }
 
