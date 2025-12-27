@@ -144,7 +144,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                         stores: [
                             new Keyv({
                                 store: keyvRedis,
-                                namespace: 'cache',
+                                namespace: 'rshop',
                                 ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                             }),
                         ],
