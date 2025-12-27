@@ -11,7 +11,11 @@ import { AllExceptionsFilter } from './common/interceptors/http-exception';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: process.env.NODE_ENV === 'production' ? [
+      'warn', 'error'
+    ] : ['warn', 'error', 'debug', 'log', 'verbose']
+  });
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
@@ -55,7 +59,6 @@ async function bootstrap() {
     logger.warn('⚠️ SIGTERM signal received: closing HTTP server');
     await app.close();
   });
-
   process.on('SIGINT', async () => {
     logger.warn('⚠️ SIGINT signal received: closing HTTP server');
     await app.close();
