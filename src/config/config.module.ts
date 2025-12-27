@@ -25,13 +25,9 @@ const isProduction = process.env.NODE_ENV === 'production';
     imports: [
         AuthModule,
         ScheduleModule.forRoot(),
-        // ✅ فعال‌سازی Event-Driven Architecture
         EventEmitterModule.forRoot({
-            // استفاده از wildcard
             wildcard: false,
-            // حداکثر تعداد listener ها
             maxListeners: 10,
-            // نمایش warning در صورت memory leak
             verboseMemoryLeak: true,
         }),
         TypeOrmModule.forRoot(dataSourceOption),
@@ -54,27 +50,20 @@ const isProduction = process.env.NODE_ENV === 'production';
             }),
         }),
 
-        // ✅ Redis Cache - ساده و کاربردی
         CacheModule.registerAsync({
             isGlobal: true,
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
                 const isProduction = process.env.NODE_ENV === 'production';
-
-                console.log('🔧 [Cache Config] Environment:', process.env.NODE_ENV);
-                console.log('🔧 [Cache Config] Is Production:', isProduction);
-
-                // تنظیمات پایه redis
                 const redisConfig: any = {
                     socket: {
                         host: configService.get<string>('REDIS_HOST', 'localhost'),
                         port: configService.get<number>('REDIS_PORT', 6379),
-                        connectTimeout: 10000, // ✅ اضافه کردن timeout
+                        connectTimeout: 10000,
                         reconnectStrategy: (retries: number) => {
-                            console.log(`🔄 [Redis] تلاش اتصال مجدد #${retries}`);
+                            console.log(`🔄 [Redis] Retry #${retries}`);
                             if (retries > 10) {
-                                console.error('❌ [Redis] حداکثر تلاش برای اتصال مجدد');
                                 return new Error('Redis connection failed');
                             }
                             return Math.min(retries * 100, 3000);
@@ -82,37 +71,28 @@ const isProduction = process.env.NODE_ENV === 'production';
                     },
                 };
 
-                console.log('🔧 [Cache Config] Redis Host:', redisConfig.socket.host);
-                console.log('🔧 [Cache Config] Redis Port:', redisConfig.socket.port);
-
-                // تنظیمات production
                 if (isProduction) {
                     const password = configService.get<string>('REDIS_PASSWORD');
                     if (password) {
                         redisConfig.password = password;
-                        console.log('🔧 [Cache Config] Redis Password: ***');
                     }
-
                     const db = configService.get<number>('REDIS_DB', 0);
                     if (db !== undefined && db !== 0) {
                         redisConfig.database = db;
-                        console.log('🔧 [Cache Config] Redis DB:', db);
                     }
-
                     const useTLS = configService.get<string>('REDIS_TLS');
                     if (useTLS === 'true') {
                         redisConfig.socket.tls = true;
                         redisConfig.socket.rejectUnauthorized = false;
-                        console.log('🔧 [Cache Config] Redis TLS: enabled');
                     }
                 }
 
                 try {
                     const redisUrl = `redis://${redisConfig.socket.host}:${redisConfig.socket.port}`;
-                    console.log('🔗 [Redis] در حال اتصال به:', redisUrl);
+                    console.log('🔗 [Redis] Connecting to:', redisUrl);
 
                     const keyvRedisOptions: any = {
-                        maxRetriesPerRequest: 3, // ✅ محدود کردن retry
+                        maxRetriesPerRequest: 3,
                     };
 
                     if (isProduction) {
@@ -125,52 +105,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                     } else {
                         keyvRedisOptions.db = 0;
                     }
-
                     const keyvRedis = new KeyvRedis(redisUrl, keyvRedisOptions);
-
-                    // ✅ تست اتصال
-                    const testKey = 'test:connection';
-                    const keyv = new Keyv({
-                        store: keyvRedis,
-                        namespace: 'rshop',
-                    });
-
-                    try {
-                        await keyv.set(testKey, 'test', 5000);
-                        const testValue = await keyv.get(testKey);
-                        await keyv.delete(testKey);
-
-                        if (testValue === 'test') {
-                            console.log('✅ [Redis] اتصال موفق و تست شد');
-                        } else {
-                            throw new Error('Redis connection test failed');
-                        }
-                    } catch (testError) {
-                        console.error('❌ [Redis] تست اتصال ناموفق:', testError.message);
-                        throw testError;
-                    }
-
-                    // ✅ Event listeners برای مانیتورینگ
-                    keyvRedis.on('error', (err: Error) => {
-                        console.error('❌ [Redis Error]:', err.message);
-                    });
-
-                    keyvRedis.on('connect', () => {
-                        console.log('✅ [Redis] متصل شد');
-                    });
-
-                    keyvRedis.on('ready', () => {
-                        console.log('✅ [Redis] آماده است');
-                    });
-
-                    keyvRedis.on('reconnecting', () => {
-                        console.log('🔄 [Redis] در حال اتصال مجدد...');
-                    });
-
-                    keyvRedis.on('end', () => {
-                        console.log('⚠️ [Redis] اتصال قطع شد');
-                    });
-
                     return {
                         stores: [
                             new Keyv({
@@ -182,11 +117,9 @@ const isProduction = process.env.NODE_ENV === 'production';
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
                 } catch (error) {
-                    console.error('❌ [Redis] خطای اتصال:', error.message);
-                    console.error('❌ [Redis] Stack:', error.stack);
-                    console.warn('⚠️ [Cache] بازگشت به Memory Cache');
+                    console.error('❌ [Redis] Connection failed:', error.message);
+                    console.warn('⚠️ [Cache] Falling back to Memory Cache');
 
-                    // ✅ Fallback به Memory Cache
                     return {
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
@@ -194,7 +127,6 @@ const isProduction = process.env.NODE_ENV === 'production';
                 }
             },
         }),
-
         ...(isProduction ? [
             ThrottlerModule.forRootAsync({
                 imports: [ConfigModule],

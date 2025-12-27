@@ -87,11 +87,34 @@ export class OrderCacheService {
      * دریافت Redis Client از store
      */
     private getRedisClient(): any {
-        const store = this.getStore();
+        const stores: any = this.cacheManager.stores;
 
-        // در Keyv، Redis client در store.redis قرار داره
-        if (store?.redis) {
-            return store.redis;
+        if (Array.isArray(stores) && stores.length > 0) {
+            const store = stores[0];
+
+            // ✅ دسترسی به Redis از wrapper سفارشی
+            if (store?.opts?.store?.redis) {
+                return store.opts.store.redis;
+            }
+
+            // سایر مسیرها
+            if (store?.redis) {
+                return store.redis;
+            }
+
+            if (store?._store?.redis) {
+                return store._store.redis;
+            }
+        }
+
+        if (stores && typeof stores === 'object' && !Array.isArray(stores)) {
+            if (stores?.opts?.store?.redis) {
+                return stores.opts.store.redis;
+            }
+
+            if (stores?.redis) {
+                return stores.redis;
+            }
         }
 
         return null;

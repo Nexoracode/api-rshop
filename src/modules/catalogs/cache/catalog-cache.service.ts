@@ -14,23 +14,23 @@ export class CatalogCacheService {
      */
     private readonly CACHE_KEYS = {
         // Category Products
-        CATEGORY_PRODUCTS: (slug: string, queryHash: string) => 
+        CATEGORY_PRODUCTS: (slug: string, queryHash: string) =>
             `catalog:category:${slug}:${queryHash}`,
-        CATEGORY_FILTERS: (slug: string) => 
+        CATEGORY_FILTERS: (slug: string) =>
             `catalog:filters:${slug}`,
-        
+
         // Search
-        SEARCH_RESULTS: (term: string, limit: number) => 
+        SEARCH_RESULTS: (term: string, limit: number) =>
             `catalog:search:${this.normalizeSearchTerm(term)}:${limit}`,
-        SEARCH_SUGGESTIONS: (term: string) => 
+        SEARCH_SUGGESTIONS: (term: string) =>
             `catalog:suggest:${this.normalizeSearchTerm(term)}`,
-        
+
         // Filters Components
-        BRAND_LIST: (categorySlug?: string) => 
+        BRAND_LIST: (categorySlug?: string) =>
             categorySlug ? `catalog:brands:category:${categorySlug}` : 'catalog:brands:all',
-        PRICE_RANGE: (categorySlug: string) => 
+        PRICE_RANGE: (categorySlug: string) =>
             `catalog:price-range:${categorySlug}`,
-        ATTRIBUTE_VALUES: (categorySlug: string, attrId: number) => 
+        ATTRIBUTE_VALUES: (categorySlug: string, attrId: number) =>
             `catalog:attr:${categorySlug}:${attrId}`,
     };
 
@@ -48,10 +48,69 @@ export class CatalogCacheService {
         ATTRIBUTE_VALUES: 1800 * 1000,      // 30 دقیقه
     };
 
+    /**
+     * Namespace برای Redis (از config شما)
+     */
+    private readonly NAMESPACE = 'rshop';
+
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
     ) { }
+
+    /**
+     * دریافت store اول از لیست stores
+     */
+    private getStore(): any {
+        const stores: any = this.cacheManager.stores;
+
+        if (Array.isArray(stores) && stores.length > 0) {
+            return stores[0];
+        }
+
+        if (stores && typeof stores === 'object') {
+            return stores;
+        }
+
+        return null;
+    }
+
+    /**
+     * دریافت Redis Client از store
+     */
+    private getRedisClient(): any {
+        const stores: any = this.cacheManager.stores;
+
+        if (Array.isArray(stores) && stores.length > 0) {
+            const store = stores[0];
+
+            // ✅ دسترسی به Redis از wrapper سفارشی
+            if (store?.opts?.store?.redis) {
+                return store.opts.store.redis;
+            }
+
+            // سایر مسیرها
+            if (store?.redis) {
+                return store.redis;
+            }
+
+            if (store?._store?.redis) {
+                return store._store.redis;
+            }
+        }
+
+        if (stores && typeof stores === 'object' && !Array.isArray(stores)) {
+            if (stores?.opts?.store?.redis) {
+                return stores.opts.store.redis;
+            }
+
+            if (stores?.redis) {
+                return stores.redis;
+            }
+        }
+
+        return null;
+    }
 
     // ==================== Helper Methods ====================
 
@@ -117,19 +176,43 @@ export class CatalogCacheService {
      */
     async clearCategoryProducts(slug: string): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const categoryKeys = keys.filter((key: string) =>
-                key.startsWith(`catalog:category:${slug}:`)
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                categoryKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:catalog:category:${slug}:*`;
+                const keys = await redisClient.keys(pattern);
 
-            console.log(`🗑️ پاک شد ${categoryKeys.length} کلید برای category ${slug}`);
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید محصولات category ${slug} پاک شد`);
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith(`catalog:category:${slug}:`)) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید محصولات category ${slug} پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error(`خطا در پاک کردن cache category ${slug}:`, error);
+            console.error(`❌ خطا در پاک کردن cache category ${slug}:`, error);
         }
     }
 
@@ -170,7 +253,7 @@ export class CatalogCacheService {
      */
     async getSearchResults(term: string, limit: number = 20): Promise<any> {
         if (!term || term.trim().length < 2) return undefined;
-        
+
         const result = await this.cacheManager.get(
             this.CACHE_KEYS.SEARCH_RESULTS(term, limit)
         );
@@ -182,7 +265,7 @@ export class CatalogCacheService {
      */
     async setSearchResults(term: string, limit: number, data: any): Promise<void> {
         if (!term || term.trim().length < 2) return;
-        
+
         await this.cacheManager.set(
             this.CACHE_KEYS.SEARCH_RESULTS(term, limit),
             data,
@@ -195,7 +278,7 @@ export class CatalogCacheService {
      */
     async getSearchSuggestions(term: string): Promise<any> {
         if (!term || term.trim().length < 2) return undefined;
-        
+
         const result = await this.cacheManager.get(
             this.CACHE_KEYS.SEARCH_SUGGESTIONS(term)
         );
@@ -207,7 +290,7 @@ export class CatalogCacheService {
      */
     async setSearchSuggestions(term: string, data: any): Promise<void> {
         if (!term || term.trim().length < 2) return;
-        
+
         await this.cacheManager.set(
             this.CACHE_KEYS.SEARCH_SUGGESTIONS(term),
             data,
@@ -220,19 +303,51 @@ export class CatalogCacheService {
      */
     async clearSearchCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const searchKeys = keys.filter((key: string) =>
-                key.startsWith('catalog:search:') || key.startsWith('catalog:suggest:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                searchKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const patterns = [
+                    `${this.NAMESPACE}:catalog:search:*`,
+                    `${this.NAMESPACE}:catalog:suggest:*`
+                ];
 
-            console.log(`🗑️ پاک شد ${searchKeys.length} کلید جستجو`);
+                let totalDeleted = 0;
+
+                for (const pattern of patterns) {
+                    const keys = await redisClient.keys(pattern);
+                    if (keys && keys.length > 0) {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                        totalDeleted += keys.length;
+                    }
+                }
+
+                console.log(`✅ ${totalDeleted} کلید جستجو پاک شد`);
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('catalog:search:') || key.startsWith('catalog:suggest:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید جستجو پاک شد`);
+                }
+            }
         } catch (error) {
-            console.error('خطا در پاک کردن cache جستجو:', error);
+            console.error('❌ خطا در پاک کردن cache جستجو:', error);
         }
     }
 
@@ -311,8 +426,8 @@ export class CatalogCacheService {
         await this.clearCategoryProducts(slug);
         await this.clearCategoryFilters(slug);
         await this.cacheManager.del(this.CACHE_KEYS.PRICE_RANGE(slug));
-        
-        console.log(`🗑️ تمام cache دسته‌بندی ${slug} پاک شد`);
+
+        console.log(`✅ تمام cache دسته‌بندی ${slug} پاک شد`);
     }
 
     /**
@@ -320,19 +435,80 @@ export class CatalogCacheService {
      */
     async clearAllCatalogCache(): Promise<void> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const catalogKeys = keys.filter((key: string) =>
-                key.startsWith('catalog:')
-            );
+            const redisClient = this.getRedisClient();
 
-            await Promise.all(
-                catalogKeys.map((key: string) => this.cacheManager.del(key))
-            );
+            if (redisClient && typeof redisClient.keys === 'function') {
+                console.log('🔍 پاک کردن تمام cache catalog با Redis...');
 
-            console.log(`🗑️ پاک شد ${catalogKeys.length} کلید catalog`);
+                const pattern = `${this.NAMESPACE}:catalog:*`;
+                const keys = await redisClient.keys(pattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید catalog پاک شد`);
+                } else {
+                    console.log('ℹ️ هیچ کلید catalog‌ای برای پاک کردن پیدا نشد');
+                }
+                return;
+            }
+
+            // فال‌بک
+            const store = this.getStore();
+
+            if (store && typeof store.iterator === 'function') {
+                console.log('🔍 پاک کردن cache catalog با Iterator...');
+
+                const keysToDelete: string[] = [];
+
+                for await (const [key] of store.iterator(this.NAMESPACE)) {
+                    if (key.startsWith('catalog:')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                if (keysToDelete.length > 0) {
+                    await Promise.allSettled(
+                        keysToDelete.map(key => this.cacheManager.del(key))
+                    );
+                    console.log(`✅ ${keysToDelete.length} کلید catalog پاک شد`);
+                }
+                return;
+            }
+
+            console.warn('⚠️ امکان پاک کردن کامل cache موجود نیست');
         } catch (error) {
-            console.error('خطا در پاک کردن cache catalog:', error);
+            console.error('❌ خطا در پاک کردن cache catalog:', error);
+        }
+    }
+
+    /**
+     * پاک کردن cache با pattern
+     */
+    async clearCacheByPattern(pattern: string): Promise<number> {
+        try {
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const keys = await redisClient.keys(fullPattern);
+
+                if (keys && keys.length > 0) {
+                    const pipeline = redisClient.pipeline();
+                    keys.forEach((key: string) => pipeline.del(key));
+                    await pipeline.exec();
+
+                    console.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                    return keys.length;
+                }
+            }
+
+            return 0;
+        } catch (error) {
+            console.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
+            return 0;
         }
     }
 
@@ -346,18 +522,42 @@ export class CatalogCacheService {
         filterKeys: number;
     }> {
         try {
-            // @ts-ignore
-            const keys = await this.cacheManager.store.keys();
-            const catalogKeys = keys.filter((key: string) => key.startsWith('catalog:'));
+            const redisClient = this.getRedisClient();
+
+            if (redisClient && typeof redisClient.keys === 'function') {
+                const pattern = `${this.NAMESPACE}:catalog:*`;
+                const keys = await redisClient.keys(pattern);
+
+                if (!keys || keys.length === 0) {
+                    return {
+                        totalKeys: 0,
+                        categoryKeys: 0,
+                        searchKeys: 0,
+                        filterKeys: 0,
+                    };
+                }
+
+                // حذف namespace از کلیدها برای بررسی
+                const cleanKeys = keys.map((key: string) =>
+                    key.replace(`${this.NAMESPACE}:`, '')
+                );
+
+                return {
+                    totalKeys: keys.length,
+                    categoryKeys: cleanKeys.filter((k: string) => k.includes('category:')).length,
+                    searchKeys: cleanKeys.filter((k: string) => k.includes('search:') || k.includes('suggest:')).length,
+                    filterKeys: cleanKeys.filter((k: string) => k.includes('filters:') || k.includes('brands:') || k.includes('price-range:') || k.includes('attr:')).length,
+                };
+            }
 
             return {
-                totalKeys: catalogKeys.length,
-                categoryKeys: catalogKeys.filter((k: string) => k.includes('category:')).length,
-                searchKeys: catalogKeys.filter((k: string) => k.includes('search:') || k.includes('suggest:')).length,
-                filterKeys: catalogKeys.filter((k: string) => k.includes('filters:') || k.includes('brands:') || k.includes('price-range:') || k.includes('attr:')).length,
+                totalKeys: 0,
+                categoryKeys: 0,
+                searchKeys: 0,
+                filterKeys: 0,
             };
         } catch (error) {
-            console.error('خطا در گرفتن آمار cache:', error);
+            console.error('❌ خطا در گرفتن آمار cache:', error);
             return {
                 totalKeys: 0,
                 categoryKeys: 0,
@@ -377,7 +577,7 @@ export class CatalogCacheService {
             const result = await this.cacheManager.get<T>(key);
             return result;
         } catch (err) {
-            console.warn('Cache read error:', err.message);
+            console.warn('❌ Cache read error:', err.message);
             return undefined;
         }
     }
@@ -387,9 +587,9 @@ export class CatalogCacheService {
      */
     async set<T>(key: string, value: T, ttl = 300): Promise<void> {
         try {
-            await this.cacheManager.set(key, value, ttl);
+            await this.cacheManager.set(key, value, ttl * 1000); // ✅ تبدیل به میلی‌ثانیه
         } catch (err) {
-            console.warn('Cache write error:', err.message);
+            console.warn('❌ Cache write error:', err.message);
         }
     }
 
@@ -398,5 +598,73 @@ export class CatalogCacheService {
      */
     async clear(): Promise<void> {
         await this.clearAllCatalogCache();
+    }
+
+    /**
+     * بررسی سلامت Redis
+     */
+    async checkRedisHealth(): Promise<{
+        isConnected: boolean;
+        canRead: boolean;
+        canWrite: boolean;
+        storeType: string;
+        message: string;
+    }> {
+        try {
+            const testKey = 'health:check:catalog:test';
+            const testValue = `test-${Date.now()}`;
+
+            await this.cacheManager.set(testKey, testValue, 5000);
+            const retrievedValue = await this.cacheManager.get(testKey);
+            await this.cacheManager.del(testKey);
+
+            const isWorking = retrievedValue === testValue;
+
+            if (!isWorking) {
+                return {
+                    isConnected: false,
+                    canRead: false,
+                    canWrite: false,
+                    storeType: 'unknown',
+                    message: '❌ تست Read/Write ناموفق بود'
+                };
+            }
+
+            const store = this.getStore();
+            let storeType = 'unknown';
+
+            if (store) {
+                if (
+                    store.redis ||
+                    store.opts?.store?.redis ||
+                    store._store?.redis ||
+                    store.client ||
+                    store.opts?.store?.client
+                ) {
+                    storeType = 'redis';
+                } else {
+                    storeType = 'memory';
+                }
+            }
+
+            return {
+                isConnected: true,
+                canRead: true,
+                canWrite: true,
+                storeType: storeType,
+                message: storeType === 'redis'
+                    ? '✅ Redis سالم است و به درستی کار می‌کند'
+                    : '⚠️ Cache کار می‌کند اما از Memory استفاده می‌شود'
+            };
+        } catch (error) {
+            console.error('❌ خطا در بررسی سلامت cache:', error);
+            return {
+                isConnected: false,
+                canRead: false,
+                canWrite: false,
+                storeType: 'error',
+                message: `❌ خطا: ${error.message}`
+            };
+        }
     }
 }
