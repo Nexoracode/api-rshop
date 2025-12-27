@@ -56,69 +56,98 @@ const isProduction = process.env.NODE_ENV === 'production';
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
                 const isProduction = process.env.NODE_ENV === 'production';
-                const redisConfig: any = {
-                    socket: {
-                        host: configService.get<string>('REDIS_HOST', 'localhost'),
-                        port: configService.get<number>('REDIS_PORT', 6379),
-                        connectTimeout: 10000,
-                        reconnectStrategy: (retries: number) => {
-                            console.log(`🔄 [Redis] Retry #${retries}`);
-                            if (retries > 10) {
-                                return new Error('Redis connection failed');
-                            }
-                            return Math.min(retries * 100, 3000);
-                        },
-                    },
-                };
-
-                if (isProduction) {
-                    const password = configService.get<string>('REDIS_PASSWORD');
-                    if (password) {
-                        redisConfig.password = password;
-                    }
-                    const db = configService.get<number>('REDIS_DB', 0);
-                    if (db !== undefined && db !== 0) {
-                        redisConfig.database = db;
-                    }
-                    const useTLS = configService.get<string>('REDIS_TLS');
-                    if (useTLS === 'true') {
-                        redisConfig.socket.tls = true;
-                        redisConfig.socket.rejectUnauthorized = false;
-                    }
-                }
+                console.log('[Redis Config] ================');
+                console.log('NODE_ENV:', process.env.NODE_ENV);
+                console.log('REDIS_HOST:', process.env.REDIS_HOST);
+                console.log('REDIS_PORT:', process.env.REDIS_PORT);
+                console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD ? `SET (${process.env.REDIS_PASSWORD.length} chars)` : 'NOT SET');
+                console.log('REDIS_DB:', process.env.REDIS_DB);
+                console.log('[Redis Config] ================');
+                const redisHost = configService.get<string>('REDIS_HOST', 'localhost');
+                const redisPort = configService.get<number>('REDIS_PORT', 6379);
 
                 try {
-                    const redisUrl = `redis://${redisConfig.socket.host}:${redisConfig.socket.port}`;
-                    console.log('🔗 [Redis] Connecting to:', redisUrl);
+                    const redisUrl = `redis://${redisHost}:${redisPort}`;
 
                     const keyvRedisOptions: any = {
                         maxRetriesPerRequest: 3,
                     };
 
+                    // ✅ Production settings - مستقیم به keyvRedisOptions اضافه کن
                     if (isProduction) {
-                        if (redisConfig.password) {
-                            keyvRedisOptions.password = redisConfig.password;
+                        const password = configService.get<string>('REDIS_PASSWORD');
+                        if (password) {
+                            keyvRedisOptions.password = password;  // ✅ اینجا
+                            console.log('[Redis] Password set from env'); // debug
                         }
-                        if (redisConfig.database !== undefined) {
-                            keyvRedisOptions.db = redisConfig.database;
+
+                        const db = configService.get<number>('REDIS_DB', 0);
+                        if (db !== undefined && db !== 0) {
+                            keyvRedisOptions.db = db;
+                        }
+
+                        // ⚠️ TLS باید توی socket باشه نه مستقیم
+                        const useTLS = configService.get<string>('REDIS_TLS');
+                        if (useTLS === 'true') {
+                            keyvRedisOptions.tls = {
+                                rejectUnauthorized: false,
+                            };
                         }
                     } else {
                         keyvRedisOptions.db = 0;
                     }
+
+                    console.log('[Redis] Options:', {
+                        host: redisHost,
+                        port: redisPort,
+                        hasPassword: !!keyvRedisOptions.password,
+                        db: keyvRedisOptions.db,
+                        hasTLS: !!keyvRedisOptions.tls,
+                    });
+
                     const keyvRedis = new KeyvRedis(redisUrl, keyvRedisOptions);
+
+                    // Event listeners
+                    keyvRedis.on('error', (err: Error) => {
+                        console.error('[Redis Error]:', err.message);
+                    });
+
+                    keyvRedis.on('connect', () => {
+                        console.log('[Redis] Connected to', redisUrl);
+                    });
+
+                    keyvRedis.on('ready', () => {
+                        console.log('[Redis] Ready');
+                    });
+
+                    // Patch delete
+                    const originalDelete = keyvRedis.delete.bind(keyvRedis);
+                    keyvRedis.delete = async function (key: string): Promise<boolean> {
+                        try {
+                            if (this.redis && typeof this.redis.del === 'function') {
+                                const result = await this.redis.del(key);
+                                return result > 0;
+                            }
+                            return await originalDelete(key);
+                        } catch (error) {
+                            console.error('[Redis] Delete error:', error.message);
+                            return false;
+                        }
+                    };
+
                     return {
                         stores: [
                             new Keyv({
                                 store: keyvRedis,
-                                namespace: 'rshop',
+                                namespace: '',
                             }),
                         ],
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
                 } catch (error) {
-                    console.error('❌ [Redis] Connection failed:', error.message);
-                    console.warn('⚠️ [Cache] Falling back to Memory Cache');
+                    console.error('[Redis] Connection failed:', error.message);
+                    console.warn('[Cache] Falling back to Memory Cache');
 
                     return {
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
