@@ -414,47 +414,71 @@ export class CategoryCacheService {
         }
     }
 
+    // src/category/cache/category-cache.service.ts
     /**
      * گرفتن آمار cache
      */
     async getCacheStats(): Promise<{
+        totalKeys: number;
         hasTree: boolean;
         hasActiveCategories: boolean;
-        totalPaginationKeys?: number;
+        totalPaginationKeys: number;
         message: string;
     }> {
         try {
-            const tree = await this.getCategoryTree();
-            const active = await this.getActiveCategories();
-
-            // شمارش کلیدهای pagination
-            let totalPaginationKeys = 0;
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:category:tree:*`;
+                const pattern = `${this.NAMESPACE}:category:*`;
                 const keys = await redisClient.keys(pattern);
-                totalPaginationKeys = keys ? keys.length : 0;
+
+                if (!keys || keys.length === 0) {
+                    return {
+                        totalKeys: 0,
+                        hasTree: false,
+                        hasActiveCategories: false,
+                        totalPaginationKeys: 0,
+                        message: 'هیچ کلید category‌ای در cache وجود ندارد'
+                    };
+                }
+
+                const cleanKeys = keys.map((key: string) =>
+                    key.replace(`${this.NAMESPACE}:`, '')
+                );
+
+                const hasTree = cleanKeys.some(k => k === 'category:tree');
+                const hasActiveCategories = cleanKeys.some(k => k === 'category:tree:active');
+                const totalPaginationKeys = cleanKeys.filter(k => k.includes(':page:')).length;
+
+                return {
+                    totalKeys: keys.length,
+                    hasTree,
+                    hasActiveCategories,
+                    totalPaginationKeys,
+                    message: hasTree
+                        ? '✅ Cache فعال است'
+                        : '⚠️ Cache درخت دسته‌بندی موجود نیست'
+                };
             }
 
             return {
-                hasTree: !!tree,
-                hasActiveCategories: !!active,
-                totalPaginationKeys,
-                message: tree
-                    ? `Tree شامل ${tree.length} دسته‌بندی در cache است ${totalPaginationKeys ? `و ${totalPaginationKeys} صفحه pagination` : ''}`
-                    : 'هیچ داده‌ای در cache نیست'
-            };
-        } catch (error) {
-            console.error('❌ خطا در دریافت آمار cache:', error);
-            return {
+                totalKeys: 0,
                 hasTree: false,
                 hasActiveCategories: false,
-                message: 'خطا در دریافت آمار cache'
+                totalPaginationKeys: 0,
+                message: '⚠️ Redis Client موجود نیست'
+            };
+        } catch (error) {
+            console.log('❌ خطا در گرفتن آمار cache:', error);
+            return {
+                totalKeys: 0,
+                hasTree: false,
+                hasActiveCategories: false,
+                totalPaginationKeys: 0,
+                message: `❌ خطا: ${error.message}`
             };
         }
     }
-
     /**
      * بررسی سلامت Redis
      */

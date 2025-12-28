@@ -462,25 +462,21 @@ export class HomePageCacheService {
         }
     }
 
+    // src/homepage/services/homepage-cache.service.ts
     /**
      * گرفتن آمار cache
      */
     async getCacheStats(): Promise<{
+        totalKeys: number;
         hasFullPage: boolean;
         hasActiveSliders: boolean;
         hasActiveSections: boolean;
         hasActiveBanners: boolean;
-        totalKeys: number;
         sliderKeys: number;
         sectionKeys: number;
         bannerKeys: number;
     }> {
         try {
-            const fullPage = await this.getHomePageData();
-            const sliders = await this.getActiveHeroSliders();
-            const sections = await this.getActiveHomeSections();
-            const banners = await this.getActiveSideBanners();
-
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
@@ -489,64 +485,51 @@ export class HomePageCacheService {
 
                 if (!keys || keys.length === 0) {
                     return {
-                        hasFullPage: !!fullPage,
-                        hasActiveSliders: !!sliders,
-                        hasActiveSections: !!sections,
-                        hasActiveBanners: !!banners,
                         totalKeys: 0,
+                        hasFullPage: false,
+                        hasActiveSliders: false,
+                        hasActiveSections: false,
+                        hasActiveBanners: false,
                         sliderKeys: 0,
                         sectionKeys: 0,
                         bannerKeys: 0,
                     };
                 }
 
-                // حذف namespace از کلیدها برای بررسی
                 const cleanKeys = keys.map((key: string) =>
                     key.replace(`${this.NAMESPACE}:`, '')
                 );
 
-                const sliderKeys = cleanKeys.filter((key: string) =>
-                    key.includes('hero-slider')
-                );
-
-                const sectionKeys = cleanKeys.filter((key: string) =>
-                    key.includes('section')
-                );
-
-                const bannerKeys = cleanKeys.filter((key: string) =>
-                    key.includes('banner')
-                );
-
                 return {
-                    hasFullPage: !!fullPage,
-                    hasActiveSliders: !!sliders,
-                    hasActiveSections: !!sections,
-                    hasActiveBanners: !!banners,
                     totalKeys: keys.length,
-                    sliderKeys: sliderKeys.length,
-                    sectionKeys: sectionKeys.length,
-                    bannerKeys: bannerKeys.length,
+                    hasFullPage: cleanKeys.some(k => k === 'homepage:full'),
+                    hasActiveSliders: cleanKeys.some(k => k === 'homepage:hero-sliders:active'),
+                    hasActiveSections: cleanKeys.some(k => k === 'homepage:sections:active'),
+                    hasActiveBanners: cleanKeys.some(k => k === 'homepage:side-banners:active'),
+                    sliderKeys: cleanKeys.filter(k => k.includes('hero-sliders:')).length,
+                    sectionKeys: cleanKeys.filter(k => k.includes('sections:')).length,
+                    bannerKeys: cleanKeys.filter(k => k.includes('side-banners:')).length,
                 };
             }
 
             return {
-                hasFullPage: !!fullPage,
-                hasActiveSliders: !!sliders,
-                hasActiveSections: !!sections,
-                hasActiveBanners: !!banners,
                 totalKeys: 0,
+                hasFullPage: false,
+                hasActiveSliders: false,
+                hasActiveSections: false,
+                hasActiveBanners: false,
                 sliderKeys: 0,
                 sectionKeys: 0,
                 bannerKeys: 0,
             };
         } catch (error) {
-            console.error('❌ خطا در گرفتن آمار cache:', error);
+            console.log('❌ خطا در گرفتن آمار cache:', error);
             return {
+                totalKeys: 0,
                 hasFullPage: false,
                 hasActiveSliders: false,
                 hasActiveSections: false,
                 hasActiveBanners: false,
-                totalKeys: 0,
                 sliderKeys: 0,
                 sectionKeys: 0,
                 bannerKeys: 0,

@@ -633,6 +633,7 @@ export class ProductCacheService {
         }
     }
 
+    // src/product/services/product-cache.service.ts
     /**
      * گرفتن آمار cache
      */
@@ -658,31 +659,15 @@ export class ProductCacheService {
                     };
                 }
 
-                // حذف namespace از کلیدها برای بررسی
                 const cleanKeys = keys.map((key: string) =>
                     key.replace(`${this.NAMESPACE}:`, '')
                 );
 
-                const detailKeys = cleanKeys.filter((key: string) =>
-                    key.match(/^product:\d+$/) || key.startsWith('product:slug:')
-                );
-
-                const listKeys = cleanKeys.filter((key: string) =>
-                    key.startsWith('product:list:')
-                );
-
-                const specialKeys = cleanKeys.filter((key: string) =>
-                    key.startsWith('product:featured:') ||
-                    key.startsWith('product:new:') ||
-                    key.startsWith('product:bestsellers:') ||
-                    key.startsWith('product:onsale:')
-                );
-
                 return {
                     totalKeys: keys.length,
-                    detailKeys: detailKeys.length,
-                    listKeys: listKeys.length,
-                    specialKeys: specialKeys.length,
+                    detailKeys: cleanKeys.filter(k => k.includes('detail:')).length,
+                    listKeys: cleanKeys.filter(k => k.includes('list:')).length,
+                    specialKeys: cleanKeys.filter(k => k.includes('featured:') || k.includes('bestseller:')).length,
                 };
             }
 
@@ -693,7 +678,7 @@ export class ProductCacheService {
                 specialKeys: 0,
             };
         } catch (error) {
-            console.error('❌ خطا در گرفتن آمار cache:', error);
+            console.log('❌ خطا در گرفتن آمار cache:', error);
             return {
                 totalKeys: 0,
                 detailKeys: 0,
