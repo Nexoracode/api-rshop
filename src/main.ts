@@ -11,11 +11,13 @@ import { AllExceptionsFilter } from './common/interceptors/http-exception';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: process.env.NODE_ENV === 'production' ? [
-      'warn', 'error'
-    ] : ['warn', 'error', 'debug', 'log', 'verbose']
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule,
+    // {
+    //   logger: process.env.NODE_ENV === 'production' ? [
+    //     'warn', 'error'
+    //   ] : ['warn', 'error', 'debug', 'log', 'verbose']
+    // }
+  );
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;

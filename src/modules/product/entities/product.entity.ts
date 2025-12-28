@@ -1,7 +1,7 @@
 import { Category } from "src/modules/category/entities/category.entity";
 import { Media } from "src/modules/media/entities/image.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn, ManyToMany } from "typeorm";
 import { IProduct } from "../interfaces/product.interface";
 import { AttributeValue } from "src/modules/attributes/attribute-value/entities/attribute-value.entity";
 import { WeightUnit } from "src/common/enums/product.enum";
@@ -12,6 +12,7 @@ import { Review } from "src/modules/review/entities/review.entity";
 import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
 import { Support } from "src/modules/support/entities/support.entity";
+// import { Collection } from "src/modules/collection/entities/collection.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -115,6 +116,8 @@ export class Product implements IProduct {
     @OneToMany(() => Support, (support) => support.product)
     supports: Support[];
 
+    // @ManyToMany(() => Collection, (collection) => collection.products)
+    // collections: Collection[];
 
     @Column({ name: 'brand_id', nullable: true })
     brandId: number;

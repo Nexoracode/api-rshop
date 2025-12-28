@@ -11,6 +11,7 @@ import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FilterOperator, paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
 import { CategoryCacheService } from './cache/category-cache.service';
+import { CatalogCacheService } from '../catalogs/cache';
 
 @Injectable()
 export class CategoryService implements ICategoryService {
@@ -23,6 +24,7 @@ export class CategoryService implements ICategoryService {
         private readonly mediaRepo: Repository<Media>,
         private dataSource: DataSource,
         private readonly cacheService: CategoryCacheService, // ✅ اضافه شد
+        private readonly catalogCatchService: CatalogCacheService, // ✅ اضافه شد
     ) {
         this.treeCatRepo = this.dataSource.getTreeRepository(Category);
     }
@@ -434,6 +436,7 @@ export class CategoryService implements ICategoryService {
 
         // ✅ پاک کردن cache بعد از create
         await this.cacheService.clearAllCategoryCache();
+        await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
         console.log('🗑️ Cache پاک شد بعد از create');
 
         return result;
@@ -550,6 +553,7 @@ export class CategoryService implements ICategoryService {
 
         // ✅ پاک کردن cache بعد از update
         await this.cacheService.clearCategoryCache(id, data.slug);
+        await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
         console.log(`🗑️ Cache پاک شد برای category ${id}`);
 
         return result;
@@ -603,12 +607,16 @@ export class CategoryService implements ICategoryService {
             }
 
             await treeRepo.remove(node);
+            await this.catalogCatchService.clearAllCategoryCache(node.slug); // پاک کردن کش کاتالوگ‌ها
 
             return { message: 'دسته با موفقیت حذف شد', data: null };
         });
 
         // ✅ پاک کردن cache بعد از delete
         await this.cacheService.clearCategoryCache(id);
+        await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
+
+
         console.log(`🗑️ Cache پاک شد برای category ${id}`);
 
         return result;

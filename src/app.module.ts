@@ -41,6 +41,7 @@ import { SeoModule } from './modules/seo/seo.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { HomePageModule } from './modules/home-page/home-page.module';
 import { HealthModule } from './modules/health/health.module';
+// import { CollectionModule } from './modules/collection/collection.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { HealthModule } from './modules/health/health.module';
     AccountingModule,
     HomePageModule,
     HealthModule,
+    // CollectionModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
