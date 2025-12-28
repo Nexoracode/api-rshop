@@ -1,8 +1,10 @@
+// src/collection/collection.service.ts
 import {
   Injectable,
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
@@ -11,14 +13,18 @@ import { Product } from '../product/entities/product.entity';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { AddProductsToCollectionDto } from './dto/add-product-to-collection.dto';
+import { CollectionCacheService } from './cache/collection-cache.service';
 
 @Injectable()
 export class CollectionService {
+  private readonly logger = new Logger(CollectionService.name);
+
   constructor(
     @InjectRepository(Collection)
     private readonly collectionRepo: Repository<Collection>,
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
+    private readonly cacheService: CollectionCacheService,
   ) { }
 
   /**
@@ -68,16 +74,30 @@ export class CollectionService {
       products,
     });
 
-    return await this.collectionRepo.save(collection);
+    const saved = await this.collectionRepo.save(collection);
+
+    // ✅ پاک کردن cache لیست‌ها
+    await this.cacheService.clearAllLists();
+
+    this.logger.log(`✅ Collection جدید "${dto.title}" ایجاد شد`);
+
+    return saved;
   }
 
   /**
    * لیست تمام مجموعه‌ها (Public)
    */
   async findAll(): Promise<Collection[]> {
+    // ✅ چک کردن cache
+    const cached = await this.cacheService.getAllActive();
+    if (cached) {
+      this.logger.log('✅ لیست فعال از cache برگشت');
+      return cached;
+    }
+
     const now = new Date();
 
-    return await this.collectionRepo.find({
+    const collections = await this.collectionRepo.find({
       where: [
         {
           isActive: true,
@@ -91,25 +111,49 @@ export class CollectionService {
         createdAt: 'DESC',
       },
     });
+
+    // ✅ ذخیره در cache
+    await this.cacheService.setAllActive(collections);
+
+    return collections;
   }
 
   /**
    * لیست تمام مجموعه‌ها (Admin) - بدون فیلتر
    */
   async findAllAdmin(): Promise<Collection[]> {
-    return await this.collectionRepo.find({
+    // ✅ چک کردن cache
+    const cached = await this.cacheService.getAllAdmin();
+    if (cached) {
+      this.logger.log('✅ لیست ادمین از cache برگشت');
+      return cached;
+    }
+
+    const collections = await this.collectionRepo.find({
       relations: ['products'],
       order: {
         sortOrder: 'ASC',
         createdAt: 'DESC',
       },
     });
+
+    // ✅ ذخیره در cache
+    await this.cacheService.setAllAdmin(collections);
+
+    return collections;
   }
 
   /**
    * جزئیات یک مجموعه با slug (Public)
    */
   async findOneBySlug(slug: string): Promise<Collection> {
+    // ✅ چک کردن cache
+    const cached = await this.cacheService.getDetailBySlug(slug);
+    if (cached) {
+      this.logger.log(`✅ جزئیات ${slug} از cache برگشت`);
+      return cached;
+    }
+
     const now = new Date();
 
     const collection = await this.collectionRepo.findOne({
@@ -120,11 +164,14 @@ export class CollectionService {
         endDate: MoreThanOrEqual(now),
       },
       relations: ['products', 'products.mediaPinned'],
-    })
+    });
 
     if (!collection) {
       throw new NotFoundException('مجموعه یافت نشد');
     }
+
+    // ✅ ذخیره در cache
+    await this.cacheService.setDetailBySlug(slug, collection);
 
     return collection;
   }
@@ -133,6 +180,13 @@ export class CollectionService {
    * جزئیات یک مجموعه با ID (Admin)
    */
   async findOne(id: number): Promise<Collection> {
+    // ✅ چک کردن cache
+    const cached = await this.cacheService.getDetailById(id);
+    if (cached) {
+      this.logger.log(`✅ جزئیات ID ${id} از cache برگشت`);
+      return cached;
+    }
+
     const collection = await this.collectionRepo.findOne({
       where: { id },
       relations: ['products', 'products.mediaPinned'],
@@ -141,6 +195,9 @@ export class CollectionService {
     if (!collection) {
       throw new NotFoundException('مجموعه یافت نشد');
     }
+
+    // ✅ ذخیره در cache
+    await this.cacheService.setDetailById(id, collection);
 
     return collection;
   }
@@ -198,7 +255,15 @@ export class CollectionService {
       endDate: dto.endDate ? new Date(dto.endDate) : collection.endDate,
     });
 
-    return await this.collectionRepo.save(collection);
+    const saved = await this.collectionRepo.save(collection);
+
+    // ✅ پاک کردن cache
+    await this.cacheService.clearCollectionCache(saved.slug, saved.id);
+    await this.cacheService.clearAllLists();
+
+    this.logger.log(`✅ Collection "${saved.title}" بروز شد`);
+
+    return saved;
   }
 
   /**
@@ -226,7 +291,15 @@ export class CollectionService {
 
     collection.products = [...collection.products, ...uniqueNewProducts];
 
-    return await this.collectionRepo.save(collection);
+    const saved = await this.collectionRepo.save(collection);
+
+    // ✅ پاک کردن cache
+    await this.cacheService.clearCollectionCache(saved.slug, saved.id);
+    await this.cacheService.clearAllLists();
+
+    this.logger.log(`✅ ${uniqueNewProducts.length} محصول به "${saved.title}" اضافه شد`);
+
+    return saved;
   }
 
   /**
@@ -246,7 +319,15 @@ export class CollectionService {
 
     collection.products = collection.products.filter((p) => p.id !== productId);
 
-    return await this.collectionRepo.save(collection);
+    const saved = await this.collectionRepo.save(collection);
+
+    // ✅ پاک کردن cache
+    await this.cacheService.clearCollectionCache(saved.slug, saved.id);
+    await this.cacheService.clearAllLists();
+
+    this.logger.log(`✅ محصول ${productId} از "${saved.title}" حذف شد`);
+
+    return saved;
   }
 
   /**
@@ -254,14 +335,33 @@ export class CollectionService {
    */
   async remove(id: number): Promise<void> {
     const collection = await this.findOne(id);
+
     await this.collectionRepo.remove(collection);
+
+    // ✅ پاک کردن cache
+    await this.cacheService.clearCollectionCache(collection.slug, id);
+    await this.cacheService.clearAllLists();
+
+    this.logger.log(`✅ Collection "${collection.title}" حذف شد`);
   }
 
   /**
    * گرفتن محصولات یک مجموعه (Public)
    */
   async getCollectionProducts(slug: string): Promise<Product[]> {
+    // ✅ چک کردن cache
+    const cached = await this.cacheService.getProducts(slug);
+    if (cached) {
+      this.logger.log(`✅ محصولات ${slug} از cache برگشت`);
+      return cached;
+    }
+
     const collection = await this.findOneBySlug(slug);
-    return collection.products || [];
+    const products = collection.products || [];
+
+    // ✅ ذخیره در cache
+    await this.cacheService.setProducts(slug, products);
+
+    return products;
   }
 }
