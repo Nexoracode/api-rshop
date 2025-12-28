@@ -12,7 +12,7 @@ import { Review } from "src/modules/review/entities/review.entity";
 import { Wishlist } from "src/modules/wishlist/entities/wishlist.entity";
 import { RecentView } from "src/modules/recent-view/entities/recent-view.entity";
 import { Support } from "src/modules/support/entities/support.entity";
-// import { Collection } from "src/modules/collection/entities/collection.entity";
+import { Collection } from "src/modules/collection/entities/collection.entity";
 
 @Entity('products')
 export class Product implements IProduct {
@@ -116,8 +116,8 @@ export class Product implements IProduct {
     @OneToMany(() => Support, (support) => support.product)
     supports: Support[];
 
-    // @ManyToMany(() => Collection, (collection) => collection.products)
-    // collections: Collection[];
+    @ManyToMany(() => Collection, (collection) => collection.products)
+    collections: Collection[];
 
     @Column({ name: 'brand_id', nullable: true })
     brandId: number;
