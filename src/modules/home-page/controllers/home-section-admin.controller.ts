@@ -71,7 +71,6 @@ import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-ca
  * @requires Bearer Token
  */
 @ApiTags('Admin - Home Sections')
-@ApiBearerAuth()
 @Controller('admin/home-sections')
 @UseGuards(AccessGuard, RoleGuard)
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
@@ -143,7 +142,7 @@ export class HomeSectionAdminController {
    */
   @Post()
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'ایجاد بخش جدید در صفحه اصلی',
     description: `
 ایجاد یک بخش جدید برای نمایش محصولات در صفحه اصلی.
@@ -186,7 +185,7 @@ export class HomeSectionAdminController {
 - محصولات بر اساس تنظیمات بارگذاری می‌شوند
     `.trim()
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateHomeSectionDto,
     description: 'اطلاعات بخش جدید',
     examples: {
@@ -257,8 +256,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'بخش با موفقیت ایجاد شد',
     schema: {
       example: {
@@ -280,8 +279,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'داده‌های ورودی نامعتبر',
     schema: {
       examples: {
@@ -331,7 +330,7 @@ export class HomeSectionAdminController {
    * @returns آرایه‌ای از تمام بخش‌ها
    */
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت لیست تمام بخش‌ها',
     description: `
 دریافت لیست کامل بخش‌های صفحه اصلی.
@@ -351,8 +350,8 @@ export class HomeSectionAdminController {
 - بررسی تنظیمات بخش‌ها
     `.trim()
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'لیست بخش‌ها',
     schema: {
       example: [
@@ -427,7 +426,7 @@ export class HomeSectionAdminController {
    * @throws NotFoundException - اگر بخش یافت نشود
    */
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت یک بخش با شناسه',
     description: `
 دریافت اطلاعات کامل یک بخش مشخص.
@@ -448,14 +447,14 @@ export class HomeSectionAdminController {
 - بررسی تنظیمات بخش
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه عددی بخش',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'اطلاعات بخش',
     schema: {
       example: {
@@ -477,8 +476,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بخش یافت نشد',
     schema: {
       example: {
@@ -513,7 +512,7 @@ export class HomeSectionAdminController {
    * @throws NotFoundException - اگر بخش یافت نشود
    */
   @Get(':id/products')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'دریافت محصولات یک بخش',
     description: `
 دریافت لیست محصولاتی که در این بخش نمایش داده می‌شوند.
@@ -553,14 +552,14 @@ export class HomeSectionAdminController {
 - تست عملکرد بخش قبل از فعال‌سازی
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه بخش',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'لیست محصولات بخش',
     schema: {
       example: [
@@ -605,8 +604,8 @@ export class HomeSectionAdminController {
       ]
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بخش یافت نشد',
     schema: {
       example: {
@@ -648,7 +647,7 @@ export class HomeSectionAdminController {
    */
   @Patch(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'بروزرسانی بخش',
     description: `
 ویرایش اطلاعات یک بخش موجود.
@@ -681,13 +680,13 @@ export class HomeSectionAdminController {
 - تغییر ترتیب نمایش
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه بخش',
     example: 1
   })
-  @ApiBody({ 
+  @ApiBody({
     type: UpdateHomeSectionDto,
     description: 'فیلدهایی که باید بروزرسانی شوند (همه اختیاری)',
     examples: {
@@ -757,8 +756,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'بخش با موفقیت بروزرسانی شد',
     schema: {
       example: {
@@ -780,8 +779,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'داده‌های ورودی نامعتبر',
     schema: {
       example: {
@@ -791,8 +790,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بخش یافت نشد',
     schema: {
       example: {
@@ -824,7 +823,7 @@ export class HomeSectionAdminController {
    */
   @Delete(':id')
   @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'حذف بخش',
     description: `
 حذف کامل یک بخش از دیتابیس.
@@ -847,14 +846,14 @@ export class HomeSectionAdminController {
 - محصولات اصلی دست نخورده باقی می‌مانند
     `.trim()
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     type: 'number',
     description: 'شناسه بخش',
     example: 1
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'بخش با موفقیت حذف شد',
     schema: {
       example: {
@@ -862,8 +861,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'بخش یافت نشد',
     schema: {
       example: {

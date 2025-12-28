@@ -196,7 +196,7 @@ export class HomePageService {
       id: category.id,
       name: category.title,
       slug: fullSlug,
-      image: category.media?.[0]?.url ?? null,
+      image: category.media?.url ?? null,
     };
   }
 

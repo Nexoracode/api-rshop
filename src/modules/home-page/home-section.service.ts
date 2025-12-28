@@ -170,10 +170,11 @@ export class HomeSectionService {
         return await this.productRepository
           .createQueryBuilder('product')
           .leftJoinAndSelect('product.medias', 'medias')
+          .leftJoinAndSelect('product.mediaPinned', 'mediaPinned')
           .leftJoinAndSelect('product.category', 'category')
           .leftJoinAndSelect('product.brand', 'brand')
           .where('product.is_visible = :visible', { visible: true })
-          .orderBy('product.sold_count', 'DESC')
+          .orderBy('product.id', 'DESC')
           .take(limit)
           .getMany();
 
