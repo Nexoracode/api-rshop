@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { IProductResponse } from '../interfaces/product.response';
+import { RedisHelper } from 'src/common/helpers/redis.helper';
 
 /**
  * سرویس مدیریت Cache برای Product
@@ -64,7 +65,11 @@ export class ProductCacheService {
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
-    ) { }
+    ) {
+        this.logger = new Logger(ProductCacheService.name);
+    }
+    private readonly logger: Logger
+
 
     /**
      * دریافت store اول از لیست stores
@@ -89,37 +94,7 @@ export class ProductCacheService {
      * دریافت Redis Client از store
      */
     private getRedisClient(): any {
-        const stores: any = this.cacheManager.stores;
-
-        if (Array.isArray(stores) && stores.length > 0) {
-            const store = stores[0];
-
-            // ✅ دسترسی به Redis از wrapper سفارشی
-            if (store?.opts?.store?.redis) {
-                return store.opts.store.redis;
-            }
-
-            // سایر مسیرها
-            if (store?.redis) {
-                return store.redis;
-            }
-
-            if (store?._store?.redis) {
-                return store._store.redis;
-            }
-        }
-
-        if (stores && typeof stores === 'object' && !Array.isArray(stores)) {
-            if (stores?.opts?.store?.redis) {
-                return stores.opts.store.redis;
-            }
-
-            if (stores?.redis) {
-                return stores.redis;
-            }
-        }
-
-        return null;
+        return RedisHelper.getRedisClient(this.cacheManager);
     }
 
     // ==================== لیست محصولات ====================
@@ -327,52 +302,14 @@ export class ProductCacheService {
      */
     async clearAllProductCache(): Promise<void> {
         try {
-            const redisClient = this.getRedisClient();
+            const deletedCount = await RedisHelper.deleteKeysByPattern(
+                this.cacheManager,
+                'product:*'
+            );
 
-            if (redisClient && typeof redisClient.keys === 'function') {
-                console.log('🔍 پاک کردن تمام cache محصولات با Redis...');
-
-                const pattern = `${this.NAMESPACE}:product:*`;
-                const keys = await redisClient.keys(pattern);
-
-                if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
-
-                    console.log(`✅ ${keys.length} کلید cache محصول پاک شد`);
-                } else {
-                    console.log('ℹ️ هیچ کلید محصولی برای پاک کردن پیدا نشد');
-                }
-                return;
-            }
-
-            // فال‌بک: استفاده از Iterator
-            const store = this.getStore();
-
-            if (store && typeof store.iterator === 'function') {
-                console.log('🔍 پاک کردن cache محصولات با Iterator...');
-
-                const keysToDelete: string[] = [];
-
-                for await (const [key] of store.iterator(this.NAMESPACE)) {
-                    if (key.startsWith('product:')) {
-                        keysToDelete.push(key);
-                    }
-                }
-
-                if (keysToDelete.length > 0) {
-                    await Promise.allSettled(
-                        keysToDelete.map(key => this.cacheManager.del(key))
-                    );
-                    console.log(`✅ ${keysToDelete.length} کلید cache محصول پاک شد`);
-                }
-                return;
-            }
-
-            console.warn('⚠️ امکان پاک کردن کامل cache موجود نیست');
+            this.logger.log(`✅ ${deletedCount} کلید product پاک شد`);
         } catch (error) {
-            console.error('❌ خطا در پاک کردن cache محصولات:', error);
+            this.logger.error('❌ خطا در پاک کردن cache:', error);
         }
     }
 
@@ -635,8 +572,8 @@ export class ProductCacheService {
 
     // src/product/services/product-cache.service.ts
     /**
-     * گرفتن آمار cache
-     */
+ * گرفتن آمار cache
+ */
     async getCacheStats(): Promise<{
         totalKeys: number;
         detailKeys: number;
@@ -644,41 +581,30 @@ export class ProductCacheService {
         specialKeys: number;
     }> {
         try {
-            const redisClient = this.getRedisClient();
+            const keys = await RedisHelper.getKeysByPattern(
+                this.cacheManager,
+                'product:*'
+            );
 
-            if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:product:*`;
-                const keys = await redisClient.keys(pattern);
-
-                if (!keys || keys.length === 0) {
-                    return {
-                        totalKeys: 0,
-                        detailKeys: 0,
-                        listKeys: 0,
-                        specialKeys: 0,
-                    };
-                }
-
-                const cleanKeys = keys.map((key: string) =>
-                    key.replace(`${this.NAMESPACE}:`, '')
-                );
-
+            if (keys.length === 0) {
                 return {
-                    totalKeys: keys.length,
-                    detailKeys: cleanKeys.filter(k => k.includes('detail:')).length,
-                    listKeys: cleanKeys.filter(k => k.includes('list:')).length,
-                    specialKeys: cleanKeys.filter(k => k.includes('featured:') || k.includes('bestseller:')).length,
+                    totalKeys: 0,
+                    detailKeys: 0,
+                    listKeys: 0,
+                    specialKeys: 0,
                 };
             }
 
+            const cleanKeys = keys.map(key => RedisHelper.cleanKey(key));
+
             return {
-                totalKeys: 0,
-                detailKeys: 0,
-                listKeys: 0,
-                specialKeys: 0,
+                totalKeys: keys.length,
+                detailKeys: cleanKeys.filter(k => k.includes('detail:')).length,
+                listKeys: cleanKeys.filter(k => k.includes('list:')).length,
+                specialKeys: cleanKeys.filter(k => k.includes('featured:') || k.includes('bestseller:')).length,
             };
         } catch (error) {
-            console.log('❌ خطا در گرفتن آمار cache:', error);
+            this.logger.error('❌ خطا در گرفتن آمار cache:', error);
             return {
                 totalKeys: 0,
                 detailKeys: 0,
@@ -687,7 +613,6 @@ export class ProductCacheService {
             };
         }
     }
-
     /**
      * بررسی سلامت Redis
      */

@@ -607,7 +607,7 @@ export class CategoryService implements ICategoryService {
             }
 
             await treeRepo.remove(node);
-            await this.catalogCatchService.clearAllCategoryCache(node.slug); // پاک کردن کش کاتالوگ‌ها
+            await this.catalogCatchService.clearAllCategoryCache(); // پاک کردن کش کاتالوگ‌ها
 
             return { message: 'دسته با موفقیت حذف شد', data: null };
         });

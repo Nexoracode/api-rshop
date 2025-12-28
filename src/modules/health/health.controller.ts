@@ -11,6 +11,7 @@ import { AccessGuard } from 'src/common/guard/access.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { RedisHelper } from 'src/common/helpers/redis.helper';
 
 @Controller('health')
 export class HealthController {
@@ -167,13 +168,18 @@ export class HealthController {
                 this.collectionCacheService.getCacheStats(),
             ]);
 
+            // ✅ استخراج totalKeys به صورت safe
+            const getTotalKeys = (stats: any): number => {
+                return stats?.totalKeys || 0;
+            };
+
             const total =
-                categoryStats.totalKeys +
-                productStats.totalKeys +
-                orderStats.totalKeys +
-                homePageStats.totalKeys +
-                catalogStats.totalKeys +
-                collectionStats.totalKeys;
+                getTotalKeys(categoryStats) +
+                getTotalKeys(productStats) +
+                getTotalKeys(orderStats) +
+                getTotalKeys(homePageStats) +
+                getTotalKeys(catalogStats) +
+                getTotalKeys(collectionStats);
 
             return {
                 success: true,
@@ -194,6 +200,89 @@ export class HealthController {
             return {
                 success: false,
                 error: error.message,
+            };
+        }
+    }
+
+    // health.controller.ts
+    @Get('cache/diagnostic')
+    async cacheDiagnostic() {
+        try {
+            const cacheManager: any = (this.categoryCacheService as any).cacheManager;
+            const store: any = cacheManager.stores;
+
+            const diagnostic: any = {
+                storeType: Array.isArray(store) ? 'array' : typeof store,
+                storeLength: Array.isArray(store) ? store.length : 'N/A',
+            };
+
+            if (Array.isArray(store) && store.length > 0) {
+                const firstStore = store[0];
+
+                diagnostic.firstStore = {
+                    type: typeof firstStore,
+                    keys: Object.keys(firstStore).slice(0, 30),
+                };
+
+                // چک کردن مسیرهای مختلف
+                const paths = [
+                    'opts',
+                    'opts.store',
+                    'opts.store.client',
+                    'opts.store.redis',
+                    'redis',
+                    'client',
+                    '_store',
+                ];
+
+                diagnostic.availablePaths = {};
+
+                for (const path of paths) {
+                    const parts = path.split('.');
+                    let current = firstStore;
+                    let exists = true;
+
+                    for (const part of parts) {
+                        if (!current || typeof current !== 'object') {
+                            exists = false;
+                            break;
+                        }
+                        current = current[part];
+                    }
+
+                    diagnostic.availablePaths[path] = {
+                        exists: exists && current !== undefined,
+                        type: current ? typeof current : 'undefined',
+                        hasKeysMethod: current && typeof current.keys === 'function',
+                    };
+                }
+            }
+
+            // تست با Helper
+            const redisClient = RedisHelper.getRedisClient(cacheManager);
+            diagnostic.helperFound = !!redisClient;
+
+            if (redisClient) {
+                diagnostic.redisClient = {
+                    type: redisClient.constructor.name,
+                    hasMethods: {
+                        keys: typeof redisClient.keys === 'function',
+                        get: typeof redisClient.get === 'function',
+                        set: typeof redisClient.set === 'function',
+                        del: typeof redisClient.del === 'function',
+                    },
+                };
+            }
+
+            return {
+                success: true,
+                diagnostic,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                stack: error.stack,
             };
         }
     }
@@ -391,8 +480,8 @@ export class HealthController {
             const moduleMap: Record<string, () => Promise<void>> = {
                 category: () => this.categoryCacheService.clearAllCategoryCache(),
                 product: () => this.productCacheService.clearAllProductCache(),
-                order: () => this.orderCacheService.clearAllOrderCache(),
-                homepage: () => this.homePageCacheService.clearAllHomePageCache(),
+                order: () => this.orderCacheService.clearAlOrderCache(),
+                homepage: () => this.homePageCacheService.clearAllHomepageCache(),
                 catalog: () => this.catalogCacheService.clearAllCatalogCache(),
                 collection: () => this.collectionCacheService.clearAllCollectionCache(),
             };
@@ -433,8 +522,8 @@ export class HealthController {
             await Promise.all([
                 this.categoryCacheService.clearAllCategoryCache(),
                 this.productCacheService.clearAllProductCache(),
-                this.orderCacheService.clearAllOrderCache(),
-                this.homePageCacheService.clearAllHomePageCache(),
+                this.orderCacheService.clearAlOrderCache(),
+                this.homePageCacheService.clearAllHomepageCache(),
                 this.catalogCacheService.clearAllCatalogCache(),
                 this.collectionCacheService.clearAllCollectionCache(),
             ]);

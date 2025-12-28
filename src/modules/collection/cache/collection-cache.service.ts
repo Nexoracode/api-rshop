@@ -2,14 +2,13 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { RedisHelper } from 'src/common/helpers/redis.helper';
 
 /**
  * سرویس مدیریت Cache برای Collection
  */
 @Injectable()
 export class CollectionCacheService {
-    private readonly logger = new Logger(CollectionCacheService.name);
-
     /**
      * کلیدهای Cache
      */
@@ -42,7 +41,11 @@ export class CollectionCacheService {
     constructor(
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
-    ) { }
+    ) {
+        this.logger = new Logger(CollectionCacheService.name);
+    }
+
+    private readonly logger: Logger;
 
     /**
      * دریافت store اول از لیست stores
@@ -65,37 +68,7 @@ export class CollectionCacheService {
      * دریافت Redis Client از store
      */
     private getRedisClient(): any {
-        const stores: any = this.cacheManager.stores;
-
-        if (Array.isArray(stores) && stores.length > 0) {
-            const store = stores[0];
-
-            // ✅ دسترسی به Redis از wrapper سفارشی
-            if (store?.opts?.store?.redis) {
-                return store.opts.store.redis;
-            }
-
-            // سایر مسیرها
-            if (store?.redis) {
-                return store.redis;
-            }
-
-            if (store?._store?.redis) {
-                return store._store.redis;
-            }
-        }
-
-        if (stores && typeof stores === 'object' && !Array.isArray(stores)) {
-            if (stores?.opts?.store?.redis) {
-                return stores.opts.store.redis;
-            }
-
-            if (stores?.redis) {
-                return stores.redis;
-            }
-        }
-
-        return null;
+        return RedisHelper.getRedisClient(this.cacheManager);
     }
 
     // ==================== Public Collections ====================
@@ -282,97 +255,45 @@ export class CollectionCacheService {
      */
     async clearAllCollectionCache(): Promise<void> {
         try {
-            const redisClient = this.getRedisClient();
+            const deletedCount = await RedisHelper.deleteKeysByPattern(
+                this.cacheManager,
+                'collection:*'
+            );
 
-            if (redisClient && typeof redisClient.keys === 'function') {
-                this.logger.log('🔍 پاک کردن تمام cache collection با Redis...');
-
-                const pattern = `${this.NAMESPACE}:collection:*`;
-                const keys = await redisClient.keys(pattern);
-
-                if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
-
-                    this.logger.log(`✅ ${keys.length} کلید collection پاک شد`);
-                } else {
-                    this.logger.log('ℹ️ هیچ کلید collection‌ای برای پاک کردن پیدا نشد');
-                }
-                return;
-            }
-
-            // فال‌بک
-            const store = this.getStore();
-
-            if (store && typeof store.iterator === 'function') {
-                this.logger.log('🔍 پاک کردن cache collection با Iterator...');
-
-                const keysToDelete: string[] = [];
-
-                for await (const [key] of store.iterator(this.NAMESPACE)) {
-                    if (key.startsWith('collection:')) {
-                        keysToDelete.push(key);
-                    }
-                }
-
-                if (keysToDelete.length > 0) {
-                    await Promise.allSettled(
-                        keysToDelete.map(key => this.cacheManager.del(key))
-                    );
-                    this.logger.log(`✅ ${keysToDelete.length} کلید collection پاک شد`);
-                }
-                return;
-            }
-
-            this.logger.warn('⚠️ امکان پاک کردن کامل cache موجود نیست');
+            this.logger.log(`✅ ${deletedCount} کلید collection پاک شد`);
         } catch (error) {
-            this.logger.error('❌ خطا در پاک کردن cache collection:', error);
+            this.logger.error('❌ خطا در پاک کردن cache:', error);
         }
     }
 
     /**
-     * گرفتن آمار cache
-     */
+ * گرفتن آمار cache
+ */
     async getCacheStats(): Promise<{
         totalKeys: number;
         publicKeys: number;
         adminKeys: number;
     }> {
         try {
-            const redisClient = this.getRedisClient();
+            const keys = await RedisHelper.getKeysByPattern(
+                this.cacheManager,
+                'collection:*'
+            );
 
-            if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:collection:*`;
-                const keys = await redisClient.keys(pattern);
-
-                if (!keys || keys.length === 0) {
-                    return {
-                        totalKeys: 0,
-                        publicKeys: 0,
-                        adminKeys: 0,
-                    };
-                }
-
-                const cleanKeys = keys.map((key: string) =>
-                    key.replace(`${this.NAMESPACE}:`, '')
-                );
-
+            if (keys.length === 0) {
                 return {
-                    totalKeys: keys.length,
-                    publicKeys: cleanKeys.filter((k: string) =>
-                        !k.includes('admin')
-                    ).length,
-                    adminKeys: cleanKeys.filter((k: string) =>
-                        k.includes('admin')
-                    ).length,
+                    totalKeys: 0,
+                    publicKeys: 0,
+                    adminKeys: 0,
                 };
             }
 
+            const cleanKeys = keys.map(key => RedisHelper.cleanKey(key));
+
             return {
-                totalKeys: 0,
-                publicKeys: 0,
-                adminKeys: 0,
+                totalKeys: keys.length,
+                publicKeys: cleanKeys.filter(k => !k.includes('admin')).length,
+                adminKeys: cleanKeys.filter(k => k.includes('admin')).length,
             };
         } catch (error) {
             this.logger.error('❌ خطا در گرفتن آمار cache:', error);
@@ -381,6 +302,23 @@ export class CollectionCacheService {
                 publicKeys: 0,
                 adminKeys: 0,
             };
+        }
+    }
+
+    /**
+     * پاک کردن cache با pattern
+     */
+    async clearCacheByPattern(pattern: string): Promise<number> {
+        try {
+            const deletedCount = await RedisHelper.deleteKeysByPattern(
+                this.cacheManager,
+                pattern
+            );
+            this.logger.log(`✅ ${deletedCount} کلید با pattern "${pattern}" پاک شد`);
+            return deletedCount;
+        } catch (error) {
+            this.logger.error(`❌ خطا در پاک کردن cache:`, error);
+            return 0;
         }
     }
 
