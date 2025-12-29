@@ -30,6 +30,11 @@ export class HomePageCacheService {
         SIDE_BANNERS_ACTIVE: 'homepage:side-banners:active',
         SIDE_BANNERS_ALL: 'homepage:side-banners:all',
         SIDE_BANNER_BY_ID: (id: number) => `homepage:side-banner:${id}`,
+
+        // promo banners, featured products, etc. can be added similarly
+        PROMO_BANNERS_ACTIVE: 'homepage:promo-banners:active',
+        PROMO_BANNERS_ALL: 'homepage:promo-banners:all',
+        PROMO_BANNER_BY_ID: (id: number) => `homepage:promo-banner:${id}`,
     };
 
     /**
@@ -187,6 +192,81 @@ export class HomePageCacheService {
 
         if (sliderId) {
             await this.cacheManager.del(this.CACHE_KEYS.HERO_SLIDER_BY_ID(sliderId));
+        }
+
+        // پاک کردن صفحه اصلی
+        await this.clearHomePageData();
+    }
+
+    async getActivePromoBanner(): Promise<any> {
+        const result = await this.cacheManager.get(
+            this.CACHE_KEYS.PROMO_BANNERS_ACTIVE
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره اسلایدرهای فعال
+     */
+    async setActivePromoBanner(data: any): Promise<void> {
+        await this.cacheManager.set(
+            this.CACHE_KEYS.PROMO_BANNERS_ACTIVE,
+            data,
+            this.CACHE_TTL.ACTIVE_ITEMS
+        );
+    }
+
+    /**
+     * دریافت تمام اسلایدرها
+     */
+    async getAllPromoBanner(): Promise<any> {
+        const result = await this.cacheManager.get(
+            this.CACHE_KEYS.PROMO_BANNERS_ALL
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره تمام اسلایدرها
+     */
+    async setAllPromoBanner(data: any): Promise<void> {
+        await this.cacheManager.set(
+            this.CACHE_KEYS.PROMO_BANNERS_ALL,
+            data,
+            this.CACHE_TTL.ALL_ITEMS
+        );
+    }
+
+    /**
+     * دریافت یک اسلایدر
+     */
+    async getPromoBannerById(id: number): Promise<any> {
+        const result = await this.cacheManager.get(
+            this.CACHE_KEYS.PROMO_BANNER_BY_ID(id)
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره یک اسلایدر
+     */
+    async setPromoBannerById(id: number, data: any): Promise<void> {
+        await this.cacheManager.set(
+            this.CACHE_KEYS.PROMO_BANNER_BY_ID(id),
+            data,
+            this.CACHE_TTL.SINGLE_ITEM
+        );
+    }
+
+    /**
+     * پاک کردن cache اسلایدرها
+     */
+    async clearPromoBannersCache(promoId?: number): Promise<void> {
+        await this.cacheManager.del(this.CACHE_KEYS.PROMO_BANNERS_ACTIVE);
+        await this.cacheManager.del(this.CACHE_KEYS.PROMO_BANNERS_ALL);
+
+        if (promoId) {
+            await this.cacheManager.del(this.CACHE_KEYS.PROMO_BANNER_BY_ID(promoId));
         }
 
         // پاک کردن صفحه اصلی

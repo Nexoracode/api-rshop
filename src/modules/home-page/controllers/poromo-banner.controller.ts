@@ -163,21 +163,4 @@ export class PromoBannerAdminController {
             message: 'بنر تبلیغاتی با موفقیت حذف شد',
         };
     }
-
-    @Post('cache/clear')
-    @ApiOperation({
-        summary: 'پاک کردن کش',
-        description: 'پاک کردن تمام کش‌های مربوط به بنرهای تبلیغاتی',
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'کش با موفقیت پاک شد',
-    })
-    async clearCache() {
-        this.promoBannerService.clearCache();
-
-        return {
-            message: 'کش بنرهای تبلیغاتی با موفقیت پاک شد',
-        };
-    }
 }

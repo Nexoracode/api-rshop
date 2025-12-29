@@ -60,7 +60,7 @@ export class HomePageService {
     // لاجیک اصلی (بدون تغییر)
     const heroSliders = await this.heroSliderService.findAllActive(isActive);
     const sideBanners = await this.sideBannerService.findAllActive(isActive);
-    const promoBanners = await this.promoBannerService.findAll();
+    const promoBanners = await this.promoBannerService.findAllActive(isActive);
 
     const categories = await this.categoryRepository.find({
       where: {
@@ -111,7 +111,14 @@ export class HomePageService {
         textColor: promo.textColor,
         link: promo.link,
         linkText: promo.linkText,
-        image: promo.imageUrl,
+        imageUrl: promo.imageUrl,
+        isActive: promo.isActive,
+        isClosable: promo.isClosable,
+        priority: promo.priority,
+        startDate: promo.startDate,
+        endDate: promo.endDate,
+        displayDuration: promo.displayDuration,
+        description: promo.description,
       })),
       heroSliders: heroSliders.map(slider => ({
         id: slider.id,

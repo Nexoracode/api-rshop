@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, MoreThanOrEqual, IsNull } from 'typeorm';
 import { PromoBanner } from './entities/promo-banner.entity';
 import { CreatePromoBannerDto, UpdatePromoBannerDto } from './dto/promo-banner.dto';
+import { HomePageCacheService } from './cache';
 
 @Injectable()
 export class PromoBannerService {
@@ -15,7 +16,7 @@ export class PromoBannerService {
     constructor(
         @InjectRepository(PromoBanner)
         private readonly promoBannerRepo: Repository<PromoBanner>,
-        // private readonly cacheService: PromoBannerCacheService,
+        private readonly cacheService: HomePageCacheService,
     ) { }
 
     /**
@@ -39,70 +40,60 @@ export class PromoBannerService {
         });
 
         const saved = await this.promoBannerRepo.save(banner);
-
-        // پاک کردن کش
-        this.clearCache();
+        // ✅ پاک کردن cache
+        await this.cacheService.clearPromoBannersCache();
+        this.logger.log('🗑️ Hero promo banner cache پاک شد بعد از create');
 
         return saved;
     }
 
-    /**
-     * دریافت بنر فعال برای نمایش (Public)
-     * فقط یک بنر با بالاترین اولویت
-     */
-    async getActiveBanner(): Promise<PromoBanner | null> {
-        const cacheKey = 'promo-banner:active';
-
-        // چک کش
-        // const cached = this.cacheService.get<PromoBanner | null>(cacheKey);
-        // if (cached !== null && cached !== undefined) {
-        //   this.logger.debug('✅ Returning cached active banner');
-        //   return cached;
-        // }
-
-        const now = new Date();
-
-        const banner = await this.promoBannerRepo
-            .createQueryBuilder('banner')
-            .where('banner.isActive = :isActive', { isActive: true })
-            .andWhere(
-                '(banner.startDate IS NULL OR banner.startDate <= :now)',
-                { now },
-            )
-            .andWhere(
-                '(banner.endDate IS NULL OR banner.endDate >= :now)',
-                { now },
-            )
-            .orderBy('banner.priority', 'DESC')
-            .addOrderBy('banner.createdAt', 'DESC')
-            .getOne();
-
-        // ذخیره در کش (حتی اگر null باشد)
-        // this.cacheService.set(cacheKey, banner);
-
-        return banner;
-    }
 
     /**
      * لیست تمام بنرها (Admin)
      */
     async findAll(): Promise<PromoBanner[]> {
-        const cacheKey = 'promo-banner:all';
-
-        // const cached = this.cacheService.get<PromoBanner[]>(cacheKey);
-        // if (cached) {
-        //   this.logger.debug('✅ Returning cached all banners');
-        //   return cached;
-        // }
-
+        const cached = await this.cacheService.getAllPromoBanner();
+        if (cached) {
+            this.logger.log('✅ All promo banner از cache');
+            return cached;
+        }
         const banners = await this.promoBannerRepo.find({
             order: {
                 priority: 'DESC',
                 createdAt: 'DESC',
             },
         });
+        // ✅ ذخیره در cache
+        await this.cacheService.setAllHeroSliders(banners);
+        this.logger.log('💾 All promo banner ذخیره شد در cache');
+        return banners;
+    }
 
-        // this.cacheService.set(cacheKey, banners);
+    /**
+     * دریافت بنر فعال برای نمایش (Public)
+     * فقط یک بنر با بالاترین اولویت
+     */
+    async findAllActive(isActive: boolean): Promise<PromoBanner[]> {
+        const cached = await this.cacheService.getActiveHeroSliders();
+        if (cached) {
+            this.logger.log('✅ Active promo banner از cache');
+            return cached;
+        }
+        const now = new Date();
+        const banners = await this.promoBannerRepo.find({
+            where: isActive ? {
+                isActive: true,
+                startDate: LessThanOrEqual(now),
+                endDate: MoreThanOrEqual(now),
+            } : undefined,
+            order: {
+                priority: 'DESC',
+                createdAt: 'DESC',
+            }
+        });
+
+        await this.cacheService.setActivePromoBanner(banners);
+        this.logger.log('💾 Active promo banner ذخیره شد در cache');
 
         return banners;
     }
@@ -111,6 +102,12 @@ export class PromoBannerService {
      * جزئیات یک بنر (Admin)
      */
     async findOne(id: number): Promise<PromoBanner> {
+        // ✅ چک cache
+        const cached = await this.cacheService.getPromoBannerById(id);
+        if (cached) {
+            this.logger.log(`✅ promo banner ${id} از cache`);
+            return cached;
+        }
         const banner = await this.promoBannerRepo.findOne({
             where: { id },
         });
@@ -118,6 +115,9 @@ export class PromoBannerService {
         if (!banner) {
             throw new NotFoundException('بنر تبلیغاتی یافت نشد');
         }
+        // ✅ ذخیره در cache
+        await this.cacheService.setPromoBannerById(id, banner);
+        this.logger.log(`💾 promo banner ${id} ذخیره شد در cache`);
 
         return banner;
     }
@@ -146,8 +146,10 @@ export class PromoBannerService {
 
         const updated = await this.promoBannerRepo.save(banner);
 
-        // پاک کردن کش
-        this.clearCache();
+        // ✅ پاک کردن cache
+        await this.cacheService.clearPromoBannersCache(id);
+        this.logger.log(`🗑️ promo banner ${id} cache پاک شد بعد از update`);
+
 
         return updated;
     }
@@ -158,9 +160,8 @@ export class PromoBannerService {
     async remove(id: number): Promise<void> {
         const banner = await this.findOne(id);
         await this.promoBannerRepo.remove(banner);
-
-        // پاک کردن کش
-        this.clearCache();
+        await this.cacheService.clearPromoBannersCache(id);
+        this.logger.log(`🗑️ promo banner ${id} cache پاک شد بعد از delete`);
     }
 
     /**
@@ -169,20 +170,9 @@ export class PromoBannerService {
     async toggleActive(id: number): Promise<PromoBanner> {
         const banner = await this.findOne(id);
         banner.isActive = !banner.isActive;
-
         const updated = await this.promoBannerRepo.save(banner);
-
-        // پاک کردن کش
-        this.clearCache();
-
+        await this.cacheService.clearPromoBannersCache(id);
+        this.logger.log(`🗑️ promo banner ${id} cache پاک شد بعد از toggle active`);
         return updated;
-    }
-
-    /**
-     * پاک کردن کش
-     */
-    clearCache(): void {
-        // this.cacheService.clear();
-        this.logger.log('🗑️  PromoBanner cache cleared');
     }
 }

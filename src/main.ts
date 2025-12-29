@@ -61,10 +61,6 @@ async function bootstrap() {
     logger.warn('⚠️ SIGTERM signal received: closing HTTP server');
     await app.close();
   });
-  process.on('SIGINT', async () => {
-    logger.warn('⚠️ SIGINT signal received: closing HTTP server');
-    await app.close();
-  });
   app.setGlobalPrefix('api');
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
