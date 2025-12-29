@@ -553,7 +553,7 @@ export class CategoryService implements ICategoryService {
 
         // ✅ پاک کردن cache بعد از update
         await this.cacheService.clearCategoryCache(id, data.slug);
-        await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
+        // await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
         console.log(`🗑️ Cache پاک شد برای category ${id}`);
 
         return result;

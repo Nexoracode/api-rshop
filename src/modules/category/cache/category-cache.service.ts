@@ -262,20 +262,23 @@ export class CategoryCacheService {
                 this.logger.log('🔍 استفاده از Redis Client برای پاک کردن cache...');
 
                 // الگوی جستجو با namespace
-                const pattern = `${this.NAMESPACE}:category:tree:*`;
+                const pattern = `*:category:tree:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
                     this.logger.log(`📋 ${keys.length} کلید pagination پیدا شد`);
 
                     // استفاده از pipeline برای سرعت بیشتر
-                    const pipeline = redisClient.pipeline();
-
-                    keys.forEach((key: string) => {
-                        pipeline.del(key);
-                    });
-
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => {
+                            pipeline.del(key);
+                        });
+                        await pipeline.exec();
+                    } else {
+                        // Fallback: یک‌به‌یک delete
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
                     this.logger.log(`✅ ${keys.length} کلید pagination با Redis پاک شد`);
                 } else {
                     this.logger.log('ℹ️ هیچ کلید pagination‌ای برای پاک کردن پیدا نشد');
@@ -362,13 +365,17 @@ export class CategoryCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const fullPattern = `*:${pattern}`;
                 const keys = await redisClient.keys(fullPattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
                     this.logger.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
                     return keys.length;

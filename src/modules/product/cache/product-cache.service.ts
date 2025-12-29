@@ -318,20 +318,33 @@ export class ProductCacheService {
      */
     async clearProductCache(productId: number, slug?: string): Promise<void> {
         try {
+            this.logger.log(`🗑️ شروع پاک کردن cache محصول ${productId}...`);
+
+            // ✅ نمایش کلیدها
+            const productKey = this.CACHE_KEYS.PRODUCT_BY_ID(productId);
+            this.logger.debug(`🔑 کلید محصول: ${productKey}`);
+            if (slug) {
+                const slugKey = this.CACHE_KEYS.PRODUCT_BY_SLUG(slug);
+                this.logger.debug(`🔑 کلید slug: ${slugKey}`);
+            }
+
             // پاک کردن cache این محصول
-            await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_ID(productId));
+            await this.cacheManager.del(productKey);
+            this.logger.log(`✅ Cache PRODUCT_BY_ID(${productId}) پاک شد`);
 
             // پاک کردن cache slug
             if (slug) {
                 await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_SLUG(slug));
+                this.logger.log(`✅ Cache PRODUCT_BY_SLUG(${slug}) پاک شد`);
             }
 
             // پاک کردن لیست‌ها (چون محصول تغییر کرده)
             await this.clearListCaches();
 
-            console.log(`✅ Cache محصول ${productId} پاک شد`);
+            this.logger.log(`✅ Cache محصول ${productId} به طور کامل پاک شد`);
         } catch (error) {
-            console.error(`❌ خطا در پاک کردن cache محصول ${productId}:`, error);
+            this.logger.error(`❌ خطا در پاک کردن cache محصول ${productId}:`, error);
+            throw error;
         }
     }
 
@@ -340,43 +353,62 @@ export class ProductCacheService {
      */
     async clearListCaches(): Promise<void> {
         try {
+            this.logger.log('🗑️ شروع پاک کردن cache لیست‌های محصولات...');
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                console.log('🔍 پاک کردن cache لیست‌های محصولات...');
+                this.logger.log('🔍 پاک کردن cache لیست‌های محصولات با Redis...');
 
+                // ✅ اول ببینیم چه کلیدهایی داریم
+                const allProductKeys = await redisClient.keys(`*product:*`);
+                this.logger.debug(`🔍 تعداد کل کلیدهای product: ${allProductKeys?.length || 0}`);
+                if (allProductKeys && allProductKeys.length > 0) {
+                    this.logger.debug(`🔍 نمونه کلیدها: ${allProductKeys.slice(0, 5).join(', ')}`);
+                }
+
+                // ⚠️ cache-manager خودش namespace رو اضافه میکنه، پس باید pattern ها رو با namespace اضافی بسازیم
                 const patterns = [
-                    `${this.NAMESPACE}:product:list:*`,
-                    `${this.NAMESPACE}:product:featured:*`,
-                    `${this.NAMESPACE}:product:new:*`,
-                    `${this.NAMESPACE}:product:bestsellers:*`,
-                    `${this.NAMESPACE}:product:onsale:*`,
-                    `${this.NAMESPACE}:product:category:*`,
-                    `${this.NAMESPACE}:product:brand:*`,
-                    `${this.NAMESPACE}:product:search:*`,
+                    `*:product:list:*`,
+                    `*:product:featured:*`,
+                    `*:product:new:*`,
+                    `*:product:bestsellers:*`,
+                    `*:product:onsale:*`,
+                    `*:product:category:*`,
+                    `*:product:brand:*`,
+                    `*:product:search:*`,
                 ];
 
                 let totalDeleted = 0;
 
                 for (const pattern of patterns) {
                     const keys = await redisClient.keys(pattern);
+                    this.logger.debug(`🔍 Pattern "${pattern}" -> ${keys?.length || 0} کلید`);
                     if (keys && keys.length > 0) {
-                        const pipeline = redisClient.pipeline();
-                        keys.forEach((key: string) => pipeline.del(key));
-                        await pipeline.exec();
+                        // ✅ چک کنیم pipeline وجود داره یا نه
+                        if (typeof redisClient.pipeline === 'function') {
+                            const pipeline = redisClient.pipeline();
+                            keys.forEach((key: string) => pipeline.del(key));
+                            await pipeline.exec();
+                        } else {
+                            // Fallback: یک‌به‌یک delete
+                            this.logger.warn('⚠️ pipeline موجود نیست، استفاده از del تکی...');
+                            await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                        }
                         totalDeleted += keys.length;
+                        this.logger.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
                     }
                 }
 
-                console.log(`✅ ${totalDeleted} کلید لیست پاک شد`);
+                this.logger.log(`✅ ${totalDeleted} کلید لیست پاک شد`);
                 return;
             }
 
             // فال‌بک
+            this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback method...');
             const store = this.getStore();
 
             if (store && typeof store.iterator === 'function') {
-                console.log('🔍 پاک کردن لیست‌ها با Iterator...');
+                this.logger.log('🔍 پاک کردن لیست‌ها با Iterator...');
 
                 const keysToDelete: string[] = [];
 
@@ -399,11 +431,16 @@ export class ProductCacheService {
                     await Promise.allSettled(
                         keysToDelete.map(key => this.cacheManager.del(key))
                     );
-                    console.log(`✅ ${keysToDelete.length} کلید لیست پاک شد`);
+                    this.logger.log(`✅ ${keysToDelete.length} کلید لیست پاک شد`);
+                } else {
+                    this.logger.log('✅ هیچ کلیدی برای پاک کردن پیدا نشد');
                 }
+            } else {
+                this.logger.warn('⚠️ Store Iterator موجود نیست - cache پاک نشد');
             }
         } catch (error) {
-            console.error('❌ خطا در پاک کردن cache لیست‌ها:', error);
+            this.logger.error('❌ خطا در پاک کردن cache لیست‌ها:', error);
+            throw error;
         }
     }
 
@@ -412,23 +449,31 @@ export class ProductCacheService {
      */
     async clearCategoryProductsCache(categoryId: number): Promise<void> {
         try {
+            this.logger.log(`🗑️ پاک کردن cache محصولات دسته ${categoryId}...`);
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:product:category:${categoryId}:*`;
+                const pattern = `*:product:category:${categoryId}:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ ${keys.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                    this.logger.log(`✅ ${keys.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                } else {
+                    this.logger.log(`✅ هیچ کلیدی برای دسته ${categoryId} پیدا نشد`);
                 }
                 return;
             }
 
             // فال‌بک
+            this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback...');
             const store = this.getStore();
 
             if (store && typeof store.iterator === 'function') {
@@ -444,11 +489,15 @@ export class ProductCacheService {
                     await Promise.allSettled(
                         keysToDelete.map(key => this.cacheManager.del(key))
                     );
-                    console.log(`✅ ${keysToDelete.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                    this.logger.log(`✅ ${keysToDelete.length} کلید محصولات دسته ${categoryId} پاک شد`);
+                } else {
+                    this.logger.log(`✅ هیچ کلیدی برای دسته ${categoryId} پیدا نشد`);
                 }
+            } else {
+                this.logger.warn('⚠️ Store Iterator موجود نیست');
             }
         } catch (error) {
-            console.error(`❌ خطا در پاک کردن cache محصولات دسته ${categoryId}:`, error);
+            this.logger.error(`❌ خطا در پاک کردن cache محصولات دسته ${categoryId}:`, error);
         }
     }
 
@@ -457,23 +506,31 @@ export class ProductCacheService {
      */
     async clearBrandProductsCache(brandId: number): Promise<void> {
         try {
+            this.logger.log(`🗑️ پاک کردن cache محصولات برند ${brandId}...`);
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:product:brand:${brandId}:*`;
+                const pattern = `*:product:brand:${brandId}:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ ${keys.length} کلید محصولات برند ${brandId} پاک شد`);
+                    this.logger.log(`✅ ${keys.length} کلید محصولات برند ${brandId} پاک شد`);
+                } else {
+                    this.logger.log(`✅ هیچ کلیدی برای برند ${brandId} پیدا نشد`);
                 }
                 return;
             }
 
             // فال‌بک
+            this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback...');
             const store = this.getStore();
 
             if (store && typeof store.iterator === 'function') {
@@ -489,11 +546,15 @@ export class ProductCacheService {
                     await Promise.allSettled(
                         keysToDelete.map(key => this.cacheManager.del(key))
                     );
-                    console.log(`✅ ${keysToDelete.length} کلید محصولات برند ${brandId} پاک شد`);
+                    this.logger.log(`✅ ${keysToDelete.length} کلید محصولات برند ${brandId} پاک شد`);
+                } else {
+                    this.logger.log(`✅ هیچ کلیدی برای برند ${brandId} پیدا نشد`);
                 }
+            } else {
+                this.logger.warn('⚠️ Store Iterator موجود نیست');
             }
         } catch (error) {
-            console.error(`❌ خطا در پاک کردن cache محصولات برند ${brandId}:`, error);
+            this.logger.error(`❌ خطا در پاک کردن cache محصولات برند ${brandId}:`, error);
         }
     }
 
@@ -502,23 +563,31 @@ export class ProductCacheService {
      */
     async clearSearchCache(): Promise<void> {
         try {
+            this.logger.log('🗑️ پاک کردن cache جستجو...');
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:product:search:*`;
+                const pattern = `*:product:search:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ ${keys.length} کلید جستجو پاک شد`);
+                    this.logger.log(`✅ ${keys.length} کلید جستجو پاک شد`);
+                } else {
+                    this.logger.log('✅ هیچ کلید جستجویی پیدا نشد');
                 }
                 return;
             }
 
             // فال‌بک
+            this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback...');
             const store = this.getStore();
 
             if (store && typeof store.iterator === 'function') {
@@ -534,11 +603,15 @@ export class ProductCacheService {
                     await Promise.allSettled(
                         keysToDelete.map(key => this.cacheManager.del(key))
                     );
-                    console.log(`✅ ${keysToDelete.length} کلید جستجو پاک شد`);
+                    this.logger.log(`✅ ${keysToDelete.length} کلید جستجو پاک شد`);
+                } else {
+                    this.logger.log('✅ هیچ کلید جستجویی پیدا نشد');
                 }
+            } else {
+                this.logger.warn('⚠️ Store Iterator موجود نیست');
             }
         } catch (error) {
-            console.error('❌ خطا در پاک کردن cache جستجو:', error);
+            this.logger.error('❌ خطا در پاک کردن cache جستجو:', error);
         }
     }
 
@@ -550,22 +623,26 @@ export class ProductCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const fullPattern = `${this.NAMESPACE}:${pattern}`;
+                const fullPattern = `*:${pattern}`;
                 const keys = await redisClient.keys(fullPattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                    this.logger.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
                     return keys.length;
                 }
             }
 
             return 0;
         } catch (error) {
-            console.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
+            this.logger.error(`❌ خطا در پاک کردن cache با pattern "${pattern}":`, error);
             return 0;
         }
     }

@@ -275,13 +275,17 @@ export class OrderCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:order:user:${userId}:detail:*`;
+                const pattern = `*:order:user:${userId}:detail:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
                 }
             } else {
                 // فال‌بک با Iterator
@@ -319,15 +323,19 @@ export class OrderCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:order:admin:list:*`;
+                const pattern = `*:order:admin:list:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ [OrderCache] Cache لیست ادمین پاک شد (${keys.length} کلید)`);
+                    this.logger.log(`✅ [OrderCache] Cache لیست ادمین پاک شد (${keys.length} کلید)`);
                 }
                 return;
             }
@@ -365,15 +373,19 @@ export class OrderCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                const pattern = `${this.NAMESPACE}:order:stats:*`;
+                const pattern = `*:order:stats:*`;
                 const keys = await redisClient.keys(pattern);
 
                 if (keys && keys.length > 0) {
-                    const pipeline = redisClient.pipeline();
-                    keys.forEach((key: string) => pipeline.del(key));
-                    await pipeline.exec();
+                    if (typeof redisClient.pipeline === 'function') {
+                        const pipeline = redisClient.pipeline();
+                        keys.forEach((key: string) => pipeline.del(key));
+                        await pipeline.exec();
+                    } else {
+                        await Promise.all(keys.map((key: string) => redisClient.del(key)));
+                    }
 
-                    console.log(`✅ [OrderCache] Cache آمار پاک شد`);
+                    this.logger.log(`✅ [OrderCache] Cache آمار پاک شد`);
                 }
                 return;
             }
