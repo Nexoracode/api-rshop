@@ -30,6 +30,7 @@ import { MediaModule } from '../media/media.module';
 import { PromoBanner } from './entities/promo-banner.entity';
 import { PromoBannerAdminController } from './controllers/poromo-banner.controller';
 import { PromoBannerService } from './promo-banner.service';
+import { PromoBannerPublicController } from './controllers/promo-banner-public.controller';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { PromoBannerService } from './promo-banner.service';
     HeroSliderAdminController,
     SideBannerAdminController,
     PromoBannerAdminController,
+    PromoBannerPublicController,
     HomeSectionAdminController,
     HomePageAnalyticsController,
     UploadImageAdminController
