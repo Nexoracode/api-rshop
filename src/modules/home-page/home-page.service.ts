@@ -1,87 +1,74 @@
+// src/homepage/homepage.service.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { HeroSliderService } from './hero-slider.service';
-import { SideBannerService } from './side-banner.service';
-import { HomeSectionService } from './home-section.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../category/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
-import { Product } from '../product/entities/product.entity';
-import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
+import { HomePageCacheService } from './cache';
+import { HeroSliderService } from './hero-slider.service';
+import { SideBannerService } from './side-banner.service';
 import { PromoBannerService } from './promo-banner.service';
-
-export interface HomePageData {
-  heroSliders: any[];
-  sideBanners: any[];
-  promoBanners: any[];
-  categories: any[];
-  brands: any[];
-  sections: Array<{
-    id: number;
-    title: string;
-    slug: string;
-    description: string;
-    sectionType: string;
-    displayStyle: string;
-    showViewAllButton: boolean;
-    viewAllLink: string;
-    sortOrder: number;
-    products: any[];
-  }>;
-}
+import { HomeSectionService } from './home-section.service';
+import { HomePageData } from './interceptors/home-page.interface';
 
 @Injectable()
 export class HomePageService {
-  private readonly logger = new Logger(HomePageService.name); // ✅ اضافه شد
+  private readonly logger = new Logger(HomePageService.name);
 
   constructor(
-    private heroSliderService: HeroSliderService,
-    private sideBannerService: SideBannerService,
-    private promoBannerService: PromoBannerService,
-    private homeSectionService: HomeSectionService,
+    private readonly cacheService: HomePageCacheService,
+    private readonly heroSliderService: HeroSliderService,
+    private readonly sideBannerService: SideBannerService,
+    private readonly promoBannerService: PromoBannerService,
+    private readonly homeSectionService: HomeSectionService,
     @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
+    private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Brand)
-    private brandRepository: Repository<Brand>,
-    private readonly cacheService: HomePageCacheService, // ✅ تغییر یافت
+    private readonly brandRepository: Repository<Brand>,
   ) { }
 
   /**
-   * گرفتن تمام داده‌های صفحه اصلی به صورت یکجا
+   * دریافت داده کامل صفحه اصلی
    */
-  async getHomePageData(isActive: boolean): Promise<HomePageData> {
-    // ✅ چک cache (در development غیرفعال)
-    const cached = await this.cacheService.getHomePageData();
+  async getHomePageData(forAdmin: boolean = false) {
+    // ✅ چک cache با پارامتر forAdmin
+    const cached = await this.cacheService.getHomePageData(forAdmin);
     if (cached) {
-      this.logger.log('✅ Home page data از cache');
+      this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
       return cached;
     }
 
-    // لاجیک اصلی (بدون تغییر)
-    const heroSliders = await this.heroSliderService.findAllActive(isActive);
-    const sideBanners = await this.sideBannerService.findAllActive(isActive);
-    const promoBanners = await this.promoBannerService.findAllActive(isActive);
+    this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
 
-    const categories = await this.categoryRepository.find({
-      where: {
-        parentId: undefined,
-        isActive: isActive ? undefined : true,
-      },
-      relations: ['media'],
-      order: { displayOrder: 'ASC' },
-      take: 18,
-    });
+    // ✅ دریافت داده‌ها بر اساس forAdmin
+    const [heroSliders, sideBanners, promoBanners, sections, categories, brands] = await Promise.all([
+      forAdmin
+        ? this.heroSliderService.findAll()
+        : this.heroSliderService.findAllActive(),
 
-    const brands = await this.brandRepository.find({
-      where: { isActive: isActive ? undefined : true, },
-      order: { name: 'ASC' },
-    });
+      forAdmin
+        ? this.sideBannerService.findAll()
+        : this.sideBannerService.findAllActive(),
 
-    const sections = await this.homeSectionService.findAllActive(isActive);
+      forAdmin
+        ? this.promoBannerService.findAll()
+        : this.promoBannerService.findAllActive(),
+
+      forAdmin
+        ? this.homeSectionService.findAll()
+        : this.homeSectionService.findAllActive(),
+
+      this.getCategoriesForHomePage(forAdmin),
+      this.getBrandsForHomePage(forAdmin),
+    ]);
 
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
-        const products = await this.homeSectionService.getSectionProducts(section.id);
+        const products = await this.homeSectionService.getSectionProducts(
+          section.id,
+          !forAdmin // فقط محصولات فعال برای public
+        );
+
         const category = await this.categoryRepository.findOne({
           where: { id: section.categoryId },
           relations: ['media']
@@ -125,7 +112,7 @@ export class HomePageService {
         title: slider.title,
         description: slider.description,
         imageUrl: slider.imageUrl,
-        backgroundColor: slider.backgroundColor,
+        backgroundColor: slider.backgroundColor ?? '',
         isDark: slider.isDark,
         isActive: slider.isActive,
         buttonText: slider.buttonText,
@@ -160,89 +147,68 @@ export class HomePageService {
       sections: sectionsWithProducts,
     };
 
-    // ✅ ذخیره در cache
-    await this.cacheService.setHomePageData(result);
-    this.logger.log('💾 Home page data ذخیره شد در cache');
+    // ✅ ذخیره در cache با پارامتر forAdmin
+    await this.cacheService.setHomePageData(result, forAdmin);
+    this.logger.log(`💾 Home page data ذخیره شد در cache (${forAdmin ? 'admin' : 'public'})`);
 
     return result;
   }
 
   /**
-   * پاک کردن cache صفحه اصلی
-   * این متد باید بعد از هر تغییر در اسلایدرها، بنرها یا بخش‌ها صدا زده شود
+   * دریافت دسته‌بندی‌های صفحه اصلی
    */
-  async clearCache(): Promise<void> {
-    await this.cacheService.clearHomePageData();
-    this.logger.log('🗑️ Home page cache پاک شد');
+  private async getCategoriesForHomePage(forAdmin: boolean) {
+    const whereCondition = forAdmin
+      ? { parentId: undefined }
+      : { parentId: undefined, isActive: true };
+
+    return await this.categoryRepository.find({
+      where: whereCondition,
+      relations: ['media'],
+      order: { displayOrder: 'ASC' },
+      take: 18,
+    });
   }
 
   /**
-   * فرمت کردن اطلاعات محصول برای API
+   * دریافت برندهای صفحه اصلی
    */
-  private async formatProduct(product: Product) {
-    let categorySlug: any = null;
-    if (product.category) {
-      categorySlug = await this.buildCategoryFullSlug(product.category.id);
-    }
+  private async getBrandsForHomePage(forAdmin: boolean) {
+    const whereCondition = forAdmin
+      ? {}
+      : { isActive: true };
 
-    return {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      discountAmount: product.discountAmount,
-      discountPercent: product.discountPercent,
-      stock: product.stock,
-      image: product.mediaPinned.url,
-      category: product.category ? {
-        id: product.category.id,
-        name: product.category.title,
-        slug: categorySlug,
-      } : null,
-      brand: product.brand ? {
-        id: product.brand.id,
-        name: product.brand.name,
-        slug: product.brand.slug,
-      } : null,
-    };
+    return await this.brandRepository.find({
+      where: whereCondition,
+      order: { name: 'ASC' },
+    });
   }
 
   /**
-   * فرمت کردن اطلاعات دسته‌بندی برای API
+   * فرمت کردن category
    */
   private async formatCategory(category: Category) {
-    const fullSlug = await this.buildCategoryFullSlug(category.id);
-
     return {
       id: category.id,
       name: category.title,
-      slug: fullSlug,
+      slug: category.slug,
       image: category.media?.url ?? null,
     };
   }
 
   /**
-   * ساخت slug کامل با تمام والدهای دسته‌بندی
-   * مثال: mohr-tasbih/mohr-tasbih-sub1/mohr-tasbih-sub1-child1
+   * فرمت کردن product
    */
-  private async buildCategoryFullSlug(categoryId: number): Promise<string> {
-    const slugParts: string[] = [];
-    let currentCategory = await this.categoryRepository.findOne({
-      where: { id: categoryId },
-      relations: ['parent'],
-    });
-
-    while (currentCategory) {
-      slugParts.unshift(currentCategory.slug);
-
-      if (currentCategory.parent && currentCategory.parentId && currentCategory.parentId !== 0) {
-        currentCategory = await this.categoryRepository.findOne({
-          where: { id: currentCategory.parentId },
-          relations: ['parent'],
-        });
-      } else {
-        break;
-      }
-    }
-    return slugParts.join('/');
+  private async formatProduct(product: any) {
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      discountedPrice: product.discountedPrice,
+      image: product.mediaPinned?.url ?? null,
+      isActive: product.isActive,
+      // سایر فیلدهای مورد نیاز
+    };
   }
 }

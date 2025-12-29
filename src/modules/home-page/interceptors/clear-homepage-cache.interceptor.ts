@@ -13,13 +13,13 @@ import { HomePageService } from '../home-page.service';
  */
 @Injectable()
 export class ClearHomePageCacheInterceptor implements NestInterceptor {
-  constructor(private readonly homePageService: HomePageService) {}
+  constructor(private readonly homePageService: HomePageService) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap(async () => {
         // بعد از موفقیت‌آمیز بودن عملیات، کش را پاک کن
-        await this.homePageService.clearCache();
+        await this.homePageService.getHomePageData();
       }),
     );
   }

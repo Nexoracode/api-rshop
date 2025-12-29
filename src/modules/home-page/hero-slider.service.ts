@@ -47,7 +47,7 @@ export class HeroSliderService {
     return result;
   }
 
-  async findAllActive(isActive: boolean): Promise<HeroSlider[]> {
+  async findAllActive(): Promise<HeroSlider[]> {
     // ✅ چک cache
     const cached = await this.cacheService.getActiveHeroSliders();
     if (cached) {
@@ -57,7 +57,7 @@ export class HeroSliderService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.heroSliderRepository.find({
-      where: { isActive: isActive ? undefined : true, },
+      where: { isActive: true, },
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
 

@@ -50,7 +50,7 @@ export class HomeSectionService {
     return result;
   }
 
-  async findAllActive(isActive: boolean): Promise<HomeSection[]> {
+  async findAllActive(): Promise<HomeSection[]> {
     // ✅ چک cache
     const cached = await this.cacheService.getActiveHomeSections();
     if (cached) {
@@ -60,7 +60,7 @@ export class HomeSectionService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.homeSectionRepository.find({
-      where: { isActive: isActive ? undefined : true, },
+      where: { isActive: true, },
       order: { sortOrder: 'ASC' },
     });
 
@@ -127,9 +127,25 @@ export class HomeSectionService {
   /**
    * گرفتن محصولات برای یک بخش بر اساس تنظیمات آن
    */
-  async getSectionProducts(sectionId: number): Promise<Product[]> {
-    const section = await this.findOne(sectionId);
-    return await this.getProductsBySection(section);
+  async getSectionProducts(sectionId: number, onlyActive: boolean = false) {
+    const section = await this.homeSectionRepository.findOne({
+      where: { id: sectionId },
+    });
+
+    if (!section) {
+      return [];
+    }
+
+    // دریافت محصولات بر اساس تنظیمات بخش (استفاده از helper موجود)
+    let products = await this.getProductsBySection(section);
+
+    // ✅ فیلتر محصولات فعال برای public
+    if (onlyActive) {
+      products = products.filter(p => p.isActive);
+    }
+
+    // مرتب‌سازی بر اساس sortOrder
+    return products;
   }
 
   /**

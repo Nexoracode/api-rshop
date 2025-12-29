@@ -1,0 +1,94 @@
+/**
+ * Interface های HomePage
+ */
+
+export interface HeroSliderData {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  backgroundColor: string;
+  isDark: boolean;
+  isActive: boolean;
+  buttonText: string;
+  sortOrder: number;
+  buttonLink: string;
+}
+
+export interface SideBannerData {
+  id: number;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  backgroundColor: string;
+  link: string;
+  isActive: boolean;
+  position: string;
+  sortOrder: number;
+  badgeText: string | null;
+  badgeColor: string | null;
+}
+
+export interface PromoBannerData {
+  id: number;
+  title: string;
+  backgroundColor: string;
+  textColor: string;
+  link: string;
+  linkText: string;
+  imageUrl: string;
+  isActive: boolean;
+  isClosable: boolean;
+  priority: number;
+  startDate: Date | null;
+  endDate: Date | null;
+  displayDuration: number;
+  description: string;
+}
+
+export interface CategoryData {
+  id: number;
+  name: string;
+  slug: string;
+  image: string | null;
+}
+
+export interface BrandData {
+  id: number;
+  name: string;
+  slug: string;
+  logo: string | null;
+}
+
+export interface ProductData {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  discountedPrice: number | null;
+  image: string | null;
+  isActive: boolean;
+}
+
+export interface HomeSectionData {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  sectionType: string;
+  displayStyle: string;
+  showViewAllButton: boolean;
+  sortOrder: number;
+  viewAllLink: string | null;
+  category: CategoryData | null;
+  products: ProductData[];
+}
+
+export interface HomePageData {
+  promoBanners: PromoBannerData[];
+  heroSliders: HeroSliderData[];
+  sideBanners: SideBannerData[];
+  categories: CategoryData[];
+  brands: BrandData[];
+  sections: HomeSectionData[];
+}

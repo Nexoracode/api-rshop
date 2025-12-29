@@ -42,7 +42,7 @@ export class PromoBannerService {
         const saved = await this.promoBannerRepo.save(banner);
         // ✅ پاک کردن cache
         await this.cacheService.clearPromoBannersCache();
-        this.logger.log('🗑️ Hero promo banner cache پاک شد بعد از create');
+        this.logger.log('🗑️ promo banner cache پاک شد بعد از create');
 
         return saved;
     }
@@ -51,7 +51,7 @@ export class PromoBannerService {
     /**
      * لیست تمام بنرها (Admin)
      */
-    async findAll(): Promise<PromoBanner[]> {
+    async findAll() {
         const cached = await this.cacheService.getAllPromoBanner();
         if (cached) {
             this.logger.log('✅ All promo banner از cache');
@@ -63,39 +63,72 @@ export class PromoBannerService {
                 createdAt: 'DESC',
             },
         });
+        const newBanners = banners.map(promo => ({
+            id: promo.id,
+            title: promo.title,
+            backgroundColor: promo.backgroundColor,
+            textColor: promo.textColor,
+            link: promo.link,
+            linkText: promo.linkText,
+            imageUrl: promo.imageUrl,
+            isActive: promo.isActive,
+            isClosable: promo.isClosable,
+            priority: promo.priority,
+            startDate: promo.startDate,
+            endDate: promo.endDate,
+            displayDuration: promo.displayDuration,
+            description: promo.description,
+        }));
         // ✅ ذخیره در cache
-        await this.cacheService.setAllHeroSliders(banners);
+        await this.cacheService.setAllPromoBanner(newBanners);
         this.logger.log('💾 All promo banner ذخیره شد در cache');
-        return banners;
+        return newBanners;
     }
 
     /**
      * دریافت بنر فعال برای نمایش (Public)
      * فقط یک بنر با بالاترین اولویت
      */
-    async findAllActive(isActive: boolean): Promise<PromoBanner[]> {
-        const cached = await this.cacheService.getActiveHeroSliders();
+    async findAllActive() {
+        const cached = await this.cacheService.getActivePromoBanner();
         if (cached) {
             this.logger.log('✅ Active promo banner از cache');
             return cached;
         }
         const now = new Date();
         const banners = await this.promoBannerRepo.find({
-            where: isActive ? {
+            where: {
                 isActive: true,
                 startDate: LessThanOrEqual(now),
                 endDate: MoreThanOrEqual(now),
-            } : undefined,
+            },
             order: {
                 priority: 'DESC',
                 createdAt: 'DESC',
             }
         });
 
-        await this.cacheService.setActivePromoBanner(banners);
+        const newBanners = banners.map(promo => ({
+            id: promo.id,
+            title: promo.title,
+            backgroundColor: promo.backgroundColor,
+            textColor: promo.textColor,
+            link: promo.link,
+            linkText: promo.linkText,
+            imageUrl: promo.imageUrl,
+            isActive: promo.isActive,
+            isClosable: promo.isClosable,
+            priority: promo.priority,
+            startDate: promo.startDate,
+            endDate: promo.endDate,
+            displayDuration: promo.displayDuration,
+            description: promo.description,
+        }));
+
+        await this.cacheService.setActivePromoBanner(newBanners);
         this.logger.log('💾 Active promo banner ذخیره شد در cache');
 
-        return banners;
+        return newBanners
     }
 
     /**

@@ -481,7 +481,7 @@ export class HealthController {
                 category: () => this.categoryCacheService.clearAllCategoryCache(),
                 product: () => this.productCacheService.clearAllProductCache(),
                 order: () => this.orderCacheService.clearAlOrderCache(),
-                homepage: () => this.homePageCacheService.clearAllHomepageCache(),
+                homepage: () => this.homePageCacheService.clearAllHomePageCache(),
                 catalog: () => this.catalogCacheService.clearAllCatalogCache(),
                 collection: () => this.collectionCacheService.clearAllCollectionCache(),
             };
@@ -523,7 +523,7 @@ export class HealthController {
                 this.categoryCacheService.clearAllCategoryCache(),
                 this.productCacheService.clearAllProductCache(),
                 this.orderCacheService.clearAlOrderCache(),
-                this.homePageCacheService.clearAllHomepageCache(),
+                this.homePageCacheService.clearAllHomePageCache(),
                 this.catalogCacheService.clearAllCatalogCache(),
                 this.collectionCacheService.clearAllCollectionCache(),
             ]);

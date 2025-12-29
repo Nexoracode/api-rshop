@@ -21,10 +21,6 @@ export class PromoBannerPublicController {
         description: 'لیست بنرها با موفقیت دریافت شد',
     })
     async findAll() {
-        const banners = await this.promoBannerService.findAll();
-        return {
-            message: 'لیست بنرهای تبلیغاتی دریافت شد',
-            data: banners,
-        };
+        return await this.promoBannerService.findAllActive();
     }
 }
