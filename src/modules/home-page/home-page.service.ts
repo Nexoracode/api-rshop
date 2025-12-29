@@ -8,10 +8,12 @@ import { Category } from '../category/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { Product } from '../product/entities/product.entity';
 import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
+import { PromoBannerService } from './promo-banner.service';
 
 export interface HomePageData {
   heroSliders: any[];
   sideBanners: any[];
+  promoBanners: any[];
   categories: any[];
   brands: any[];
   sections: Array<{
@@ -35,6 +37,7 @@ export class HomePageService {
   constructor(
     private heroSliderService: HeroSliderService,
     private sideBannerService: SideBannerService,
+    private promoBannerService: PromoBannerService,
     private homeSectionService: HomeSectionService,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
@@ -57,6 +60,7 @@ export class HomePageService {
     // لاجیک اصلی (بدون تغییر)
     const heroSliders = await this.heroSliderService.findAllActive(isActive);
     const sideBanners = await this.sideBannerService.findAllActive(isActive);
+    const promoBanners = await this.promoBannerService.findAll();
 
     const categories = await this.categoryRepository.find({
       where: {
@@ -100,6 +104,15 @@ export class HomePageService {
     );
 
     const result: HomePageData = {
+      promoBanners: promoBanners.map(promo => ({
+        id: promo.id,
+        title: promo.title,
+        backgroundColor: promo.backgroundColor,
+        textColor: promo.textColor,
+        link: promo.link,
+        linkText: promo.linkText,
+        image: promo.imageUrl,
+      })),
       heroSliders: heroSliders.map(slider => ({
         id: slider.id,
         title: slider.title,

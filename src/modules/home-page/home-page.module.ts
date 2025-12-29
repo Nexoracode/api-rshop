@@ -27,6 +27,9 @@ import { HomePageAnalyticsController } from './controllers/homepage-analytics.co
 import { ClearHomePageCacheInterceptor } from './interceptors/clear-homepage-cache.interceptor';
 import { UploadImageAdminController } from './controllers/upload-image-admin.controller';
 import { MediaModule } from '../media/media.module';
+import { PromoBanner } from './entities/promo-banner.entity';
+import { PromoBannerAdminController } from './controllers/poromo-banner.controller';
+import { PromoBannerService } from './promo-banner.service';
 
 @Module({
   imports: [
@@ -35,6 +38,7 @@ import { MediaModule } from '../media/media.module';
       SideBanner,
       HomeSection,
       HomePageClickAnalytics,
+      PromoBanner,
       Product,
       Category,
       Brand,
@@ -45,6 +49,7 @@ import { MediaModule } from '../media/media.module';
     HomePagePublicController,
     HeroSliderAdminController,
     SideBannerAdminController,
+    PromoBannerAdminController,
     HomeSectionAdminController,
     HomePageAnalyticsController,
     UploadImageAdminController
@@ -52,6 +57,7 @@ import { MediaModule } from '../media/media.module';
   providers: [
     HeroSliderService,
     SideBannerService,
+    PromoBannerService,
     HomeSectionService,
     HomePageService,
     HomePageAnalyticsService,
@@ -61,6 +67,7 @@ import { MediaModule } from '../media/media.module';
   exports: [
     HeroSliderService,
     SideBannerService,
+    PromoBannerService,
     HomeSectionService,
     HomePageService,
     HomePageAnalyticsService,
