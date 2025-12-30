@@ -9,6 +9,7 @@ import { Public } from 'src/common/decorator/public.decorator';
 export class CollectionPublicController {
   constructor(private readonly collectionService: CollectionService) { }
 
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'لیست تمام مجموعه‌های فعال',
@@ -37,6 +38,7 @@ export class CollectionPublicController {
     };
   }
 
+  @Public()
   @Get(':slug')
   @ApiOperation({
     summary: 'جزئیات یک مجموعه با slug',
@@ -97,6 +99,7 @@ export class CollectionPublicController {
     };
   }
 
+  @Public()
   @Get(':slug/products')
   @ApiOperation({
     summary: 'محصولات یک مجموعه',

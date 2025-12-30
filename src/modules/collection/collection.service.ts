@@ -105,7 +105,7 @@ export class CollectionService {
           endDate: MoreThanOrEqual(now),
         },
       ],
-      relations: ['products'],
+      relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
       order: {
         sortOrder: 'ASC',
         createdAt: 'DESC',
@@ -130,7 +130,7 @@ export class CollectionService {
     }
 
     const collections = await this.collectionRepo.find({
-      relations: ['products'],
+      relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
       order: {
         sortOrder: 'ASC',
         createdAt: 'DESC',
@@ -163,7 +163,7 @@ export class CollectionService {
         startDate: LessThanOrEqual(now),
         endDate: MoreThanOrEqual(now),
       },
-      relations: ['products', 'products.mediaPinned'],
+      relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
     });
 
     if (!collection) {
@@ -189,7 +189,7 @@ export class CollectionService {
 
     const collection = await this.collectionRepo.findOne({
       where: { id },
-      relations: ['products', 'products.mediaPinned'],
+      relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
     });
 
     if (!collection) {
