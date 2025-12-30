@@ -19,6 +19,9 @@ export class HomePageCacheService {
         FULL_PAGE_PUBLIC: 'homepage:full:public',
         FULL_PAGE_ADMIN: 'homepage:full:admin',
 
+        // ✅ Cache جداگانه برای Layout Type
+        LAYOUT_TYPE: 'homepage:layout-type',
+
         HERO_SLIDERS_ACTIVE: 'homepage:hero-sliders:active',
         HERO_SLIDERS_ALL: 'homepage:hero-sliders:all',
         HERO_SLIDER_DETAIL: (id: number) => `homepage:hero-slider:${id}`,
@@ -43,6 +46,7 @@ export class HomePageCacheService {
      */
     private readonly CACHE_TTL = {
         FULL_PAGE: 600 * 1000,              // 10 دقیقه
+        LAYOUT_TYPE: 86400 * 1000,          // 24 ساعت (خیلی کم تغییر میکنه)
         HERO_SLIDERS: 1800 * 1000,          // 30 دقیقه
         SIDE_BANNERS: 1800 * 1000,          // 30 دقیقه
         SECTIONS: 1800 * 1000,              // 30 دقیقه
@@ -117,6 +121,48 @@ export class HomePageCacheService {
             );
         } catch (error) {
             this.logger.warn('خطا در ذخیره cache صفحه اصلی:', error.message);
+        }
+    }
+
+    // ==================== Layout Type ====================
+
+    /**
+     * دریافت Layout Type از cache
+     */
+    async getLayoutType(): Promise<string | undefined> {
+        try {
+            return await this.cacheManager.get(this.CACHE_KEYS.LAYOUT_TYPE);
+        } catch (error) {
+            this.logger.warn('خطا در خواندن layout type از cache:', error.message);
+            return undefined;
+        }
+    }
+
+    /**
+     * ذخیره Layout Type در cache
+     */
+    async setLayoutType(layoutType: string): Promise<void> {
+        try {
+            await this.cacheManager.set(
+                this.CACHE_KEYS.LAYOUT_TYPE,
+                layoutType,
+                this.CACHE_TTL.LAYOUT_TYPE
+            );
+            this.logger.debug(`📋 Layout type cached: ${layoutType}`);
+        } catch (error) {
+            this.logger.warn('خطا در ذخیره layout type:', error.message);
+        }
+    }
+
+    /**
+     * پاک کردن Layout Type cache
+     */
+    async clearLayoutTypeCache(): Promise<void> {
+        try {
+            await this.cacheManager.del(this.CACHE_KEYS.LAYOUT_TYPE);
+            this.logger.log('✅ Cache layout type پاک شد');
+        } catch (error) {
+            this.logger.error('❌ خطا در پاک کردن layout type cache:', error);
         }
     }
 

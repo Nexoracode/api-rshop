@@ -38,11 +38,19 @@ export class HomePageService {
    * دریافت داده کامل صفحه اصلی
    */
   async getHomePageData(forAdmin: boolean = false) {
+    // ✅ اول layoutType رو بگیر (جدا از cache اصلی)
+    const layoutType = await this.getLayoutType();
+
     // ✅ چک cache با پارامتر forAdmin
     const cached = await this.cacheService.getHomePageData(forAdmin);
     if (cached) {
       this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
-      return cached;
+
+      // ✅ layoutType تازه رو اضافه کن (همیشه fresh!)
+      return {
+        ...cached,
+        layoutType,
+      };
     }
 
     this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
@@ -99,11 +107,8 @@ export class HomePageService {
       }),
     );
 
-    // ✅ دریافت layout type از settings
-    const layoutType = await this.getLayoutType();
-
     const result: HomePageData = {
-      layoutType, // ✅ اضافه شد
+      layoutType: layoutType, // ✅ اضافه میشه به response ولی توی cache ذخیره نمیشه
       promoBanners: promoBanners.map((promo: PromoBanner) => ({
         id: promo.id,
         title: promo.title,
@@ -160,11 +165,15 @@ export class HomePageService {
       sections: sectionsWithProducts,
     };
 
-    // ✅ ذخیره در cache با پارامتر forAdmin
+    // ✅ ذخیره در cache (بدون layoutType)
     await this.cacheService.setHomePageData(result, forAdmin);
     this.logger.log(`💾 Home page data ذخیره شد در cache (${forAdmin ? 'admin' : 'public'})`);
 
-    return result;
+    // ✅ برگردوندن با layoutType
+    return {
+      ...result,
+      layoutType, // ✅ اضافه میشه به response ولی توی cache ذخیره نمیشه
+    };
   }
 
   /**
@@ -226,19 +235,32 @@ export class HomePageService {
   }
 
   /**
-   * دریافت نوع چیدمان از settings
+   * دریافت نوع چیدمان از settings (با cache)
    */
   private async getLayoutType(): Promise<HomePageLayoutType> {
     try {
-      const setting = await this.settingService.findByKey(SettingCategory.HOMEPAGE); // ✅ تصحیح شد
+      // ✅ اول از cache بخون
+      const cachedType = await this.cacheService.getLayoutType();
+      if (cachedType) {
+        this.logger.debug(`💾 Layout type از cache: ${cachedType}`);
+        return cachedType as HomePageLayoutType;
+      }
+
+      // ✅ اگه تو cache نبود، از DB بگیر
+      const setting = await this.settingService.findByKey('homepage_layout_type');
+
+      let layoutType = HomePageLayoutType.SIDE_BY_SIDE; // پیش‌فرض
+
       if (setting && setting.value) {
-        // اگر مقدار valid باشه، برگردون
         if (Object.values(HomePageLayoutType).includes(setting.value as HomePageLayoutType)) {
-          return setting.value as HomePageLayoutType;
+          layoutType = setting.value as HomePageLayoutType;
         }
       }
-      // پیش‌فرض: کنار هم
-      return HomePageLayoutType.SIDE_BY_SIDE;
+
+      // ✅ ذخیره تو cache برای دفعات بعد
+      await this.cacheService.setLayoutType(layoutType);
+
+      return layoutType;
     } catch (error) {
       this.logger.warn('خطا در دریافت layout type، استفاده از پیش‌فرض:', error.message);
       return HomePageLayoutType.SIDE_BY_SIDE;

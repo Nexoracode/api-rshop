@@ -95,7 +95,7 @@ export interface HomeSectionData {
 }
 
 export interface HomePageData {
-  layoutType: HomePageLayoutType;  // ✅ نوع چیدمان
+  layoutType?: HomePageLayoutType;  // ✅ optional کردیم
   promoBanners: PromoBannerData[];
   heroSliders: HeroSliderData[];
   sideBanners: SideBannerData[];
