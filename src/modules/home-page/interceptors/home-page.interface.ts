@@ -6,8 +6,8 @@
  * انواع چیدمان صفحه اصلی
  */
 export enum HomePageLayoutType {
-    SIDE_BY_SIDE = 'side_by_side',  // کنار هم
-    STACKED = 'stacked',              // زیر هم
+  SIDE_BY_SIDE = 'side_by_side',  // کنار هم
+  STACKED = 'stacked',              // زیر هم
 }
 
 export interface HeroSliderData {
@@ -87,6 +87,7 @@ export interface HomeSectionData {
   displayStyle: string;
   showViewAllButton: boolean;
   sortOrder: number;
+  isActive: boolean;
   viewAllLink: string | null;
   category: CategoryData | null;
   products: ProductData[];

@@ -86,6 +86,7 @@ export class HomePageService {
           displayStyle: section.displayStyle,
           showViewAllButton: section.showViewAllButton,
           sortOrder: section.sortOrder,
+          isActive: section.isActive,
           viewAllLink: section.viewAllLink,
           category: category ? await this.formatCategory(category) : null,
           products: await Promise.all(products.map(product => this.formatProduct(product))),
