@@ -283,4 +283,189 @@ export class CatalogService {
 
         return result;
     }
+
+    /**
+     * دریافت تمام محصولات (بدون فیلتر دسته‌بندی)
+     * با همان لاجیک getProductsByCategoryWithPaginate ولی بدون category
+     */
+    async getAllProducts(query: PaginateQuery): Promise<any> {
+        // ------------------------------------------
+        // ۱. بررسی cache
+        // ------------------------------------------
+        const cached = await this.cacheService.getAllProducts(query);
+        if (cached) {
+            this.logger.log(`✅ All products از cache`);
+            return cached;
+        }
+
+        // ------------------------------------------
+        // ۲. ساخت query پایه (بدون فیلتر category)
+        // ------------------------------------------
+        const qb = this.dataSource
+            .getRepository(Product)
+            .createQueryBuilder('p')
+            .leftJoinAndSelect('p.brand', 'b')
+            .leftJoinAndSelect('p.category', 'c')
+            .leftJoinAndSelect('p.mediaPinned', 'm')
+            .leftJoinAndSelect('p.medias', 'me')
+            .leftJoinAndSelect('p.variants', 'v')
+            .leftJoinAndSelect('v.attributes', 'va')
+            .leftJoinAndSelect('va.attribute', 'attr')
+            .leftJoinAndSelect('va.value', 'aval')
+            .where('p.is_active = true')
+            .andWhere('p.is_visible = true');
+
+        // ------------------------------------------
+        // ۳. فیلتر برند
+        // ------------------------------------------
+        if (query['filter[brand]']) {
+            const brandIds = Array.isArray(query['filter[brand]'])
+                ? query['filter[brand]']
+                : query['filter[brand]'].split(',').map((id: string) => parseInt(id.trim(), 10));
+
+            qb.andWhere('b.id IN (:...brandIds)', { brandIds });
+        }
+
+        // ------------------------------------------
+        // ۴. بازه قیمت
+        // ------------------------------------------
+        if (query['filter[price_min]']) {
+            qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) >= :min', {
+                min: query['filter[price_min]']
+            });
+        }
+        if (query['filter[price_max]']) {
+            qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) <= :max', {
+                max: query['filter[price_max]']
+            });
+        }
+
+        // ------------------------------------------
+        // ۵. محصولات پیشنهاد ویژه
+        // ------------------------------------------
+        if (query['filter[special_offer]'] === '1') {
+            qb.andWhere('(p.is_featured > 0)');
+        }
+
+        // ------------------------------------------
+        // ۶. محصولات دارای تخفیف
+        // ------------------------------------------
+        if (query['filter[discounted]'] === '1') {
+            qb.andWhere('(p.discount_amount > 0 OR p.discount_percent > 0)');
+        }
+
+        // ------------------------------------------
+        // ۷. محصولات ارسال امروز
+        // ------------------------------------------
+        if (query['filter[same_day_shipping]'] === '1') {
+            qb.andWhere('(p.is_same_day_shipping > 0)');
+        }
+
+        // ------------------------------------------
+        // ۸. محصولات موجود در انبار
+        // ------------------------------------------
+        if (query['filter[in_stock]'] === '1') {
+            qb.andWhere('(p.stock > 0)');
+        }
+
+        // ------------------------------------------
+        // ۹. Sorting
+        // ------------------------------------------
+        if (query.sortBy) {
+            const sortEnum: SortEnum[] = Object.values(SortEnum);
+            if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
+                switch (query.sortBy) {
+                    case SortEnum.NEWEST:
+                        qb.addOrderBy('p.createdAt', 'DESC');
+                        break;
+
+                    case SortEnum.CHEAPEST:
+                        qb.addOrderBy(
+                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
+                            "ASC"
+                        );
+                        break;
+
+                    case SortEnum.BESTSELLING:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COALESCE(SUM(oi.quantity), 0)')
+                                .from('order_items', 'oi')
+                                .where('oi.product_id = p.id');
+                        }, 'sales_count')
+                            .addOrderBy('sales_count', 'DESC');
+                        break;
+
+                    case SortEnum.POPULAR:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COUNT(w.id)')
+                                .from('wishlists', 'w')
+                                .where('w.product_id = p.id');
+                        }, 'wishlist_count')
+                            .addOrderBy('wishlist_count', 'DESC');
+                        break;
+
+                    case SortEnum.EXPENSIVE:
+                        qb.addOrderBy(
+                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
+                            "DESC"
+                        );
+                        break;
+
+                    case SortEnum.VISITED:
+                        qb.addSelect(subQuery => {
+                            return subQuery
+                                .select('COUNT(rv.id)')
+                                .from('recent_views', 'rv')
+                                .where('rv.product_id = p.id');
+                        }, 'view_count')
+                            .addOrderBy('view_count', 'DESC');
+                        break;
+
+                    default:
+                        qb.addOrderBy('p.created_at', 'DESC');
+                        break;
+                }
+            }
+        }
+
+        // ------------------------------------------
+        // ۱۰. اجرای paginate (بدون attribute فیلتر)
+        // ------------------------------------------
+        const paginated = await paginate(query, qb, {
+            sortableColumns: ['id', 'price', 'createdAt'],
+            searchableColumns: ['name', 'description'],
+            defaultSortBy: [['id', 'DESC']],
+            relations,
+            defaultLimit: query.limit,
+            maxLimit: 100,
+        });
+
+        // ------------------------------------------
+        // ۱۱. مپ محصولات
+        // ------------------------------------------
+        const products = paginated.data.map(CatalogMapper.toProduct);
+
+        // ------------------------------------------
+        // ۱۲. فیلترهای عمومی (بدون دسته‌بندی و attribute)
+        // ------------------------------------------
+        const filters = await this.queryService.buildFiltersForAllProducts();
+
+        // ------------------------------------------
+        // ✅ خروجی نهایی
+        // ------------------------------------------
+        const result = {
+            items_count: paginated.meta.totalItems,
+            data: products,
+            meta: paginated.meta,
+            filters,
+        };
+
+        // ✅ ذخیره در cache
+        await this.cacheService.setAllProducts(query, result);
+        this.logger.log(`💾 All products ذخیره شد در cache`);
+
+        return result;
+    }
 }

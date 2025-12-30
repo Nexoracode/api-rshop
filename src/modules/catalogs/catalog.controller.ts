@@ -14,6 +14,7 @@ export class CatalogController {
         private readonly searchService: CatalogSearchService,
     ) { }
 
+    // 🔹 پیشنهاد سریع (autocomplete)
     @Public()
     @Get('suggest')
     @ApiOperation({ summary: 'پیشنهاد سریع برای autocomplete', description: 'نمایش چند عنوان مرتبط هنگام تایپ در هدر' })
@@ -24,7 +25,7 @@ export class CatalogController {
 
     // 🔹 جستجوی کامل
     @Public()
-    @Get()
+    @Get('search')
     @ApiOperation({
         summary: 'جستجوی کامل محصولات، برندها و دسته‌ها',
         description:
@@ -39,17 +40,25 @@ export class CatalogController {
         return this.searchService.search(term, limit);
     }
 
+    // 🔹 لیست تمام محصولات (بدون دسته‌بندی)
     @Public()
-    @Get(':slug') // مثل /catalog/books
-    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری با فیلترها' })
+    @Get()
+    @ApiOperation({ summary: 'لیست تمام محصولات' })
+    async getAllProducts(
+        @Query() query?: CatalogQueryDto,
+    ) {
+        return this.catalogService.getAllProducts(query!);
+    }
+
+    // 🔹 لیست محصولات یک دسته‌بندی
+    @Public()
+    @Get(':slug')
+    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری' })
     @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'mohr-tasbih' })
     async getProductsByCategory(
         @Param('slug') slug: string,
-        @Query() query: CatalogQueryDto,
+        @Query() query?: CatalogQueryDto,
     ) {
-        return this.catalogService.getProductsByCategoryWithPaginate(slug, query);
+        return this.catalogService.getProductsByCategoryWithPaginate(slug, query!);
     }
-
-    // 🔹 پیشنهاد سریع (autocomplete)
-
 }

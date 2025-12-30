@@ -20,6 +20,11 @@ export class CatalogCacheService {
         CATEGORY_FILTERS: (slug: string) =>
             `catalog:filters:${slug}`,
 
+        // All Products (بدون دسته‌بندی)
+        ALL_PRODUCTS: (queryHash: string) =>
+            `catalog:all:${queryHash}`,
+        ALL_PRODUCTS_FILTERS: 'catalog:filters:all',
+
         // Search
         SEARCH_RESULTS: (term: string, limit: number) =>
             `catalog:search:${this.normalizeSearchTerm(term)}:${limit}`,
@@ -193,6 +198,67 @@ export class CatalogCacheService {
         } catch (error) {
             console.error(`❌ خطا در پاک کردن cache category ${slug}:`, error);
         }
+    }
+
+    // ==================== All Products (بدون دسته‌بندی) ====================
+
+    /**
+     * دریافت تمام محصولات
+     */
+    async getAllProducts(query: any): Promise<any> {
+        const queryHash = this.generateQueryHash(query);
+        const result = await this.cacheManager.get(
+            this.CACHE_KEYS.ALL_PRODUCTS(queryHash)
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره تمام محصولات
+     */
+    async setAllProducts(query: any, data: any): Promise<void> {
+        const queryHash = this.generateQueryHash(query);
+        await this.cacheManager.set(
+            this.CACHE_KEYS.ALL_PRODUCTS(queryHash),
+            data,
+            this.CACHE_TTL.CATEGORY_PRODUCTS
+        );
+    }
+
+    /**
+     * پاک کردن تمام محصولات
+     */
+    async clearAllProducts(): Promise<void> {
+        try {
+            const deletedCount = await RedisHelper.deleteKeysByPattern(
+                this.cacheManager,
+                'catalog:all:*'
+            );
+            this.logger.log(`✅ ${deletedCount} کلید all products پاک شد`);
+        } catch (error) {
+            this.logger.error('❌ خطا در پاک کردن cache all products:', error);
+        }
+    }
+
+    /**
+     * دریافت فیلترهای تمام محصولات
+     */
+    async getAllProductsFilters(): Promise<any> {
+        const result = await this.cacheManager.get(
+            this.CACHE_KEYS.ALL_PRODUCTS_FILTERS
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره فیلترهای تمام محصولات
+     */
+    async setAllProductsFilters(data: any): Promise<void> {
+        await this.cacheManager.set(
+            this.CACHE_KEYS.ALL_PRODUCTS_FILTERS,
+            data,
+            this.CACHE_TTL.CATEGORY_FILTERS
+        );
     }
 
     // ==================== Category Filters ====================

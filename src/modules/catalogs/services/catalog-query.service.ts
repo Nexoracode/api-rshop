@@ -296,5 +296,92 @@ export class CatalogQueryService {
     };
   }
 
+  // 🎯 ساخت فیلترها برای تمام محصولات (بدون دسته‌بندی)
+  async buildFiltersForAllProducts() {
+    // ------------------------------------------
+    // ۱. برندها
+    // ------------------------------------------
+    const brands = await this.dataSource.query(
+      `
+    SELECT b.id, b.slug, b.name, COUNT(p.id) as count
+    FROM products p
+    INNER JOIN brands b ON b.id = p.brand_id
+    WHERE p.is_active = 1 AND b.is_active = 1
+    GROUP BY b.id, b.name
+    `,
+    );
 
+    // ------------------------------------------
+    // ۲. بازه قیمت
+    // ------------------------------------------
+    const priceRange = await this.dataSource.query(
+      `
+    SELECT 
+      MIN(p.price - COALESCE(p.discount_amount, 0)) as min,
+      MAX(p.price - COALESCE(p.discount_amount, 0)) as max
+    FROM products p
+    WHERE p.is_active = 1
+    `,
+    );
+
+    // ------------------------------------------
+    // ۳. دسته‌بندی‌ها (تمام درخت)
+    // ------------------------------------------
+    const categoryRepo = this.dataSource.getTreeRepository(Category);
+    const rootCategories = await categoryRepo.findRoots();
+
+    // تابع بازگشتی برای ساخت درخت
+    const buildTree = async (cats: Category[]): Promise<any[]> => {
+      const result: { id: number; title: string; slug: string; children: any[] }[] = [];
+      for (const cat of cats) {
+        const descendants = await categoryRepo.findDescendantsTree(cat);
+        result.push({
+          id: descendants.id,
+          title: descendants.title,
+          slug: descendants.slug,
+          children: descendants.children ? await buildTree(descendants.children) : [],
+        });
+      }
+      return result;
+    };
+
+    const treeCategories = await buildTree(rootCategories);
+
+    // ------------------------------------------
+    // ۴. خروجی نهایی
+    // ------------------------------------------
+    return {
+      generic: {
+        boolean_filter: {
+          special_offer: {
+            type: 'boolean',
+            label: 'فقط محصولات پیشنهاد ویژه',
+          },
+          discounted: {
+            type: 'boolean',
+            label: 'فقط محصولات دارای تخفیف'
+          },
+          same_day_shipping: {
+            type: 'boolean',
+            label: 'ارسال سریع',
+          },
+          in_stock: {
+            type: 'boolean',
+            label: 'فقط محصولات موجود در انبار',
+          },
+        },
+        price_range: {
+          min: Number(priceRange[0].min) || 0,
+          max: Number(priceRange[0].max) || 0,
+        },
+        categories: treeCategories,
+        brands: brands.map((b) => ({
+          id: b.id,
+          name: b.name,
+          slug: b.slug,
+          count: Number(b.count),
+        })),
+      },
+    };
+  }
 }
