@@ -40,6 +40,18 @@ export class CatalogController {
         return this.searchService.search(term, limit);
     }
 
+    // 🔹 محصولات یک برند
+    @Public()
+    @Get('brand/:slug')
+    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ برند' })
+    @ApiParam({ name: 'slug', description: 'اسلاگ برند', example: 'samsung' })
+    async getProductsByBrand(
+        @Param('slug') slug: string,
+        @Query() query?: CatalogQueryDto,
+    ) {
+        return this.catalogService.getProductsByBrandWithPaginate(slug, query!);
+    }
+
     // 🔹 لیست تمام محصولات (بدون دسته‌بندی)
     @Public()
     @Get()

@@ -384,4 +384,71 @@ export class CatalogQueryService {
       },
     };
   }
+
+  // 🎯 ساخت فیلترها برای محصولات یک برند
+  async buildFiltersForBrand(brandId: number) {
+    // ------------------------------------------
+    // ۱. دسته‌بندی‌های این برند
+    // ------------------------------------------
+    const categories = await this.dataSource.query(
+      `
+      SELECT c.id, c.title, c.slug, COUNT(p.id) as count
+      FROM products p
+      INNER JOIN categories c ON c.id = p.category_id
+      WHERE p.is_active = 1 AND p.brand_id = ?
+      GROUP BY c.id, c.title, c.slug
+      `,
+      [brandId],
+    );
+
+    // ------------------------------------------
+    // ۲. بازه قیمت
+    // ------------------------------------------
+    const priceRange = await this.dataSource.query(
+      `
+      SELECT 
+        MIN(p.price - COALESCE(p.discount_amount, 0)) as min,
+        MAX(p.price - COALESCE(p.discount_amount, 0)) as max
+      FROM products p
+      WHERE p.is_active = 1 AND p.brand_id = ?
+      `,
+      [brandId],
+    );
+
+    // ------------------------------------------
+    // ۳. خروجی نهایی
+    // ------------------------------------------
+    return {
+      generic: {
+        boolean_filter: {
+          special_offer: {
+            type: 'boolean',
+            label: 'فقط محصولات پیشنهاد ویژه',
+          },
+          discounted: {
+            type: 'boolean',
+            label: 'فقط محصولات دارای تخفیف'
+          },
+          same_day_shipping: {
+            type: 'boolean',
+            label: 'ارسال سریع',
+          },
+          in_stock: {
+            type: 'boolean',
+            label: 'فقط محصولات موجود در انبار',
+          },
+        },
+        price_range: {
+          min: Number(priceRange[0]?.min) || 0,
+          max: Number(priceRange[0]?.max) || 0,
+        },
+        categories: categories.map((c) => ({
+          id: c.id,
+          title: c.title,
+          slug: c.slug,
+          count: Number(c.count),
+        })),
+      },
+    };
+  }
 }
