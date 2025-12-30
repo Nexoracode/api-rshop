@@ -109,4 +109,23 @@ export class ProductController {
         return this.productService.remove(id);
     }
 
+    /**
+     * دریافت محصولات مشابه (Public)
+     * GET /product/:id/similar?limit=8
+     */
+    @Public()
+    @Get(':id/similar')
+    @ApiOperation({
+        summary: 'دریافت محصولات مشابه',
+        description: 'محصولات مشابه بر اساس دسته‌بندی و برند محصول اصلی'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'لیست محصولات مشابه'
+    })
+    async findSimilarProducts(
+        @Param('id', ParseIntPipe) id: number,
+    ) {
+        return this.productService.findSimilarProducts(id, 8);
+    }
 }

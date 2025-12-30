@@ -12,6 +12,10 @@ import { HomeSectionService } from './home-section.service';
 import { HomePageData, HomePageLayoutType } from './interceptors/home-page.interface';
 import { SettingService } from '../setting/setting.service'; // ✅ اضافه شد
 import { SettingCategory } from '../setting/enums/setting-category.enum';
+import { PromoBanner } from './entities/promo-banner.entity';
+import { HeroSlider } from './entities/hero-slider.entity';
+import { SideBanner } from './entities/side-banner.entity';
+import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class HomePageService {
@@ -88,6 +92,7 @@ export class HomePageService {
           sortOrder: section.sortOrder,
           isActive: section.isActive,
           viewAllLink: section.viewAllLink,
+          productsLimit: section.productsLimit,
           category: category ? await this.formatCategory(category) : null,
           products: await Promise.all(products.map(product => this.formatProduct(product))),
         };
@@ -99,7 +104,7 @@ export class HomePageService {
 
     const result: HomePageData = {
       layoutType, // ✅ اضافه شد
-      promoBanners: promoBanners.map(promo => ({
+      promoBanners: promoBanners.map((promo: PromoBanner) => ({
         id: promo.id,
         title: promo.title,
         backgroundColor: promo.backgroundColor,
@@ -115,7 +120,7 @@ export class HomePageService {
         displayDuration: promo.displayDuration,
         description: promo.description,
       })),
-      heroSliders: heroSliders.map(slider => ({
+      heroSliders: heroSliders.map((slider: HeroSlider) => ({
         id: slider.id,
         title: slider.title,
         description: slider.description,
@@ -127,7 +132,7 @@ export class HomePageService {
         sortOrder: slider.sortOrder,
         buttonLink: slider.buttonLink,
       })),
-      sideBanners: sideBanners.map(banner => ({
+      sideBanners: sideBanners.map((banner: SideBanner) => ({
         id: banner.id,
         title: banner.title,
         subtitle: banner.subtitle,
@@ -140,7 +145,7 @@ export class HomePageService {
         badgeText: banner.badgeText,
         badgeColor: banner.badgeColor,
       })),
-      categories: categories.map(category => ({
+      categories: categories.map((category: Category) => ({
         id: category.id,
         name: category.title,
         slug: category.slug,
@@ -207,13 +212,13 @@ export class HomePageService {
   /**
    * فرمت کردن product
    */
-  private async formatProduct(product: any) {
+  private async formatProduct(product: Product) {
     return {
       id: product.id,
       name: product.name,
-      slug: product.slug,
       price: product.price,
-      discountedPrice: product.discountedPrice,
+      discountAmount: product.discountAmount,
+      discountPercent: product.discountPercent,
       image: product.mediaPinned?.url ?? null,
       isActive: product.isActive,
       // سایر فیلدهای مورد نیاز

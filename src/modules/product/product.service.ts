@@ -493,4 +493,128 @@ export class ProductService implements IProductService {
 
         return result;
     }
+
+    /**
+     * پیدا کردن محصولات مشابه
+     * بر اساس: دسته‌بندی → برند → تگ‌ها
+     */
+    async findSimilarProducts(
+        productId: number,
+        limit: number = 8
+    ): Promise<IProductResponse[]> {
+        try {
+            // ✅ چک cache
+            const cacheKey = `similar:${productId}:${limit}`;
+            const cached = await this.cacheService.getSimilarProducts(productId, limit);
+            if (cached) {
+                this.logger.log(`✅ Similar products برای ${productId} از cache`);
+                return cached;
+            }
+
+            // دریافت محصول اصلی
+            const product = await this.productRepo.findOne({
+                where: { id: productId },
+                relations: ['category', 'brand'],
+            });
+
+            if (!product) {
+                throw new NotFoundException('محصول یافت نشد');
+            }
+
+            const similarProducts: Product[] = [];
+            const addedIds = new Set<number>([productId]); // exclude خود محصول
+
+            // ✅ مرحله 1: محصولات هم دسته و هم برند
+            if (product.categoryId && product.brandId) {
+                const sameCategoryAndBrand = await this.productRepo.find({
+                    where: {
+                        categoryId: product.categoryId,
+                        brandId: product.brandId,
+                        isActive: true,
+                    },
+                    relations,
+                    order: { createdAt: 'DESC' },
+                    take: limit,
+                });
+
+                for (const p of sameCategoryAndBrand) {
+                    if (!addedIds.has(p.id) && similarProducts.length < limit) {
+                        similarProducts.push(p);
+                        addedIds.add(p.id);
+                    }
+                }
+            }
+
+            // ✅ مرحله 2: اگر کم بود، فقط هم دسته
+            if (similarProducts.length < limit && product.categoryId) {
+                const sameCategory = await this.productRepo.find({
+                    where: {
+                        categoryId: product.categoryId,
+                        isActive: true,
+                    },
+                    relations,
+                    order: { createdAt: 'DESC' },
+                    take: limit * 2, // بیشتر بگیر برای filter
+                });
+
+                for (const p of sameCategory) {
+                    if (!addedIds.has(p.id) && similarProducts.length < limit) {
+                        similarProducts.push(p);
+                        addedIds.add(p.id);
+                    }
+                }
+            }
+
+            // ✅ مرحله 3: اگر باز کم بود، فقط هم برند
+            if (similarProducts.length < limit && product.brandId) {
+                const sameBrand = await this.productRepo.find({
+                    where: {
+                        brandId: product.brandId,
+                        isActive: true,
+                    },
+                    relations,
+                    order: { createdAt: 'DESC' },
+                    take: limit * 2,
+                });
+
+                for (const p of sameBrand) {
+                    if (!addedIds.has(p.id) && similarProducts.length < limit) {
+                        similarProducts.push(p);
+                        addedIds.add(p.id);
+                    }
+                }
+            }
+
+            // ✅ مرحله 4: اگر باز کم بود، محصولات فعال جدید
+            if (similarProducts.length < limit) {
+                const recentProducts = await this.productRepo.find({
+                    where: { isActive: true },
+                    relations,
+                    order: { createdAt: 'DESC' },
+                    take: limit * 2,
+                });
+
+                for (const p of recentProducts) {
+                    if (!addedIds.has(p.id) && similarProducts.length < limit) {
+                        similarProducts.push(p);
+                        addedIds.add(p.id);
+                    }
+                }
+            }
+
+            // تبدیل به DTO
+            const result = await Promise.all(
+                similarProducts.map((p) => ProductMapper.toResponse(p, { cartesian: true })),
+            );
+
+            // ✅ ذخیره در cache
+            await this.cacheService.setSimilarProducts(productId, limit, result);
+            this.logger.log(`✅ Similar products برای ${productId} ذخیره شد`);
+
+            return result;
+        } catch (error) {
+            this.logger.error(`❌ خطا در پیدا کردن similar products:`, error);
+            throw error;
+        }
+    }
 }

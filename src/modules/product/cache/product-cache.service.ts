@@ -40,6 +40,10 @@ export class ProductCacheService {
         RELATED_PRODUCTS: (productId: number, limit: number) =>
             `product:related:${productId}:${limit}`,
 
+        // ✅ محصولات مشابه (جدید)
+        SIMILAR_PRODUCTS: (productId: number, limit: number) =>
+            `product:similar:${productId}:${limit}`,
+
         // جستجو
         SEARCH_RESULTS: (query: string, page: number, limit: number) =>
             `product:search:${query}:${page}:${limit}`,
@@ -273,6 +277,33 @@ export class ProductCacheService {
         );
     }
 
+    // ==================== محصولات مشابه ====================
+
+    /**
+     * دریافت محصولات مشابه از cache
+     */
+    async getSimilarProducts(productId: number, limit: number): Promise<IProductResponse[] | undefined> {
+        const result = await this.cacheManager.get<IProductResponse[]>(
+            this.CACHE_KEYS.SIMILAR_PRODUCTS(productId, limit)
+        );
+        return result;
+    }
+
+    /**
+     * ذخیره محصولات مشابه در cache
+     */
+    async setSimilarProducts(
+        productId: number,
+        limit: number,
+        data: IProductResponse[]
+    ): Promise<void> {
+        await this.cacheManager.set(
+            this.CACHE_KEYS.SIMILAR_PRODUCTS(productId, limit),
+            data,
+            this.CACHE_TTL.PRODUCT_DETAIL
+        );
+    }
+
     // ==================== جستجو ====================
 
     async getSearchResults(query: string, page: number, limit: number): Promise<any> {
@@ -376,6 +407,7 @@ export class ProductCacheService {
                     `*:product:category:*`,
                     `*:product:brand:*`,
                     `*:product:search:*`,
+                    `*:product:similar:*`, // ✅ اضافه شد
                 ];
 
                 let totalDeleted = 0;

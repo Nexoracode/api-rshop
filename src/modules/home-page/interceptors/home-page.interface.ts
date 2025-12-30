@@ -71,9 +71,9 @@ export interface BrandData {
 export interface ProductData {
   id: number;
   name: string;
-  slug: string;
   price: number;
-  discountedPrice: number | null;
+  discountAmount?: number | null;
+  discountPercent?: number | null;
   image: string | null;
   isActive: boolean;
 }
@@ -88,6 +88,7 @@ export interface HomeSectionData {
   showViewAllButton: boolean;
   sortOrder: number;
   isActive: boolean;
+  productsLimit: number;
   viewAllLink: string | null;
   category: CategoryData | null;
   products: ProductData[];
