@@ -562,6 +562,144 @@ export class CatalogCacheService {
     // ==================== Generic Methods (برای سازگاری با کد قبلی) ====================
 
     /**
+     * پاک کردن cache های مربوط به یک محصول
+     * زمانی که محصول ایجاد/ویرایش/حذف می‌شه
+     */
+    async clearProductCache(productId: number, categorySlug: string, brandSlug: string, oldCategorySlug?: string, oldBrandSlug?: string): Promise<void> {
+        try {
+            const patterns = [
+                // محصولات دسته‌بندی جدید
+                `*:catalog:category:${categorySlug}:*`,
+                `*:catalog:filters:${categorySlug}`,
+                
+                // محصولات برند جدید
+                `*:catalog:brand:${brandSlug}:*`,
+                `*:catalog:filters:brand:${brandSlug}`,
+                
+                // محصولات کلی
+                `*:catalog:all:*`,
+                `*:catalog:filters:all`,
+                
+                // جستجو و پیشنهادات (اگه نام عوض شده)
+                `*:catalog:search:*`,
+                `*:catalog:suggest:*`,
+            ];
+
+            // اگه دسته‌بندی عوض شده
+            if (oldCategorySlug && oldCategorySlug !== categorySlug) {
+                patterns.push(
+                    `*:catalog:category:${oldCategorySlug}:*`,
+                    `*:catalog:filters:${oldCategorySlug}`,
+                );
+            }
+
+            // اگه برند عوض شده
+            if (oldBrandSlug && oldBrandSlug !== brandSlug) {
+                patterns.push(
+                    `*:catalog:brand:${oldBrandSlug}:*`,
+                    `*:catalog:filters:brand:${oldBrandSlug}`,
+                );
+            }
+
+            let totalDeleted = 0;
+            for (const pattern of patterns) {
+                const deleted = await this.clearCacheByPattern(pattern);
+                totalDeleted += deleted;
+            }
+
+            this.logger.log(`✅ Cache پاک شد برای product ${productId}: ${totalDeleted} کلید`);
+        } catch (error) {
+            this.logger.error(`❌ خطا در پاک کردن cache product ${productId}:`, error);
+        }
+    }
+
+    /**
+     * پاک کردن cache های مربوط به یک دسته‌بندی
+     * زمانی که دسته ایجاد/ویرایش/حذف می‌شه
+     */
+    async clearCategoryRelatedCache(slug: string, oldSlug?: string, oldParentSlug?: string): Promise<void> {
+        try {
+            const patterns = [
+                // محصولات این دسته
+                `*:catalog:category:${slug}:*`,
+                `*:catalog:filters:${slug}`,
+                
+                // tree دسته‌بندی
+                `*:category:tree:*`,
+                
+                // محصولات کلی (چون ممکنه در فیلتر باشه)
+                `*:catalog:all:*`,
+                `*:catalog:filters:all`,
+            ];
+
+            // اگه slug عوض شده
+            if (oldSlug && oldSlug !== slug) {
+                patterns.push(
+                    `*:catalog:category:${oldSlug}:*`,
+                    `*:catalog:filters:${oldSlug}`,
+                );
+            }
+
+            // اگه parent عوض شده
+            if (oldParentSlug) {
+                patterns.push(
+                    `*:catalog:category:${oldParentSlug}:*`,
+                    `*:catalog:filters:${oldParentSlug}`,
+                );
+            }
+
+            let totalDeleted = 0;
+            for (const pattern of patterns) {
+                const deleted = await this.clearCacheByPattern(pattern);
+                totalDeleted += deleted;
+            }
+
+            this.logger.log(`✅ Cache پاک شد برای category ${slug}: ${totalDeleted} کلید`);
+        } catch (error) {
+            this.logger.error(`❌ خطا در پاک کردن cache category ${slug}:`, error);
+        }
+    }
+
+    /**
+     * پاک کردن cache های مربوط به یک برند
+     * زمانی که برند ایجاد/ویرایش/حذف می‌شه
+     */
+    async clearBrandRelatedCache(slug: string, oldSlug?: string): Promise<void> {
+        try {
+            const patterns = [
+                // محصولات این برند
+                `*:catalog:brand:${slug}:*`,
+                `*:catalog:filters:brand:${slug}`,
+                
+                // لیست برندها
+                `*:catalog:brands:*`,
+                
+                // محصولات کلی (چون ممکنه در فیلتر باشه)
+                `*:catalog:all:*`,
+                `*:catalog:filters:all`,
+            ];
+
+            // اگه slug عوض شده
+            if (oldSlug && oldSlug !== slug) {
+                patterns.push(
+                    `*:catalog:brand:${oldSlug}:*`,
+                    `*:catalog:filters:brand:${oldSlug}`,
+                );
+            }
+
+            let totalDeleted = 0;
+            for (const pattern of patterns) {
+                const deleted = await this.clearCacheByPattern(pattern);
+                totalDeleted += deleted;
+            }
+
+            this.logger.log(`✅ Cache پاک شد برای brand ${slug}: ${totalDeleted} کلید`);
+        } catch (error) {
+            this.logger.error(`❌ خطا در پاک کردن cache brand ${slug}:`, error);
+        }
+    }
+
+    /**
      * دریافت generic
      */
     async get<T>(key: string): Promise<T | undefined> {

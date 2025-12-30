@@ -29,6 +29,7 @@ import { CatalogSearchService } from './services/catalog-search.service';
     ],
     exports: [
         CatalogService,
+        CatalogCacheService, // ✅ export برای استفاده در Brand و Category
     ],
 })
 export class CatalogModule { }

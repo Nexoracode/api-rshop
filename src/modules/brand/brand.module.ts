@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Brand } from './entities/brand.entity';
 import { MediaModule } from '../media/media.module';
 import { UploadService } from 'src/common/services/upload.service';
+import { CatalogModule } from '../catalogs/catalog.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Brand]), MediaModule],
+  imports: [TypeOrmModule.forFeature([Brand]), MediaModule, CatalogModule],
   controllers: [BrandController],
   providers: [BrandService, UploadService],
 })
