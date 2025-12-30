@@ -230,15 +230,13 @@ export class HomePageService {
    */
   private async getLayoutType(): Promise<HomePageLayoutType> {
     try {
-      const setting = await this.settingService.findByKey(SettingCategory.HOMEPAGE);
-
+      const setting = await this.settingService.findByKey(SettingCategory.HOMEPAGE); // ✅ تصحیح شد
       if (setting && setting.value) {
         // اگر مقدار valid باشه، برگردون
         if (Object.values(HomePageLayoutType).includes(setting.value as HomePageLayoutType)) {
           return setting.value as HomePageLayoutType;
         }
       }
-
       // پیش‌فرض: کنار هم
       return HomePageLayoutType.SIDE_BY_SIDE;
     } catch (error) {

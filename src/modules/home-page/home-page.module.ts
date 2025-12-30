@@ -32,6 +32,7 @@ import { PromoBannerAdminController } from './controllers/poromo-banner.controll
 import { PromoBannerService } from './promo-banner.service';
 import { PromoBannerPublicController } from './controllers/promo-banner-public.controller';
 import { SettingModule } from '../setting/setting.module'; // ✅ اضافه شد
+import { HomePageSettingListener } from './listeners/home-page-setting.listener'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { SettingModule } from '../setting/setting.module'; // ✅ اضافه ش�
     HomePageAnalyticsService,
     HomePageCacheService, // ✅ اضافه شد
     ClearHomePageCacheInterceptor,
+    HomePageSettingListener, // ✅ اضافه شد
   ],
   exports: [
     HeroSliderService,

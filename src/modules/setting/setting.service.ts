@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { Setting } from './entities/setting.entity';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { SettingCategory } from './enums/setting-category.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter'; // ✅ اضافه شد
+import { SettingUpdatedEvent } from './events/setting-updated.event'; // ✅ اضافه شد
 
 @Injectable()
 export class SettingService {
     constructor(
         @InjectRepository(Setting)
         private readonly settingRepo: Repository<Setting>,
+        private readonly eventEmitter: EventEmitter2, // ✅ اضافه شد
     ) { }
 
     async findAll(): Promise<Setting[]> {
@@ -41,6 +44,7 @@ export class SettingService {
 
     async upsert(dto: UpdateSettingDto): Promise<Setting> {
         let setting = await this.findByKey(dto.key);
+        const oldValue = setting?.value; // ✅ ذخیره مقدار قدیمی
 
         if (setting) {
             setting.value = dto.value;
@@ -59,7 +63,17 @@ export class SettingService {
             });
         }
 
-        return await this.settingRepo.save(setting);
+        const savedSetting = await this.settingRepo.save(setting);
+
+        // ✅ Emit event برای cache invalidation
+        if (oldValue !== dto.value) {
+            this.eventEmitter.emit(
+                'setting.updated',
+                new SettingUpdatedEvent(dto.key, oldValue || '', dto.value)
+            );
+        }
+
+        return savedSetting;
     }
 
     async bulkUpsert(settings: UpdateSettingDto[]): Promise<Setting[]> {

@@ -4,6 +4,7 @@ import { SettingService } from './setting.service';
 import { SettingController } from './setting.controller';
 import { SettingAdminController } from './setting-admin.controller';
 import { Setting } from './entities/setting.entity';
+import { HomePageCacheService } from '../home-page/cache';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Setting])],
@@ -11,7 +12,7 @@ import { Setting } from './entities/setting.entity';
     SettingController,
     SettingAdminController,
   ],
-  providers: [SettingService],
+  providers: [SettingService, HomePageCacheService],
   exports: [SettingService],
 })
-export class SettingModule {}
+export class SettingModule { }
