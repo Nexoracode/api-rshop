@@ -31,4 +31,20 @@ export class HomePageSettingListener {
             this.logger.log('✅ فقط Cache layout type پاک شد (بقیه HomePage دست نخورده)');
         }
     }
+
+    /**
+     * وقتی bulk update برای homepage_layout_type انجام شد، cache layoutType رو پاک کن
+     */
+    @OnEvent('setting.bulk-updated')
+    async handleSettingBulkUpdated(event: { settingKeys: string[] }) {
+        if (event.settingKeys.includes('homepage_layout_type')) {
+            this.logger.log(
+                '🔄 Layout type در bulk update تغییر کرد'
+            );
+
+            await this.cacheService.clearLayoutTypeCache();
+
+            this.logger.log('✅ Cache layout type پاک شد (bulk update)');
+        }
+    }
 }

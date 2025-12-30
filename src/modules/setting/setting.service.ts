@@ -78,11 +78,16 @@ export class SettingService {
 
     async bulkUpsert(settings: UpdateSettingDto[]): Promise<Setting[]> {
         const results: Setting[] = [];
+        const settingKeys: string[] = [];
 
         for (const dto of settings) {
             const result = await this.upsert(dto);
             results.push(result);
+            settingKeys.push(dto.key);
         }
+
+        // ✅ Emit event for cache invalidation after bulk upsert
+        this.eventEmitter.emit('settings.bulk-updated', { settingKeys });
 
         return results;
     }
