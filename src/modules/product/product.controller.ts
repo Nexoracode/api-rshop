@@ -126,6 +126,6 @@ export class ProductController {
     async findSimilarProducts(
         @Param('id', ParseIntPipe) id: number,
     ) {
-        return this.productService.findSimilarProducts(id, 8);
+        return this.productService.findSimilarProducts(id, 10);
     }
 }

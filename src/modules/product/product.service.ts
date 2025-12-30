@@ -130,7 +130,8 @@ export class ProductService implements IProductService {
         // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({
             where: { id },
-            relations
+            relations,
+            comment: 'find product by id'
         });
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
         const reviews = await this.reviewRepo.find({
@@ -500,7 +501,7 @@ export class ProductService implements IProductService {
      */
     async findSimilarProducts(
         productId: number,
-        limit: number = 8
+        limit: number
     ): Promise<IProductResponse[]> {
         try {
             // ✅ چک cache
