@@ -11,6 +11,7 @@ import { CustomRequest } from 'src/common/interfaces/request.interface';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { UpdateAddressDto } from '../address/dto/update-address.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, Paginated, PaginateQuery, PaginationType } from 'nestjs-paginate';
+
 @ApiTags('02 - 👤 Users')
 @Controller('users')
 @UseGuards(AccessGuard, RoleGuard)

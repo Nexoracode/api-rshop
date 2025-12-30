@@ -7,12 +7,27 @@ import { WishlistService } from '../wishlist/wishlist.service';
 import { RecentViewService } from '../recent-view/recent-view.service';
 import { SupportService } from '../support/support.service';
 import { OrderService } from '../order/order.service';
+import { Order } from '../order/entities/order.entity';
+import { OrderItem } from '../order/entities/order-item.entity';
+import { OrderStatus } from '../order/enums/order-status.enum';
+import {
+  ProfileDetailedResponseDto,
+  OrderSummaryDto,
+  UserStatisticsDto,
+  FrequentPurchaseDto
+} from './dto/profile-detailed.dto';
+import { OrderMapper, OrderMapperNew } from '../order/mappers/order.mapper';
+import { iAllOrderResponse } from '../order/interfaces/order.interface';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepo: Repository<OrderItem>,
     private readonly reviewService: ReviewService,
     private readonly wishlistService: WishlistService,
     private readonly recentViewService: RecentViewService,
@@ -20,6 +35,9 @@ export class ProfileService {
     private readonly orderService: OrderService,
   ) { }
 
+  /**
+   * دریافت اطلاعات کلی پروفایل (overview) - قبلی
+   */
   async getProfileOverview(userId: number) {
     const [user, reviews, wishlist, recentViews, supports, orders] = await Promise.all([
       this.userRepo.findOne({ where: { id: userId } }),
@@ -52,5 +70,233 @@ export class ProfileService {
         orders: orders.slice(0, 3)
       },
     };
+  }
+
+  /**
+   * دریافت پروفایل کامل کاربر با تمام آمار و اطلاعات جزئی
+   */
+  async getDetailedProfile(userId: number): Promise<ProfileDetailedResponseDto> {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['addresses', 'media'],
+    });
+
+    if (!user) {
+      throw new Error('کاربر یافت نشد');
+    }
+
+    const [orderSummary, statistics, frequentPurchases, reviews, wishlist] = await Promise.all([
+      this.getOrderSummary(userId),
+      this.getUserStatistics(userId),
+      this.getFrequentPurchases(userId),
+      this.reviewService.findAllByUser(userId),
+      this.wishlistService.getAll({ id: userId } as any),
+    ]);
+
+    return {
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        isPhoneVerified: user.isPhoneVerified,
+        createdAt: user.createdAt,
+      },
+      orderSummary,
+      statistics,
+      frequentPurchases,
+      addressCount: user.addresses?.length || 0,
+      reviewCount: reviews?.length || 0,
+      wishlistCount: wishlist?.length || 0,
+    };
+  }
+
+  /**
+   * خلاصه وضعیت سفارشات کاربر
+   */
+  private async getOrderSummary(userId: number): Promise<OrderSummaryDto> {
+    const orders = await this.orderRepo.find({
+      where: { user: { id: userId } },
+      select: ['id', 'status'],
+    });
+
+    const summary: OrderSummaryDto = {
+      awaitingPayment: 0,
+      processing: 0,
+      shipping: 0,
+      completed: 0,
+      returned: 0,
+      cancelled: 0,
+      total: orders.length,
+    };
+
+    orders.forEach((order) => {
+      switch (order.status) {
+        case OrderStatus.AWAITING_PAYMENT:
+        case OrderStatus.PAYMENT_CONFIRMATION_PENDING:
+        case OrderStatus.PENDING_APPROVAL:
+          summary.awaitingPayment++;
+          break;
+
+        case OrderStatus.PROCESSING:
+        case OrderStatus.PREPARING:
+          summary.processing++;
+          break;
+
+        case OrderStatus.SHIPPING:
+          summary.shipping++;
+          break;
+
+        case OrderStatus.DELIVERED:
+          summary.completed++;
+          break;
+
+        case OrderStatus.REFUNDED:
+        case OrderStatus.NOT_DELIVERED:
+          summary.returned++;
+          break;
+
+        case OrderStatus.CANCELLED:
+        case OrderStatus.EXPIRED:
+        case OrderStatus.REJECTED:
+          summary.cancelled++;
+          break;
+      }
+    });
+
+    return summary;
+  }
+
+  /**
+   * آمار کلی خرید کاربر
+   */
+  private async getUserStatistics(userId: number): Promise<UserStatisticsDto> {
+    const result = await this.orderRepo
+      .createQueryBuilder('order')
+      .select('COUNT(order.id)', 'totalOrders')
+      .addSelect('COALESCE(SUM(order.total), 0)', 'totalSpent')
+      .addSelect('COALESCE(AVG(order.total), 0)', 'averageOrderValue')
+      .addSelect('MIN(order.created_at)', 'firstOrderDate')
+      .addSelect('MAX(order.created_at)', 'lastOrderDate')
+      .where('order.user_id = :userId', { userId })
+      .andWhere('order.status IN (:...statuses)', {
+        statuses: [
+          OrderStatus.PROCESSING,
+          OrderStatus.PREPARING,
+          OrderStatus.SHIPPING,
+          OrderStatus.DELIVERED,
+        ],
+      })
+      .getRawOne();
+
+    return {
+      totalOrders: parseInt(result.totalOrders) || 0,
+      totalSpent: parseFloat(result.totalSpent) || 0,
+      averageOrderValue: parseFloat(result.averageOrderValue) || 0,
+      firstOrderDate: result.firstOrderDate || null,
+      lastOrderDate: result.lastOrderDate || null,
+    };
+  }
+
+  /**
+   * خریدهای پرتکرار کاربر (محصولاتی که بیشتر خریده)
+   */
+  async getFrequentPurchases(userId: number, limit: number = 10): Promise<FrequentPurchaseDto[]> {
+    const result = await this.orderItemRepo
+      .createQueryBuilder('item')
+      .select('product.id', 'productId')
+      .addSelect('product.name', 'productName')
+      .addSelect('product.price', 'currentPrice')
+      .addSelect('product.stock', 'stock')
+      .addSelect('product.is_active', 'isActive')
+      .addSelect('COUNT(item.id)', 'purchaseCount')
+      .addSelect('MAX(order.created_at)', 'lastPurchaseDate')
+      .innerJoin('item.order', 'order')
+      .innerJoin('item.product', 'product')
+      .where('order.user_id = :userId', { userId })
+      .andWhere('order.status IN (:...statuses)', {
+        statuses: [
+          OrderStatus.PROCESSING,
+          OrderStatus.PREPARING,
+          OrderStatus.SHIPPING,
+          OrderStatus.DELIVERED,
+        ],
+      })
+      .groupBy('product.id')
+      .addGroupBy('product.name')
+      .addGroupBy('product.price')
+      .addGroupBy('product.stock')
+      .addGroupBy('product.is_active')
+      .orderBy('purchaseCount', 'DESC')
+      .limit(limit)
+      .getRawMany();
+
+    // دریافت تصاویر محصولات به صورت جداگانه
+    const productIds = result.map(item => item.productId);
+
+    if (productIds.length === 0) {
+      return [];
+    }
+
+    const productsWithMedia = await this.orderRepo.manager
+      .createQueryBuilder()
+      .select('product.id', 'productId')
+      .addSelect('media.url', 'imageUrl')
+      .from('products', 'product')
+      .leftJoin('medias', 'media', 'media.id = product.media_pinned_id')
+      .where('product.id IN (:...productIds)', { productIds })
+      .getRawMany();
+
+    const mediaMap = new Map(
+      productsWithMedia.map(item => [item.productId, item.imageUrl])
+    );
+
+    return result.map((item) => ({
+      productId: item.productId,
+      productName: item.productName,
+      productImage: mediaMap.get(item.productId) || null,
+      purchaseCount: parseInt(item.purchaseCount),
+      lastPurchaseDate: item.lastPurchaseDate,
+      currentPrice: parseFloat(item.currentPrice),
+      isAvailable: item.isActive && item.stock > 0,
+    }));
+  }
+
+  /**
+   * آمار کاربر به صورت جداگانه
+   */
+  async getUserStatisticsOnly(userId: number): Promise<UserStatisticsDto> {
+    return this.getUserStatistics(userId);
+  }
+
+  /**
+   * لیست سفارشات بر اساس وضعیت
+   */
+  async getOrdersByStatus(
+    userId: number,
+    status: OrderStatus | OrderStatus[],
+  ): Promise<iAllOrderResponse[]> {
+    const statuses = Array.isArray(status) ? status : [status];
+
+    const query = this.orderRepo
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.user', 'user')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('items.variant', 'variant')
+      .leftJoinAndSelect('order.address', 'address')
+      .leftJoinAndSelect('product.medias', 'productMedias')
+      .leftJoinAndSelect('product.mediaPinned', 'productMediaPinned')
+      .leftJoinAndSelect('variant.attributes', 'variantAttributes')
+      .leftJoinAndSelect('variantAttributes.value', 'attributeValue')
+      .leftJoinAndSelect('attributeValue.attribute', 'attribute')
+      .where('order.user_id = :userId', { userId })
+      .andWhere('order.status IN (:...statuses)', { statuses })
+      .orderBy('order.created_at', 'DESC');
+
+    const orders = await query.getMany();
+    return orders.map(order => OrderMapper.toAllResponse(order));
   }
 }
