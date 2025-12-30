@@ -31,6 +31,7 @@ import { PromoBanner } from './entities/promo-banner.entity';
 import { PromoBannerAdminController } from './controllers/poromo-banner.controller';
 import { PromoBannerService } from './promo-banner.service';
 import { PromoBannerPublicController } from './controllers/promo-banner-public.controller';
+import { SettingModule } from '../setting/setting.module'; // ✅ اضافه شد
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { PromoBannerPublicController } from './controllers/promo-banner-public.c
       Category,
       Brand,
     ]),
-    MediaModule
+    MediaModule,
+    SettingModule, // ✅ اضافه شد
   ],
   controllers: [
     HomePagePublicController,

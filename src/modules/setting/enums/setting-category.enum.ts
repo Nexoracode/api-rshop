@@ -6,4 +6,5 @@ export enum SettingCategory {
     SMS = 'sms',
     SOCIAL = 'social',
     SEO = 'seo',
+    HOMEPAGE = 'homepage', // ✅ تنظیمات صفحه اصلی
 }

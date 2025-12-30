@@ -2,6 +2,14 @@
  * Interface های HomePage
  */
 
+/**
+ * انواع چیدمان صفحه اصلی
+ */
+export enum HomePageLayoutType {
+    SIDE_BY_SIDE = 'side_by_side',  // کنار هم
+    STACKED = 'stacked',              // زیر هم
+}
+
 export interface HeroSliderData {
   id: number;
   title: string;
@@ -85,6 +93,7 @@ export interface HomeSectionData {
 }
 
 export interface HomePageData {
+  layoutType: HomePageLayoutType;  // ✅ نوع چیدمان
   promoBanners: PromoBannerData[];
   heroSliders: HeroSliderData[];
   sideBanners: SideBannerData[];

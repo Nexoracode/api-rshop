@@ -9,7 +9,9 @@ import { HeroSliderService } from './hero-slider.service';
 import { SideBannerService } from './side-banner.service';
 import { PromoBannerService } from './promo-banner.service';
 import { HomeSectionService } from './home-section.service';
-import { HomePageData } from './interceptors/home-page.interface';
+import { HomePageData, HomePageLayoutType } from './interceptors/home-page.interface';
+import { SettingService } from '../setting/setting.service'; // ✅ اضافه شد
+import { SettingCategory } from '../setting/enums/setting-category.enum';
 
 @Injectable()
 export class HomePageService {
@@ -21,6 +23,7 @@ export class HomePageService {
     private readonly sideBannerService: SideBannerService,
     private readonly promoBannerService: PromoBannerService,
     private readonly homeSectionService: HomeSectionService,
+    private readonly settingService: SettingService, // ✅ اضافه شد
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Brand)
@@ -90,7 +93,11 @@ export class HomePageService {
       }),
     );
 
+    // ✅ دریافت layout type از settings
+    const layoutType = await this.getLayoutType();
+
     const result: HomePageData = {
+      layoutType, // ✅ اضافه شد
       promoBanners: promoBanners.map(promo => ({
         id: promo.id,
         title: promo.title,
@@ -210,5 +217,27 @@ export class HomePageService {
       isActive: product.isActive,
       // سایر فیلدهای مورد نیاز
     };
+  }
+
+  /**
+   * دریافت نوع چیدمان از settings
+   */
+  private async getLayoutType(): Promise<HomePageLayoutType> {
+    try {
+      const setting = await this.settingService.findByKey(SettingCategory.HOMEPAGE);
+
+      if (setting && setting.value) {
+        // اگر مقدار valid باشه، برگردون
+        if (Object.values(HomePageLayoutType).includes(setting.value as HomePageLayoutType)) {
+          return setting.value as HomePageLayoutType;
+        }
+      }
+
+      // پیش‌فرض: کنار هم
+      return HomePageLayoutType.SIDE_BY_SIDE;
+    } catch (error) {
+      this.logger.warn('خطا در دریافت layout type، استفاده از پیش‌فرض:', error.message);
+      return HomePageLayoutType.SIDE_BY_SIDE;
+    }
   }
 }

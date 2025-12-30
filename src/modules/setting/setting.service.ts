@@ -10,7 +10,7 @@ export class SettingService {
     constructor(
         @InjectRepository(Setting)
         private readonly settingRepo: Repository<Setting>,
-    ) {}
+    ) { }
 
     async findAll(): Promise<Setting[]> {
         return await this.settingRepo.find({
