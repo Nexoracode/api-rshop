@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
 import { HomeSectionService } from '../home-section.service';
@@ -620,7 +621,7 @@ export class HomeSectionAdminController {
   }
 
   /**
-   * بروزرسانی بخش
+   * بخش بروزرسانی بخش های صفحه اصلی
    * 
    * ویرایش اطلاعات یک بخش موجود.
    * تمام فیلدها اختیاری هستند - فقط فیلدهایی که ارسال شوند بروز می‌شوند.
@@ -801,8 +802,8 @@ export class HomeSectionAdminController {
       }
     }
   })
-  async update(@Param('id') id: string, @Body() updateDto: UpdateHomeSectionDto) {
-    return await this.homeSectionService.update(+id, updateDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: UpdateHomeSectionDto) {
+    return await this.homeSectionService.update(id, updateDto);
   }
 
   /**

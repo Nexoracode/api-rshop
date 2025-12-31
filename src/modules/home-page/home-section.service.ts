@@ -114,6 +114,8 @@ export class HomeSectionService {
     if (!result) {
       throw new NotFoundException(`بخش صفحه اصلی با شناسه ${id} یافت نشد`);
     }
+    await this.cacheService.clearHomeSectionsCache(id);
+    this.logger.log(`کش بخش صفحه اصلی ${id} پاک شد پس از حذف`);
     return result;
   }
 
