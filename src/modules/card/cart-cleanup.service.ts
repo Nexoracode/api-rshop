@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, LessThan } from 'typeorm';
+import { DataSource, In, LessThan } from 'typeorm';
 import { Order } from '../order/entities/order.entity';
 import { OrderStatus } from '../order/enums/order-status.enum';
 import { CardStatusService } from './card-status.service';
@@ -18,7 +18,7 @@ export class CartCleanupService {
     ) { }
 
     /**
-     * هر 10 دقیقه یکبار Order های منقضی شده رو چک کن
+     * هر 30 دقیقه یکبار Order های منقضی شده رو چک کن
      * Order هایی که بیش از 30 دقیقه در وضعیت AWAITING_PAYMENT هستند
      */
     @Cron(CronExpression.EVERY_30_MINUTES)
@@ -34,7 +34,17 @@ export class CartCleanupService {
                 // پیدا کردن Order های منقضی
                 const expiredOrders = await manager.find(Order, {
                     where: {
-                        status: OrderStatus.AWAITING_PAYMENT,
+                        status: In([
+                            OrderStatus.AWAITING_PAYMENT,
+                            OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+                            OrderStatus.NOT_DELIVERED,
+                            OrderStatus.PAYMENT_FAILED,
+                            OrderStatus.PENDING_APPROVAL,
+                            OrderStatus.REFUNDED,
+                            OrderStatus.REJECTED,
+                            OrderStatus.START_ORDER,
+                            OrderStatus.CANCELLED
+                        ]),
                         createdAt: LessThan(timeoutDate),
                     },
                     relations: ['user'],
@@ -82,8 +92,6 @@ export class CartCleanupService {
                 const completedOrders = await manager.find(Order, {
                     where: [
                         { status: OrderStatus.DELIVERED },
-                        { status: OrderStatus.CANCELLED },
-                        { status: OrderStatus.REFUNDED },
                     ],
                     relations: ['user'],
                 });
