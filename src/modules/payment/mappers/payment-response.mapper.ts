@@ -3,6 +3,7 @@
 import { Order } from 'src/modules/order/entities/order.entity';
 import { Payment } from '../entities/payment.entity';
 import { OrderMapper } from 'src/modules/order/mappers/order.mapper';
+import { ref } from 'process';
 
 export class PaymentResponseMapper {
     // createPayment -> بازگشت لینک درگاه
@@ -31,12 +32,14 @@ export class PaymentResponseMapper {
     }
 
     // verifyPayment -> کاربر لغو کرده
-    static userCancelled(orderStatus: string) {
+    static userCancelled(order: Order, payment: Payment, refId: string) {
         return {
             code: -50,
             success: false,
             message: 'پرداخت توسط کاربر لغو شد.',
-            orderStatus,
+            order: OrderMapper.toAllResponse(order),
+            payment,
+            refId,
         };
     }
 

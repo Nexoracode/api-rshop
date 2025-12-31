@@ -1,4 +1,5 @@
 export enum OrderStatus {
+    START_ORDER = 'start_order',
     PENDING_APPROVAL = "pending_approval", // در انتظار تایید
     AWAITING_PAYMENT = 'awaiting_payment', // در انتظار پرداخت
     PAYMENT_CONFIRMATION_PENDING = "payment_confirmation_pending", // در انتظار تایید پرداخت

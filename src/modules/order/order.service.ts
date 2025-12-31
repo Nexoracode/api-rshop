@@ -380,7 +380,6 @@ export class OrderService {
                 relations: ["items", "items.product", "items.variant"],
                 lock: { mode: "pessimistic_write" },
             });
-            console.log("Creating order from card:", card);
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
 
@@ -414,11 +413,7 @@ export class OrderService {
             const existingOrder = await orderRepo.findOne({
                 where: {
                     user: { id: user.id },
-                    status: In([
-                        OrderStatus.AWAITING_PAYMENT,
-                        OrderStatus.PAYMENT_FAILED,
-                        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
-                    ]),
+                    status: OrderStatus.START_ORDER
                 },
                 relations: ['user', 'address', "items", 'giftWrapping'],
             });
@@ -486,7 +481,7 @@ export class OrderService {
                 }
 
                 // ✅ پاک کردن cache
-                // await this.orderCacheService.clearCacheAfterCreate(user.id);
+                await this.orderCacheService.clearCacheAfterCreate(user.id);
 
                 return OrderMapperNew.toDetail(existingOrder);
             }
@@ -494,7 +489,7 @@ export class OrderService {
             const newOrder = orderRepo.create({
                 user,
                 address,
-                status: OrderStatus.AWAITING_PAYMENT,
+                status: OrderStatus.START_ORDER,
                 subtotal: card.subtotal,
                 discountTotal,
                 total: finalTotal,

@@ -73,35 +73,16 @@ export class PaymentService {
       const cardRepo = manager.getRepository(Card);
 
       const order = await orderRepo.findOne({
-        where: { id: orderId },
+        where: { id: orderId, status: OrderStatus.START_ORDER },
         relations: ['user', 'address'],
       });
       if (!order) throw new NotFoundException('سفارش یافت نشد.');
-
-      if (order.status === OrderStatus.PAYMENT_CONFIRMATION_PENDING) {
-        throw new BadRequestException('این سفارش در انتظار تایید پرداخت است.');
-      }
-
-      if (
-        ![
-          OrderStatus.AWAITING_PAYMENT,
-          OrderStatus.PAYMENT_FAILED,
-          OrderStatus.PENDING_APPROVAL,
-        ].includes(order.status)
-      ) {
-        throw new BadRequestException('این سفارش قابل پرداخت نیست.');
-      }
-
-      const card = await cardRepo.findOne({
-        where: { user: { id: order.user.id }, status: CardStatus.OPEN },
-      });
-      if (card) {
-        card.status = CardStatus.LOCKED;
-        await cardRepo.save(card);
-      }
+      await this.cardStatusService.lockCart(order.user.id);
 
       let requestResult: any;
       try {
+        order.status = OrderStatus.AWAITING_PAYMENT;
+        await orderRepo.save(order);
         requestResult = await zarinpal.payments.create({
           amount: order.total,
           callback_url: callbackUrl,
@@ -153,8 +134,6 @@ export class PaymentService {
         gateway: PaymentGateway.ZARINPAL,
       });
 
-      await this.cardStatusService.lockCart(order.user.id, manager);
-
       await paymentLogRepo.save({
         order,
         user: order.user,
@@ -168,6 +147,7 @@ export class PaymentService {
 
       this.logger.log(`Payment request created for order ${orderId}, authority: ${requestResult.authority}`);
 
+      await this.cardStatusService.lockCart(order.user.id, manager);
       return PaymentResponseMapper.createPayment(order, requestResult.data.authority);
     });
   }
@@ -218,11 +198,6 @@ export class PaymentService {
         throw new BadRequestException('این سفارش قابل پرداخت نیست.');
       }
 
-      const card = await cardRepo.findOne({
-        where: { user: { id: order.user.id }, status: CardStatus.LOCKED },
-        relations: ['items'],
-      });
-
       await paymentLogRepo.save({
         order,
         user: order.user,
@@ -240,11 +215,6 @@ export class PaymentService {
         order.status = OrderStatus.PAYMENT_FAILED;
         await orderRepo.save(order);
 
-        if (card) {
-          card.status = CardStatus.OPEN;
-          await cardRepo.save(card);
-        }
-
         payment.status = PaymentStatus.CANCELLED;
         payment.message = 'پرداخت توسط کاربر لغو شد.';
         await paymentRepo.save(payment);
@@ -260,7 +230,7 @@ export class PaymentService {
           userAgent: req.headers['user-agent'],
         });
 
-        return PaymentResponseMapper.userCancelled(order.status);
+        return PaymentResponseMapper.userCancelled(order, payment, ''); // اصلاح شده
       }
 
       try {
