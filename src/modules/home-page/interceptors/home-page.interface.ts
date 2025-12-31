@@ -2,6 +2,8 @@
  * Interface های HomePage
  */
 
+import { Category } from "src/modules/category/entities/category.entity";
+
 /**
  * انواع چیدمان صفحه اصلی
  */
@@ -72,6 +74,8 @@ export interface ProductData {
   id: number;
   name: string;
   price: number;
+  category: Category | null;
+  stock: number;
   discountAmount?: number | null;
   discountPercent?: number | null;
   image: string | null;

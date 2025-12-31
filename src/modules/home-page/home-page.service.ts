@@ -226,6 +226,8 @@ export class HomePageService {
       id: product.id,
       name: product.name,
       price: product.price,
+      category: product.category,
+      stock: product.stock,
       discountAmount: product.discountAmount,
       discountPercent: product.discountPercent,
       image: product.mediaPinned?.url ?? null,
