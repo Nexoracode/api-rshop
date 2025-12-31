@@ -380,8 +380,10 @@ export class OrderService {
                 relations: ["items", "items.product", "items.variant"],
                 lock: { mode: "pessimistic_write" },
             });
+            console.log("Creating order from card:", card);
             if (!card || !card.items?.length)
                 throw new BadRequestException("سبد خرید خالی است.");
+
 
             // بررسی موجودی
             for (const ci of card.items) {

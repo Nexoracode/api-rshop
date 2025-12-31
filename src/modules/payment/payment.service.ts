@@ -153,9 +153,6 @@ export class PaymentService {
         gateway: PaymentGateway.ZARINPAL,
       });
 
-      order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
-      await orderRepo.save(order);
-
       await this.cardStatusService.lockCart(order.user.id, manager);
 
       await paymentLogRepo.save({
@@ -273,6 +270,9 @@ export class PaymentService {
         });
 
         console.log('verification -> ', verification);
+
+        order.status = OrderStatus.PAYMENT_CONFIRMATION_PENDING;
+        await orderRepo.save(order);
 
         if (verification.data.code === 100) {
           this.logger.log(`Payment verified successfully for order ${order.id}, refId: ${getRefId(verification.data)}`);
