@@ -44,7 +44,11 @@ export class ProfileController {
   async getAwaitingPaymentOrders(@CurrentUser() user: RequestUser) {
     const orders = await this.profileService.getOrdersByStatus(
       user.id,
-      [OrderStatus.AWAITING_PAYMENT, OrderStatus.PAYMENT_CONFIRMATION_PENDING, OrderStatus.PENDING_APPROVAL]
+      [
+        OrderStatus.AWAITING_PAYMENT,
+        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+        OrderStatus.PENDING_APPROVAL
+      ]
     );
     return {
       message: 'سفارشات در انتظار پرداخت با موفقیت دریافت شد.',
@@ -78,7 +82,10 @@ export class ProfileController {
   async getReturnedOrders(@CurrentUser() user: RequestUser) {
     return this.profileService.getOrdersByStatus(
       user.id,
-      [OrderStatus.REFUNDED, OrderStatus.NOT_DELIVERED]
+      [
+        OrderStatus.REFUNDED,
+        OrderStatus.NOT_DELIVERED
+      ]
     );
   }
 
@@ -91,36 +98,42 @@ export class ProfileController {
   async getProcessingOrders(@CurrentUser() user: RequestUser) {
     return await this.profileService.getOrdersByStatus(
       user.id,
-      [OrderStatus.PROCESSING, OrderStatus.PREPARING, OrderStatus.SHIPPING]
+      [
+        OrderStatus.AWAITING_PAYMENT,
+        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+        OrderStatus.PENDING_APPROVAL,
+        OrderStatus.PROCESSING,
+        OrderStatus.PREPARING,
+      ]
     );
   }
 
   @Get('orders/cancelled')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'سفارشات در حال پردازش',
-    description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
+    summary: 'سفارشات لغو شده یا منقضی',
+    description: 'لیست سفارشاتی که لغو یا منقضی هستند'
   })
   async getCanclledOrders(@CurrentUser() user: RequestUser) {
     return await this.profileService.getOrdersByStatus(
       user.id,
-      [OrderStatus.CANCELLED, OrderStatus.EXPIRED]
+      [OrderStatus.CANCELLED, OrderStatus.EXPIRED, OrderStatus.PAYMENT_FAILED]
     );
   }
 
-  // @Get('frequent-purchases')
-  // @HttpCode(200)
-  // @ApiOperation({
-  //   summary: 'خریدهای پرتکرار شما',
-  //   description: 'لیست محصولاتی که بیشترین تعداد خرید را داشته‌اند'
-  // })
-  // async getFrequentPurchases(@CurrentUser() user: RequestUser) {
-  //   const purchases = await this.profileService.getFrequentPurchases(user.id);
-  //   return {
-  //     message: 'خریدهای پرتکرار با موفقیت دریافت شد.',
-  //     data: purchases,
-  //   };
-  // }
+  @Get('frequent-purchases')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'خریدهای پرتکرار شما',
+    description: 'لیست محصولاتی که بیشترین تعداد خرید را داشته‌اند'
+  })
+  async getFrequentPurchases(@CurrentUser() user: RequestUser) {
+    const purchases = await this.profileService.getFrequentPurchases(user.id);
+    return {
+      message: 'خریدهای پرتکرار با موفقیت دریافت شد.',
+      data: purchases,
+    };
+  }
 
   // @Get('statistics')
   // @HttpCode(200)

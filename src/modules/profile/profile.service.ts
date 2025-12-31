@@ -18,6 +18,7 @@ import {
 } from './dto/profile-detailed.dto';
 import { OrderMapper, OrderMapperNew } from '../order/mappers/order.mapper';
 import { iAllOrderResponse } from '../order/interfaces/order.interface';
+import { ProductMapper } from '../product/mappers/product.mapper';
 
 @Injectable()
 export class ProfileService {
@@ -154,6 +155,7 @@ export class ProfileService {
           break;
 
         case OrderStatus.CANCELLED:
+        case OrderStatus.PAYMENT_FAILED:
         case OrderStatus.EXPIRED:
         case OrderStatus.REJECTED:
           summary.cancelled++;
@@ -248,15 +250,7 @@ export class ProfileService {
       productsWithMedia.map(item => [item.productId, item.imageUrl])
     );
 
-    return result.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      productImage: mediaMap.get(item.productId) || null,
-      purchaseCount: parseInt(item.purchaseCount),
-      lastPurchaseDate: item.lastPurchaseDate,
-      currentPrice: parseFloat(item.currentPrice),
-      isAvailable: item.isActive && item.stock > 0,
-    }));
+    return result.map((product) => ProductMapper.toResponse(product, { cartesian: false }))
   }
 
   /**
