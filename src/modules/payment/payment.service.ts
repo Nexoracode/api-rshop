@@ -4,7 +4,7 @@ import {
   BadRequestException,
   Logger,
 } from "@nestjs/common";
-import { DataSource } from "typeorm";
+import { DataSource, In } from "typeorm";
 import { Request } from "express";
 import { EventEmitter2 } from "@nestjs/event-emitter"; // ✅ اضافه شد
 
@@ -73,7 +73,7 @@ export class PaymentService {
       const cardRepo = manager.getRepository(Card);
 
       const order = await orderRepo.findOne({
-        where: { id: orderId, status: OrderStatus.START_ORDER },
+        where: { id: orderId, status: In([OrderStatus.START_ORDER, OrderStatus.AWAITING_PAYMENT]) },
         relations: ['user', 'address'],
       });
       if (!order) throw new NotFoundException('سفارش یافت نشد.');
@@ -81,6 +81,7 @@ export class PaymentService {
 
       let requestResult: any;
       try {
+        await this.cardStatusService.lockCart(order.user.id);
         order.status = OrderStatus.AWAITING_PAYMENT;
         await orderRepo.save(order);
         requestResult = await zarinpal.payments.create({

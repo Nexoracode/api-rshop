@@ -126,6 +126,15 @@ export class ProfileService {
       select: ['id', 'status'],
     });
 
+    const statuses = [
+      OrderStatus.AWAITING_PAYMENT,
+      OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+      OrderStatus.PENDING_APPROVAL,
+      OrderStatus.PROCESSING,
+      OrderStatus.PREPARING,
+      OrderStatus.CANCELLED
+    ];
+
     const summary: OrderSummaryDto = {
       processing: 0,
       shipping: 0,
@@ -135,13 +144,34 @@ export class ProfileService {
       total: orders.length,
     };
 
-    orders.forEach((order) => {
-      switch (order.status) {
+    const payments = await this.paymentRepo.find({
+      where: {
+        order: { user: { id: userId }, status: In(statuses) },
+        paymentMethod: In([PaymentMethod.ONLINE, PaymentMethod.WALLET])
+      },
+      order: { createdAt: 'DESC' },
+      relations: [
+        'order.user',
+        'order.items',
+        'order.items.product',
+        'order.items.variant',
+        'order.items.variant.attributes',
+        'order.items.variant.attributes.value',
+        'order.items.variant.attributes.value.attribute',
+        'order.address',
+        'order.items.product.medias',
+        'order.items.product.mediaPinned',
+      ]
+    });
+
+    payments.forEach((payment) => {
+      switch (payment.order.status) {
         case OrderStatus.AWAITING_PAYMENT:
         case OrderStatus.PAYMENT_CONFIRMATION_PENDING:
         case OrderStatus.PENDING_APPROVAL:
         case OrderStatus.PROCESSING:
         case OrderStatus.PREPARING:
+        case OrderStatus.CANCELLED:
           summary.processing++;
           break;
 
@@ -157,8 +187,11 @@ export class ProfileService {
         case OrderStatus.NOT_DELIVERED:
           summary.returned++;
           break;
+      }
+    });
 
-        case OrderStatus.CANCELLED:
+    orders.forEach((order) => {
+      switch (order.status) {
         case OrderStatus.PAYMENT_FAILED:
         case OrderStatus.EXPIRED:
         case OrderStatus.REJECTED:
@@ -292,7 +325,6 @@ export class ProfileService {
         'order.items.product.mediaPinned',
       ]
     });
-
     return payments.map(payment => OrderMapper.toAllResponse(payment.order));
   }
 }

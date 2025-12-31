@@ -100,6 +100,7 @@ export class ProfileController {
     return await this.profileService.getOrdersByStatus(
       user.id,
       [
+        OrderStatus.CANCELLED,
         OrderStatus.AWAITING_PAYMENT,
         OrderStatus.PAYMENT_CONFIRMATION_PENDING,
         OrderStatus.PENDING_APPROVAL,
