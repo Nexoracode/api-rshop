@@ -45,6 +45,7 @@ export class ProfileController {
     const orders = await this.profileService.getOrdersByStatus(
       user.id,
       [
+        OrderStatus.PAYMENT_FAILED,
         OrderStatus.AWAITING_PAYMENT,
         OrderStatus.PAYMENT_CONFIRMATION_PENDING,
         OrderStatus.PENDING_APPROVAL

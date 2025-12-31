@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { ReviewService } from '../review/review.service';
 import { WishlistService } from '../wishlist/wishlist.service';
@@ -19,6 +19,8 @@ import {
 import { OrderMapper, OrderMapperNew } from '../order/mappers/order.mapper';
 import { iAllOrderResponse } from '../order/interfaces/order.interface';
 import { ProductMapper } from '../product/mappers/product.mapper';
+import { Payment } from '../payment/entities/payment.entity';
+import { PaymentMethod } from '../payment/enums/payment-status.enum';
 
 @Injectable()
 export class ProfileService {
@@ -29,6 +31,8 @@ export class ProfileService {
     private readonly orderRepo: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
+    @InjectRepository(Payment)
+    private readonly paymentRepo: Repository<Payment>,
     private readonly reviewService: ReviewService,
     private readonly wishlistService: WishlistService,
     private readonly recentViewService: RecentViewService,
@@ -266,26 +270,29 @@ export class ProfileService {
   async getOrdersByStatus(
     userId: number,
     status: OrderStatus | OrderStatus[],
-  ): Promise<iAllOrderResponse[]> {
+  ) {
     const statuses = Array.isArray(status) ? status : [status];
 
-    const query = this.orderRepo
-      .createQueryBuilder('order')
-      .leftJoinAndSelect('order.user', 'user')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('items.product', 'product')
-      .leftJoinAndSelect('items.variant', 'variant')
-      .leftJoinAndSelect('order.address', 'address')
-      .leftJoinAndSelect('product.medias', 'productMedias')
-      .leftJoinAndSelect('product.mediaPinned', 'productMediaPinned')
-      .leftJoinAndSelect('variant.attributes', 'variantAttributes')
-      .leftJoinAndSelect('variantAttributes.value', 'attributeValue')
-      .leftJoinAndSelect('attributeValue.attribute', 'attribute')
-      .where('order.user_id = :userId', { userId })
-      .andWhere('order.status IN (:...statuses)', { statuses })
-      .orderBy('order.created_at', 'DESC');
+    const payments = await this.paymentRepo.find({
+      where: {
+        order: { user: { id: userId }, status: In(statuses) },
+        paymentMethod: In([PaymentMethod.ONLINE, PaymentMethod.WALLET])
+      },
+      order: { createdAt: 'DESC' },
+      relations: [
+        'order.user',
+        'order.items',
+        'order.items.product',
+        'order.items.variant',
+        'order.items.variant.attributes',
+        'order.items.variant.attributes.value',
+        'order.items.variant.attributes.value.attribute',
+        'order.address',
+        'order.items.product.medias',
+        'order.items.product.mediaPinned',
+      ]
+    });
 
-    const orders = await query.getMany();
-    return orders.map(order => OrderMapper.toAllResponse(order));
+    return payments.map(payment => OrderMapper.toAllResponse(payment.order));
   }
 }
