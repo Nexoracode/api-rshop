@@ -95,6 +95,19 @@ export class ProfileController {
     );
   }
 
+  @Get('orders/cancelled')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'سفارشات در حال پردازش',
+    description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
+  })
+  async getCanclledOrders(@CurrentUser() user: RequestUser) {
+    return await this.profileService.getOrdersByStatus(
+      user.id,
+      [OrderStatus.CANCELLED, OrderStatus.EXPIRED]
+    );
+  }
+
   // @Get('frequent-purchases')
   // @HttpCode(200)
   // @ApiOperation({
@@ -109,17 +122,17 @@ export class ProfileController {
   //   };
   // }
 
-  @Get('statistics')
-  @HttpCode(200)
-  @ApiOperation({
-    summary: 'آمار خرید کاربر',
-    description: 'شامل مجموع خرید، میانگین سفارش، تعداد سفارشات و ...'
-  })
-  async getStatistics(@CurrentUser() user: RequestUser) {
-    const stats = await this.profileService.getUserStatisticsOnly(user.id);
-    return {
-      message: 'آمار خرید با موفقیت دریافت شد.',
-      data: stats,
-    };
-  }
+  // @Get('statistics')
+  // @HttpCode(200)
+  // @ApiOperation({
+  //   summary: 'آمار خرید کاربر',
+  //   description: 'شامل مجموع خرید، میانگین سفارش، تعداد سفارشات و ...'
+  // })
+  // async getStatistics(@CurrentUser() user: RequestUser) {
+  //   const stats = await this.profileService.getUserStatisticsOnly(user.id);
+  //   return {
+  //     message: 'آمار خرید با موفقیت دریافت شد.',
+  //     data: stats,
+  //   };
+  // }
 }

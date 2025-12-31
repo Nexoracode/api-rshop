@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderSummaryDto {
-    @ApiProperty({ description: 'تعداد سفارشات در انتظار پرداخت', example: 2 })
-    awaitingPayment: number;
+    // @ApiProperty({ description: 'تعداد سفارشات در انتظار پرداخت', example: 2 })
+    // awaitingPayment: number;
 
     @ApiProperty({ description: 'تعداد سفارشات در حال پردازش', example: 1 })
     processing: number;
@@ -65,28 +65,28 @@ export class UserStatisticsDto {
 
 export class ProfileDetailedResponseDto {
     @ApiProperty({ description: 'اطلاعات کاربر' })
-    user: {
-        id: number;
-        firstName?: string;
-        lastName?: string;
-        phone: string;
-        email?: string;
-        avatarUrl?: string;
-        isPhoneVerified: boolean;
-        createdAt: Date;
-    };
+    // user: {
+    //     id: number;
+    //     firstName?: string;
+    //     lastName?: string;
+    //     phone: string;
+    //     email?: string;
+    //     avatarUrl?: string;
+    //     isPhoneVerified: boolean;
+    //     createdAt: Date;
+    // };
 
     @ApiProperty({ description: 'خلاصه سفارشات', type: OrderSummaryDto })
     orderSummary: OrderSummaryDto;
 
-    @ApiProperty({ description: 'آمار کاربر', type: UserStatisticsDto })
-    statistics: UserStatisticsDto;
+    // @ApiProperty({ description: 'آمار کاربر', type: UserStatisticsDto })
+    // statistics: UserStatisticsDto;
 
-    @ApiProperty({ description: 'خریدهای پرتکرار', type: [FrequentPurchaseDto] })
-    frequentPurchases: FrequentPurchaseDto[];
+    // @ApiProperty({ description: 'خریدهای پرتکرار', type: [FrequentPurchaseDto] })
+    // frequentPurchases: FrequentPurchaseDto[];
 
-    @ApiProperty({ description: 'تعداد آدرس‌های ثبت شده', example: 2 })
-    addressCount: number;
+    // @ApiProperty({ description: 'تعداد آدرس‌های ثبت شده', example: 2 })
+    // addressCount: number;
 
     @ApiProperty({ description: 'تعداد نظرات', example: 5 })
     reviewCount: number;

@@ -85,29 +85,28 @@ export class ProfileService {
       throw new Error('کاربر یافت نشد');
     }
 
-    const [orderSummary, statistics, frequentPurchases, reviews, wishlist] = await Promise.all([
+    const [orderSummary, reviews, wishlist] = await Promise.all([
       this.getOrderSummary(userId),
-      this.getUserStatistics(userId),
-      this.getFrequentPurchases(userId),
+      // this.getUserStatistics(userId),
+      // this.getFrequentPurchases(userId),
       this.reviewService.findAllByUser(userId),
       this.wishlistService.getAll({ id: userId } as any),
     ]);
 
     return {
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        isPhoneVerified: user.isPhoneVerified,
-        createdAt: user.createdAt,
-      },
+      // user: {
+      //   id: user.id,
+      //   firstName: user.firstName,
+      //   lastName: user.lastName,
+      //   phone: user.phone,
+      //   email: user.email,
+      //   avatarUrl: user.avatarUrl,
+      //   isPhoneVerified: user.isPhoneVerified,
+      //   createdAt: user.createdAt,
+      // },
       orderSummary,
-      statistics,
-      frequentPurchases,
-      addressCount: user.addresses?.length || 0,
+      // frequentPurchases,
+      // addressCount: user.addresses?.length || 0,
       reviewCount: reviews?.length || 0,
       wishlistCount: wishlist?.length || 0,
     };
@@ -123,7 +122,6 @@ export class ProfileService {
     });
 
     const summary: OrderSummaryDto = {
-      awaitingPayment: 0,
       processing: 0,
       shipping: 0,
       completed: 0,
@@ -137,9 +135,6 @@ export class ProfileService {
         case OrderStatus.AWAITING_PAYMENT:
         case OrderStatus.PAYMENT_CONFIRMATION_PENDING:
         case OrderStatus.PENDING_APPROVAL:
-          summary.awaitingPayment++;
-          break;
-
         case OrderStatus.PROCESSING:
         case OrderStatus.PREPARING:
           summary.processing++;
@@ -169,36 +164,36 @@ export class ProfileService {
     return summary;
   }
 
-  /**
-   * آمار کلی خرید کاربر
-   */
-  private async getUserStatistics(userId: number): Promise<UserStatisticsDto> {
-    const result = await this.orderRepo
-      .createQueryBuilder('order')
-      .select('COUNT(order.id)', 'totalOrders')
-      .addSelect('COALESCE(SUM(order.total), 0)', 'totalSpent')
-      .addSelect('COALESCE(AVG(order.total), 0)', 'averageOrderValue')
-      .addSelect('MIN(order.created_at)', 'firstOrderDate')
-      .addSelect('MAX(order.created_at)', 'lastOrderDate')
-      .where('order.user_id = :userId', { userId })
-      .andWhere('order.status IN (:...statuses)', {
-        statuses: [
-          OrderStatus.PROCESSING,
-          OrderStatus.PREPARING,
-          OrderStatus.SHIPPING,
-          OrderStatus.DELIVERED,
-        ],
-      })
-      .getRawOne();
+  // /**
+  //  * آمار کلی خرید کاربر
+  //  */
+  // private async getUserStatistics(userId: number): Promise<UserStatisticsDto> {
+  //   const result = await this.orderRepo
+  //     .createQueryBuilder('order')
+  //     .select('COUNT(order.id)', 'totalOrders')
+  //     .addSelect('COALESCE(SUM(order.total), 0)', 'totalSpent')
+  //     .addSelect('COALESCE(AVG(order.total), 0)', 'averageOrderValue')
+  //     .addSelect('MIN(order.created_at)', 'firstOrderDate')
+  //     .addSelect('MAX(order.created_at)', 'lastOrderDate')
+  //     .where('order.user_id = :userId', { userId })
+  //     .andWhere('order.status IN (:...statuses)', {
+  //       statuses: [
+  //         OrderStatus.PROCESSING,
+  //         OrderStatus.PREPARING,
+  //         OrderStatus.SHIPPING,
+  //         OrderStatus.DELIVERED,
+  //       ],
+  //     })
+  //     .getRawOne();
 
-    return {
-      totalOrders: parseInt(result.totalOrders) || 0,
-      totalSpent: parseFloat(result.totalSpent) || 0,
-      averageOrderValue: parseFloat(result.averageOrderValue) || 0,
-      firstOrderDate: result.firstOrderDate || null,
-      lastOrderDate: result.lastOrderDate || null,
-    };
-  }
+  //   return {
+  //     totalOrders: parseInt(result.totalOrders) || 0,
+  //     totalSpent: parseFloat(result.totalSpent) || 0,
+  //     averageOrderValue: parseFloat(result.averageOrderValue) || 0,
+  //     firstOrderDate: result.firstOrderDate || null,
+  //     lastOrderDate: result.lastOrderDate || null,
+  //   };
+  // }
 
   /**
    * خریدهای پرتکرار کاربر (محصولاتی که بیشتر خریده)
@@ -267,9 +262,9 @@ export class ProfileService {
   /**
    * آمار کاربر به صورت جداگانه
    */
-  async getUserStatisticsOnly(userId: number): Promise<UserStatisticsDto> {
-    return this.getUserStatistics(userId);
-  }
+  // async getUserStatisticsOnly(userId: number): Promise<UserStatisticsDto> {
+  //   return this.getUserStatistics(userId);
+  // }
 
   /**
    * لیست سفارشات بر اساس وضعیت
