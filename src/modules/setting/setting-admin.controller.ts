@@ -1,14 +1,17 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiPropertyOptional } from '@nestjs/swagger';
 import { SettingService } from './setting.service';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { BulkUpdateSettingsDto } from './dto/bulk-update-settings.dto';
 import { AccessGuard } from 'src/common/guard/access.guard';
 import { SettingCategory } from './enums/setting-category.enum';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Role } from 'src/common/enums/role.enum';
+import { Roles } from 'src/common/decorator/role.decorator';
 
 @ApiTags('Admin - Settings')
-@ApiBearerAuth()
-@UseGuards(AccessGuard)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 @Controller('admin/settings')
 export class SettingAdminController {
     constructor(private readonly settingService: SettingService) { }
@@ -60,4 +63,21 @@ export class SettingAdminController {
     remove(@Param('key') key: string) {
         return this.settingService.remove(key);
     }
+
+    @Patch('homepage-layout/:type')
+    @ApiOperation({
+        summary: 'ویرایش چیدمان صفحه اصلی', description: `
+        این نقطه پایانی برای به‌روزرسانی چیدمان صفحه اصلی استفاده می‌شود. نوع چیدمان باید یکی از مقادیر معتبر باشد.
+        side_by_side: چیدمان کنار هم
+        stacked: چیدمان روی هم
+        ` })
+    async updateHomePageLayout(@Param('type') type: string) {
+        // منطق به‌روزرسانی چیدمان صفحه اصلی
+        return await this.settingService.upsert({
+            key: `homepage_layout_type`,
+            value: type,
+            category: SettingCategory.HOMEPAGE,
+        });
+    }
+
 }

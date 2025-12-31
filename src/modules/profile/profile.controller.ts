@@ -82,18 +82,18 @@ export class ProfileController {
     );
   }
 
-  // @Get('orders/processing')
-  // @HttpCode(200)
-  // @ApiOperation({
-  //   summary: 'سفارشات در حال پردازش',
-  //   description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
-  // })
-  // async getProcessingOrders(@CurrentUser() user: RequestUser) {
-  //   return await this.profileService.getOrdersByStatus(
-  //     user.id,
-  //     [OrderStatus.PROCESSING, OrderStatus.PREPARING, OrderStatus.SHIPPING]
-  //   );
-  // }
+  @Get('orders/processing')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'سفارشات در حال پردازش',
+    description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
+  })
+  async getProcessingOrders(@CurrentUser() user: RequestUser) {
+    return await this.profileService.getOrdersByStatus(
+      user.id,
+      [OrderStatus.PROCESSING, OrderStatus.PREPARING, OrderStatus.SHIPPING]
+    );
+  }
 
   // @Get('frequent-purchases')
   // @HttpCode(200)

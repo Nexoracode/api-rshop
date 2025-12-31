@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { SettingService } from './setting.service';
 import { SettingCategory } from './enums/setting-category.enum';
@@ -6,7 +6,7 @@ import { SettingCategory } from './enums/setting-category.enum';
 @ApiTags('Settings (Public)')
 @Controller('settings')
 export class SettingController {
-    constructor(private readonly settingService: SettingService) {}
+    constructor(private readonly settingService: SettingService) { }
 
     @Get('public')
     @ApiOperation({ summary: 'دریافت تنظیمات عمومی (بدون احراز هویت)' })
@@ -38,7 +38,7 @@ export class SettingController {
 
         if (category === SettingCategory.GENERAL) {
             const settings = await this.settingService.findByCategory(SettingCategory.GENERAL);
-            return settings.filter(s => 
+            return settings.filter(s =>
                 ['shop_name', 'shop_phone', 'shop_email', 'shop_address'].includes(s.key)
             );
         }
