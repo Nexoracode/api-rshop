@@ -344,4 +344,43 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
         await this.ormRepo.increment({ id }, 'usedCount', 1);
         this.logger.debug(`Incremented usage count for promotion: ${id}`);
     }
+
+    /**
+     * دریافت محصولات یک پروموشن فعال
+     * برای استفاده در HomeSection
+     */
+    async getPromotionProducts(promotionId: number): Promise<number[]> {
+        const promotion = await this.ormRepo.findOne({
+            where: { id: promotionId, isActive: true },
+            relations: ['conditions'],
+        });
+
+        if (!promotion) {
+            this.logger.warn(`Promotion ${promotionId} not found or inactive`);
+            return [];
+        }
+
+        // بررسی اعتبار زمانی
+        const now = new Date();
+        if (promotion.startsAt > now || promotion.endsAt < now) {
+            this.logger.warn(`Promotion ${promotionId} is not active in current time range`);
+            return [];
+        }
+
+        const productIds = new Set<number>();
+
+        for (const condition of promotion.conditions) {
+            // از شرایط PRODUCT محصولات رو استخراج کن
+            if (condition.type === 'product' && condition.products && Array.isArray(condition.products)) {
+                condition.products.forEach((p) => {
+                    if (p && typeof p.productId === 'number') {
+                        productIds.add(p.productId);
+                    }
+                });
+            }
+        }
+
+        this.logger.debug(`Found ${productIds.size} products for promotion ${promotionId}`);
+        return Array.from(productIds);
+    }
 }

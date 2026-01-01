@@ -14,7 +14,7 @@ import { SideBannerService } from './side-banner.service';
 import { HomeSectionService } from './home-section.service';
 import { HomePageService } from './home-page.service';
 import { HomePageAnalyticsService } from './homepage-analytics.service';
-import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
+import { HomePageCacheService } from './cache/home-page-cache.service';
 
 // Controllers
 import { HomePagePublicController } from './controllers/home-page-public.controller';
@@ -31,8 +31,9 @@ import { PromoBanner } from './entities/promo-banner.entity';
 import { PromoBannerAdminController } from './controllers/poromo-banner.controller';
 import { PromoBannerService } from './promo-banner.service';
 import { PromoBannerPublicController } from './controllers/promo-banner-public.controller';
-import { SettingModule } from '../setting/setting.module'; // ✅ اضافه شد
-import { HomePageSettingListener } from './listeners/home-page-setting.listener'; // ✅ اضافه شد
+import { SettingModule } from '../setting/setting.module';
+import { HomePageSettingListener } from './listeners/home-page-setting.listener';
+import { PromotionModule } from '../promotion/promotion.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { HomePageSettingListener } from './listeners/home-page-setting.listener'
       Brand,
     ]),
     MediaModule,
-    SettingModule, // ✅ اضافه شد
+    SettingModule,
+    PromotionModule,
   ],
   controllers: [
     HomePagePublicController,
@@ -66,9 +68,9 @@ import { HomePageSettingListener } from './listeners/home-page-setting.listener'
     HomeSectionService,
     HomePageService,
     HomePageAnalyticsService,
-    HomePageCacheService, // ✅ اضافه شد
+    HomePageCacheService,
     ClearHomePageCacheInterceptor,
-    HomePageSettingListener, // ✅ اضافه شد
+    HomePageSettingListener,
   ],
   exports: [
     HeroSliderService,

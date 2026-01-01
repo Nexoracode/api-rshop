@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { HomeSection, SectionType } from './entities/home-section.entity';
 import { CreateHomeSectionDto, UpdateHomeSectionDto } from './dto/home-section.dto';
 import { Product } from '../product/entities/product.entity';
 import { HomePageCacheService } from './cache/home-page-cache.service';
+import { PromotionRepository } from '../promotion/domain/interfaces/promotion-repository.interface';
 
 @Injectable()
 export class HomeSectionService {
@@ -16,6 +17,8 @@ export class HomeSectionService {
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private readonly cacheService: HomePageCacheService,
+    @Inject(PromotionRepository)
+    private readonly promotionRepository: PromotionRepository,
   ) { }
 
   async create(createDto: CreateHomeSectionDto): Promise<HomeSection> {
@@ -172,6 +175,32 @@ export class HomeSectionService {
           order: { createdAt: 'DESC' },
           take: limit,
         });
+
+      case SectionType.PROMOTION_BASED:
+        if (section.promotionId) {
+          try {
+            const promotionProductIds = await this.promotionRepository.getPromotionProducts(section.promotionId);
+
+            if (promotionProductIds.length === 0) {
+              this.logger.warn(`No products found for promotion ${section.promotionId}`);
+              return [];
+            }
+
+            return await this.productRepository.find({
+              where: {
+                id: In(promotionProductIds),
+                isVisible: true
+              },
+              relations: ['medias', 'category', 'brand', 'mediaPinned'],
+              order: { createdAt: 'DESC' },
+              take: limit,
+            });
+          } catch (error) {
+            this.logger.error(`Error fetching promotion products: ${error.message}`);
+            return [];
+          }
+        }
+        return [];
 
       case SectionType.MOST_POPULAR:
         return await this.productRepository

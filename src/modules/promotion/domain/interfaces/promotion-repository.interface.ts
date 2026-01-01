@@ -10,6 +10,7 @@ export abstract class PromotionRepository {
     abstract delete(id: number): Promise<void>;
     abstract paginated(query: PaginateQuery): Promise<any>;
     abstract incrementUsageCount(id: number): Promise<void>;
+    abstract getPromotionProducts(promotionId: number): Promise<number[]>;
 }
 
 // یک نوع ساده برای preview سفارش (برای check promo)

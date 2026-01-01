@@ -47,6 +47,12 @@ import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-ca
  *    - نیاز به مشخص کردن category_id دارد
  *    - نمایش محصولات جدید آن دسته
  * 
+ * 5. **promotion_based** (بر اساس پروموشن):
+ *    - محصولات یک پروموشن خاص
+ *    - نیاز به مشخص کردن promotion_id دارد
+ *    - محصولات با تخفیف ویژه
+ *    - بررسی خودکار اعتبار زمانی پروموشن
+ * 
  * **سبک‌های نمایش (SectionDisplayStyle enum):**
  * 
  * - **carousel**: نمایش به صورت اسلایدر افقی (کاروسل)
@@ -64,6 +70,7 @@ import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-ca
  * **نکات مهم:**
  * - برای special_products حتماً product_ids را مشخص کنید
  * - برای category_based حتماً category_id را مشخص کنید
+ * - برای promotion_based حتماً promotion_id را مشخص کنید
  * - slug باید یونیک باشد (URL-friendly)
  * - محصولات غیرفعال (isVisible=false) نمایش داده نمی‌شوند
  * - بعد از هر تغییر، کش صفحه اصلی پاک می‌شود
@@ -171,6 +178,12 @@ export class HomeSectionAdminController {
    - ⚠️ الزامی: باید \`category_id\` مشخص شود
    - نمایش جدیدترین محصولات
 
+5️⃣ **promotion_based** (بر اساس پروموشن)
+   - محصولات یک پروموشن فعال
+   - ⚠️ الزامی: باید \`promotion_id\` مشخص شود
+   - محصولات با تخفیف ویژه
+   - بررسی خودکار زمان‌بندی
+
 **سبک‌های نمایش (DisplayStyle):**
 - \`carousel\`: اسلایدر افقی
 - \`grid\`: نمایش شبکه‌ای
@@ -252,6 +265,23 @@ export class HomeSectionAdminController {
           show_view_all_button: true,
           view_all_link: '/category/religious-books',
           sort_order: 4,
+          is_active: true
+        }
+      },
+      promotionBased: {
+        summary: 'بر اساس پروموشن (Promotion Based)',
+        description: 'نمایش محصولات یک پروموشن - نیاز به promotion_id',
+        value: {
+          title: 'پیشنهاد ویژه زمستانه',
+          slug: 'winter-special',
+          description: 'محصولات با تخفیف ویژه',
+          section_type: 'promotion_based',
+          display_style: 'carousel',
+          promotion_id: 5,
+          products_limit: 12,
+          show_view_all_button: true,
+          view_all_link: '/promotions/winter-special',
+          sort_order: 5,
           is_active: true
         }
       }
@@ -534,6 +564,11 @@ export class HomeSectionAdminController {
 
 📌 **category_based**: 
    - محصولات دسته‌بندی \`category_id\`
+   - مرتب‌سازی: جدیدترین اول
+
+📌 **promotion_based**: 
+   - محصولات پروموشن \`promotion_id\`
+   - فقط پروموشن‌های فعال و معتبر
    - مرتب‌سازی: جدیدترین اول
 
 **محدودیت‌ها:**

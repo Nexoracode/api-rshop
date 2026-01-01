@@ -11,6 +11,7 @@ export enum SectionType {
   SPECIAL_PRODUCTS = 'special_products', // محصولات ویژه با فیلتر دستی
   MOST_POPULAR = 'most_popular', // محبوب‌ترین محصولات
   CATEGORY_BASED = 'category_based', // بر اساس دسته‌بندی
+  PROMOTION_BASED = 'promotion_based', // بر اساس پروموشن
 }
 
 export enum SectionDisplayStyle {
@@ -54,6 +55,10 @@ export class HomeSection {
   // برای بخش‌های بر اساس دسته‌بندی
   @Column({ type: 'int', nullable: true })
   categoryId: number;
+
+  // برای بخش‌های بر اساس پروموشن
+  @Column({ type: 'int', nullable: true })
+  promotionId: number;
 
   @Column({ type: 'int', default: 10 })
   productsLimit: number;
