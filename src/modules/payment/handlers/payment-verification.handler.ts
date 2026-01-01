@@ -189,15 +189,15 @@ export class PaymentVerificationHandler {
         message: 'خطا هنگام verify درگاه پرداخت',
         ip: req.ip,
         userAgent: req.headers['user-agent'],
-        payload: { e },
+        payload: { data: e.data },
       });
 
       // ✅ باز کردن قفل سبد خرید
       await this.cardStatusService.unlockCart(order.user.id, manager);
 
       throw new ZarinpalException(
-        e.errors?.code ?? -99,
-        e.errors?.message ?? 'Zarinpal verification error',
+        e.data.errors?.code ?? -99,
+        e.data.errors?.message ?? 'Zarinpal verification error',
       );
     }
   }

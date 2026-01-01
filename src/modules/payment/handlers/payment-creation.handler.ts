@@ -30,6 +30,10 @@ export class PaymentCreationHandler {
 
   /**
    * ایجاد درخواست پرداخت در زرین‌پال
+   * 
+   * ✅ منطق جدید:
+   * - اگه Payment معلق (IN_PROGRESS) داره → همون رو برگردون
+   * - اگه نداره → Payment جدید بساز
    */
   async handle(
     manager: EntityManager,
@@ -46,29 +50,22 @@ export class PaymentCreationHandler {
       where: {
         id: orderId,
         status: In([
+          OrderStatus.PAYMENT_FAILED,
           OrderStatus.START_ORDER,
           OrderStatus.AWAITING_PAYMENT,
-          OrderStatus.PAYMENT_FAILED,
-          OrderStatus.CANCELLED
         ]),
       },
       relations: ['user', 'address', 'items'],
     });
 
     if (!order) {
-      throw new NotFoundException('سفارش یافت نشد.');
+      throw new NotFoundException('سفارش مورد نظر پیدا نشد یا قابل پرداخت نیست.');
     }
-
-    // ✅ قفل کردن سبد خرید (فقط یکبار)
-    await this.cardStatusService.lockCart(order.user.id, manager);
+    // قفل کردن سبد خرید (فقط یکبار)
 
     let requestResult: any;
 
     try {
-      // تغییر وضعیت سفارش
-      order.status = OrderStatus.AWAITING_PAYMENT;
-      await orderRepo.save(order);
-
       // ارسال درخواست به زرین‌پال
       requestResult = await zarinpal.payments.create({
         amount: order.total,
@@ -78,8 +75,13 @@ export class PaymentCreationHandler {
         email: order.user?.email ?? null,
         referrer_id: order.user?.phone ?? null,
       });
+      // تغییر وضعیت سفارش
+      await this.cardStatusService.lockCart(order.user.id, manager);
+      order.status = OrderStatus.AWAITING_PAYMENT;
+      await orderRepo.save(order);
+
     } catch (e: any) {
-      this.logger.error(`Zarinpal request failed for order ${orderId}`, e);
+      this.logger.error(`Zarinpal request failed for order ${orderId}`, e.data);
 
       // ✅ در صورت خطا، unlock کردن سبد
       await this.cardStatusService.unlockCart(order.user.id, manager);
@@ -97,8 +99,8 @@ export class PaymentCreationHandler {
       });
 
       throw new ZarinpalException(
-        e.errors?.code ?? -50,
-        e.errors?.message ?? 'خطا در ارتباط با درگاه پرداخت',
+        e.data.errors.code ?? -1,
+        e.data.errors.message ?? 'خطای نامشخص در درگاه پرداخت',
       );
     }
 
@@ -129,7 +131,7 @@ export class PaymentCreationHandler {
       );
     }
 
-    // ذخیره اطلاعات پرداخت
+    // ذخیره اطلاعات پرداخت جدید
     await paymentRepo.save({
       user: order.user,
       order,

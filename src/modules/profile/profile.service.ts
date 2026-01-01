@@ -119,21 +119,15 @@ export class ProfileService {
 
   /**
    * خلاصه وضعیت سفارشات کاربر
+   * 
+   * ✅ اصلاح شده: فقط از Order استفاده می‌کنه
    */
   private async getOrderSummary(userId: number): Promise<OrderSummaryDto> {
+    // ✅ فقط یکبار همه Order ها رو بگیر
     const orders = await this.orderRepo.find({
       where: { user: { id: userId } },
       select: ['id', 'status'],
     });
-
-    const statuses = [
-      OrderStatus.AWAITING_PAYMENT,
-      OrderStatus.PAYMENT_CONFIRMATION_PENDING,
-      OrderStatus.PENDING_APPROVAL,
-      OrderStatus.PROCESSING,
-      OrderStatus.PREPARING,
-      OrderStatus.CANCELLED
-    ];
 
     const summary: OrderSummaryDto = {
       processing: 0,
@@ -144,57 +138,39 @@ export class ProfileService {
       total: orders.length,
     };
 
-    const payments = await this.paymentRepo.find({
-      where: {
-        order: { user: { id: userId }, status: In(statuses) },
-        paymentMethod: In([PaymentMethod.ONLINE, PaymentMethod.WALLET])
-      },
-      order: { createdAt: 'DESC' },
-      relations: [
-        'order.user',
-        'order.items',
-        'order.items.product',
-        'order.items.variant',
-        'order.items.variant.attributes',
-        'order.items.variant.attributes.value',
-        'order.items.variant.attributes.value.attribute',
-        'order.address',
-        'order.items.product.medias',
-        'order.items.product.mediaPinned',
-      ]
-    });
-
-    payments.forEach((payment) => {
-      switch (payment.order.status) {
+    // ✅ شمارش مستقیم از Order ها
+    orders.forEach((order) => {
+      switch (order.status) {
+        // در حال پردازش/آماده‌سازی
         case OrderStatus.AWAITING_PAYMENT:
         case OrderStatus.PAYMENT_CONFIRMATION_PENDING:
         case OrderStatus.PENDING_APPROVAL:
         case OrderStatus.PROCESSING:
         case OrderStatus.PREPARING:
-        case OrderStatus.CANCELLED:
           summary.processing++;
           break;
 
+        // در حال ارسال
         case OrderStatus.SHIPPING:
           summary.shipping++;
           break;
 
+        // تحویل داده شده
         case OrderStatus.DELIVERED:
           summary.completed++;
           break;
 
+        // مرجوعی/رد شده
         case OrderStatus.REFUNDED:
         case OrderStatus.NOT_DELIVERED:
           summary.returned++;
           break;
-      }
-    });
 
-    orders.forEach((order) => {
-      switch (order.status) {
+        // لغو شده/منقضی/رد شده
         case OrderStatus.PAYMENT_FAILED:
         case OrderStatus.EXPIRED:
         case OrderStatus.REJECTED:
+        case OrderStatus.CANCELLED:
           summary.cancelled++;
           break;
       }
@@ -273,20 +249,6 @@ export class ProfileService {
     if (productIds.length === 0) {
       return [];
     }
-
-    const productsWithMedia = await this.orderRepo.manager
-      .createQueryBuilder()
-      .select('product.id', 'productId')
-      .addSelect('media.url', 'imageUrl')
-      .from('products', 'product')
-      .leftJoin('medias', 'media', 'media.id = product.media_pinned_id')
-      .where('product.id IN (:...productIds)', { productIds })
-      .getRawMany();
-
-    const mediaMap = new Map(
-      productsWithMedia.map(item => [item.productId, item.imageUrl])
-    );
-
     return result.map((product) => ProductMapper.toResponse(product, { cartesian: false }))
   }
 
@@ -299,6 +261,9 @@ export class ProfileService {
 
   /**
    * لیست سفارشات بر اساس وضعیت
+   * 
+   * ✅ اصلاح شده: مستقیماً از Order می‌گیره تا تکراری نشه
+   * هر Order فقط یکبار برمی‌گردونه، حتی اگه چندتا Payment داشته باشه
    */
   async getOrdersByStatus(
     userId: number,
@@ -306,25 +271,27 @@ export class ProfileService {
   ) {
     const statuses = Array.isArray(status) ? status : [status];
 
-    const payments = await this.paymentRepo.find({
+    // ✅ مستقیماً از Order بگیر، نه از Payment
+    const orders = await this.orderRepo.find({
       where: {
-        order: { user: { id: userId }, status: In(statuses) },
-        paymentMethod: In([PaymentMethod.ONLINE, PaymentMethod.WALLET])
+        user: { id: userId },
+        status: In(statuses),
       },
       order: { createdAt: 'DESC' },
       relations: [
-        'order.user',
-        'order.items',
-        'order.items.product',
-        'order.items.variant',
-        'order.items.variant.attributes',
-        'order.items.variant.attributes.value',
-        'order.items.variant.attributes.value.attribute',
-        'order.address',
-        'order.items.product.medias',
-        'order.items.product.mediaPinned',
-      ]
+        'user',
+        'items',
+        'items.product',
+        'items.product.mediaPinned',
+        'items.product.medias',
+        'items.variant',
+        'items.variant.attributes',
+        'items.variant.attributes.value',
+        'items.variant.attributes.value.attribute',
+        'address',
+      ],
     });
-    return payments.map(payment => OrderMapper.toAllResponse(payment.order));
+
+    return orders.map(order => OrderMapper.toAllResponse(order));
   }
 }

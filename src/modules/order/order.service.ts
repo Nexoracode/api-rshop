@@ -29,6 +29,7 @@ import { GiftWrapping } from "../gift-wrapping/entities/gift-wrapping.entity";
 import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.enum";
 import { CardStatusService } from "../card/card-status.service";
 import { OrderCacheService } from "./cache/order-cache.service";
+import { PaymentStatus } from "../payment/enums/payment-status.enum";
 
 const relations = [
     "user",
@@ -631,8 +632,16 @@ export class OrderService {
         if (!order) throw new NotFoundException("سفارش یافت نشد");
 
         const payment = await this.paymentRepo.findOne({
-            where: { order: { id: order.id } }
+            where: {
+                order: { id: order.id }, status: In(
+                    [
+                        PaymentStatus.SUCCESS,
+                        PaymentStatus.FAILED
+                    ])
+            }
         });
+
+        console.log(payment);
 
         const result = OrderMapperNew.toDetail(order, payment);
 

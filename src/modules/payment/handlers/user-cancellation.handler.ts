@@ -22,6 +22,11 @@ export class UserCancellationHandler {
 
   /**
    * مدیریت لغو پرداخت توسط کاربر
+   * 
+   * ✅ منطق جدید (مثل دیجیکالا):
+   * - Order همچنان AWAITING_PAYMENT می‌مونه
+   * - کاربر می‌تونه دوباره پرداخت کنه
+   * - فقط Order های EXPIRED واقعاً لغو می‌شن
    */
   async handle(
     manager: EntityManager,
@@ -36,8 +41,9 @@ export class UserCancellationHandler {
 
     this.logger.warn(`Payment cancelled by user for order ${order.id}`);
 
-    // تغییر وضعیت سفارش به لغو شده
-    order.status = OrderStatus.CANCELLED;
+    // ✅ Order همچنان AWAITING_PAYMENT می‌مونه
+    // کاربر می‌تونه دوباره برگرده و پرداخت کنه
+    order.status = OrderStatus.AWAITING_PAYMENT;
     await orderRepo.save(order);
 
     // تغییر وضعیت پرداخت به لغو شده

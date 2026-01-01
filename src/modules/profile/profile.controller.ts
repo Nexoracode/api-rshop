@@ -35,20 +35,29 @@ export class ProfileController {
     return this.profileService.getDetailedProfile(user.id);
   }
 
+  /**
+   * ✅ سفارشات در انتظار پرداخت
+   * 
+   * شامل:
+   * - AWAITING_PAYMENT: در انتظار پرداخت (شامل لغو شده‌های کاربر)
+   * - PAYMENT_FAILED: پرداخت ناموفق (می‌تونه دوباره تلاش کنه)
+   * - PAYMENT_CONFIRMATION_PENDING: در حال تأیید پرداخت
+   * - PENDING_APPROVAL: در انتظار تأیید
+   */
   @Get('orders/awaiting-payment')
   @HttpCode(200)
   @ApiOperation({
     summary: 'سفارشات در انتظار پرداخت',
-    description: 'لیست سفارشاتی که هنوز پرداخت نشده‌اند'
+    description: 'لیست سفارشاتی که هنوز پرداخت نشده‌اند یا می‌توانند دوباره پرداخت شوند'
   })
   async getAwaitingPaymentOrders(@CurrentUser() user: RequestUser) {
     const orders = await this.profileService.getOrdersByStatus(
       user.id,
       [
-        OrderStatus.PAYMENT_FAILED,
-        OrderStatus.AWAITING_PAYMENT,
-        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
-        OrderStatus.PENDING_APPROVAL
+        OrderStatus.AWAITING_PAYMENT,            // ✅ شامل لغو شده‌های کاربر
+        OrderStatus.PAYMENT_FAILED,              // ✅ پرداخت ناموفق
+        // OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+        OrderStatus.PENDING_APPROVAL,
       ]
     );
     return {
@@ -57,6 +66,38 @@ export class ProfileController {
     };
   }
 
+  /**
+   * ✅ سفارشات در حال پردازش
+   * 
+   * شامل:
+   * - PROCESSING: در حال پردازش
+   * - PREPARING: در حال آماده‌سازی
+   * - SHIPPING: در حال ارسال
+   */
+  @Get('orders/processing')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'سفارشات در حال پردازش',
+    description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
+  })
+  async getProcessingOrders(@CurrentUser() user: RequestUser) {
+    return await this.profileService.getOrdersByStatus(
+      user.id,
+      [
+        OrderStatus.AWAITING_PAYMENT,            // ✅ شامل لغو شده‌های کاربر
+        OrderStatus.PAYMENT_FAILED,              // ✅ پرداخت ناموفق
+        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+        OrderStatus.PENDING_APPROVAL,
+        OrderStatus.PROCESSING,
+        OrderStatus.PREPARING,
+        OrderStatus.SHIPPING,
+      ]
+    );
+  }
+
+  /**
+   * ✅ سفارشات تکمیل شده
+   */
   @Get('orders/completed')
   @HttpCode(200)
   @ApiOperation({
@@ -74,6 +115,9 @@ export class ProfileController {
     };
   }
 
+  /**
+   * ✅ سفارشات مرجوعی
+   */
   @Get('orders/returned')
   @HttpCode(200)
   @ApiOperation({
@@ -85,41 +129,35 @@ export class ProfileController {
       user.id,
       [
         OrderStatus.REFUNDED,
-        OrderStatus.NOT_DELIVERED
+        OrderStatus.NOT_DELIVERED,
       ]
     );
   }
 
-  @Get('orders/processing')
-  @HttpCode(200)
-  @ApiOperation({
-    summary: 'سفارشات در حال پردازش',
-    description: 'لیست سفارشاتی که در حال آماده‌سازی یا ارسال هستند'
-  })
-  async getProcessingOrders(@CurrentUser() user: RequestUser) {
-    return await this.profileService.getOrdersByStatus(
-      user.id,
-      [
-        OrderStatus.CANCELLED,
-        OrderStatus.AWAITING_PAYMENT,
-        OrderStatus.PAYMENT_CONFIRMATION_PENDING,
-        OrderStatus.PENDING_APPROVAL,
-        OrderStatus.PROCESSING,
-        OrderStatus.PREPARING,
-      ]
-    );
-  }
-
+  /**
+   * ✅ سفارشات لغو شده
+   * 
+   * شامل:
+   * - EXPIRED: منقضی شده (بیش از 30 دقیقه)
+   * - CANCELLED: لغو شده توسط ادمین
+   * - REJECTED: رد شده توسط ادمین
+   * 
+   * ⚠️ توجه: لغو شده‌های کاربر در "در انتظار پرداخت" هستند!
+   */
   @Get('orders/cancelled')
   @HttpCode(200)
   @ApiOperation({
     summary: 'سفارشات لغو شده یا منقضی',
-    description: 'لیست سفارشاتی که لغو یا منقضی هستند'
+    description: 'لیست سفارشاتی که منقضی شده‌اند یا توسط ادمین لغو/رد شده‌اند'
   })
-  async getCanclledOrders(@CurrentUser() user: RequestUser) {
+  async getCancelledOrders(@CurrentUser() user: RequestUser) {
     return await this.profileService.getOrdersByStatus(
       user.id,
-      [OrderStatus.CANCELLED, OrderStatus.EXPIRED, OrderStatus.PAYMENT_FAILED]
+      [
+        OrderStatus.EXPIRED,    // ✅ منقضی شده (بیش از 30 دقیقه)
+        OrderStatus.CANCELLED,  // ✅ لغو شده توسط ادمین
+        OrderStatus.REJECTED,   // ✅ رد شده توسط ادمین
+      ]
     );
   }
 

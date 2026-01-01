@@ -45,7 +45,6 @@ export class CartCleanupService {
                 const expiredOrders = await orderRepo.find({
                     where: {
                         status: In([
-                            OrderStatus.START_ORDER,           // سفارش شروع شده ولی به درگاه نرفته
                             OrderStatus.AWAITING_PAYMENT,      // در درگاه پرداخت
                             OrderStatus.PAYMENT_CONFIRMATION_PENDING, // در حال تأیید
                             OrderStatus.PAYMENT_FAILED,        // پرداخت ناموفق

@@ -39,7 +39,7 @@ export class SuccessfulPaymentHandler {
     private readonly invoiceService: InvoiceService,
     private readonly incrementPromotionUsage: IncrementPromotionUsageUseCase,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   /**
    * مدیریت پرداخت موفق و تمام فرآیندهای مرتبط
@@ -160,17 +160,10 @@ export class SuccessfulPaymentHandler {
     authority: string,
     refId: string,
   ) {
-    const orderRepo = manager.getRepository(Order);
     const paymentRepo = manager.getRepository(Payment);
     const paymentLogRepo = manager.getRepository(PaymentLog);
 
     try {
-      // ✅ Load کردن relation های لازم فقط برای invoice
-      const orderWithItems = await orderRepo.findOne({
-        where: { id: order.id },
-        relations: INVOICE_RELATIONS,
-      });
-
       const invoice = await this.invoiceService.createFromOrder(
         manager,
         order.id,
@@ -178,7 +171,6 @@ export class SuccessfulPaymentHandler {
       );
 
       return PaymentResponseMapper.verifiedWithInvoice(
-        orderWithItems!,
         payment,
         refId,
         invoice!.createdAt,
@@ -201,7 +193,7 @@ export class SuccessfulPaymentHandler {
         payload: { e },
       });
 
-      return PaymentResponseMapper.verifiedNoInvoice(order, refId);
+      return PaymentResponseMapper.verifiedNoInvoice(payment, refId);
     }
   }
 }

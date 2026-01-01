@@ -17,7 +17,21 @@ import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
 import { CardModule } from '../card/card.module';
 import { SettingModule } from '../setting/setting.module';
-import { FailedPaymentHandler, PaymentCreationHandler, PaymentVerificationHandler, SuccessfulPaymentHandler, UserCancellationHandler } from './handlers';
+
+// Online Payment Handlers
+import {
+  FailedPaymentHandler,
+  PaymentCreationHandler,
+  PaymentVerificationHandler,
+  SuccessfulPaymentHandler,
+  UserCancellationHandler,
+} from './handlers';
+
+// Card-to-Card Handlers
+import { CardToCardInitiationHandler } from './handlers/card-to-card/card-to-card-initiation.handler';
+import { CardToCardUploadReceiptHandler } from './handlers/card-to-card/card-to-card-upload-receipt.handler';
+import { CardToCardRejectionHandler } from './handlers/card-to-card/card-to-card-rejection.handler';
+import { CardToCardApprovalHandler } from './handlers/card-to-card/card-to-card-approval.handler';
 
 @Module({
   imports: [
@@ -27,8 +41,6 @@ import { FailedPaymentHandler, PaymentCreationHandler, PaymentVerificationHandle
     OrderModule,
     CardModule,
     SettingModule,
-    CardModule,
-    // ✅ نیازی به import AccountingModule نیست - EventEmitter خودش handle می‌کنه
   ],
   controllers: [
     PaymentController,
@@ -36,17 +48,26 @@ import { FailedPaymentHandler, PaymentCreationHandler, PaymentVerificationHandle
     CardToCardAdminController,
   ],
   providers: [
+    // Services
     PaymentService,
     InvoiceService,
     IncrementPromotionUsageUseCase,
     CardToCardService,
-    PaymentRecoveryService, // ✅ اضافه شد
+    PaymentRecoveryService,
+
+    // Online Payment Handlers
     PaymentCreationHandler,
     PaymentVerificationHandler,
     UserCancellationHandler,
     SuccessfulPaymentHandler,
     FailedPaymentHandler,
+
+    // Card-to-Card Handlers
+    CardToCardInitiationHandler,
+    CardToCardUploadReceiptHandler,
+    CardToCardRejectionHandler,
+    CardToCardApprovalHandler,
   ],
   exports: [PaymentService, CardToCardService],
 })
-export class PaymentModule { }
+export class PaymentModule {}

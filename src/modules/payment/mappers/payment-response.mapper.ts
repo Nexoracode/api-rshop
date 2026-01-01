@@ -44,26 +44,29 @@ export class PaymentResponseMapper {
     }
 
     // verifyPayment -> موفق + اینوویس موفق
-    static verifiedWithInvoice(order: Order, payment: Payment, refId: string | undefined, invoiceDate: Date) {
+    static verifiedWithInvoice(payment: Payment, refId: string | undefined, invoiceDate: Date) {
+        const { order, ...paymentData } = payment;
         return {
             code: 102,
             success: true,
             message: 'پرداخت با موفقیت انجام شد.',
             refId,
             invoiceDate,
-            order: OrderMapper.toAllResponse(order),
-            payment,
+            order: order,
+            payment: paymentData,
         };
     }
 
     // verifyPayment -> موفق ولی اینوویس صادر نشد
-    static verifiedNoInvoice(order: Order, refId: string | undefined) {
+    static verifiedNoInvoice(payment: Payment, refId: string | undefined) {
+        const { order, ...paymentData } = payment;
         return {
             code: 103,
             success: true,
             message: 'پرداخت تایید شد اما فاکتور صادر نشد.',
             refId,
-            order: OrderMapper.toAllResponse(order),
+            payment: paymentData,
+            order,
         };
     }
 
