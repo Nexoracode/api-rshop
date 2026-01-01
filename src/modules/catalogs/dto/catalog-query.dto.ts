@@ -12,10 +12,15 @@ export class CatalogQueryDto implements PaginateQuery {
     @IsString()
     'filter[attributes]'?: string;
 
-    @ApiPropertyOptional({ description: 'لیست محصول بر اساس شناسه برند', example: 1 })
+    @ApiPropertyOptional({ description: 'لیست محصول بر اساس شناسه برند', example: '1,2,3' })
     @IsOptional()
     @IsString()
     'filter[brand]'?: string;
+
+    @ApiPropertyOptional({ description: 'لیست محصول بر اساس شناسه دسته‌بندی', example: '1,2,3' })
+    @IsOptional()
+    @IsString()
+    'filter[category]'?: string;
 
     @ApiPropertyOptional({ description: 'لیست محصول بر اساس حداقل قیمت', example: 1 })
     @IsOptional()

@@ -5,8 +5,8 @@ import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
 import { CatalogCacheService } from './cache/catalog-cache.service'; // ✅ تغییر مسیر
 import { Category } from '../category/entities/category.entity';
-import { Product } from '../product/entities/product.entity';
 import { Brand } from '../brand/entities/brand.entity';
+import { Product } from '../product/entities/product.entity';
 import { extractCategoryIds } from './utils/category-tree.util';
 import { parseAttributeFilter } from './utils/parse-attribute-filter.util';
 import { CatalogMapper } from './mappers/catalog.mapper';
@@ -32,6 +32,77 @@ export class CatalogService {
         private readonly cacheService: CatalogCacheService,
         private readonly dataSource: DataSource,
     ) { }
+
+    /**
+     * ✅ Helper: محاسبه قیمت نهایی (با تخفیف)
+     */
+    private getFinalPriceQuery(): string {
+        return `CAST(p.price AS DECIMAL(15,2)) - 
+                CAST(COALESCE(p.discount_amount, 0) AS DECIMAL(15,2)) - 
+                (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, 0) AS DECIMAL(10,2)) / 100)`;
+    }
+
+    /**
+     * ✅ Helper: اعمال sorting به query builder
+     */
+    private applySorting(qb: any, sortBy: string): void {
+        const sortEnum: SortEnum[] = Object.values(SortEnum);
+
+        if (!sortEnum.includes(sortBy as SortEnum)) {
+            qb.addOrderBy('p.createdAt', 'DESC');
+            return;
+        }
+
+        switch (sortBy as SortEnum) {
+            case SortEnum.NEWEST:
+                qb.addOrderBy('p.createdAt', 'DESC');
+                break;
+
+            case SortEnum.CHEAPEST:
+                qb.addSelect(this.getFinalPriceQuery(), 'final_price')
+                    .orderBy('final_price', 'ASC');
+                break;
+
+            case SortEnum.BESTSELLING:
+                qb.addSelect(subQuery => {
+                    return subQuery
+                        .select('COALESCE(SUM(oi.quantity), 0)')
+                        .from('order_items', 'oi')
+                        .where('oi.product_id = p.id');
+                }, 'sales_count')
+                    .addOrderBy('sales_count', 'DESC');
+                break;
+
+            case SortEnum.POPULAR:
+                qb.addSelect(subQuery => {
+                    return subQuery
+                        .select('COUNT(w.id)')
+                        .from('wishlists', 'w')
+                        .where('w.product_id = p.id');
+                }, 'wishlist_count')
+                    .addOrderBy('wishlist_count', 'DESC');
+                break;
+
+            case SortEnum.EXPENSIVE:
+                qb.addSelect(this.getFinalPriceQuery(), 'final_price')
+                    .orderBy('final_price', 'DESC');
+                break;
+
+            case SortEnum.VISITED:
+                qb.addSelect(subQuery => {
+                    return subQuery
+                        .select('COUNT(rv.id)')
+                        .from('recent_views', 'rv')
+                        .where('rv.product_id = p.id');
+                }, 'view_count')
+                    .addOrderBy('view_count', 'DESC');
+                break;
+
+            default:
+                qb.addOrderBy('p.createdAt', 'DESC');
+                break;
+        }
+    }
 
     async getProductsByCategoryWithPaginate(
         slug: string,
@@ -139,63 +210,8 @@ export class CatalogService {
         // ------------------------------------------
         // 8. Sorting
         // ------------------------------------------
-        if (query.sortBy) {
-            const sortEnum: SortEnum[] = Object.values(SortEnum);
-            if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
-                switch (query.sortBy) {
-                    case SortEnum.NEWEST:
-                        qb.addOrderBy('p.createdAt', 'DESC');
-                        break;
-
-                    case SortEnum.CHEAPEST:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "ASC"
-                        );
-                        break;
-
-                    case SortEnum.BESTSELLING:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COALESCE(SUM(oi.quantity), 0)')
-                                .from('order_items', 'oi')
-                                .where('oi.product_id = p.id');
-                        }, 'sales_count')
-                            .addOrderBy('sales_count', 'DESC');
-                        break;
-
-                    case SortEnum.POPULAR:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(w.id)')
-                                .from('wishlists', 'w')
-                                .where('w.product_id = p.id');
-                        }, 'wishlist_count')
-                            .addOrderBy('wishlist_count', 'DESC');
-                        break;
-
-                    case SortEnum.EXPENSIVE:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "DESC"
-                        );
-                        break;
-
-                    case SortEnum.VISITED:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(rv.id)')
-                                .from('recent_views', 'rv')
-                                .where('rv.product_id = p.id');
-                        }, 'view_count')
-                            .addOrderBy('view_count', 'DESC');
-                        break;
-
-                    default:
-                        qb.addOrderBy('p.created_at', 'DESC');
-                        break;
-                }
-            }
+        if (query.sortBy && typeof query.sortBy === 'string') {
+            this.applySorting(qb, query.sortBy);
         }
 
         // ------------------------------------------
@@ -372,63 +388,8 @@ export class CatalogService {
         // ------------------------------------------
         // ۹. Sorting
         // ------------------------------------------
-        if (query.sortBy) {
-            const sortEnum: SortEnum[] = Object.values(SortEnum);
-            if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
-                switch (query.sortBy) {
-                    case SortEnum.NEWEST:
-                        qb.addOrderBy('p.createdAt', 'DESC');
-                        break;
-
-                    case SortEnum.CHEAPEST:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "ASC"
-                        );
-                        break;
-
-                    case SortEnum.BESTSELLING:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COALESCE(SUM(oi.quantity), 0)')
-                                .from('order_items', 'oi')
-                                .where('oi.product_id = p.id');
-                        }, 'sales_count')
-                            .addOrderBy('sales_count', 'DESC');
-                        break;
-
-                    case SortEnum.POPULAR:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(w.id)')
-                                .from('wishlists', 'w')
-                                .where('w.product_id = p.id');
-                        }, 'wishlist_count')
-                            .addOrderBy('wishlist_count', 'DESC');
-                        break;
-
-                    case SortEnum.EXPENSIVE:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "DESC"
-                        );
-                        break;
-
-                    case SortEnum.VISITED:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(rv.id)')
-                                .from('recent_views', 'rv')
-                                .where('rv.product_id = p.id');
-                        }, 'view_count')
-                            .addOrderBy('view_count', 'DESC');
-                        break;
-
-                    default:
-                        qb.addOrderBy('p.created_at', 'DESC');
-                        break;
-                }
-            }
+        if (query.sortBy && typeof query.sortBy === 'string') {
+            this.applySorting(qb, query.sortBy);
         }
 
         // ------------------------------------------
@@ -469,10 +430,8 @@ export class CatalogService {
 
         return result;
     }
-
     /**
      * دریافت محصولات یک برند با فیلتر و pagination
-     * دقیقاً مثل getProductsByCategoryWithPaginate ولی با فیلتر برند
      */
     async getProductsByBrandWithPaginate(slug: string, query: PaginateQuery): Promise<any> {
         // ------------------------------------------
@@ -556,63 +515,8 @@ export class CatalogService {
         // ------------------------------------------
         // ۹. Sorting
         // ------------------------------------------
-        if (query.sortBy) {
-            const sortEnum: SortEnum[] = Object.values(SortEnum);
-            if (typeof query.sortBy === 'string' && sortEnum.includes(query.sortBy as SortEnum)) {
-                switch (query.sortBy) {
-                    case SortEnum.NEWEST:
-                        qb.addOrderBy('p.createdAt', 'DESC');
-                        break;
-
-                    case SortEnum.CHEAPEST:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "ASC"
-                        );
-                        break;
-
-                    case SortEnum.BESTSELLING:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COALESCE(SUM(oi.quantity), 0)')
-                                .from('order_items', 'oi')
-                                .where('oi.product_id = p.id');
-                        }, 'sales_count')
-                            .addOrderBy('sales_count', 'DESC');
-                        break;
-
-                    case SortEnum.POPULAR:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(w.id)')
-                                .from('wishlists', 'w')
-                                .where('w.product_id = p.id');
-                        }, 'wishlist_count')
-                            .addOrderBy('wishlist_count', 'DESC');
-                        break;
-
-                    case SortEnum.EXPENSIVE:
-                        qb.addOrderBy(
-                            "CAST(p.price AS DECIMAL(15,2)) - CAST(COALESCE(p.discount_amount, '0') AS DECIMAL(15,2)) - (CAST(p.price AS DECIMAL(15,2)) * CAST(COALESCE(p.discount_percent, '0') AS DECIMAL(10,2)) / 100)",
-                            "DESC"
-                        );
-                        break;
-
-                    case SortEnum.VISITED:
-                        qb.addSelect(subQuery => {
-                            return subQuery
-                                .select('COUNT(rv.id)')
-                                .from('recent_views', 'rv')
-                                .where('rv.product_id = p.id');
-                        }, 'view_count')
-                            .addOrderBy('view_count', 'DESC');
-                        break;
-
-                    default:
-                        qb.addOrderBy('p.created_at', 'DESC');
-                        break;
-                }
-            }
+        if (query.sortBy && typeof query.sortBy === 'string') {
+            this.applySorting(qb, query.sortBy);
         }
 
         // ------------------------------------------
