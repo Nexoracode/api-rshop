@@ -17,6 +17,7 @@ import { OrderModule } from '../order/order.module';
 import { Order } from '../order/entities/order.entity';
 import { CardModule } from '../card/card.module';
 import { SettingModule } from '../setting/setting.module';
+import { FailedPaymentHandler, PaymentCreationHandler, PaymentVerificationHandler, SuccessfulPaymentHandler, UserCancellationHandler } from './handlers';
 
 @Module({
   imports: [
@@ -40,6 +41,11 @@ import { SettingModule } from '../setting/setting.module';
     IncrementPromotionUsageUseCase,
     CardToCardService,
     PaymentRecoveryService, // ✅ اضافه شد
+    PaymentCreationHandler,
+    PaymentVerificationHandler,
+    UserCancellationHandler,
+    SuccessfulPaymentHandler,
+    FailedPaymentHandler,
   ],
   exports: [PaymentService, CardToCardService],
 })

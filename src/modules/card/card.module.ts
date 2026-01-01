@@ -9,12 +9,16 @@ import { VariantProduct } from '../variant-product/entities/variant-product.enti
 import { User } from '../user/entities/user.entity';
 import { CardStatusService } from './card-status.service';
 import { CartCleanupService } from './cart-cleanup.service';
+import { CartManagementController } from './controllers/cart-management.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Card, CardItem, Product, VariantProduct, User]),
   ],
-  controllers: [CardController],
+  controllers: [
+    CardController,
+    CartManagementController, // ✅ Admin Controller
+  ],
   providers: [
     CardService,
     CardStatusService,
