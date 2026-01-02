@@ -11,11 +11,11 @@ import { OrderItem } from './entities/order-item.entity';
 import { Payment } from '../payment/entities/payment.entity';
 import { PromotionModule } from '../promotion/promotion.module';
 import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
-import { CardModule } from '../card/card.module'; // ✅ اضافه شد
-import { OrderCacheService } from './cache/order-cache.service'; // ✅ اضافه شد
+import { CardModule } from '../card/card.module';
+import { OrderCacheService } from './cache/order-cache.service';
 import { OrderStatusService } from './order.status.service';
 import { OtpModule } from '../otps/otps.module';
-import { HelperModule } from '../helper/helper.module';
+import { ShortUrlModule } from '../short-url/short-url.module';
 
 @Module({
   imports: [
@@ -30,13 +30,14 @@ import { HelperModule } from '../helper/helper.module';
       GiftWrapping,
     ]),
     PromotionModule,
-    CardModule, // ✅ اضافه شد
-    OtpModule, // برای ارسال پیامک
+    CardModule,
+    OtpModule,
+    ShortUrlModule,
   ],
   controllers: [OrderController],
   providers: [
     OrderService,
-    OrderCacheService, // ✅ اضافه شد
+    OrderCacheService,
     OrderStatusService,
   ],
   exports: [OrderService, OrderStatusService],

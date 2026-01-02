@@ -42,6 +42,7 @@ import { AccountingModule } from './modules/accounting/accounting.module';
 import { HomePageModule } from './modules/home-page/home-page.module';
 import { HealthModule } from './modules/health/health.module';
 import { CollectionModule } from './modules/collection/collection.module';
+import { ShortUrlModule } from './modules/short-url/short-url.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { CollectionModule } from './modules/collection/collection.module';
     HomePageModule,
     HealthModule,
     CollectionModule,
+    ShortUrlModule, // ✅ اضافه شد
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

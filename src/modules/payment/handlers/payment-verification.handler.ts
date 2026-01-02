@@ -17,6 +17,7 @@ import { UserCancellationHandler } from "./user-cancellation.handler";
 import { SuccessfulPaymentHandler } from "./successful-payment.handler";
 import { FailedPaymentHandler } from "./failed-payment.handler";
 import { Order } from "../../order/entities/order.entity";
+import { OrderStatusService } from "src/modules/order/order.status.service";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -31,6 +32,7 @@ export class PaymentVerificationHandler {
     private readonly userCancellationHandler: UserCancellationHandler,
     private readonly successfulPaymentHandler: SuccessfulPaymentHandler,
     private readonly failedPaymentHandler: FailedPaymentHandler,
+    private readonly orderStatusService: OrderStatusService,
 
   ) { }
 
@@ -98,6 +100,7 @@ export class PaymentVerificationHandler {
 
     // ✅ اگر کاربر لغو کرده
     if (status !== 'OK') {
+      await this.orderStatusService.sendPaymentReminderSms(order);
       return await this.userCancellationHandler.handle(
         manager,
         order,
@@ -173,6 +176,7 @@ export class PaymentVerificationHandler {
       );
     } catch (e: any) {
       // ✅ ارسال پیامک برای یاداوری پرداخت (غیرهمزمان - Non-blocking)
+      await this.orderStatusService.sendPaymentReminderSms(order);
       this.logger.error(`Zarinpal verification error for order ${order.id}`, e);
 
       // تغییر وضعیت پرداخت به ناموفق
