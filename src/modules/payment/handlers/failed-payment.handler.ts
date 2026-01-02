@@ -18,7 +18,7 @@ export class FailedPaymentHandler {
 
   constructor(
     private readonly cardStatusService: CardStatusService,
-  ) {}
+  ) { }
 
   /**
    * مدیریت پرداخت ناموفق
@@ -38,11 +38,6 @@ export class FailedPaymentHandler {
     this.logger.warn(
       `Payment verification failed with code ${verification.data.code} for order ${order.id}`,
     );
-
-    // تغییر وضعیت سفارش به ناموفق
-    order.status = OrderStatus.PAYMENT_FAILED;
-    await orderRepo.save(order);
-
     // تغییر وضعیت پرداخت به ناموفق
     payment.status = PaymentStatus.FAILED;
     payment.message = `تراکنش با وضعیت ${verification.data.code} بازگشت داده شد.`;
@@ -60,7 +55,7 @@ export class FailedPaymentHandler {
     });
 
     // ✅ باز کردن قفل سبد خرید
-    await this.cardStatusService.unlockCart(order.user.id, manager);
+    // await this.cardStatusService.unlockCart(order.user.id, manager);
 
     return PaymentResponseMapper.failed(order.status);
   }

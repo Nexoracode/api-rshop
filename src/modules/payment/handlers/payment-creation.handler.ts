@@ -14,6 +14,7 @@ import { ZarinpalException } from "src/common/exceptions/zarinpal-exception";
 
 import { PaymentResponseMapper } from "../mappers/payment-response.mapper";
 import { CardStatusService } from "../../card/card-status.service";
+import { OrderStatusService } from "src/modules/order/order.status.service";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -26,6 +27,7 @@ export class PaymentCreationHandler {
 
   constructor(
     private readonly cardStatusService: CardStatusService,
+    private readonly OrderStatusService: OrderStatusService,
   ) { }
 
   /**
@@ -77,9 +79,7 @@ export class PaymentCreationHandler {
       });
       // تغییر وضعیت سفارش
       await this.cardStatusService.lockCart(order.user.id, manager);
-      order.status = OrderStatus.AWAITING_PAYMENT;
-      await orderRepo.save(order);
-
+      await this.OrderStatusService.updateOrderStatus(order, OrderStatus.AWAITING_PAYMENT, manager);
     } catch (e: any) {
       this.logger.error(`Zarinpal request failed for order ${orderId}`, e.data);
 
@@ -98,9 +98,11 @@ export class PaymentCreationHandler {
         payload: { e },
       });
 
+      console.log(e);
+
       throw new ZarinpalException(
-        e.data.errors.code ?? -1,
-        e.data.errors.message ?? 'خطای نامشخص در درگاه پرداخت',
+        e.errors.code ?? -1,
+        e.errors.message ?? 'خطای نامشخص در درگاه پرداخت',
       );
     }
 

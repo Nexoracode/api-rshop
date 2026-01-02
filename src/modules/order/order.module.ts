@@ -13,6 +13,7 @@ import { PromotionModule } from '../promotion/promotion.module';
 import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
 import { CardModule } from '../card/card.module'; // ✅ اضافه شد
 import { OrderCacheService } from './cache/order-cache.service'; // ✅ اضافه شد
+import { OrderStatusService } from './order.status.service';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { OrderCacheService } from './cache/order-cache.service'; // ✅ اضاف
   providers: [
     OrderService,
     OrderCacheService, // ✅ اضافه شد
+    OrderStatusService,
   ],
-  exports: [OrderService],
+  exports: [OrderService, OrderStatusService],
 })
 export class OrderModule { }

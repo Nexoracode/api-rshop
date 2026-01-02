@@ -193,11 +193,11 @@ export class PaymentVerificationHandler {
       });
 
       // ✅ باز کردن قفل سبد خرید
-      await this.cardStatusService.unlockCart(order.user.id, manager);
+      // await this.cardStatusService.unlockCart(order.user.id, manager);
 
       throw new ZarinpalException(
-        e.data.errors?.code ?? -99,
-        e.data.errors?.message ?? 'Zarinpal verification error',
+        e.errors?.code ?? -99,
+        e.errors?.message ?? 'Zarinpal verification error',
       );
     }
   }

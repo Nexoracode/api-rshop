@@ -70,4 +70,4 @@ import { CardToCardApprovalHandler } from './handlers/card-to-card/card-to-card-
   ],
   exports: [PaymentService, CardToCardService],
 })
-export class PaymentModule {}
+export class PaymentModule { }

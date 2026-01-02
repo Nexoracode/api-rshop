@@ -641,8 +641,6 @@ export class OrderService {
             }
         });
 
-        console.log(payment);
-
         const result = OrderMapperNew.toDetail(order, payment);
 
         // ✅ ذخیره در cache

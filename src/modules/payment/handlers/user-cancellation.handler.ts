@@ -18,7 +18,7 @@ export class UserCancellationHandler {
 
   constructor(
     private readonly cardStatusService: CardStatusService,
-  ) {}
+  ) { }
 
   /**
    * مدیریت لغو پرداخت توسط کاربر
@@ -35,17 +35,10 @@ export class UserCancellationHandler {
     authority: string,
     req: Request,
   ) {
-    const orderRepo = manager.getRepository(Order);
     const paymentRepo = manager.getRepository(Payment);
     const paymentLogRepo = manager.getRepository(PaymentLog);
 
     this.logger.warn(`Payment cancelled by user for order ${order.id}`);
-
-    // ✅ Order همچنان AWAITING_PAYMENT می‌مونه
-    // کاربر می‌تونه دوباره برگرده و پرداخت کنه
-    order.status = OrderStatus.AWAITING_PAYMENT;
-    await orderRepo.save(order);
-
     // تغییر وضعیت پرداخت به لغو شده
     payment.status = PaymentStatus.CANCELLED;
     payment.message = 'پرداخت توسط کاربر لغو شد.';
@@ -64,8 +57,7 @@ export class UserCancellationHandler {
     });
 
     // ✅ باز کردن قفل سبد خرید
-    await this.cardStatusService.unlockCart(order.user.id, manager);
-
+    // await this.cardStatusService.unlockCart(order.user.id, manager);
     return PaymentResponseMapper.userCancelled(order, payment, '');
   }
 }
