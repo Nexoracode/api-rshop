@@ -29,7 +29,8 @@ export class CartCleanupService {
      * - کاربر نباید بتونه با قیمت قدیمی خرید کنه (اگه قیمت تغییر کرده)
      * - Cart باید Unlock بشه تا کاربر بتونه دوباره سفارش بده
      */
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron('*/15 * * * *')
+    // @Cron(CronExpression.EVERY_30_MINUTES)
     async handleExpiredOrders() {
         this.logger.log('🕐 Checking for expired orders...');
 

@@ -84,6 +84,51 @@ export class SmsService {
     }
 
     /**
+     * ارسال پیامک با pattern (برای یادآوری پرداخت و ...)
+     * 
+     * @param phone - شماره موبایل
+     * @param patternCode - کد الگو در پنل فراز اس‌ام‌اس
+     * @param variables - متغیرهای الگو
+     */
+    async sendPatternSms(
+        phone: string,
+        patternCode: string,
+        variables: Record<string, string>,
+    ): Promise<void> {
+        const formattedPhone = this.formatPhone(phone);
+        
+        const data = JSON.stringify({
+            code: patternCode,
+            sender: this.fromNumber,
+            recipient: formattedPhone,
+            variable: variables,
+        });
+
+        const config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: this.baseUrl,
+            headers: {
+                Accept: '*/*',
+                apikey: this.apiKey,
+                'Content-Type': 'application/json',
+            },
+            data,
+        };
+
+        try {
+            const response = await axios.request(config);
+            this.logger.log(
+                `✅ Pattern SMS (${patternCode}) sent to ${formattedPhone} - status: ${response.status}`,
+            );
+        } catch (error) {
+            const msg = error.response?.data?.message || error.message;
+            this.logger.error(`❌ Error sending pattern SMS: ${msg}`);
+            throw new Error('ارسال پیامک با خطا مواجه شد.');
+        }
+    }
+
+    /**
      * نرمال‌سازی شماره موبایل به فرمت بین‌المللی (+98)
      */
     private formatPhone(phone: string): string {

@@ -28,10 +28,10 @@ export class PaymentVerificationHandler {
   private readonly logger = new Logger(PaymentVerificationHandler.name);
 
   constructor(
-    private readonly cardStatusService: CardStatusService,
     private readonly userCancellationHandler: UserCancellationHandler,
     private readonly successfulPaymentHandler: SuccessfulPaymentHandler,
     private readonly failedPaymentHandler: FailedPaymentHandler,
+
   ) { }
 
   /**
@@ -172,6 +172,7 @@ export class PaymentVerificationHandler {
         req,
       );
     } catch (e: any) {
+      // ✅ ارسال پیامک برای یاداوری پرداخت (غیرهمزمان - Non-blocking)
       this.logger.error(`Zarinpal verification error for order ${order.id}`, e);
 
       // تغییر وضعیت پرداخت به ناموفق
@@ -191,9 +192,6 @@ export class PaymentVerificationHandler {
         userAgent: req.headers['user-agent'],
         payload: { data: e.data },
       });
-
-      // ✅ باز کردن قفل سبد خرید
-      // await this.cardStatusService.unlockCart(order.user.id, manager);
 
       throw new ZarinpalException(
         e.errors?.code ?? -99,

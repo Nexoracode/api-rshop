@@ -14,6 +14,8 @@ import { GiftWrapping } from '../gift-wrapping/entities/gift-wrapping.entity';
 import { CardModule } from '../card/card.module'; // ✅ اضافه شد
 import { OrderCacheService } from './cache/order-cache.service'; // ✅ اضافه شد
 import { OrderStatusService } from './order.status.service';
+import { OtpModule } from '../otps/otps.module';
+import { HelperModule } from '../helper/helper.module';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { OrderStatusService } from './order.status.service';
     ]),
     PromotionModule,
     CardModule, // ✅ اضافه شد
+    OtpModule, // برای ارسال پیامک
   ],
   controllers: [OrderController],
   providers: [
