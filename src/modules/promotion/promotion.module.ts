@@ -13,6 +13,7 @@ import { PromotionActionOrmEntity } from './infrastructure/entities/promotion-ac
 import { Product } from '../product/entities/product.entity';
 import { User } from '../user/entities/user.entity';
 import { Category } from '../category/entities/category.entity';
+import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 
 // Controllers
 import { PromotionController } from './interface/http/promotion.controller';
@@ -54,6 +55,7 @@ import { GetPromotionByIdUseCase } from './application/usecases/get-promotion-by
       Product,
       User,
       Category,
+      VariantProduct,
     ]),
   ],
   controllers: [

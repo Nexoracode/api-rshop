@@ -2,10 +2,9 @@ import { VariantProduct } from "src/modules/variant-product/entities/variant-pro
 import { Product } from "../entities/product.entity";
 import { mapSpecificationsGrouped } from "./spec.mapper";
 import { getAverageRating } from "src/common/helpers/review.helper";
-import { skip } from "node:test";
 
 export class ProductMapper {
-    private static uniqVariantAttributes(variant: any) {
+    static uniqVariantAttributes(variant: any) {
         const map = new Map<string, any>();
         for (const va of variant.attributes || []) {
             const key = `${va.attributeId}:${va.valueId}`;
@@ -27,7 +26,7 @@ export class ProductMapper {
         return pairs.sort().join("|");
     }
 
-    private static buildVariantName(attrs: any[]): string {
+    static buildVariantName(attrs: any[]): string {
         const values = attrs
             .map((a) => (a.values ? a.values.value : null))
             .filter(Boolean);
@@ -107,7 +106,7 @@ export class ProductMapper {
         }));
     }
 
-    private static mapVariantsFromDb(product: any) {
+    static mapVariantsFromDb(product: any) {
         return (product.variants || []).map((v: any) => {
             const attrs = (ProductMapper.uniqVariantAttributes(v) || []).map((va: any) => {
                 const attr = va.attribute;

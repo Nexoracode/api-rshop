@@ -36,6 +36,9 @@ export class PromotionConditionDetailDto {
     @ApiProperty({ example: 5, required: false, nullable: true })
     userId?: number | null;
 
+    @ApiProperty({ example: [5, 10, 15], required: false, nullable: true })
+    userIds?: number[] | null;
+
     @ApiProperty({
         required: false,
         nullable: true,

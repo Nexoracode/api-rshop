@@ -23,6 +23,9 @@ export class PromotionConditionOrmEntity {
     @Column({ name: 'user_id', type: 'int', nullable: true })
     userId: number | null;
 
+    @Column({ name: 'user_ids', type: 'json', nullable: true })
+    userIds: number[] | null;
+
     @Column({ name: 'products', type: 'json', nullable: true })
     products:
         | {

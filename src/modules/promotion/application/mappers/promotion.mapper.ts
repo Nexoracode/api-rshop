@@ -19,6 +19,7 @@ export class PromotionMapper {
                     new PromotionCondition({
                         type: c.type,
                         userId: c.userId ?? undefined,
+                        userIds: c.userIds ?? undefined,
                         products: c.products ?? undefined,
                         categoryIds: c.categoryIds ?? undefined,
                         minAmount: c.minAmount ?? undefined,
@@ -58,6 +59,7 @@ export class PromotionMapper {
                         id: c.id,
                         type: c.type,
                         userId: c.userId ?? undefined,
+                        userIds: c.userIds ?? undefined,
                         products: c.products ?? undefined,
                         categoryIds: c.categoryIds ?? undefined,
                         minAmount: c.minAmount
@@ -112,6 +114,7 @@ export class PromotionMapper {
                 ce.id = c.id!;
                 ce.type = c.type;
                 ce.userId = c.userId ?? null;
+                ce.userIds = c.userIds ?? null;
                 ce.products = c.products ?? null;
                 ce.categoryIds = c.categoryIds ?? null;
                 ce.minAmount =
@@ -158,6 +161,7 @@ export class PromotionMapper {
             domain.conditions?.map((c) => ({
                 type: c.type,
                 userId: c.userId ?? null,
+                userIds: c.userIds ?? null,
                 products: c.products ?? null,
                 categoryIds: c.categoryIds ?? null,
                 minAmount:

@@ -92,12 +92,24 @@ export class PromotionValidatorService extends PromotionValidator {
         condition: any,
         promotionId: string,
     ): boolean {
+        // ✅ چک کردن userId (deprecated ولی هنوز پشتیبانی می‌شه)
         if (condition.userId && condition.userId !== order.userId) {
             this.logger.debug(
                 `Promotion ${promotionId} condition failed: User mismatch (expected: ${condition.userId}, actual: ${order.userId})`,
             );
             return false;
         }
+
+        // ✅ چک کردن userIds (جدید)
+        if (condition.userIds && Array.isArray(condition.userIds) && condition.userIds.length > 0) {
+            if (!condition.userIds.includes(order.userId)) {
+                this.logger.debug(
+                    `Promotion ${promotionId} condition failed: User ${order.userId} not in allowed users list`,
+                );
+                return false;
+            }
+        }
+
         return true;
     }
 
