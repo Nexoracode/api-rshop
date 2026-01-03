@@ -113,6 +113,11 @@ export class CreatePromotionDto {
     @IsInt()
     usageLimit?: number;
 
+    @ApiPropertyOptional({ name: 'max_discount_amount', example: 500000, description: 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)' })
+    @IsOptional()
+    @IsNumber()
+    maxDiscountAmount?: number;
+
     @ApiPropertyOptional({ name: 'is_active', example: true })
     @IsOptional()
     @IsBoolean()

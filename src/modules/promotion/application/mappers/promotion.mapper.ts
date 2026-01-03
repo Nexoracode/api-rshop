@@ -44,6 +44,7 @@ export class PromotionMapper {
             usageLimit: dto.usageLimit ?? null,
             usedCount: 0,
             isActive: dto.isActive ?? true,
+            maxDiscountAmount: dto.maxDiscountAmount ?? null,
             conditions,
             actions,
         });
@@ -86,6 +87,7 @@ export class PromotionMapper {
             usageLimit: entity.usageLimit,
             usedCount: entity.usedCount,
             isActive: entity.isActive,
+            maxDiscountAmount: entity.maxDiscountAmount ? Number(entity.maxDiscountAmount) : null,
             conditions,
             actions,
         });
@@ -102,6 +104,7 @@ export class PromotionMapper {
         orm.usageLimit = domain.usageLimit ?? null;
         orm.usedCount = domain.usedCount ?? 0;
         orm.isActive = domain.isActive;
+        orm.maxDiscountAmount = domain.maxDiscountAmount ?? null;
 
         orm.conditions =
             domain.conditions?.map((c) => {
@@ -146,6 +149,7 @@ export class PromotionMapper {
             startsAt: domain.startsAt,
             endsAt: domain.endsAt,
             isActive: domain.isActive,
+            maxDiscountAmount: domain.maxDiscountAmount ?? null,
         };
     }
 
@@ -180,6 +184,7 @@ export class PromotionMapper {
             isActive: domain.isActive,
             usageLimit: domain.usageLimit ?? null,
             usedCount: domain.usedCount ?? 0,
+            maxDiscountAmount: domain.maxDiscountAmount ?? null,
             conditions,
             actions,
         };

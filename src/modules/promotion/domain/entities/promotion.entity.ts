@@ -16,6 +16,8 @@ export class Promotion {
 
     isActive: boolean;
 
+    maxDiscountAmount?: number | null;
+
     conditions: PromotionCondition[];
     actions: PromotionAction[];
 

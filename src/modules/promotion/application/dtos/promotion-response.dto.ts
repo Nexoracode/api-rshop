@@ -24,6 +24,9 @@ export class PromotionResponseDto {
 
     @ApiProperty({ example: true })
     isActive: boolean;
+
+    @ApiProperty({ example: 500000, nullable: true, description: 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)' })
+    maxDiscountAmount?: number | null;
 }
 
 export class PromotionConditionDetailDto {
@@ -101,6 +104,9 @@ export class PromotionDetailResponseDto {
 
     @ApiProperty({ example: 5 })
     usedCount: number;
+
+    @ApiProperty({ example: 500000, nullable: true, description: 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)' })
+    maxDiscountAmount?: number | null;
 
     @ApiProperty({ type: [PromotionConditionDetailDto] })
     conditions: PromotionConditionDetailDto[];

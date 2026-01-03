@@ -86,6 +86,16 @@ export class PromotionEngineService extends PromotionEngine {
                 }
             }
 
+            // ✅ اعمال سقف تخفیف (maxDiscountAmount)
+            if (promo.maxDiscountAmount && promo.maxDiscountAmount > 0) {
+                if (discountForThisPromo > promo.maxDiscountAmount) {
+                    this.logger.log(
+                        `Discount capped for promotion ${promotionId}: ${discountForThisPromo} -> ${promo.maxDiscountAmount}`
+                    );
+                    discountForThisPromo = promo.maxDiscountAmount;
+                }
+            }
+
             // اگر تخفیف یا free shipping اعمال شد
             if (discountForThisPromo > 0 || freeShipping) {
                 appliedPromotions.push({

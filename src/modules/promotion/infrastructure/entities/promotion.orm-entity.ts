@@ -37,6 +37,16 @@ export class PromotionOrmEntity {
     @Column({ name: 'is_active', type: 'tinyint', default: 1 })
     isActive: boolean;
 
+    @Column({ 
+        name: 'max_discount_amount', 
+        type: 'decimal', 
+        precision: 15, 
+        scale: 2, 
+        nullable: true,
+        comment: 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)' 
+    })
+    maxDiscountAmount: number | null;
+
     @OneToMany(
         () => PromotionConditionOrmEntity,
         (condition) => condition.promotion,
