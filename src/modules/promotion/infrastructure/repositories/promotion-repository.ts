@@ -64,17 +64,11 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
     }
 
     /**
-     * دریافت پروموشن با ID به همراه اطلاعات کامل بر اساس type
+     * Helper: Enrichment یک promotion با اطلاعات کامل بر اساس type
+     * فقط برای findById استفاده می‌شه
      */
-    async findById(id: number): Promise<Promotion | null> {
-        const entity = await this.ormRepo.findOne({
-            where: { id },
-            relations: ['conditions', 'actions'],
-        });
-
-        if (!entity) {
-            return null;
-        }
+    private async enrichPromotion(entity: PromotionOrmEntity): Promise<any> {
+        if (!entity) return null;
 
         // جمع‌آوری IDs بر اساس type
         const productIds = new Set<number>();
@@ -82,52 +76,24 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
         const categoryIds = new Set<number>();
         const userIds = new Set<number>();
 
-        console.log(entity.conditions.map(c => c.type))
-
-        for (const condition of entity.conditions) {
-            // ✅ فقط برای type: 'product'
-            if (condition.type === ConditionType.PRODUCT && condition.products && Array.isArray(condition.products)) {
-                condition.products.forEach((p) => {
-                    if (p && typeof p.productId === 'number') {
+        for (const condition of entity.conditions || []) {
+            if (condition.type === ConditionType.PRODUCT && condition.products) {
+                condition.products.forEach((p: any) => {
+                    if (p?.productId) {
                         productIds.add(p.productId);
-                        if (p.variantIds && Array.isArray(p.variantIds)) {
-                            p.variantIds.forEach((vId) => {
-                                if (typeof vId === 'number') {
-                                    variantIds.add(vId);
-                                }
-                            });
-                        }
+                        p.variantIds?.forEach((vId: number) => variantIds.add(vId));
                     }
                 });
             }
 
-            // ✅ فقط برای type: 'category'
-            if (condition.type === ConditionType.CATEGORY && condition.categoryIds && Array.isArray(condition.categoryIds)) {
-                condition.categoryIds.forEach((cId) => {
-                    if (typeof cId === 'number') {
-                        categoryIds.add(cId);
-                    }
-                });
+            if (condition.type === ConditionType.CATEGORY && condition.categoryIds) {
+                condition.categoryIds.forEach((cId: number) => categoryIds.add(cId));
             }
 
-            // ✅ فقط برای type: 'user'
-            if (condition.type === ConditionType.USER) {
-                if (condition.userId && typeof condition.userId === 'number') {
-                    userIds.add(condition.userId);
-                }
-                if (condition.userIds && Array.isArray(condition.userIds)) {
-                    condition.userIds.forEach((uId) => {
-                        if (typeof uId === 'number') {
-                            userIds.add(uId);
-                        }
-                    });
-                }
+            if (condition.type === ConditionType.USER && condition.userIds) {
+                condition.userIds.forEach((uId: number) => userIds.add(uId));
             }
         }
-
-        this.logger.debug(
-            `Loading details for promotion ${id}: ${productIds.size} products, ${variantIds.size} variants, ${categoryIds.size} categories, ${userIds.size} users`,
-        );
 
         // بارگذاری داده‌ها
         const [products, variants, categories, users] = await Promise.all([
@@ -162,39 +128,28 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
         const categoryMap = new Map(categories.map((c) => [c.id, c]));
         const userMap = new Map(users.map((u) => [u.id, u]));
 
-        const domain = PromotionMapper.fromOrmToDomain(entity);
-
         // Enrichment بر اساس type
-        const enrichedConditions = domain.conditions.map((condition) => {
+        const enrichedConditions = (entity.conditions || []).map((condition) => {
             const enrichedCondition: any = {
                 id: condition.id,
                 type: condition.type,
             };
 
-            // ✅ TYPE: PRODUCT
+            // TYPE: PRODUCT
             if (condition.type === ConditionType.PRODUCT) {
-                enrichedCondition.products = condition.products?.map((p) => {
+                enrichedCondition.products = (condition.products || []).map((p: any) => {
                     const product = productMap.get(p.productId);
 
                     if (!product) {
-                        return {
-                            productId: p.productId,
-                            variantIds: p.variantIds,
-                        };
+                        return { productId: p.productId, variantIds: p.variantIds };
                     }
 
-                    let enrichedVariants: any[] = [];
-                    if (p.variantIds && Array.isArray(p.variantIds)) {
-                        enrichedVariants = p.variantIds
-                            .map((vId) => variantMap.get(vId))
-                            .filter((v) => v !== undefined);
-                    }
+                    const productMapp = ProductMapper.toResponse(product, { cartesian: true });
 
-                    const productMapper = ProductMapper.toResponse(product, { cartesian: true })
-
-                    return {
-                        ...productMapper,
-                        variants: enrichedVariants.map((v) => ({
+                    const enrichedVariants = (p.variantIds || [])
+                        .map((vId: number) => variantMap.get(vId))
+                        .filter(Boolean)
+                        .map((v: any) => ({
                             id: v.id,
                             name: this.buildVariantName(v),
                             sku: v.sku,
@@ -203,18 +158,21 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                             discountPercent: v.discountPercent,
                             discountAmount: v.discountAmount,
                             attributes: v.attributes,
-                        })),
+                        }));
+
+                    return {
+                        ...productMapp,
+                        variants: enrichedVariants,
                     };
-                }) || [];
+                });
             }
 
-            // ✅ TYPE: CATEGORY
+            // TYPE: CATEGORY
             if (condition.type === ConditionType.CATEGORY) {
-                enrichedCondition.categoryIds = condition.categoryIds || [];
                 enrichedCondition.categories = (condition.categoryIds || [])
-                    .map((cId) => categoryMap.get(cId))
-                    .filter((c) => c !== undefined)
-                    .map((c) => ({
+                    .map((cId: number) => categoryMap.get(cId))
+                    .filter(Boolean)
+                    .map((c: any) => ({
                         id: c.id,
                         title: c.title,
                         slug: c.slug,
@@ -226,30 +184,13 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                     }));
             }
 
-            // ✅ TYPE: USER
+            // TYPE: USER
             if (condition.type === ConditionType.USER) {
-                // userId (deprecated)
-                if (condition.userId) {
-                    enrichedCondition.userId = condition.userId;
-                    const user = userMap.get(condition.userId);
-                    if (user) {
-                        enrichedCondition.user = {
-                            id: user.id,
-                            firstName: user.firstName,
-                            lastName: user.lastName,
-                            email: user.email,
-                            phone: user.phone,
-                        };
-                    }
-                }
-
-                // userIds (جدید)
-                if (condition.userIds && Array.isArray(condition.userIds)) {
-                    enrichedCondition.userIds = condition.userIds;
+                if (condition.userIds) {
                     enrichedCondition.users = condition.userIds
-                        .map((uId) => userMap.get(uId))
-                        .filter((u) => u !== undefined)
-                        .map((u) => ({
+                        .map((uId: number) => userMap.get(uId))
+                        .filter(Boolean)
+                        .map((u: any) => ({
                             id: u.id,
                             firstName: u.firstName,
                             lastName: u.lastName,
@@ -259,23 +200,50 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                 }
             }
 
-            // ✅ TYPE: MIN_ORDER_AMOUNT
+            // TYPE: MIN_ORDER_AMOUNT
             if (condition.type === ConditionType.MIN_ORDER_AMOUNT) {
-                enrichedCondition.minAmount = condition.minAmount;
+                enrichedCondition.minAmount = condition.minAmount ? Number(condition.minAmount) : null;
             }
 
-            // ✅ TYPE: FIRST_ORDER
-            if (condition.type === ConditionType.FIRST_ORDER) {
-                // این type فقط type داره، هیچ فیلد اضافی نداره
-            }
+            // TYPE: FIRST_ORDER - فقط type
 
             return enrichedCondition;
         });
 
+        // برگشت object enriched شده
         return {
-            ...domain,
+            id: entity.id,
+            name: entity.name,
+            type: entity.type,
+            code: entity.code,
+            startsAt: entity.startsAt,
+            endsAt: entity.endsAt,
+            usageLimit: entity.usageLimit,
+            usedCount: entity.usedCount,
+            isActive: entity.isActive,
+            maxDiscountAmount: entity.maxDiscountAmount ? Number(entity.maxDiscountAmount) : null,
             conditions: enrichedConditions,
-        } as any;
+            actions: (entity.actions || []).map((a) => ({
+                id: a.id,
+                type: a.type,
+                value: a.value ? Number(a.value) : null,
+                meta: a.meta,
+            })),
+        };
+    }
+
+    /**
+     * دریافت پروموشن با ID - با enrichment کامل
+     */
+    async findById(id: number): Promise<any> {
+        const entity = await this.ormRepo.findOne({
+            where: { id },
+            relations: ['conditions', 'actions'],
+        });
+
+        if (!entity) return null;
+
+        return this.enrichPromotion(entity);
     }
 
     /**
@@ -311,17 +279,14 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
             .andWhere('p.startsAt <= :now', { now })
             .andWhere('p.endsAt >= :now', { now });
 
-        // فیلتر بر اساس userId و userIds
+        // فیلتر بر اساس userIds
         qb.andWhere(`
             (
                 c.type != 'user'
-                OR 
-                (c.type = 'user' AND c.userId = :uid)
                 OR
                 (c.type = 'user' AND JSON_CONTAINS(c.user_ids, :uidJson))
             )
         `, {
-            uid: order.userId,
             uidJson: JSON.stringify(order.userId)
         });
 
@@ -390,7 +355,7 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
     }
 
     /**
-     * لیست پروموشن‌ها با Pagination
+     * لیست پروموشن‌ها با Pagination - بدون enrichment
      */
     async paginated(query: PaginateQuery): Promise<any> {
         const result = await paginate<PromotionOrmEntity>(query, this.ormRepo, {
@@ -412,169 +377,8 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
             };
         }
 
-        // جمع‌آوری IDs بر اساس type
-        const allProductIds = new Set<number>();
-        const allCategoryIds = new Set<number>();
-        const allUserIds = new Set<number>();
-
-        for (const entity of result.data) {
-            if (!entity.conditions || !Array.isArray(entity.conditions)) {
-                continue;
-            }
-
-            for (const c of entity.conditions) {
-                if (c.type === ConditionType.PRODUCT && c.products && Array.isArray(c.products)) {
-                    c.products.forEach((p) => {
-                        if (p && typeof p.productId === 'number') {
-                            allProductIds.add(p.productId);
-                        }
-                    });
-                }
-
-                if (c.type === ConditionType.CATEGORY && c.categoryIds && Array.isArray(c.categoryIds)) {
-                    c.categoryIds.forEach((id) => {
-                        if (typeof id === 'number') {
-                            allCategoryIds.add(id);
-                        }
-                    });
-                }
-
-                if (c.type === ConditionType.USER) {
-                    if (c.userId && typeof c.userId === 'number') {
-                        allUserIds.add(c.userId);
-                    }
-                    if (c.userIds && Array.isArray(c.userIds)) {
-                        c.userIds.forEach((id) => {
-                            if (typeof id === 'number') {
-                                allUserIds.add(id);
-                            }
-                        });
-                    }
-                }
-            }
-        }
-
-        this.logger.debug(
-            `Loading details: ${allProductIds.size} products, ${allCategoryIds.size} categories, ${allUserIds.size} users`,
-        );
-
-        const [products, categories, users] = await Promise.all([
-            allProductIds.size > 0
-                ? this.productRepo.find({
-                    where: { id: In([...allProductIds]) },
-                    relations: ['mediaPinned', 'variants'],
-                })
-                : Promise.resolve([]),
-            allCategoryIds.size > 0
-                ? this.categoryRepo.find({
-                    where: { id: In([...allCategoryIds]) },
-                })
-                : Promise.resolve([]),
-            allUserIds.size > 0
-                ? this.userRepo.find({
-                    where: { id: In([...allUserIds]) },
-                })
-                : Promise.resolve([]),
-        ]);
-
-        const productMap = new Map<number, Product>(
-            products.map((p) => [p.id, p])
-        );
-        const categoryMap = new Map<number, Category>(
-            categories.map((c) => [c.id, c])
-        );
-        const userMap = new Map<number, User>(
-            users.map((u) => [u.id, u])
-        );
-
-        const items: Array<
-            Promotion & {
-                products: Product[];
-                categories: Category[];
-                users: User[]
-            }
-        > = [];
-
-        for (const entity of result.data) {
-            const domain = PromotionMapper.fromOrmToDomain(entity);
-
-            const productDetails: Product[] = [];
-            const categoryDetails: Category[] = [];
-            const userDetails: User[] = [];
-
-            if (entity.conditions && Array.isArray(entity.conditions)) {
-                for (const c of entity.conditions) {
-                    if (c.type === ConditionType.PRODUCT && c.products && Array.isArray(c.products)) {
-                        c.products.forEach((p) => {
-                            if (p && typeof p.productId === 'number') {
-                                const product = productMap.get(p.productId);
-                                if (product) {
-                                    const exists = productDetails.some(
-                                        (pd) => pd.id === product.id
-                                    );
-                                    if (!exists) {
-                                        productDetails.push(product);
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    if (c.type === ConditionType.CATEGORY && c.categoryIds && Array.isArray(c.categoryIds)) {
-                        c.categoryIds.forEach((id) => {
-                            if (typeof id === 'number') {
-                                const category = categoryMap.get(id);
-                                if (category) {
-                                    const exists = categoryDetails.some(
-                                        (cd) => cd.id === category.id
-                                    );
-                                    if (!exists) {
-                                        categoryDetails.push(category);
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    if (c.type === ConditionType.USER) {
-                        if (c.userId && typeof c.userId === 'number') {
-                            const user = userMap.get(c.userId);
-                            if (user) {
-                                const exists = userDetails.some(
-                                    (ud) => ud.id === user.id
-                                );
-                                if (!exists) {
-                                    userDetails.push(user);
-                                }
-                            }
-                        }
-
-                        if (c.userIds && Array.isArray(c.userIds)) {
-                            c.userIds.forEach((id) => {
-                                if (typeof id === 'number') {
-                                    const user = userMap.get(id);
-                                    if (user) {
-                                        const exists = userDetails.some(
-                                            (ud) => ud.id === user.id
-                                        );
-                                        if (!exists) {
-                                            userDetails.push(user);
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-
-            items.push({
-                ...domain,
-                products: productDetails,
-                categories: categoryDetails,
-                users: userDetails,
-            });
-        }
+        // تبدیل به domain entities (بدون enrichment)
+        const items = result.data.map(entity => PromotionMapper.fromOrmToDomain(entity));
 
         return {
             items,
@@ -608,11 +412,9 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
         const productIds = new Set<number>();
 
         for (const condition of promotion.conditions) {
-            if (condition.type === ConditionType.PRODUCT && condition.products && Array.isArray(condition.products)) {
-                condition.products.forEach((p) => {
-                    if (p && typeof p.productId === 'number') {
-                        productIds.add(p.productId);
-                    }
+            if (condition.type === ConditionType.PRODUCT && condition.products) {
+                condition.products.forEach((p: any) => {
+                    if (p?.productId) productIds.add(p.productId);
                 });
             }
         }

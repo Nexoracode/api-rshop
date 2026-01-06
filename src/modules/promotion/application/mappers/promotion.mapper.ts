@@ -18,7 +18,6 @@ export class PromotionMapper {
                 (c: CreatePromotionConditionDto) =>
                     new PromotionCondition({
                         type: c.type,
-                        userId: c.userId ?? undefined,
                         userIds: c.userIds ?? undefined,
                         products: c.products ?? undefined,
                         categoryIds: c.categoryIds ?? undefined,
@@ -58,7 +57,6 @@ export class PromotionMapper {
                     new PromotionCondition({
                         id: c.id,
                         type: c.type,
-                        userId: c.userId ?? undefined,
                         userIds: c.userIds ?? undefined,
                         products: c.products ?? undefined,
                         categoryIds: c.categoryIds ?? undefined,
@@ -113,7 +111,6 @@ export class PromotionMapper {
                 const ce = new PromotionConditionOrmEntity();
                 ce.id = c.id!;
                 ce.type = c.type;
-                ce.userId = c.userId ?? null;
                 ce.userIds = c.userIds ?? null;
                 ce.products = c.products ?? null;
                 ce.categoryIds = c.categoryIds ?? null;
@@ -160,7 +157,6 @@ export class PromotionMapper {
         const conditions: PromotionConditionDetailDto[] =
             domain.conditions?.map((c) => ({
                 type: c.type,
-                userId: c.userId ?? null,
                 userIds: c.userIds ?? null,
                 products: c.products ?? null,
                 categoryIds: c.categoryIds ?? null,

@@ -3,7 +3,6 @@
 import { Injectable } from '@nestjs/common';
 import { PromotionRepository } from '../../domain/interfaces/promotion-repository.interface';
 import { PromotionMapper } from '../mappers/promotion.mapper';
-import { ListPromotionDto } from '../dtos/list-promotion.dto';
 import { PaginateQuery } from 'nestjs-paginate';
 
 @Injectable()

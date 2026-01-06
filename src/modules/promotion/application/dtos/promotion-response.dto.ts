@@ -33,9 +33,6 @@ export class PromotionConditionDetailDto {
     @ApiProperty({ enum: ConditionType })
     type: ConditionType;
 
-    @ApiProperty({ example: 5, required: false, nullable: true })
-    userId?: number | null;
-
     @ApiProperty({ example: [5, 10, 15], required: false, nullable: true })
     userIds?: number[] | null;
 

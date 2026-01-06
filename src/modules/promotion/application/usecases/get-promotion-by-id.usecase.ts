@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PromotionRepository } from '../../domain/interfaces/promotion-repository.interface';
 import { PromotionNotFoundException } from '../../domain/exceptions/promotion.exceptions';
-import { PromotionDetailResponseDto } from '../dtos/promotion-response.dto';
-import { PromotionMapper } from '../mappers/promotion.mapper';
 
 @Injectable()
 export class GetPromotionByIdUseCase {
@@ -10,7 +8,7 @@ export class GetPromotionByIdUseCase {
 
     constructor(private readonly repo: PromotionRepository) {}
 
-    async execute(id: number): Promise<PromotionDetailResponseDto> {
+    async execute(id: number): Promise<any> {
         this.logger.log(`Fetching promotion by ID: ${id}`);
 
         const promotion = await this.repo.findById(id);
@@ -21,6 +19,7 @@ export class GetPromotionByIdUseCase {
 
         this.logger.debug(`Found promotion: ${promotion.name} (${promotion.code || 'no code'})`);
 
-        return PromotionMapper.toDetailResponseDto(promotion);
+        // مستقیم enriched data رو برمی‌گردونیم
+        return promotion;
     }
 }

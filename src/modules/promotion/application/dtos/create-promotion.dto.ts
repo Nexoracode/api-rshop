@@ -37,11 +37,6 @@ export class CreatePromotionConditionDto {
     @IsEnum(ConditionType)
     type: ConditionType;
 
-    @ApiPropertyOptional({ name: 'user_id', example: 5, description: 'شناسه یک کاربر خاص (deprecated - از user_ids استفاده کنید)' })
-    @IsOptional()
-    @IsInt()
-    userId?: number;
-
     @ApiPropertyOptional({ name: 'user_ids', example: [5, 10, 15], description: 'شناسه چند کاربر خاص' })
     @IsOptional()
     @IsArray()
