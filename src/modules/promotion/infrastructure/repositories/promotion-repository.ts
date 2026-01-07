@@ -112,12 +112,13 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
             categoryIds.size > 0
                 ? this.categoryRepo.find({
                     where: { id: In([...categoryIds]) },
+                    relations: ['media']
                 })
                 : Promise.resolve([]),
             userIds.size > 0
                 ? this.userRepo.find({
                     where: { id: In([...userIds]) },
-                    select: ['id', 'firstName', 'lastName', 'email', 'phone'],
+                    select: ['id', 'firstName', 'lastName', 'email', 'phone', 'isPhoneVerified'],
                 })
                 : Promise.resolve([]),
         ]);
@@ -172,15 +173,16 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                 enrichedCondition.categories = (condition.categoryIds || [])
                     .map((cId: number) => categoryMap.get(cId))
                     .filter(Boolean)
-                    .map((c: any) => ({
+                    .map((c: Category) => ({
                         id: c.id,
                         title: c.title,
                         slug: c.slug,
                         description: c.description,
-                        parentId: c.parentId,
+                        parentId: c.parentId ?? 0,
                         level: c.level,
                         displayOrder: c.displayOrder,
                         isActive: c.isActive,
+                        image: c.media.url,
                     }));
             }
 
@@ -190,10 +192,11 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                     enrichedCondition.users = condition.userIds
                         .map((uId: number) => userMap.get(uId))
                         .filter(Boolean)
-                        .map((u: any) => ({
+                        .map((u: User) => ({
                             id: u.id,
                             firstName: u.firstName,
                             lastName: u.lastName,
+                            isPhoneVerified: u.isPhoneVerified,
                             email: u.email,
                             phone: u.phone,
                         }));
