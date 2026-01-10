@@ -58,77 +58,39 @@ export class CollectionPublicController {
     description: 'مجموعه یافت نشد',
   })
   async findOne(@Param('slug') slug: string) {
-    const collection = await this.collectionService.findOneBySlug(slug);
-
-    return {
-      message: 'جزئیات مجموعه با موفقیت دریافت شد',
-      data: {
-        id: collection.id,
-        title: collection.title,
-        slug: collection.slug,
-        description: collection.description,
-        image: collection.image,
-        startDate: collection.startDate,
-        endDate: collection.endDate,
-        products: collection.products.map((product) => ({
-          id: product.id,
-          name: product.name,
-          slug: product.sku,
-          price: Number(product.price),
-          discountPercent: Number(product.discountPercent) || 0,
-          discountAmount: Number(product.discountAmount) || 0,
-          stock: product.stock,
-          isFeatured: product.isFeatured,
-          image: product.mediaPinned?.url || null,
-          category: product.category
-            ? {
-              id: product.category.id,
-              name: product.category.title,
-              slug: product.category.slug,
-            }
-            : null,
-          brand: product.brand
-            ? {
-              id: product.brand.id,
-              name: product.brand.name,
-              slug: product.brand.slug,
-            }
-            : null,
-        })),
-      },
-    };
+    return this.collectionService.findOneBySlug(slug);
   }
 
-  @Public()
-  @Get(':slug/products')
-  @ApiOperation({
-    summary: 'محصولات یک مجموعه',
-    description: 'دریافت فقط محصولات یک مجموعه (بدون اطلاعات مجموعه)',
-  })
-  @ApiParam({
-    name: 'slug',
-    description: 'نامک (slug) مجموعه',
-    example: 'fathers-day-gifts',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'محصولات با موفقیت دریافت شد',
-  })
-  async getProducts(@Param('slug') slug: string) {
-    const products = await this.collectionService.getCollectionProducts(slug);
+  // @Public()
+  // @Get(':slug/products')
+  // @ApiOperation({
+  //   summary: 'محصولات یک مجموعه',
+  //   description: 'دریافت فقط محصولات یک مجموعه (بدون اطلاعات مجموعه)',
+  // })
+  // @ApiParam({
+  //   name: 'slug',
+  //   description: 'نامک (slug) مجموعه',
+  //   example: 'fathers-day-gifts',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'محصولات با موفقیت دریافت شد',
+  // })
+  // async getProducts(@Param('slug') slug: string) {
+  //   const products = await this.collectionService.getCollectionProducts(slug);
 
-    return {
-      message: 'محصولات مجموعه با موفقیت دریافت شد',
-      data: products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        slug: product.sku,
-        price: Number(product.price),
-        discountPercent: Number(product.discountPercent) || 0,
-        discountAmount: Number(product.discountAmount) || 0,
-        stock: product.stock,
-        image: product.mediaPinned?.url || null,
-      })),
-    };
-  }
+  //   return {
+  //     message: 'محصولات مجموعه با موفقیت دریافت شد',
+  //     data: products.map((product) => ({
+  //       id: product.id,
+  //       name: product.name,
+  //       slug: product.sku,
+  //       price: Number(product.price),
+  //       discountPercent: Number(product.discountPercent) || 0,
+  //       discountAmount: Number(product.discountAmount) || 0,
+  //       stock: product.stock,
+  //       image: product.mediaPinned?.url || null,
+  //     })),
+  //   };
+  // }
 }

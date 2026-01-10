@@ -1,14 +1,18 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HomePageService } from '../home-page.service';
 import { HomePageDataResponseDto } from '../dto/home-page-response.dto';
 import { Public } from 'src/common/decorator/public.decorator';
+import { HomeSectionService } from '../home-section.service';
 
 @ApiTags('Home Page - Public')
 @Controller('home')
 @Public()
 export class HomePagePublicController {
-  constructor(private readonly homePageService: HomePageService) { }
+  constructor(
+    private readonly homePageService: HomePageService,
+    private readonly homeSectionService: HomeSectionService,
+  ) { }
 
   @Get()
   @Public()
@@ -47,5 +51,17 @@ export class HomePagePublicController {
 
   async getHomePageAdmin(): Promise<HomePageDataResponseDto> {
     return await this.homePageService.getHomePageData(true);
+  }
+
+  @Get('collection/:slug')
+  @Public()
+  async getOneBySlug(@Query('slug') slug: string) {
+    return this.homeSectionService.findBySlug(slug);
+  }
+
+  @Get('collection/:slug/products')
+  @Public()
+  async getproductBySectionSlug(@Query('slug') slug: string) {
+    return this.homeSectionService.findProductBySectionSlug(slug);
   }
 }

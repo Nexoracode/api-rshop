@@ -14,6 +14,7 @@ import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { AddProductsToCollectionDto } from './dto/add-product-to-collection.dto';
 import { CollectionCacheService } from './cache/collection-cache.service';
+import { CollectionMapp } from './mappers/collection.mapper';
 
 @Injectable()
 export class CollectionService {
@@ -146,7 +147,7 @@ export class CollectionService {
   /**
    * جزئیات یک مجموعه با slug (Public)
    */
-  async findOneBySlug(slug: string): Promise<Collection> {
+  async findOneBySlug(slug: string): Promise<CollectionMapp> {
     // ✅ چک کردن cache
     const cached = await this.cacheService.getDetailBySlug(slug);
     if (cached) {
@@ -173,7 +174,7 @@ export class CollectionService {
     // ✅ ذخیره در cache
     await this.cacheService.setDetailBySlug(slug, collection);
 
-    return collection;
+    return CollectionMapp.toResponse(collection);
   }
 
   /**
@@ -348,20 +349,20 @@ export class CollectionService {
   /**
    * گرفتن محصولات یک مجموعه (Public)
    */
-  async getCollectionProducts(slug: string): Promise<Product[]> {
-    // ✅ چک کردن cache
-    const cached = await this.cacheService.getProducts(slug);
-    if (cached) {
-      this.logger.log(`✅ محصولات ${slug} از cache برگشت`);
-      return cached;
-    }
+  // async getCollectionProducts(slug: string): Promise<Product[]> {
+  //   // ✅ چک کردن cache
+  //   const cached = await this.cacheService.getProducts(slug);
+  //   if (cached) {
+  //     this.logger.log(`✅ محصولات ${slug} از cache برگشت`);
+  //     return cached;
+  //   }
 
-    const collection = await this.findOneBySlug(slug);
-    const products = collection.products || [];
+  //   const collection = await this.findOneBySlug(slug);
+  //   const products = collection.products || [];
 
-    // ✅ ذخیره در cache
-    await this.cacheService.setProducts(slug, products);
+  //   // ✅ ذخیره در cache
+  //   await this.cacheService.setProducts(slug, products);
 
-    return products;
-  }
+  //   return products;
+  // }
 }

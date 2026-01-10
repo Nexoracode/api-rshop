@@ -101,6 +101,47 @@ export class HomeSectionService {
     return section;
   }
 
+  async findProductBySectionSlug(slug: string) {
+    var products: Product[] = [];
+    const section = await this.homeSectionRepository.findOne({ where: { slug } });
+    if (!section) {
+      throw new NotFoundException(`بخش صفحه اصلی با اسلاگ ${slug} یافت نشد`);
+    }
+    if (section.productIds) {
+      products = await this.productRepository.find({
+        where: { id: In(section.productIds) },
+        relations: ['category', 'mediaPinned', 'brand']
+      })
+    }
+    return {
+      products: products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.sku,
+        price: Number(product.price),
+        discountPercent: Number(product.discountPercent) || 0,
+        discountAmount: Number(product.discountAmount) || 0,
+        stock: product.stock,
+        isFeatured: product.isFeatured,
+        image: product.mediaPinned?.url || null,
+        category: product.category
+          ? {
+            id: product.category.id,
+            name: product.category.title,
+            slug: product.category.slug,
+          }
+          : null,
+        brand: product.brand
+          ? {
+            id: product.brand.id,
+            name: product.brand.name,
+            slug: product.brand.slug,
+          }
+          : null,
+      }))
+    };
+  }
+
   async update(id: number, updateDto: UpdateHomeSectionDto): Promise<HomeSection> {
     if (updateDto.slug) {
       const existingSection = await this.homeSectionRepository.findOne({
