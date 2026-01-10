@@ -28,6 +28,9 @@ export class HomeSection {
   @Column({ type: 'varchar', length: 255 })
   title: string;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  image: string | null;
+
   @Column({ type: 'varchar', length: 100, unique: true })
   slug: string;
 
@@ -56,10 +59,6 @@ export class HomeSection {
   @Column({ type: 'int', nullable: true })
   categoryId: number;
 
-  // برای بخش‌های بر اساس پروموشن
-  @Column({ type: 'int', nullable: true })
-  promotionId: number;
-
   @Column({ type: 'int', default: 10 })
   productsLimit: number;
 
@@ -74,6 +73,12 @@ export class HomeSection {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   viewAllLink: string;
+
+  @Column({ name: 'start_date', type: 'timestamp', nullable: true })
+  startDate: Date | null;
+
+  @Column({ name: 'end_date', type: 'timestamp', nullable: true })
+  endDate: Date | null;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

@@ -85,12 +85,15 @@ export interface ProductData {
 export interface HomeSectionData {
   id: number;
   title: string;
+  image: string | null;
   slug: string;
   description: string | null;
   sectionType: string;
   displayStyle: string;
   showViewAllButton: boolean;
   sortOrder: number;
+  startDate: Date | null;
+  endDate: Date | null;
   isActive: boolean;
   productsLimit: number;
   viewAllLink: string | null;

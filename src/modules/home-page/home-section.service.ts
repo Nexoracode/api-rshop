@@ -176,32 +176,6 @@ export class HomeSectionService {
           take: limit,
         });
 
-      case SectionType.PROMOTION_BASED:
-        if (section.promotionId) {
-          try {
-            const promotionProductIds = await this.promotionRepository.getPromotionProducts(section.promotionId);
-
-            if (promotionProductIds.length === 0) {
-              this.logger.warn(`No products found for promotion ${section.promotionId}`);
-              return [];
-            }
-
-            return await this.productRepository.find({
-              where: {
-                id: In(promotionProductIds),
-                isVisible: true
-              },
-              relations: ['medias', 'category', 'brand', 'mediaPinned'],
-              order: { createdAt: 'DESC' },
-              take: limit,
-            });
-          } catch (error) {
-            this.logger.error(`Error fetching promotion products: ${error.message}`);
-            return [];
-          }
-        }
-        return [];
-
       case SectionType.MOST_POPULAR:
         return await this.productRepository
           .createQueryBuilder('product')

@@ -92,6 +92,7 @@ export class HomePageService {
         return {
           id: section.id,
           title: section.title,
+          image: section.image,
           slug: section.slug,
           description: section.description,
           sectionType: section.sectionType,
@@ -101,6 +102,8 @@ export class HomePageService {
           isActive: section.isActive,
           viewAllLink: section.viewAllLink,
           productsLimit: section.productsLimit,
+          startDate: section.startDate,
+          endDate: section.endDate,
           category: category ? await this.formatCategory(category) : null,
           products: await Promise.all(products.map(product => this.formatProduct(product))),
         };

@@ -1,5 +1,5 @@
-import { IsString, IsOptional, IsBoolean, IsInt, IsEnum, IsArray, MaxLength, Validate } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsBoolean, IsInt, IsEnum, IsArray, MaxLength, Validate, IsDateString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { SectionType, SectionDisplayStyle } from '../entities/home-section.entity';
 import { SectionDataValidator } from '../validators/section-data.validator';
 
@@ -8,6 +8,15 @@ export class CreateHomeSectionDto {
   @IsString()
   @MaxLength(255)
   title: string;
+
+  @ApiPropertyOptional({
+    description: 'آدرس تصویر مجموعه',
+    example: '/uploads/collections/fathers-day.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  image?: string;
 
   @Validate(SectionDataValidator, {
     message: 'داده‌های بخش باید با نوع آن مطابقت داشته باشد'
@@ -42,11 +51,6 @@ export class CreateHomeSectionDto {
   @IsOptional()
   categoryId?: number;
 
-  @ApiPropertyOptional({ name: 'promotion_id', example: 3, description: 'شناسه پروموشن برای نمایش محصولات آن' })
-  @IsInt()
-  @IsOptional()
-  promotionId?: number;
-
   @ApiPropertyOptional({ name: 'products_limit', example: 10 })
   @IsInt()
   @IsOptional()
@@ -67,78 +71,22 @@ export class CreateHomeSectionDto {
   @IsOptional()
   showViewAllButton?: boolean;
 
-  @ApiPropertyOptional({ name: 'view_all_link', example: '/products?category=special' })
-  @IsString()
   @IsOptional()
-  viewAllLink?: string;
-}
+  @IsDateString()
+  startDate?: string;
 
-export class UpdateHomeSectionDto {
-  @ApiPropertyOptional({ example: 'محصولات ویژه' })
-  @IsString()
+  @ApiPropertyOptional({
+    description: 'تاریخ پایان نمایش مجموعه (ISO format)',
+    example: '2024-06-30T23:59:59.000Z',
+  })
   @IsOptional()
-  @MaxLength(255)
-  title?: string;
-
-  @ApiPropertyOptional({ example: 'special-products' })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  slug?: string;
-
-  @ApiPropertyOptional({ example: 'جدیدترین بندها و رنگ‌ها' })
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @ApiPropertyOptional({ name: 'section_type', enum: SectionType, example: SectionType.FEATURED })
-  @IsEnum(SectionType)
-  @IsOptional()
-  sectionType?: SectionType;
-
-  @ApiPropertyOptional({ name: 'display_style', enum: SectionDisplayStyle, example: SectionDisplayStyle.CAROUSEL })
-  @IsEnum(SectionDisplayStyle)
-  @IsOptional()
-  displayStyle?: SectionDisplayStyle;
-
-  @ApiPropertyOptional({ name: 'product_ids', example: [1, 2, 3, 4, 5] })
-  @IsArray()
-  @IsInt({ each: true })
-  @IsOptional()
-  productIds?: number[];
-
-  @ApiPropertyOptional({ name: 'category_id', example: 5 })
-  @IsInt()
-  @IsOptional()
-  categoryId?: number;
-
-  @ApiPropertyOptional({ name: 'promotion_id', example: 3, description: 'شناسه پروموشن برای نمایش محصولات آن' })
-  @IsInt()
-  @IsOptional()
-  promotionId?: number;
-
-  @ApiPropertyOptional({ name: 'products_limit', example: 10 })
-  @IsInt()
-  @IsOptional()
-  productsLimit?: number;
-
-  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
-  @IsInt()
-  @IsOptional()
-  sortOrder?: number;
-
-  @ApiPropertyOptional({ name: 'is_active', example: true })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
-
-  @ApiPropertyOptional({ name: 'show_view_all_button', example: true })
-  @IsBoolean()
-  @IsOptional()
-  showViewAllButton?: boolean;
+  @IsDateString()
+  endDate?: string;
 
   @ApiPropertyOptional({ name: 'view_all_link', example: '/products?category=special' })
   @IsString()
   @IsOptional()
   viewAllLink?: string;
 }
+
+export class UpdateHomeSectionDto extends PartialType(CreateHomeSectionDto) { }

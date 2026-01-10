@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Readable } from 'typeorm/platform/PlatformTools';
-import { CreateMediaDto } from './dto/upload-file.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Media } from './entities/image.entity';
 import { Repository } from 'typeorm';

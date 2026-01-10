@@ -6,5 +6,5 @@ export enum MediaType {
     HELPER = 'helper',
     GIFT_WRAPPING = 'gift-wrapping',
     PAYMENT_RECEIPT = 'payment-receipt',  // ✅ جدید
-    HOME = 'home',
+    HOME = 'homepage',
 }

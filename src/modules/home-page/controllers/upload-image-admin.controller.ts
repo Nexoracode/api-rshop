@@ -18,7 +18,7 @@ export class UploadImageAdminController {
     ) { }
 
     @Post('upload')
-    @UseInterceptors(FilesInterceptor('files', 10))
+    @UseInterceptors(FilesInterceptor('files', 1))
     @ApiConsumes('multipart/form-data')
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @ApiBody({
