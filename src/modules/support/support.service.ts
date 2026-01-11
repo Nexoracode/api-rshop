@@ -239,6 +239,7 @@ export class SupportService {
       .where('support.id = :id', { id })
       .leftJoinAndSelect('support.user', 'user')
       .leftJoinAndSelect('support.product', 'product')
+      .leftJoinAndSelect('product.mediaPinned', 'mediaPinned')
       .leftJoinAndSelect('support.messages', 'messages')
       .leftJoinAndSelect('messages.sender', 'sender');
 

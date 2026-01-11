@@ -6,40 +6,37 @@ import * as forge from 'node-forge';
 import { v4 as uuidv4 } from 'uuid';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import axios from 'axios';
 
 @Injectable()
 export class SepidarService {
   constructor(private readonly httpService: HttpService) { }
 
-  async register(): Promise<Object> {
+  async register() {
     const serial = "100000d8";
     const integrationID = serial.match(/\d{4}/)?.[0] ?? ""; // = "1000"
-    const key = Buffer.from(serial + serial); // 32 bytes for AES-256
+    const key = Buffer.from('100000d8100000d8'); // 32 bytes for AES-256
     const iv = crypto.randomBytes(16); // 16 bytes for AES block size
 
     const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
     let encrypted = cipher.update(integrationID, 'utf8', 'base64');
     encrypted += cipher.final('base64');
 
+    console.log(integrationID, encrypted, iv.toString('base64'));
+
     const result = {
       Cypher: encrypted,
       IV: iv.toString('base64'),
-      integrationID: integrationID,
+      integrationID: 1000,
     };
 
-
     try {
-      const { data } = await firstValueFrom(
-        this.httpService.post(
-          'https://sepidar.roohbakhshac.ir/api/Devices/Register', result),
-      );
-      return {
-        message: 'سپیدار',
-        data: data,
-      }
+      const response = await axios.post('https://sepidar.roohbakhshac.ir/api/Devices/Register', result);
+      console.log(response.data);
+
     } catch (e) {
-      console.error('Error in sepidar:', e);
-      throw new BadRequestException('خطا در ارتباط با Sepidar');
+      // console.error('Error in sepidar:', e.response.data.Message);
+      throw new BadRequestException(e.response.data.Message);
     }
   }
 
@@ -84,8 +81,8 @@ export class SepidarService {
     const serial = "100000d8";
     const cypher = '4RcSMW4AEZdeYJrwBty86YTSK9DfWQFPgTj5IRvQxnp5je2oXyn7xKWNug5pJVzY0wXFC34mJ6co3ilTJWGS+ujVQhREe4UdBEqT9DPVz/pSV1niQnVhHjNBR/iQvO28ll2yxPQya0p3nCEhDpdt6LkV9F7ap8ddEE+i45Y7wKC+ZDdQjLBfDcTyR6Qi18nO3ku38+HKqCVuhUAWznnDCw==';
     const iv = "KDhhXQ5dvDNJ18tuZL7yhg==";
-    const username = 'admin11';
-    const password = 'Admin1122';
+    const username = 'admin';
+    const password = 'Kazem66292';
     const integrationId = serial.match(/\d{4}/)?.[0] ?? '';
     const generationVersion = '110';
     const arbitraryCode = uuidv4();
