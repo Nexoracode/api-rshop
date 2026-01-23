@@ -1,128 +1,67 @@
 // auth.service.ts
 import { BadRequestException, Injectable } from '@nestjs/common';
-import * as crypto from 'crypto';
-import * as xml2js from 'xml2js';
-import * as forge from 'node-forge';
 import { v4 as uuidv4 } from 'uuid';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { SepidarHellper } from './helpers/sepidar.helper';
+import * as crypto from 'crypto';
 import axios from 'axios';
+import { LoginSepidarDto } from './dto/login-sepidar.dto';
 
 @Injectable()
 export class SepidarService {
-  constructor(private readonly httpService: HttpService) { }
+  private serial = process.env.SEPIDAR_SERIAL as string;
+  private chiper = process.env.SEPIDAR_CYPHER as string;
+  private iv = process.env.SEPIDAR_IV as string;
+  private username = process.env.SEPIDAR_USERNAME as string;
+  private password = process.env.SEPIDAR_PASSWORD as string;
+  constructor() { }
 
   async register() {
-    const serial = "100000d8";
-    const integrationID = serial.match(/\d{4}/)?.[0] ?? ""; // = "1000"
-    const key = Buffer.from('100000d8100000d8'); // 32 bytes for AES-256
-    const iv = crypto.randomBytes(16); // 16 bytes for AES block size
-
+    const url = 'https://sepidar.roohbakhshac.ir/api/Devices/Register';
+    const integrationID = this.serial.match(/\d{4}/)?.[0] ?? "";
+    const key = Buffer.from(this.serial + this.serial);
+    const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
     let encrypted = cipher.update(integrationID, 'utf8', 'base64');
     encrypted += cipher.final('base64');
-
-    console.log(integrationID, encrypted, iv.toString('base64'));
-
     const result = {
       Cypher: encrypted,
       IV: iv.toString('base64'),
-      integrationID: 1000,
+      IntegrationID: integrationID,
     };
-
     try {
-      const response = await axios.post('https://sepidar.roohbakhshac.ir/api/Devices/Register', result);
-      console.log(response.data);
-
+      const response = await axios.post(url, result);
+      return response.data;
     } catch (e) {
-      // console.error('Error in sepidar:', e.response.data.Message);
       throw new BadRequestException(e.response.data.Message);
     }
   }
 
-  // رمزگشایی کلید عمومی RSA که از مرحله Register اومده
-  private decryptPublicKey(encryptedBase64: string, ivBase64: string, serial: string): string {
-    const key = Buffer.from(serial + serial); // 16 bytes for AES-128
-    const iv = Buffer.from(ivBase64, 'base64');
-    const encrypted = Buffer.from(encryptedBase64, 'base64');
-
-    const decipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
-    let decrypted = decipher.update(encrypted, undefined, 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return decrypted; // خروجی XML کلید عمومی
-  }
-
-  // استخراج Modulus و Exponent از XML
-  private async parsePublicKeyXml(xml: string): Promise<{ modulus: string; exponent: string }> {
-    const parser = new xml2js.Parser();
-    const result = await parser.parseStringPromise(xml);
-    const rsaKey = result.RSAKeyValue;
-    return {
-      modulus: rsaKey.Modulus[0],
-      exponent: rsaKey.Exponent[0],
-    };
-  }
-
-  // رمزنگاری ArbitraryCode با کلید عمومی RSA
-  private async encryptArbitraryCode(xml: string, arbitraryCode: string): Promise<string> {
-    const { modulus, exponent } = await this.parsePublicKeyXml(xml);
-
-    const rsa = forge.pki.setRsaPublicKey(
-      new forge.jsbn.BigInteger(Buffer.from(modulus, 'base64').toString('hex'), 16),
-      new forge.jsbn.BigInteger(Buffer.from(exponent, 'base64').toString('hex'), 16),
-    );
-
-    const encrypted = rsa.encrypt(arbitraryCode, 'RSAES-PKCS1-V1_5');
-    return Buffer.from(encrypted, 'binary').toString('base64');
-  }
-
   async login() {
-    const serial = "100000d8";
-    const cypher = '4RcSMW4AEZdeYJrwBty86YTSK9DfWQFPgTj5IRvQxnp5je2oXyn7xKWNug5pJVzY0wXFC34mJ6co3ilTJWGS+ujVQhREe4UdBEqT9DPVz/pSV1niQnVhHjNBR/iQvO28ll2yxPQya0p3nCEhDpdt6LkV9F7ap8ddEE+i45Y7wKC+ZDdQjLBfDcTyR6Qi18nO3ku38+HKqCVuhUAWznnDCw==';
-    const iv = "KDhhXQ5dvDNJ18tuZL7yhg==";
-    const username = 'admin';
-    const password = 'Kazem66292';
-    const integrationId = serial.match(/\d{4}/)?.[0] ?? '';
-    const generationVersion = '110';
+    const url = 'https://sepidar.roohbakhshac.ir/api/users/login';
     const arbitraryCode = uuidv4();
-    const publicKeyXml = this.decryptPublicKey(cypher, iv, serial);
-    const encArbitraryCode = await this.encryptArbitraryCode(publicKeyXml, arbitraryCode);
-    const passwordHash = crypto.createHash('md5').update(password).digest('hex');
+    const RsaKey = SepidarHellper.getRsaKeyValue(this.chiper, this.iv);
+    const publicKey = await SepidarHellper.publicKeyForXml(RsaKey);
+    const encArbitraryCode = SepidarHellper.generateEncArbitraryCode(arbitraryCode, publicKey);
+    const passwordHash = crypto.hash('md5', this.password);
+    const integrationId = '1000';
+    const generationVersion = '110';
+    const data = {
+      username: this.username,
+      passwordHash,
+    };
     const headers = {
-      GenerationVersion: generationVersion,
-      IntegrationID: integrationId,
-      ArbitraryCode: arbitraryCode,
-      EncArbitraryCode: encArbitraryCode,
-    };
-    const body = {
-      UserName: username,
-      PasswordHash: passwordHash,
-    };
-
-    const url = 'https://sepidar.roohbakhshac.ir/api/users/Login';
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.post(url, body, { headers }),
-      );
-      return {
-        message: 'ورود به سپیدار موفقیت آمیز بود',
-        data: data,
-      };
-    } catch (e) {
-      console.error('Error in sepidar login:', e.response?.data, e.status);
-      throw new BadRequestException('خطا در ورود به Sepidar');
+      generationVersion,
+      integrationId,
+      arbitraryCode,
+      encArbitraryCode: encArbitraryCode,
     }
-
-    // const url = 'https://sepidar.roohbakhshac.ir/api/General/GenerationVersion';
-    // try {
-    //   const { data } = await firstValueFrom(
-    //     this.httpService.get(url),
-    //   );
-    // }
-    // catch (e) {
-    //   console.error(e);
-    //   throw new BadRequestException('خطا در ورود به Sepidar');
-    // }
+    try {
+      const response = await axios.post(url, JSON.stringify(data), { headers })
+      console.log(response.data);
+      return response.data;
+    } catch (e) {
+      console.log(e.response.data, e.response.status)
+      throw new BadRequestException(e.response.data.Message);
+    }
   }
 }
