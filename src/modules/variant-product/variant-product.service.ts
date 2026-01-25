@@ -8,6 +8,8 @@ import { Product } from "../product/entities/product.entity";
 import { VariantAttributeValue } from "../attributes/variant-attribute-value/entities/variant-attribute-value.entity";
 import { VariantProductMapper } from "./mappers/variant-product.mapper";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
+import { ProductCacheService } from "../product/cache";
+import { CatalogCacheService } from "../catalogs/cache";
 
 type Pair = { attributeId: number; valueId: number };
 function cartesian<T>(arr: T[][]): T[][] {
@@ -48,6 +50,8 @@ export class VariantProductService {
   constructor(
     @InjectRepository(VariantProduct)
     private readonly varRepo: Repository<VariantProduct>,
+    private readonly productCatchService: ProductCacheService,
+    private readonly catalogCatchService: CatalogCacheService,
     private readonly dataSource: DataSource
   ) { }
 
@@ -169,6 +173,10 @@ export class VariantProductService {
         order: { id: "ASC" },
       });
 
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(product.id);
+      await this.catalogCatchService.clearAllCatalogCache();
+
       return variants; // یا از همین‌جا Mapper خودت رو صدا بزن
     });
   }
@@ -193,6 +201,9 @@ export class VariantProductService {
       if (!variant) throw new NotFoundException('نوع محصول یافت نشد.');
       const update = manager.merge(VariantProduct, variant, dto);
       const saved = await manager.save(VariantProduct, update);
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(variant.productId);
+      await this.catalogCatchService.clearAllCatalogCache();
       return saved;
     });
   }
@@ -211,6 +222,9 @@ export class VariantProductService {
         where: { product: { id: variant.productId } },
         relations: ["attributes", "attributes.attribute", "attributes.value"],
       });
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(variant.productId);
+      await this.catalogCatchService.clearAllCatalogCache();
 
       return {
         success: true,
@@ -251,6 +265,8 @@ export class VariantProductService {
         where: { product: { id: productId } },
         relations: ["attributes", "attributes.attribute", "attributes.value"],
       });
+      await this.productCatchService.clearProductCache(productId);
+      await this.catalogCatchService.clearAllCatalogCache();
 
       return {
         success: true,

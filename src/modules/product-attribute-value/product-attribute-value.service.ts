@@ -12,12 +12,16 @@ import { ProductAttributeValueMapper } from "./mappers/product-attribute-value.m
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { CategoryAttribute } from "../category-attribute/entities/category-attribute.entity";
 import { AddedImportantDto } from "./dto/added-important.dto";
+import { ProductCacheService } from "../product/cache";
+import { CatalogCacheService } from "../catalogs/cache";
 
 @Injectable()
 export class ProductAttributeValueService {
   constructor(
     @InjectRepository(ProductAttributeValue)
     private readonly pavRepo: Repository<ProductAttributeValue>,
+    private readonly productCatchService: ProductCacheService,
+    private readonly catalogCatchService: CatalogCacheService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -104,6 +108,9 @@ export class ProductAttributeValueService {
           created.push(await manager.save(pav));
         }
       }
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(product.id);
+      await this.catalogCatchService.clearAllCatalogCache();
       return ProductAttributeValueMapper.toResponses(created);
     });
   }
@@ -145,6 +152,9 @@ export class ProductAttributeValueService {
           created.push(await manager.save(pav));
         }
       }
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(product.id);
+      await this.catalogCatchService.clearAllCatalogCache();
       return ProductAttributeValueMapper.toResponses(created);
     });
   }
@@ -154,6 +164,9 @@ export class ProductAttributeValueService {
     if (!pav.length) throw new NotFoundException('مقدار ویژگی یافت نشد یا این ویژگی به این محصول اختصاص ندارد.');
     pav.forEach(p => p.isImportant = dto.important);
     await this.pavRepo.save(pav);
+    // ✅ پاک کردن cache بعد از update
+    await this.productCatchService.clearProductCache(dto.productId);
+    await this.catalogCatchService.clearAllCatalogCache();
     return {
       message: 'ویژگی با موفقیت به عنوان ویژگی مهم تنظیم شد',
       data: null,
