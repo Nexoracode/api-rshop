@@ -125,6 +125,7 @@ export class CatalogQueryService {
     // ------------------------------------------
     // ۲. ویژگی‌ها از category_attribute + product_attribute_values
     // ------------------------------------------
+    console.log(category, categoryIds);
     const productAttrs = await this.dataSource.query(
       `
       SELECT DISTINCT
@@ -143,7 +144,6 @@ export class CatalogQueryService {
         AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND av.value IS NOT NULL
-        AND a.is_public = true
     `,
       [...categoryIds, ...categoryIds],
     );
@@ -170,7 +170,6 @@ export class CatalogQueryService {
         AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND av.value IS NOT NULL
-        AND a.is_public = true
     `,
       [...categoryIds, ...categoryIds],
     );
@@ -203,7 +202,7 @@ export class CatalogQueryService {
         attr.values.push({
           id: row.attribute_value_id,
           value: row.attribute_value,
-          displayColor: row.attribute_value_color,
+          displayColor: row.attribute_value_color ?? null,
         });
       }
     }
