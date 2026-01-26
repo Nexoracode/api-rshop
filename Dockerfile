@@ -1,14 +1,14 @@
 # Stage 1: Build the app
-# FROM node:20-alpine AS builder
+FROM node:20-alpine AS builder
 
-# WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-# COPY package*.json ./
-# RUN npm install
+COPY package*.json ./
+RUN npm install
 
-# COPY . .
-# # این خط اپلیکیشن را بیلد می‌کند
-# RUN npm run build
+COPY . .
+# این خط اپلیکیشن را بیلد می‌کند
+RUN npm run build
 
 # Stage 2: Create the production image
 FROM node:20-alpine  
@@ -16,8 +16,8 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # # فقط فایل‌های مورد نیاز پروداکشن را کپی کنید
-# COPY package*.json ./
-# RUN npm install --only=production
+COPY package*.json ./
+RUN npm install --only=production
 
 # فایل‌های بیلد شده را از مرحله قبل کپی کنید
 COPY --from=builder /usr/src/app/dist ./dist
