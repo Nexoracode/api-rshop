@@ -61,6 +61,7 @@ export class UserController {
     @Patch(':id')
     @HttpCode(200)
     update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateUserDto) {
+        console.log(id);
         return this.userService.update(id, data);
     }
 

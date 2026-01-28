@@ -39,15 +39,12 @@ export class UserService extends BaseService<User> implements IUserService {
         if (!user) {
             throw new NotFoundException('users not found');
         }
-        const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
+        // const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
         const existsPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
         if (existsPhone && existsPhone.id !== id) throw new BadRequestException('این شماره قبلا ثبت شده است');
         const existsEmail = await this.userRepo.findOne({ where: { email: data.email } });
         if (existsEmail && existsEmail.id !== id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
-        const updated = this.userRepo.merge(user, {
-            ...data,
-            addresses: addressEntities,
-        });
+        const updated = this.userRepo.merge(user, data);
         const saved = await this.userRepo.save(updated);
         return UserMapper.toResponse(saved);
     }
