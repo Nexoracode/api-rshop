@@ -8,6 +8,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { CreateManualOrderDto } from './dto/create-order.dto';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('15 - 📑 Orders')
 @UseGuards(AccessGuard)
@@ -71,10 +72,19 @@ export class OrderController {
   }
 
   // ✅ لغو سفارش
+  @Public()
   @Post(':id/cancel')
   @ApiOperation({ summary: 'لغو سفارش (ادمین یا کاربر)' })
   cancelOrder(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.cancelOrder(id);
+  }
+
+  // ✅ در انتظار پرداخت سفارش
+  @Public()
+  @Post(':id/awaiting')
+  @ApiOperation({ summary: 'در انتظار پرداخت سفارش (ادمین یا کاربر)' })
+  awaitingpaymentOrder(@CurrentUser() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
+    return this.orderService.awaitingPayment(user, id);
   }
 
   // ✅ بازپرداخت سفارش

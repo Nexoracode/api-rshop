@@ -635,6 +635,8 @@ export class OrderService {
             where: {
                 order: { id: order.id }, status: In(
                     [
+                        PaymentStatus.IN_PROGRESS,
+                        PaymentStatus.PENDING,
                         PaymentStatus.SUCCESS,
                         PaymentStatus.FAILED
                     ])
@@ -705,6 +707,38 @@ export class OrderService {
             }
 
             order.status = OrderStatus.DELIVERED;
+            await manager.save(Order, order);
+            await this.cardStatusService.abandonCart(order.user.id, manager);
+
+            // ✅ پاک کردن cache
+            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
+
+            return order;
+        });
+    }
+
+
+    async awaitingPayment(user: RequestUser, orderId: number): Promise<Order> {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id: orderId },
+                relations: ['user'],
+            });
+
+
+            if (!order) {
+                throw new NotFoundException('سفارش یافت نشد');
+            }
+
+            if (user.id !== order.user.id) {
+                throw new BadRequestException('سفارش برای این کاربر نیست.');
+            }
+
+            if (order.status !== OrderStatus.START_ORDER) {
+                throw new BadRequestException('فقط سفارش های ثبت اولیه قابل تغییر هستند.');
+            }
+
+            order.status = OrderStatus.AWAITING_PAYMENT;
             await manager.save(Order, order);
             await this.cardStatusService.abandonCart(order.user.id, manager);
 

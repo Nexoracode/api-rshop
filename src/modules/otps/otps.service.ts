@@ -19,7 +19,7 @@ export class OtpService {
   ) { }
 
   async generate(identifier: string): Promise<void> {
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    const production = process.env.NODE_ENV === 'production';
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expireAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
 
@@ -55,14 +55,14 @@ export class OtpService {
       // ✅ گام 4: ساخت OTP جدید
       const otp = this.otpRepo.create({
         identifier,
-        code: isDevelopment ? '123456' : code,
+        code: !production ? '123456' : code,
         expireAt: expireAt,
       });
 
       await this.otpRepo.save(otp);
 
       // ✅ گام 5: ارسال SMS (غیرهمزمان - بدون blocking)
-      if (!isDevelopment) {
+      if (production) {
         this.smsService.sendOtp(identifier, code).catch(error => {
           this.logger.error(`❌ خطا در ارسال SMS به ${identifier}:`, error);
         });

@@ -292,6 +292,7 @@ export class ProfileService {
       ],
     });
 
-    return orders.map(order => OrderMapper.toAllResponse(order));
+    const returnedOrder = orders.map(order => OrderMapper.toAllResponse(order));
+    return returnedOrder;
   }
 }
