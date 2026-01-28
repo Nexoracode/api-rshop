@@ -84,8 +84,14 @@ export class ProductController {
         let seo: any = null;
         if (product.isVisible) {
             seo = this.seoService.generateProductMeta(product);
+            return { product, seo };
+        } else {
+            return {
+                product: null,
+                message: 'این محصول در حال حاظر قابل نمایش نیست.',
+                isVisible: product.isVisible
+            }
         }
-        return { product, seo };
     }
 
     @ApiOperation({

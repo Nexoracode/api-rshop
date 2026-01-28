@@ -186,6 +186,7 @@ export class ProductService implements IProductService {
         // بررسی visibility
         if (!product.isVisible) {
             return {
+                product: null,
                 message: 'این محصول در حال حاضر قابل نمایش نیست',
                 isVisible: false
             };
@@ -488,7 +489,7 @@ export class ProductService implements IProductService {
         });
 
         // ✅ پاک کردن cache بعد از bulk delete
-        await this.cacheService.clearListCaches();
+        ids.map(async (id) => { (await this.cacheService.clearProductCache(id)) })
         await this.catalogCatchService.clearAllCatalogCache();
         this.logger.log(`🗑️ Cache پاک شد بعد از bulk delete`);
 
