@@ -3,6 +3,7 @@ import { AttributeService } from './attribute.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { UpdateSortDto } from './dto/update-sort-attribute.dto';
 @ApiTags('05 - 🧬 Attributes')
 @Controller('attribute')
 export class AttributeController {
@@ -34,8 +35,8 @@ export class AttributeController {
   }
 
   @Patch(':id/order')
-  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeDto) {
-    return this.attributeService.updateOrder(id, data.displayOrder ?? 0);
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateSortDto) {
+    return this.attributeService.updateOrder(id, data);
   }
 
   @Delete(':id')

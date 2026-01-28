@@ -179,6 +179,9 @@ export class ProductAttributeValueService {
       if (!pav) throw new NotFoundException("ویژگی محصول یافت نشد");
 
       await manager.remove(pav);
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(id);
+      await this.catalogCatchService.clearAllCatalogCache();
       return { success: true, message: "ویژگی محصول حذف شد" };
     });
   }
@@ -188,6 +191,9 @@ export class ProductAttributeValueService {
     if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
     value.displayOrder = order;
     await this.pavRepo.save(value);
+    // ✅ پاک کردن cache بعد از update
+    await this.productCatchService.clearProductCache(id);
+    await this.catalogCatchService.clearAllCatalogCache();
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,
@@ -226,6 +232,10 @@ export class ProductAttributeValueService {
         where: { product: { id: productId } },
         relations: ["attribute", "attribute.group", "value"],
       });
+
+      // ✅ پاک کردن cache بعد از update
+      await this.productCatchService.clearProductCache(productId);
+      await this.catalogCatchService.clearAllCatalogCache();
 
       return {
         success: true,

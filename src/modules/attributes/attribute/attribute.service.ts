@@ -10,6 +10,9 @@ import { AttributeGroup } from '../attribute-group/entities/attribute-group.enti
 import { AttributeMapper } from './mappers/attribute.mapper';
 import { AttributeUnit } from 'src/common/enums/attribute.enum';
 import { AttributeGroupMapper } from '../attribute-group/mappers/attribute-group.mapper';
+import { UpdateSortDto } from './dto/update-sort-attribute.dto';
+import { ProductCacheService } from 'src/modules/product/cache';
+import { CatalogCacheService } from 'src/modules/catalogs/cache';
 
 @Injectable()
 export class AttributeService implements IAttributeService {
@@ -18,6 +21,8 @@ export class AttributeService implements IAttributeService {
     private readonly attributeRepo: Repository<Attribute>,
     @InjectRepository(AttributeGroup)
     private readonly groupRepo: Repository<AttributeGroup>,
+    private readonly productCatchService: ProductCacheService,
+    private readonly catalogCatchService: CatalogCacheService,
 
   ) { }
 
@@ -99,16 +104,17 @@ export class AttributeService implements IAttributeService {
     }
   }
 
-  async updateOrder(id: number, order: number): Promise<Object> {
+  async updateOrder(id: number, data: UpdateSortDto): Promise<Object> {
     const value = await this.attributeRepo.findOne({ where: { id } });
     if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
-    value.displayOrder = order;
+    value.displayOrder = data.displayOrder;
     await this.attributeRepo.save(value);
+    // ✅ پاک کردن cache بعد از update
+    await this.productCatchService.clearProductCache(data.productId);
+    await this.catalogCatchService.clearAllCatalogCache();
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,
     }
-
   }
-
 }
