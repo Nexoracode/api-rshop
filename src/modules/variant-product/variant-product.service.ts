@@ -125,10 +125,10 @@ export class VariantProductService {
 
         const variant = manager.create(VariantProduct, {
           sku: uniqueSku,
-          price: dto.price,
-          stock: dto.stock,
-          discountAmount: dto.discountAmount ?? 0,
-          discountPercent: dto.discountPercent ?? 0,
+          price: product.price,
+          stock: product.stock,
+          discountAmount: product.discountAmount ?? 0,
+          discountPercent: product.discountPercent ?? 0,
           product,
         });
         const saved = await manager.save(variant);
