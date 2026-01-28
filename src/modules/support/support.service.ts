@@ -215,6 +215,7 @@ export class SupportService {
         'messages.content',
         'user.firstName',
         'user.lastName',
+        'user.phone',
       ],
       filterableColumns: {
         createdAt: [FilterOperator.LTE, FilterOperator.GTE],
