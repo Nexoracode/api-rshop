@@ -21,7 +21,7 @@ export class ReviewService {
   ) { }
 
   async create(user: User, dto: CreateReviewDto) {
-    const review = this.reviewRepo.create({ ...dto, userId: user.id });
+    const review = this.reviewRepo.create({ ...dto, userId: user.id, isApproved: null });
     return await this.reviewRepo.save(review);
   }
 

@@ -37,8 +37,8 @@ export class Review {
     @Column({ type: 'text', nullable: true })
     comment?: string;
 
-    @Column({ name: 'is_approved', type: 'boolean', default: false })
-    isApproved: boolean;
+    @Column({ name: 'is_approved', type: 'boolean', default: null, nullable: true })
+    isApproved: boolean | null;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
