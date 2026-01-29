@@ -26,8 +26,6 @@ export class AutoRefreshGuard implements CanActivate {
         const accessToken = req.cookies[JwtTypeToken.ACCESS];
         const refreshToken = req.cookies[JwtTypeToken.REFRESH];
 
-        console.log('old access and refresh -> ', accessToken, refreshToken);
-
         try {
             this.tokenService.verifyToken(accessToken, JwtTypeToken.ACCESS);
             return true;
@@ -36,9 +34,7 @@ export class AutoRefreshGuard implements CanActivate {
             try {
                 const decode = await this.tokenService.verifyToken(refreshToken, JwtTypeToken.REFRESH);
                 const user = await this.authService.getUserById(decode.sub);
-                console.log('user -> ', user);
                 const isMatch = await bcrypt.compare(refreshToken, user.apiToken!);
-                console.log('isMatch token -> ', isMatch);
                 if (!isMatch) throw new UnauthorizedException('refresh token not match');
 
                 const payload = {
@@ -49,16 +45,12 @@ export class AutoRefreshGuard implements CanActivate {
                 }
 
                 const newAccessToken = this.tokenService.generateToken(payload, JwtTypeToken.ACCESS);
-                console.log('new access -> ', newAccessToken);
                 this.tokenService.setTokenInCookie(res, newAccessToken, JwtTypeToken.ACCESS);
-
                 //update request object for future access
                 req.cookies[JwtTypeToken.ACCESS] = newAccessToken;
-                console.log('cookie token -> ', req.cookies[JwtTypeToken.ACCESS])
                 return true;
 
             } catch (error) {
-                console.log(error)
                 throw new UnauthorizedException('لطفا ابتدا وارد حساب کاربری خود شوید.');
             }
         }

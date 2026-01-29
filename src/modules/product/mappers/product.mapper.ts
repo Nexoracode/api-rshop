@@ -122,11 +122,11 @@ export class ProductMapper {
                     values: va.value
                         ? {
                             id: va.value.id,
-                            value: va.value.value,
-                            attribute_id: va.value.attributeId,
-                            display_color: va.value.displayColor ?? "",
-                            is_active: va.value.isActive ?? true,
-                            display_order: va.value.displayOrder ?? null,
+                            value: va.value.va.value,
+                            attribute_id: va.value.attribute_id,
+                            display_color: va.value.display_color ?? "",
+                            is_active: va.value.is_active ?? true,
+                            display_order: va.value.display_order ?? null,
                         }
                         : null,
                 };
@@ -177,10 +177,10 @@ export class ProductMapper {
                     value: {
                         id: val.id,
                         value: val.value,
-                        attribute_id: val.attributeId,
-                        display_color: val.displayColor ?? "",
-                        is_active: val.isActive ?? true,
-                        display_order: val.displayOrder ?? null,
+                        attribute_id: val.attribute_id,
+                        display_color: val.display_color ?? "",
+                        is_active: val.is_active ?? true,
+                        display_order: val.display_order ?? null,
                     },
                 }));
                 if (list.length) perAttribute.push(list);

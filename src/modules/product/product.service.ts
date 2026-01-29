@@ -532,7 +532,7 @@ export class ProductService implements IProductService {
                     where: {
                         categoryId: product.categoryId,
                         brandId: product.brandId,
-                        isActive: true,
+                        isVisible: true,
                     },
                     relations,
                     order: { createdAt: 'DESC' },
@@ -552,7 +552,7 @@ export class ProductService implements IProductService {
                 const sameCategory = await this.productRepo.find({
                     where: {
                         categoryId: product.categoryId,
-                        isActive: true,
+                        isVisible: true,
                     },
                     relations,
                     order: { createdAt: 'DESC' },
@@ -572,7 +572,7 @@ export class ProductService implements IProductService {
                 const sameBrand = await this.productRepo.find({
                     where: {
                         brandId: product.brandId,
-                        isActive: true,
+                        isVisible: true,
                     },
                     relations,
                     order: { createdAt: 'DESC' },
@@ -590,7 +590,7 @@ export class ProductService implements IProductService {
             // ✅ مرحله 4: اگر باز کم بود، محصولات فعال جدید
             if (similarProducts.length < limit) {
                 const recentProducts = await this.productRepo.find({
-                    where: { isActive: true },
+                    where: { isVisible: true },
                     relations,
                     order: { createdAt: 'DESC' },
                     take: limit * 2,
