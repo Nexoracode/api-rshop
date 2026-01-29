@@ -147,12 +147,8 @@ export class ProfileService {
         case OrderStatus.PENDING_APPROVAL:
         case OrderStatus.PROCESSING:
         case OrderStatus.PREPARING:
-          summary.processing++;
-          break;
-
-        // در حال ارسال
         case OrderStatus.SHIPPING:
-          summary.shipping++;
+          summary.processing++;
           break;
 
         // تحویل داده شده

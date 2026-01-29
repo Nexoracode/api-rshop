@@ -633,14 +633,9 @@ export class OrderService {
 
         const payment = await this.paymentRepo.findOne({
             where: {
-                order: { id: order.id }, status: In(
-                    [
-                        PaymentStatus.IN_PROGRESS,
-                        PaymentStatus.PENDING,
-                        PaymentStatus.SUCCESS,
-                        PaymentStatus.FAILED
-                    ])
-            }
+                order: { id: order.id },
+            },
+            order: { createdAt: 'DESC' },
         });
 
         const result = OrderMapperNew.toDetail(order, payment);

@@ -1,6 +1,5 @@
 import { buildPriceObject } from 'src/common/helpers/price.helper';
 import { Review } from '../entities/review.entity';
-import { create } from 'lodash';
 
 export class ReviewMapper {
     static toResponse(review: Review) {

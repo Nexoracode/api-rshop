@@ -18,6 +18,7 @@ import { SuccessfulPaymentHandler } from "./successful-payment.handler";
 import { FailedPaymentHandler } from "./failed-payment.handler";
 import { Order } from "../../order/entities/order.entity";
 import { OrderStatusService } from "src/modules/order/order.status.service";
+import { toInteger } from "lodash";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -136,8 +137,9 @@ export class PaymentVerificationHandler {
 
     try {
       // ✅ ارسال درخواست verify به زرین‌پال
+      const amount = toInteger(order.total + '0');
       const verification = await zarinpal.verifications.verify({
-        amount: order.total,
+        amount,
         authority: authority,
       });
 

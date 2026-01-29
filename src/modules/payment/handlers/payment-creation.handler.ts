@@ -15,6 +15,7 @@ import { ZarinpalException } from "src/common/exceptions/zarinpal-exception";
 import { PaymentResponseMapper } from "../mappers/payment-response.mapper";
 import { CardStatusService } from "../../card/card-status.service";
 import { OrderStatusService } from "src/modules/order/order.status.service";
+import { toInteger } from "lodash";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -66,16 +67,16 @@ export class PaymentCreationHandler {
     // قفل کردن سبد خرید (فقط یکبار)
 
     let requestResult: any;
+    const amount = toInteger(order.total + '0');
 
     try {
       // ارسال درخواست به زرین‌پال
       requestResult = await zarinpal.payments.create({
-        amount: order.total,
+        amount,
         callback_url: callbackUrl,
         description: `پرداخت سفارش شماره ${order.id}`,
         mobile: order.user?.phone ?? null,
         email: order.user?.email ?? null,
-        referrer_id: order.user?.phone ?? null,
       });
       // تغییر وضعیت سفارش
       await this.cardStatusService.lockCart(order.user.id, manager);
