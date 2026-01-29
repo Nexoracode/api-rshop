@@ -18,6 +18,7 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-cache.interceptor';
+import { UpdateSortDto } from 'src/modules/attributes/attribute/dto/update-sort-attribute.dto';
 
 /**
  * کنترلر مدیریت بخش‌های محصولات صفحه اصلی (Home Sections)
@@ -911,5 +912,11 @@ export class HomeSectionAdminController {
   async remove(@Param('id') id: string) {
     await this.homeSectionService.remove(+id);
     return { message: 'Home section deleted successfully' };
+  }
+
+  @Patch(':id/order')
+  @UseInterceptors(ClearHomePageCacheInterceptor)
+  async updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: { displayOrder: number }) {
+    return this.homeSectionService.updateOrder(id, data);
   }
 }

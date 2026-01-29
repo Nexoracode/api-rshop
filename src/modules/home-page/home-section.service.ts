@@ -6,6 +6,7 @@ import { CreateHomeSectionDto, UpdateHomeSectionDto } from './dto/home-section.d
 import { Product } from '../product/entities/product.entity';
 import { HomePageCacheService } from './cache/home-page-cache.service';
 import { PromotionRepository } from '../promotion/domain/interfaces/promotion-repository.interface';
+import { UpdateSortDto } from '../attributes/attribute/dto/update-sort-attribute.dto';
 
 @Injectable()
 export class HomeSectionService {
@@ -30,8 +31,16 @@ export class HomeSectionService {
         throw new NotFoundException(`بخش صفحه اصلی با اسلاگ ${createDto.slug} قبلاً وجود دارد`);
       }
     }
+    const lastAttribute = await this.homeSectionRepository.find({
+      order: { sortOrder: 'DESC' },
+      take: 1,
+    })
+    const nextOrder = lastAttribute.length ? lastAttribute[0].sortOrder + 1 : 1;
 
-    const section = this.homeSectionRepository.create(createDto);
+    const section = this.homeSectionRepository.create({
+      ...createDto,
+      sortOrder: nextOrder,
+    });
     const result = await this.homeSectionRepository.save(section);
 
     await this.cacheService.clearHomeSectionsCache();
@@ -244,6 +253,17 @@ export class HomeSectionService {
 
       default:
         return [];
+    }
+  }
+
+  async updateOrder(id: number, data: { displayOrder: number }) {
+    const section = await this.homeSectionRepository.findOne({ where: { id } });
+    if (!section) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
+    section.sortOrder = data.displayOrder;
+    await this.homeSectionRepository.save(section);
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
     }
   }
 }
