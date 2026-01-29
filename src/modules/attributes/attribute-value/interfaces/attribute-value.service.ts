@@ -1,3 +1,4 @@
+import { UpdateSortDto } from "../../attribute/dto/update-sort-attribute.dto";
 import { CreateAttributeValueDto } from "../dto/create-attribute-value.dto";
 import { UpdateAttributeValueDto } from "../dto/update-attribute-value.dto";
 import { IAttributeValueResponse } from "./attribute-value.response.interface";
@@ -7,5 +8,5 @@ export interface IAttributeValueService {
     create(data: CreateAttributeValueDto): Promise<IAttributeValueResponse>;
     update(id: number, data: UpdateAttributeValueDto): Promise<IAttributeValueResponse>;
     remove(id: number): Promise<Object>;
-    updateOrder(id: number, order: number): Promise<Object>;
+    updateOrder(id: number, data: UpdateSortDto): Promise<Object>;
 }

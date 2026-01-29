@@ -8,7 +8,9 @@ import { CreateAttributeValueDto } from './dto/create-attribute-value.dto';
 import { IAttributeValueResponse } from './interfaces/attribute-value.response.interface';
 import { Attribute } from '../attribute/entities/attribute.entity';
 import { AttributeValueMapper } from './mappers/attribute-value.mapper';
-import { AttributeMapper } from '../attribute/mappers/attribute.mapper';
+import { ProductCacheService } from 'src/modules/product/cache';
+import { CatalogCacheService } from 'src/modules/catalogs/cache';
+import { UpdateSortDto } from '../attribute/dto/update-sort-attribute.dto';
 
 @Injectable()
 export class AttributeValueService implements IAttributeValueService {
@@ -16,14 +18,19 @@ export class AttributeValueService implements IAttributeValueService {
     @InjectRepository(AttributeValue)
     private readonly valueRepo: Repository<AttributeValue>,
     @InjectRepository(Attribute)
-    private readonly attrRepo: Repository<Attribute>
+    private readonly attrRepo: Repository<Attribute>,
+    private readonly productCatchService: ProductCacheService,
+    private readonly catalogCatchService: CatalogCacheService,
   ) { }
 
-  async updateOrder(id: number, order: number): Promise<Object> {
+  async updateOrder(id: number, data: UpdateSortDto): Promise<Object> {
     const value = await this.valueRepo.findOne({ where: { id } });
     if (!value) throw new NotFoundException('مقدار ویژگی مورد نظر یافت نشد.');
-    value.displayOrder = order;
+    value.displayOrder = data.displayOrder;
+    // ✅ پاک کردن cache بعد از update
     await this.valueRepo.save(value);
+    await this.productCatchService.clearProductCache(data.productId);
+    await this.catalogCatchService.clearAllCatalogCache();
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,

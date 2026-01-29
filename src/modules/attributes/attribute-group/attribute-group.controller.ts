@@ -3,6 +3,7 @@ import { AttributeGroupService } from './attribute-group.service';
 import { CreateAttributeGroupDto } from './dto/create-attribute-group.dto';
 import { UpdateAttributeGroupDto } from './dto/update-attribute-group.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { UpdateSortDto } from '../attribute/dto/update-sort-attribute.dto';
 
 @ApiTags('04 - 📁 Attribute Groups')
 @Controller('attribute-group')
@@ -36,7 +37,7 @@ export class AttributeGroupController {
   }
 
   @Patch(':id/order')
-  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeGroupDto) {
-    return this.attributeGroupService.updateOrder(id, data.displayOrder ?? 0);
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateSortDto) {
+    return this.attributeGroupService.updateOrder(id, data);
   }
 }

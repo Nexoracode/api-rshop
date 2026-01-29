@@ -9,6 +9,9 @@ import { IAttributeGroupResponse } from './interfaces/attribute-group.response.i
 import { AttributeGroupMapper } from './mappers/attribute-group.mapper';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Attribute } from '../attribute/entities/attribute.entity';
+import { ProductCacheService } from 'src/modules/product/cache';
+import { CatalogCacheService } from 'src/modules/catalogs/cache';
+import { UpdateSortDto } from '../attribute/dto/update-sort-attribute.dto';
 
 @Injectable()
 export class AttributeGroupService implements IAttributeGroupService {
@@ -16,6 +19,9 @@ export class AttributeGroupService implements IAttributeGroupService {
     @InjectRepository(AttributeGroup)
     private readonly attrGroupRepo: Repository<AttributeGroup>,
     private readonly dataSource: DataSource,
+    private readonly productCatchService: ProductCacheService,
+    private readonly catalogCatchService: CatalogCacheService,
+
   ) { }
 
   async create(data: CreateAttributeGroupDto): Promise<IAttributeGroupResponse> {
@@ -67,11 +73,14 @@ export class AttributeGroupService implements IAttributeGroupService {
     return attributeGroups.map((attr) => AttributeGroupMapper.toResponse(attr));
   }
 
-  async updateOrder(id: number, order: number): Promise<Object> {
+  async updateOrder(id: number, data: UpdateSortDto): Promise<Object> {
     const value = await this.attrGroupRepo.findOne({ where: { id } });
     if (!value) throw new NotFoundException('گروه ویژگی مورد نظر یافت نشد.');
-    value.displayOrder = order;
+    value.displayOrder = data.displayOrder;
     await this.attrGroupRepo.save(value);
+    // ✅ پاک کردن cache بعد از update
+    await this.productCatchService.clearProductCache(data.productId);
+    await this.catalogCatchService.clearAllCatalogCache();
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,

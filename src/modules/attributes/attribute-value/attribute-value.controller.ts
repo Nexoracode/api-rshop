@@ -3,6 +3,7 @@ import { AttributeValueService } from './attribute-value.service';
 import { CreateAttributeValueDto } from './dto/create-attribute-value.dto';
 import { UpdateAttributeValueDto } from './dto/update-attribute-value.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { UpdateSortDto } from '../attribute/dto/update-sort-attribute.dto';
 @ApiTags('06 - 🔠 Attribute Values')
 @Controller('attribute-value')
 export class AttributeValueController {
@@ -29,7 +30,7 @@ export class AttributeValueController {
   }
 
   @Patch(':id/order')
-  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeValueDto) {
-    return this.attributeValueService.updateOrder(id, data.displayOrder ?? 0);
+  updateOrder(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateSortDto) {
+    return this.attributeValueService.updateOrder(id, data);
   }
 }
