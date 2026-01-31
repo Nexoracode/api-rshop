@@ -104,7 +104,7 @@ export class SideBannerService {
     const result = await this.sideBannerRepository.save(banner);
 
     // ✅ پاک کردن cache
-    await this.cacheService.clearSideBannersCache(id);
+    await this.cacheService.clearSideBannersCache();
     this.logger.log(`🗑️ Side banner ${id} cache پاک شد بعد از update`);
 
     return result;
@@ -116,7 +116,7 @@ export class SideBannerService {
     await this.sideBannerRepository.remove(banner);
 
     // ✅ پاک کردن cache
-    await this.cacheService.clearSideBannersCache(id);
+    await this.cacheService.clearSideBannersCache()
     this.logger.log(`🗑️ Side banner ${id} cache پاک شد بعد از delete`);
   }
 }
