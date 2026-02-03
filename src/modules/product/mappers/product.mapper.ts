@@ -122,7 +122,7 @@ export class ProductMapper {
                     values: va.value
                         ? {
                             id: va.value.id,
-                            value: va.value.va.value,
+                            value: va.value.value,
                             attribute_id: va.value.attribute_id,
                             display_color: va.value.display_color ?? "",
                             is_active: va.value.is_active ?? true,

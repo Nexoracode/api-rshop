@@ -8,7 +8,7 @@ export class UpdateSortDto {
     displayOrder: number
 
     @ApiProperty({ name: 'product_id', required: true })
-    @IsInt()
     @IsNumber()
+    @IsOptional()
     productId: number;
 }

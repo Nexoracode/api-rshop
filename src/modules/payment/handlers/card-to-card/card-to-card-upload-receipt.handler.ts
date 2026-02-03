@@ -46,6 +46,8 @@ export class CardToCardUploadReceiptHandler {
       relations: ['order', 'receiptImage'],
     });
 
+    console.log(payment);
+
     if (!payment) {
       throw new NotFoundException('پرداخت یافت نشد');
     }

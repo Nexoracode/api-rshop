@@ -94,11 +94,6 @@ export class UpdateSideBannerDto {
   @IsOptional()
   badgeColor?: string;
 
-  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
-  @IsInt()
-  @IsOptional()
-  sortOrder?: number;
-
   @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()

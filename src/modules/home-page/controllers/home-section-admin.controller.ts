@@ -104,7 +104,7 @@ export class HomeSectionAdminController {
    * **فیلدهای اختیاری:**
    * - description: توضیحات بخش
    * - products_limit: تعداد محصولات نمایشی (پیش‌فرض 10)
-   * - sort_order: ترتیب نمایش (پیش‌فرض 0)
+   * - display_order: ترتیب نمایش (پیش‌فرض 0)
    * - is_active: فعال/غیرفعال (پیش‌فرض true)
    * - show_view_all_button: نمایش دکمه "مشاهده همه" (پیش‌فرض false)
    * - view_all_link: لینک دکمه "مشاهده همه"
@@ -216,7 +216,7 @@ export class HomeSectionAdminController {
           products_limit: 10,
           show_view_all_button: true,
           view_all_link: '/products?featured=true',
-          sort_order: 1,
+          display_order: 1,
           is_active: true
         }
       },
@@ -232,7 +232,7 @@ export class HomeSectionAdminController {
           product_ids: [1, 5, 10, 15, 20],
           products_limit: 8,
           show_view_all_button: false,
-          sort_order: 2,
+          display_order: 2,
           is_active: true
         }
       },
@@ -248,7 +248,7 @@ export class HomeSectionAdminController {
           products_limit: 12,
           show_view_all_button: true,
           view_all_link: '/products?sort=popularity',
-          sort_order: 3,
+          display_order: 3,
           is_active: true
         }
       },
@@ -265,7 +265,7 @@ export class HomeSectionAdminController {
           products_limit: 12,
           show_view_all_button: true,
           view_all_link: '/category/religious-books',
-          sort_order: 4,
+          display_order: 4,
           is_active: true
         }
       },
@@ -282,7 +282,7 @@ export class HomeSectionAdminController {
           products_limit: 12,
           show_view_all_button: true,
           view_all_link: '/promotions/winter-special',
-          sort_order: 5,
+          display_order: 5,
           is_active: true
         }
       }
@@ -302,7 +302,7 @@ export class HomeSectionAdminController {
         product_ids: null,
         category_id: null,
         products_limit: 10,
-        sort_order: 1,
+        display_order: 1,
         is_active: true,
         show_view_all_button: true,
         view_all_link: '/products?featured=true',
@@ -353,7 +353,7 @@ export class HomeSectionAdminController {
    * دریافت لیست کامل بخش‌ها (فعال و غیرفعال).
    * 
    * **مرتب‌سازی:**
-   * 1. بر اساس sort_order (صعودی)
+   * 1. بر اساس display_order (صعودی)
    * 2. بر اساس created_at (نزولی - جدیدترین اول)
    * 
    * **نکته:** محصولات بخش‌ها در این endpoint برگردانده نمی‌شوند.
@@ -368,7 +368,7 @@ export class HomeSectionAdminController {
 دریافت لیست کامل بخش‌های صفحه اصلی.
 
 **ترتیب نمایش:**
-- ابتدا بر اساس \`sort_order\` (عدد کوچکتر اول)
+- ابتدا بر اساس \`display_order\` (عدد کوچکتر اول)
 - سپس بر اساس تاریخ ایجاد (جدیدتر اول)
 
 **نکته مهم:**
@@ -397,7 +397,7 @@ export class HomeSectionAdminController {
           product_ids: null,
           category_id: null,
           products_limit: 10,
-          sort_order: 1,
+          display_order: 1,
           is_active: true,
           show_view_all_button: true,
           view_all_link: '/products?featured=true',
@@ -414,7 +414,7 @@ export class HomeSectionAdminController {
           product_ids: [1, 5, 10, 15],
           category_id: null,
           products_limit: 8,
-          sort_order: 2,
+          display_order: 2,
           is_active: true,
           show_view_all_button: false,
           view_all_link: null,
@@ -431,7 +431,7 @@ export class HomeSectionAdminController {
           product_ids: null,
           category_id: 5,
           products_limit: 12,
-          sort_order: 3,
+          display_order: 3,
           is_active: false,
           show_view_all_button: true,
           view_all_link: '/category/religious-books',
@@ -499,7 +499,7 @@ export class HomeSectionAdminController {
         product_ids: null,
         category_id: null,
         products_limit: 10,
-        sort_order: 1,
+        display_order: 1,
         is_active: true,
         show_view_all_button: true,
         view_all_link: '/products?featured=true',
@@ -787,7 +787,7 @@ export class HomeSectionAdminController {
           products_limit: 20,
           show_view_all_button: true,
           view_all_link: '/category/new-category',
-          sort_order: 5,
+          display_order: 5,
           is_active: true
         }
       }
@@ -807,7 +807,7 @@ export class HomeSectionAdminController {
         product_ids: null,
         category_id: 8,
         products_limit: 15,
-        sort_order: 2,
+        display_order: 2,
         is_active: true,
         show_view_all_button: true,
         view_all_link: '/category/new-category',

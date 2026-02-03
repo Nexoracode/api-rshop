@@ -3,6 +3,7 @@ import { ProductAttributeValue } from "src/modules/product-attribute-value/entit
 type SpecValueOut = {
     id: number | null;
     value: string;
+    attributeId: number;
     displayColor: string | null;
     isActive: boolean;
     displayOrder: number | null;
@@ -78,6 +79,7 @@ export function mapSpecificationsGrouped(specs: ProductAttributeValue[]): SpecGr
             a.values.push({
                 id: spec.value.id,
                 value: spec.value.value,
+                attributeId: spec.attribute.id,
                 displayColor: spec.value.displayColor ?? null,
                 isActive: (spec.value as any).isActive ?? true,
                 displayOrder: (spec.value as any).displayOrder ?? null,

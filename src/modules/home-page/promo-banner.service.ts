@@ -32,12 +32,22 @@ export class PromoBannerService {
             textColor: dto.textColor || null,
             isActive: dto.isActive ?? true,
             isClosable: dto.isClosable ?? true,
-            priority: dto.priority ?? 0,
             startDate: dto.startDate ? new Date(dto.startDate) : null,
             endDate: dto.endDate ? new Date(dto.endDate) : null,
             displayDuration: dto.displayDuration || null,
             description: dto.description || null,
         });
+
+        const lastAttribute = await this.promoBannerRepo.find({
+            order: { displayOrder: 'DESC' },
+            take: 1,
+        })
+
+        const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
+        await this.promoBannerRepo.save({
+            ...banner,
+            sortOrder: nextOrder
+        })
 
         const saved = await this.promoBannerRepo.save(banner);
         // ✅ پاک کردن cache
@@ -59,7 +69,7 @@ export class PromoBannerService {
         }
         const banners = await this.promoBannerRepo.find({
             order: {
-                priority: 'DESC',
+                displayOrder: 'DESC',
                 createdAt: 'DESC',
             },
         });
@@ -73,7 +83,7 @@ export class PromoBannerService {
             imageUrl: promo.imageUrl,
             isActive: promo.isActive,
             isClosable: promo.isClosable,
-            priority: promo.priority,
+            displayOrder: promo.displayOrder,
             startDate: promo.startDate,
             endDate: promo.endDate,
             displayDuration: promo.displayDuration,
@@ -103,7 +113,7 @@ export class PromoBannerService {
                 endDate: MoreThanOrEqual(now),
             },
             order: {
-                priority: 'DESC',
+                displayOrder: 'DESC',
                 createdAt: 'DESC',
             }
         });
@@ -118,7 +128,7 @@ export class PromoBannerService {
             imageUrl: promo.imageUrl,
             isActive: promo.isActive,
             isClosable: promo.isClosable,
-            priority: promo.priority,
+            displayOrder: promo.displayOrder,
             startDate: promo.startDate,
             endDate: promo.endDate,
             displayDuration: promo.displayDuration,
@@ -170,7 +180,6 @@ export class PromoBannerService {
             textColor: dto.textColor ?? banner.textColor,
             isActive: dto.isActive ?? banner.isActive,
             isClosable: dto.isClosable ?? banner.isClosable,
-            priority: dto.priority ?? banner.priority,
             startDate: dto.startDate ? new Date(dto.startDate) : banner.startDate,
             endDate: dto.endDate ? new Date(dto.endDate) : banner.endDate,
             displayDuration: dto.displayDuration ?? banner.displayDuration,
@@ -207,5 +216,17 @@ export class PromoBannerService {
         await this.cacheService.clearPromoBannersCache(id);
         this.logger.log(`🗑️ promo banner ${id} cache پاک شد بعد از toggle active`);
         return updated;
+    }
+
+    async updateSortOrder(id: number, data: { displayOrder: number }) {
+        const promo = await this.promoBannerRepo.findOne({ where: { id } });
+        if (!promo) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
+        promo.displayOrder = data.displayOrder;
+        await this.promoBannerRepo.save(promo);
+        await this.cacheService.clearPromoBannersCache();
+        return {
+            message: 'ترتیب با موفقیت انجام شد',
+            data: null,
+        }
     }
 }

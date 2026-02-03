@@ -32,14 +32,14 @@ export class HomeSectionService {
       }
     }
     const lastAttribute = await this.homeSectionRepository.find({
-      order: { sortOrder: 'DESC' },
+      order: { displayOrder: 'DESC' },
       take: 1,
     })
-    const nextOrder = lastAttribute.length ? lastAttribute[0].sortOrder + 1 : 1;
+    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
 
     const section = this.homeSectionRepository.create({
       ...createDto,
-      sortOrder: nextOrder,
+      displayOrder: nextOrder,
     });
     const result = await this.homeSectionRepository.save(section);
 
@@ -57,7 +57,7 @@ export class HomeSectionService {
     }
 
     const result = await this.homeSectionRepository.find({
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      order: { displayOrder: 'ASC', createdAt: 'DESC' },
     });
 
     await this.cacheService.setAllHomeSections(result);
@@ -75,7 +75,7 @@ export class HomeSectionService {
 
     const result = await this.homeSectionRepository.find({
       where: { isActive: true, },
-      order: { sortOrder: 'ASC' },
+      order: { displayOrder: 'ASC' },
     });
 
     await this.cacheService.setActiveHomeSections(result);
@@ -259,8 +259,9 @@ export class HomeSectionService {
   async updateOrder(id: number, data: { displayOrder: number }) {
     const section = await this.homeSectionRepository.findOne({ where: { id } });
     if (!section) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
-    section.sortOrder = data.displayOrder;
+    section.displayOrder = data.displayOrder;
     await this.homeSectionRepository.save(section);
+    await this.cacheService.clearHomeSectionsCache();
     return {
       message: 'ترتیب با موفقیت انجام شد',
       data: null,

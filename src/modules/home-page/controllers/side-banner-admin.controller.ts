@@ -41,7 +41,7 @@ import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-ca
  * 
  * **نکات مهم:**
  * - می‌توانید چند بنر در یک موقعیت داشته باشید
- * - بنرهای یک موقعیت بر اساس sort_order مرتب می‌شوند
+ * - بنرهای یک موقعیت بر اساس display_order مرتب می‌شوند
  * - برچسب تخفیف (badge) اختیاری است
  * - بعد از هر تغییر، کش صفحه اصلی پاک می‌شود
  * 
@@ -72,7 +72,7 @@ export class SideBannerAdminController {
    * - link: لینک هدف بنر
    * - badge_text: متن برچسب (مثلاً "14%" برای تخفیف)
    * - badge_color: رنگ برچسب به فرمت Hex
-   * - sort_order: ترتیب نمایش (پیش‌فرض 0)
+   * - display_order: ترتیب نمایش (پیش‌فرض 0)
    * - is_active: فعال/غیرفعال (پیش‌فرض true)
    * 
    * **موقعیت‌های مجاز (position):**
@@ -110,7 +110,7 @@ export class SideBannerAdminController {
 
 **نکات مهم:**
 - می‌توانید چند بنر در یک موقعیت داشته باشید
-- بنرهای یک موقعیت بر اساس sort_order مرتب می‌شوند
+- بنرهای یک موقعیت بر اساس display_order مرتب می‌شوند
 - برچسب تخفیف (badge) اختیاری است
 - اگر badge_text مشخص شود، badge_color هم باید مشخص شود
 - تصویر باید قبلاً آپلود شده باشد
@@ -152,7 +152,7 @@ export class SideBannerAdminController {
           position: 'middle_right',
           badge_text: '20%',
           badge_color: '#FF0000',
-          sort_order: 1,
+          display_order: 1,
           is_active: true
         }
       },
@@ -167,7 +167,7 @@ export class SideBannerAdminController {
           position: 'bottom_right',
           badge_text: 'جدید',
           badge_color: '#4CAF50',
-          sort_order: 2,
+          display_order: 2,
           is_active: true
         }
       }
@@ -187,7 +187,7 @@ export class SideBannerAdminController {
         position: 'top_right',
         badge_text: '14%',
         badge_color: '#FF0000',
-        sort_order: 0,
+        display_order: 0,
         is_active: true,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-15T10:30:00.000Z'
@@ -220,11 +220,11 @@ export class SideBannerAdminController {
    * 
    * **بدون فیلتر:**
    * - تمام بنرها (فعال و غیرفعال) برگردانده می‌شوند
-   * - مرتب‌سازی: ابتدا بر اساس position، سپس sort_order
+   * - مرتب‌سازی: ابتدا بر اساس position، سپس display_order
    * 
    * **با فیلتر position:**
    * - فقط بنرهای فعال موقعیت مشخص شده برگردانده می‌شوند
-   * - مرتب‌سازی بر اساس sort_order
+   * - مرتب‌سازی بر اساس display_order
    * 
    * @param position - (اختیاری) فیلتر بر اساس موقعیت
    * @returns آرایه‌ای از بنرها
@@ -241,11 +241,11 @@ export class SideBannerAdminController {
 
 **بدون Query Parameter:**
 - تمام بنرها (فعال و غیرفعال) برگردانده می‌شوند
-- مرتب‌سازی: position (ASC) ← sort_order (ASC)
+- مرتب‌سازی: position (ASC) ← display_order (ASC)
 
 **با Query Parameter position:**
 - فقط بنرهای فعال آن موقعیت برگردانده می‌شوند
-- مرتب‌سازی بر اساس sort_order
+- مرتب‌سازی بر اساس display_order
 
 **موقعیت‌های مجاز:**
 - \`top_right\`: بنرهای بالای صفحه
@@ -281,7 +281,7 @@ export class SideBannerAdminController {
           position: 'top_right',
           badge_text: null,
           badge_color: null,
-          sort_order: 1,
+          display_order: 1,
           is_active: true,
           created_at: '2024-01-15T10:30:00.000Z',
           updated_at: '2024-01-15T10:30:00.000Z'
@@ -296,7 +296,7 @@ export class SideBannerAdminController {
           position: 'top_right',
           badge_text: '14%',
           badge_color: '#FF0000',
-          sort_order: 2,
+          display_order: 2,
           is_active: true,
           created_at: '2024-01-14T09:20:00.000Z',
           updated_at: '2024-01-14T09:20:00.000Z'
@@ -356,7 +356,7 @@ export class SideBannerAdminController {
         position: 'top_right',
         badge_text: '14%',
         badge_color: '#FF0000',
-        sort_order: 1,
+        display_order: 1,
         is_active: true,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-15T10:30:00.000Z'
@@ -387,7 +387,7 @@ export class SideBannerAdminController {
    * **نکات:**
    * - برای حذف برچسب، badge_text و badge_color را null ارسال کنید
    * - برای تغییر موقعیت، position جدید را ارسال کنید
-   * - sort_order فقط در همان موقعیت تأثیر دارد
+   * - display_order فقط در همان موقعیت تأثیر دارد
    * 
    * @param id - شناسه بنر
    * @param updateDto - فیلدهایی که باید بروزرسانی شوند
@@ -417,7 +417,7 @@ export class SideBannerAdminController {
 
 **تغییر موقعیت:**
 - می‌توانید بنر را به موقعیت دیگری منتقل کنید
-- sort_order در موقعیت جدید اعمال می‌شود
+- display_order در موقعیت جدید اعمال می‌شود
 
 **مدیریت برچسب:**
 - برای افزودن برچسب: badge_text و badge_color را ارسال کنید
@@ -469,7 +469,7 @@ export class SideBannerAdminController {
         summary: 'تغییر موقعیت',
         value: {
           position: 'bottom_right',
-          sort_order: 1
+          display_order: 1
         }
       },
       deactivate: {
@@ -489,7 +489,7 @@ export class SideBannerAdminController {
           position: 'middle_right',
           badge_text: '30%',
           badge_color: '#4CAF50',
-          sort_order: 3,
+          display_order: 3,
           is_active: true
         }
       }
@@ -509,7 +509,7 @@ export class SideBannerAdminController {
         position: 'middle_right',
         badge_text: '30%',
         badge_color: '#4CAF50',
-        sort_order: 3,
+        display_order: 3,
         is_active: true,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-16T14:20:00.000Z'

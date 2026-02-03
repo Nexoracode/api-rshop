@@ -56,11 +56,6 @@ export class CreateHomeSectionDto {
   @IsOptional()
   productsLimit?: number;
 
-  @ApiPropertyOptional({ name: 'sort_order', example: 1 })
-  @IsInt()
-  @IsOptional()
-  sortOrder?: number;
-
   @ApiPropertyOptional({ name: 'is_active', example: true })
   @IsBoolean()
   @IsOptional()

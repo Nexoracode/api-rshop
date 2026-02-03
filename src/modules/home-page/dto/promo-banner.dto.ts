@@ -83,16 +83,6 @@ export class CreatePromoBannerDto {
     isClosable?: boolean;
 
     @ApiPropertyOptional({
-        description: 'اولویت نمایش (عدد بزرگتر = اولویت بیشتر)',
-        example: 10,
-        default: 0,
-    })
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    priority?: number;
-
-    @ApiPropertyOptional({
         description: 'تاریخ شروع نمایش (ISO format)',
         example: '2024-03-01T00:00:00.000Z',
     })

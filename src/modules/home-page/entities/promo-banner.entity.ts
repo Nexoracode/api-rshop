@@ -36,9 +36,9 @@ export class PromoBanner {
     @Column({ name: 'is_closable', type: 'boolean', default: true })
     isClosable: boolean;
 
-    @Column({ name: 'priority', type: 'int', default: 0 })
+    @Column({ name: 'display_order', type: 'int', default: 0 })
     @Index('IDX_PROMO_BANNER_PRIORITY')
-    priority: number;
+    displayOrder: number;
 
     @Column({ name: 'start_date', type: 'timestamp', nullable: true })
     startDate: Date | null;

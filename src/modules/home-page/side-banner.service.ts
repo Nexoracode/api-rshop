@@ -37,7 +37,7 @@ export class SideBannerService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.sideBannerRepository.find({
-      order: { position: 'ASC', sortOrder: 'ASC' },
+      order: { position: 'ASC', displayOrder: 'ASC' },
     });
 
     // ✅ ذخیره در cache
@@ -58,7 +58,7 @@ export class SideBannerService {
     // لاجیک اصلی (بدون تغییر)
     const result = await this.sideBannerRepository.find({
       where: { isActive: true, },
-      order: { position: 'ASC', sortOrder: 'ASC' },
+      order: { position: 'ASC', displayOrder: 'ASC' },
     });
 
     // ✅ ذخیره در cache
@@ -72,7 +72,7 @@ export class SideBannerService {
     // لاجیک اصلی (بدون تغییر - position cache نداریم)
     return await this.sideBannerRepository.find({
       where: { position, isActive: true },
-      order: { sortOrder: 'ASC' },
+      order: { displayOrder: 'ASC' },
     });
   }
 

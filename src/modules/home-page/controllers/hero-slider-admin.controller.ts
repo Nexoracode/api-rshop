@@ -8,8 +8,9 @@ import {
   Delete,
   UseGuards,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody, ApiProperty } from '@nestjs/swagger';
 import { HeroSliderService } from '../hero-slider.service';
 import { CreateHeroSliderDto, UpdateHeroSliderDto } from '../dto/hero-slider.dto';
 import { AccessGuard } from 'src/common/guard/access.guard';
@@ -17,6 +18,7 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-cache.interceptor';
+import { UpdateSortDto } from 'src/modules/attributes/attribute/dto/update-sort-attribute.dto';
 
 /**
  * کنترلر مدیریت اسلایدرهای اصلی صفحه (Hero Sliders)
@@ -61,7 +63,7 @@ export class HeroSliderAdminController {
    * - background_color: رنگ پس‌زمینه به فرمت Hex (#FF6B6B)
    * - button_text: متن دکمه (مثلاً "مشاهده محصول")
    * - button_link: لینک دکمه (مثلاً "/products/123")
-   * - sort_order: ترتیب نمایش (عدد صحیح، پیش‌فرض 0)
+   * - display_order: ترتیب نمایش (عدد صحیح، پیش‌فرض 0)
    * - is_active: فعال/غیرفعال (boolean، پیش‌فرض true)
    * 
    * @param createDto - داده‌های اسلایدر جدید
@@ -76,7 +78,7 @@ export class HeroSliderAdminController {
    *   "background_color": "#E8B4D9",
    *   "button_text": "مشاهده محصول",
    *   "button_link": "/products/tiger-eye-tasbih",
-   *   "sort_order": 1,
+   *   "display_order": 1,
    *   "is_active": true
    * }
    */
@@ -90,7 +92,7 @@ export class HeroSliderAdminController {
 **نکات مهم:**
 - تصویر باید قبلاً آپلود شده باشد
 - رنگ پس‌زمینه باید به فرمت Hex باشد (مثال: #FF6B6B)
-- sort_order برای تعیین ترتیب نمایش استفاده می‌شود (عدد کوچکتر = اولویت بالاتر)
+- display_order برای تعیین ترتیب نمایش استفاده می‌شود (عدد کوچکتر = اولویت بالاتر)
 - اگر is_active = false باشد، اسلایدر در صفحه عمومی نمایش داده نمی‌شود
 
 **بعد از ایجاد:**
@@ -109,7 +111,7 @@ export class HeroSliderAdminController {
           image_url: '/uploads/sliders/slider1.jpg',
           background_color: '#E8B4D9',
           is_dark: false,
-          sort_order: 1,
+          display_order: 1,
           is_active: true
         }
       },
@@ -123,7 +125,7 @@ export class HeroSliderAdminController {
           is_dark: false,
           button_text: 'خرید محصول',
           button_link: '/products/golden-quran',
-          sort_order: 2,
+          display_order: 2,
           is_active: true
         }
       }
@@ -141,7 +143,7 @@ export class HeroSliderAdminController {
         background_color: '#E8B4D9',
         button_text: 'مشاهده محصول',
         button_link: '/products/tiger-eye-tasbih',
-        sort_order: 1,
+        display_order: 1,
         is_active: true,
         is_dark: false,
         created_at: '2024-01-15T10:30:00.000Z',
@@ -194,10 +196,10 @@ export class HeroSliderAdminController {
    * دریافت لیست تمام اسلایدرها
    * 
    * این endpoint لیست کامل اسلایدرها (فعال و غیرفعال) را برمی‌گرداند.
-   * نتایج به ترتیب sort_order و سپس تاریخ ایجاد مرتب می‌شوند.
+   * نتایج به ترتیب display_order و سپس تاریخ ایجاد مرتب می‌شوند.
    * 
    * مرتب‌سازی:
-   * 1. بر اساس sort_order (صعودی)
+   * 1. بر اساس display_order (صعودی)
    * 2. بر اساس created_at (نزولی - جدیدترین اول)
    * 
    * @returns آرایه‌ای از تمام اسلایدرها
@@ -208,14 +210,14 @@ export class HeroSliderAdminController {
    *   {
    *     "id": 1,
    *     "title": "اسلایدر اول",
-   *     "sort_order": 1,
+   *     "display_order": 1,
    *     "is_active": true,
    *     ...
    *   },
    *   {
    *     "id": 2,
    *     "title": "اسلایدر دوم",
-   *     "sort_order": 2,
+   *     "display_order": 2,
    *     "is_active": false,
    *     ...
    *   }
@@ -228,7 +230,7 @@ export class HeroSliderAdminController {
 دریافت لیست کامل اسلایدرها شامل موارد فعال و غیرفعال.
 
 **ترتیب نمایش:**
-- ابتدا بر اساس sort_order (عدد کوچکتر اول)
+- ابتدا بر اساس display_order (عدد کوچکتر اول)
 - سپس بر اساس تاریخ ایجاد (جدیدتر اول)
 
 **موارد استفاده:**
@@ -250,7 +252,7 @@ export class HeroSliderAdminController {
           background_color: '#E8B4D9',
           button_text: 'مشاهده',
           button_link: '/products/123',
-          sort_order: 1,
+          display_order: 1,
           is_active: true,
           created_at: '2024-01-15T10:30:00.000Z',
           updated_at: '2024-01-15T10:30:00.000Z'
@@ -263,7 +265,7 @@ export class HeroSliderAdminController {
           background_color: '#B8D4E8',
           button_text: null,
           button_link: null,
-          sort_order: 2,
+          display_order: 2,
           is_active: false,
           created_at: '2024-01-14T09:20:00.000Z',
           updated_at: '2024-01-14T09:20:00.000Z'
@@ -317,7 +319,7 @@ export class HeroSliderAdminController {
         background_color: '#E8B4D9',
         button_text: 'مشاهده محصول',
         button_link: '/products/tiger-eye-tasbih',
-        sort_order: 1,
+        display_order: 1,
         is_active: true,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-15T10:30:00.000Z'
@@ -417,7 +419,7 @@ export class HeroSliderAdminController {
           background_color: '#4A90E2',
           button_text: 'متن جدید دکمه',
           button_link: '/new-link',
-          sort_order: 5,
+          display_order: 5,
           is_active: true
         }
       }
@@ -435,7 +437,7 @@ export class HeroSliderAdminController {
         background_color: '#4A90E2',
         button_text: 'متن جدید دکمه',
         button_link: '/new-link',
-        sort_order: 5,
+        display_order: 5,
         is_active: true,
         created_at: '2024-01-15T10:30:00.000Z',
         updated_at: '2024-01-16T14:20:00.000Z'
@@ -524,98 +526,11 @@ export class HeroSliderAdminController {
     return { message: 'Hero slider deleted successfully' };
   }
 
-  /**
-   * بروزرسانی ترتیب نمایش اسلایدرها
-   * 
-   * این endpoint برای تغییر ترتیب نمایش چندین اسلایدر به صورت همزمان استفاده می‌شود.
-   * معمولاً زمانی استفاده می‌شود که کاربر اسلایدرها را با drag & drop جابجا می‌کند.
-   * 
-   * @param updates - آرایه‌ای از اشیاء شامل id و sort_order جدید
-   * @returns پیام موفقیت
-   * 
-   * @example
-   * POST /admin/hero-sliders/sort-order
-   * [
-   *   { "id": 1, "sort_order": 3 },
-   *   { "id": 2, "sort_order": 1 },
-   *   { "id": 3, "sort_order": 2 }
-   * ]
-   */
-  @Post('sort-order')
-  @UseInterceptors(ClearHomePageCacheInterceptor)
-  @ApiOperation({
-    summary: 'بروزرسانی ترتیب نمایش اسلایدرها',
-    description: `
-تغییر ترتیب نمایش چندین اسلایدر به صورت یکجا.
-
-**چگونگی کار:**
-- آرایه‌ای از اشیاء دریافت می‌کند
-- هر شیء شامل id اسلایدر و sort_order جدید است
-- تمام تغییرات به صورت همزمان اعمال می‌شود
-
-**نکات:**
-- sort_order عدد صحیح است
-- عدد کوچکتر = اولویت بالاتر (نمایش زودتر)
-- می‌توانید فقط برخی از اسلایدرها را بروز کنید
-- بعد از تغییر، کش صفحه اصلی پاک می‌شود
-
-**موارد استفاده:**
-- جابجایی اسلایدرها با drag & drop
-- تغییر اولویت نمایش
-- مرتب‌سازی مجدد
-    `.trim()
-  })
-  @ApiBody({
-    description: 'آرایه‌ای از اشیاء شامل id و sort_order جدید',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['id', 'sort_order'],
-        properties: {
-          id: {
-            type: 'number',
-            description: 'شناسه اسلایدر',
-            example: 1
-          },
-          sort_order: {
-            type: 'number',
-            description: 'ترتیب جدید (عدد کوچکتر = اولویت بالاتر)',
-            example: 1
-          }
-        }
-      },
-      example: [
-        { id: 1, sort_order: 3 },
-        { id: 2, sort_order: 1 },
-        { id: 3, sort_order: 2 }
-      ]
-    }
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'ترتیب با موفقیت بروزرسانی شد',
-    schema: {
-      example: {
-        message: 'Sort order updated successfully'
-      }
-    }
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'داده‌های ورودی نامعتبر',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Invalid sort order data',
-        error: 'Bad Request'
-      }
-    }
-  })
+  @Patch(':id/order')
   async updateSortOrder(
-    @Body() updates: { id: number; sort_order: number }[],
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: { displayOrder: number },
   ) {
-    await this.heroSliderService.updateSortOrder(updates);
-    return { message: 'Sort order updated successfully' };
+    return this.heroSliderService.updateSortOrder(id, data);
   }
 }

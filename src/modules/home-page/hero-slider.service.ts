@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { HeroSlider } from './entities/hero-slider.entity';
 import { CreateHeroSliderDto, UpdateHeroSliderDto } from './dto/hero-slider.dto';
 import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
+import { UpdateSortDto } from '../attributes/attribute/dto/update-sort-attribute.dto';
 
 @Injectable()
 export class HeroSliderService {
@@ -20,6 +21,15 @@ export class HeroSliderService {
     const slider = this.heroSliderRepository.create(createDto);
     const result = await this.heroSliderRepository.save(slider);
 
+    const lastAttribute = await this.heroSliderRepository.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    })
+    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
+    await this.heroSliderRepository.save({
+      ...result,
+      sortOrder: nextOrder
+    })
     // ✅ پاک کردن cache
     await this.cacheService.clearHeroSlidersCache();
     this.logger.log('🗑️ Hero sliders cache پاک شد بعد از create');
@@ -37,7 +47,7 @@ export class HeroSliderService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.heroSliderRepository.find({
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      order: { displayOrder: 'ASC', createdAt: 'DESC' },
     });
 
     // ✅ ذخیره در cache
@@ -58,7 +68,7 @@ export class HeroSliderService {
     // لاجیک اصلی (بدون تغییر)
     const result = await this.heroSliderRepository.find({
       where: { isActive: true, },
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      order: { displayOrder: 'ASC', createdAt: 'DESC' },
     });
 
     // ✅ ذخیره در cache
@@ -112,16 +122,15 @@ export class HeroSliderService {
     this.logger.log(`🗑️ Hero slider ${id} cache پاک شد بعد از delete`);
   }
 
-  async updateSortOrder(updates: { id: number; sort_order: number }[]): Promise<void> {
-    // لاجیک اصلی (بدون تغییر)
-    for (const update of updates) {
-      await this.heroSliderRepository.update(update.id, {
-        sortOrder: update.sort_order,
-      });
-    }
-
-    // ✅ پاک کردن cache (چون ترتیب عوض شده)
+  async updateSortOrder(id: number, data: { displayOrder: number }): Promise<{ message: string; data: null }> {
+    const heroSlider = await this.heroSliderRepository.findOne({ where: { id } });
+    if (!heroSlider) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
+    heroSlider.displayOrder = data.displayOrder;
+    await this.heroSliderRepository.save(heroSlider);
     await this.cacheService.clearHeroSlidersCache();
-    this.logger.log('🗑️ Hero sliders cache پاک شد بعد از sort order update');
+    return {
+      message: 'ترتیب با موفقیت انجام شد',
+      data: null,
+    }
   }
 }

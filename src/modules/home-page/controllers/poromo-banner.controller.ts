@@ -163,4 +163,12 @@ export class PromoBannerAdminController {
             message: 'بنر تبلیغاتی با موفقیت حذف شد',
         };
     }
+
+    @Patch(':id/order')
+    async updateOrder(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() data: { displayOrder: number },
+    ) {
+        return this.promoBannerService.updateSortOrder(id, data);
+    }
 }

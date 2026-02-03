@@ -21,7 +21,7 @@ export interface HeroSliderData {
   isDark: boolean;
   isActive: boolean;
   buttonText: string;
-  sortOrder: number;
+  displayOrder: number;
   buttonLink: string;
 }
 
@@ -34,7 +34,7 @@ export interface SideBannerData {
   link: string;
   isActive: boolean;
   position: string;
-  sortOrder: number;
+  displayOrder: number;
   badgeText: string | null;
   badgeColor: string | null;
 }
@@ -49,7 +49,7 @@ export interface PromoBannerData {
   imageUrl: string;
   isActive: boolean;
   isClosable: boolean;
-  priority: number;
+  displayOrder: number;
   startDate: Date | null;
   endDate: Date | null;
   displayDuration: number;
@@ -91,7 +91,7 @@ export interface HomeSectionData {
   sectionType: string;
   displayStyle: string;
   showViewAllButton: boolean;
-  sortOrder: number;
+  displayOrder: number;
   startDate: Date | null;
   endDate: Date | null;
   isActive: boolean;

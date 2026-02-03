@@ -33,7 +33,7 @@ export class HeroSlider {
   buttonLink: string;
 
   @Column({ type: 'int', default: 0 })
-  sortOrder: number;
+  displayOrder: number;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
