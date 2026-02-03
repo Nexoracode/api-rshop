@@ -1,5 +1,3 @@
-import { CreateHelperDto } from "../dto/create-helper.dto";
-import { UpdateHelperDto } from "../dto/update-helper.dto";
 import { HelperEntity } from "../entities/helper.entity";
 
 export class HelperMapper {
@@ -9,6 +7,7 @@ export class HelperMapper {
             title: helper.title,
             description: helper.description,
             image: helper.image,
+            isDeleted: helper.product === null,
         };
     }
 }
