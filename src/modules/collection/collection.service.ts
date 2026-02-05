@@ -69,7 +69,7 @@ export class CollectionService {
       description: dto.description || null,
       image: dto.image || null,
       isActive: dto.isActive ?? true,
-      sortOrder: dto.sortOrder ?? 0,
+      displayOrder: dto.sortOrder ?? 0,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
       products,
@@ -108,7 +108,7 @@ export class CollectionService {
       ],
       relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
       order: {
-        sortOrder: 'ASC',
+        displayOrder: 'ASC',
         createdAt: 'DESC',
       },
     });
@@ -133,7 +133,7 @@ export class CollectionService {
     const collections = await this.collectionRepo.find({
       relations: ['products', 'products.mediaPinned', 'products.category', 'products.brand'],
       order: {
-        sortOrder: 'ASC',
+        displayOrder: 'ASC',
         createdAt: 'DESC',
       },
     });
@@ -251,7 +251,7 @@ export class CollectionService {
       description: dto.description ?? collection.description,
       image: dto.image ?? collection.image,
       isActive: dto.isActive ?? collection.isActive,
-      sortOrder: dto.sortOrder ?? collection.sortOrder,
+      sortOrder: dto.sortOrder ?? collection.displayOrder,
       startDate: dto.startDate ? new Date(dto.startDate) : collection.startDate,
       endDate: dto.endDate ? new Date(dto.endDate) : collection.endDate,
     });

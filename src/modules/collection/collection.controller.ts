@@ -31,7 +31,7 @@ export class CollectionPublicController {
         description: collection.description,
         image: collection.image,
         productsCount: collection.products?.length || 0,
-        sortOrder: collection.sortOrder,
+        displayOrder: collection.displayOrder,
         startDate: collection.startDate,
         endDate: collection.endDate,
       })),

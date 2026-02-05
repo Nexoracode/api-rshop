@@ -30,8 +30,8 @@ export class Collection {
     @Column({ name: 'is_active', type: 'boolean', default: true })
     isActive: boolean;
 
-    @Column({ name: 'sort_order', type: 'int', default: 0 })
-    sortOrder: number;
+    @Column({ name: 'display_order', type: 'int', default: 0 })
+    displayOrder: number;
 
     @Column({ name: 'start_date', type: 'timestamp', nullable: true })
     startDate: Date | null;

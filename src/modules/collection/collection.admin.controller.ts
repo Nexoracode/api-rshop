@@ -75,7 +75,7 @@ export class CollectionAdminController {
                 description: collection.description,
                 image: collection.image,
                 isActive: collection.isActive,
-                sortOrder: collection.sortOrder,
+                displayOrder: collection.displayOrder,
                 startDate: collection.startDate,
                 endDate: collection.endDate,
                 productsCount: collection.products?.length || 0,
