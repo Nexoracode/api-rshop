@@ -4,11 +4,12 @@ import { AccessGuard } from '../../common/guard/access.guard';
 import { CreateOrderFromCardDto } from './dto/create-from-card.dto';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
 import { CreateManualOrderDto } from './dto/create-order.dto';
 import { Public } from 'src/common/decorator/public.decorator';
+import { UpdateRefOrderDto } from './dto/update-ref-order.dto';
 
 @ApiTags('15 - 📑 Orders')
 @UseGuards(AccessGuard)
@@ -62,6 +63,11 @@ export class OrderController {
   @ApiOperation({ summary: 'تغییر وضعیت سفارش (ادمین)' })
   updateStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStatusDto) {
     return this.orderService.updateStatus(id, dto.status);
+  }
+
+  @Patch(':id/ref')
+  updatePaymentRef(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRefOrderDto) {
+    return this.orderService.updatePaymentRef(id, dto);
   }
 
   // ✅ تحویل سفارش

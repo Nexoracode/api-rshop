@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
-import { DataSource, In, Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import { Order } from "./entities/order.entity";
 import { OrderItem } from "./entities/order-item.entity";
@@ -30,6 +30,7 @@ import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.
 import { CardStatusService } from "../card/card-status.service";
 import { OrderCacheService } from "./cache/order-cache.service";
 import { PaymentStatus } from "../payment/enums/payment-status.enum";
+import { UpdateRefOrderDto } from "./dto/update-ref-order.dto";
 
 const relations = [
     "user",
@@ -652,6 +653,24 @@ export class OrderService {
 
             return result;
         });
+    }
+
+
+    async updatePaymentRef(id: number, dto: UpdateRefOrderDto) {
+        return runInTransaction(this.dataSource, async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id },
+                relations: ['user'],
+            });
+            if (!order) throw new NotFoundException("سفارش یافت نشد.");
+            if (order.status === OrderStatus.START_ORDER || order.status === OrderStatus.AWAITING_PAYMENT || order.status === OrderStatus.PAYMENT_CONFIRMATION_PENDING || order.status === OrderStatus.PROCESSING || order.status === OrderStatus.EXPIRED || order.status === OrderStatus.CANCELLED) {
+                throw new BadRequestException("وضعیت سفارش برای افزودن کد رهگیری مناسب نیست.");
+            }
+            order.paymentGatewayRef = dto.paymentRef;
+            const result = await manager.save(Order, order);
+            await this.orderCacheService.clearCacheAfterStatusChange(id, order.user.id);
+            return result;
+        })
     }
 
     // 🗑 حذف سفارش (ادمین)
