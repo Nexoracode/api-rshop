@@ -1,11 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { DataSource } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { Request } from "express";
 
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 
 import { PaymentCreationHandler } from "./handlers/payment-creation.handler";
 import { PaymentVerificationHandler } from "./handlers/payment-verification.handler";
+import { paginate, PaginateQuery } from "nestjs-paginate";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Payment } from "./entities/payment.entity";
 
 @Injectable()
 export class PaymentService {
@@ -15,7 +18,9 @@ export class PaymentService {
     private readonly dataSource: DataSource,
     private readonly paymentCreationHandler: PaymentCreationHandler,
     private readonly paymentVerificationHandler: PaymentVerificationHandler,
-  ) {}
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>,
+  ) { }
 
   // ────────────────────────────────────────────────
   // 💰 مرحله 1: ایجاد درخواست پرداخت در زرین‌پال
@@ -47,5 +52,20 @@ export class PaymentService {
         req,
       );
     });
+  }
+
+  async getAllPayment(query: PaginateQuery) {
+    const payments = await paginate(query, this.paymentRepository, {
+      sortableColumns: ["id", "amount", "status", "createdAt"],
+      relations: ['order', 'user', 'logs'],
+      defaultSortBy: [["createdAt", "DESC"]],
+      searchableColumns: ["orderId", "authority"],
+    });
+
+    return {
+      items: payments.data,
+      meta: payments.meta,
+      links: payments.links,
+    }
   }
 }

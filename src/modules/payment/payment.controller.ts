@@ -1,9 +1,10 @@
-import { Controller, Post, Query, Body, Req } from "@nestjs/common";
+import { Controller, Post, Query, Body, Req, Get } from "@nestjs/common";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { PaymentService } from "./payment.service";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { Request } from "express";
 import { User } from "../user/entities/user.entity";
+import { Paginate, PaginateQuery } from "nestjs-paginate";
 
 @ApiTags("Payment")
 @Controller("payment")
@@ -39,5 +40,10 @@ export class PaymentController {
     @Query("Status") status: string
   ) {
     return this.paymentService.verifyPayment(authority, status, req);
+  }
+
+  @Get()
+  async getAllPayment(@Paginate() query: PaginateQuery) {
+    return this.paymentService.getAllPayment(query);
   }
 }
