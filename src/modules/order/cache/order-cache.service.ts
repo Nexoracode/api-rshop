@@ -15,8 +15,8 @@ export class OrderCacheService {
      */
     private readonly CACHE_KEYS = {
         // لیست سفارشات ادمین با فیلتر و pagination
-        ADMIN_ORDER_LIST: (page: number, limit: number, filters: string) =>
-            `order:admin:list:${page}:${limit}:${filters}`,
+        ADMIN_ORDER_LIST: (page: number, limit: number, filters: string, search: string) =>
+            `order:admin:list:${page}:${limit}:${filters}:${search}`,
 
         // لیست سفارشات یک کاربر
         USER_ORDER_LIST: (userId: number) =>
@@ -97,17 +97,17 @@ export class OrderCacheService {
 
     // ==================== لیست سفارشات ادمین ====================
 
-    async getAdminOrderList(page: number, limit: number, filters: string): Promise<any> {
+    async getAdminOrderList(page: number, limit: number, filters: string, search: string): Promise<any> {
         console.log('✅ get order list in catch');
         return await this.cacheManager.get(
-            this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters)
+            this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters, search)
         );
     }
 
-    async setAdminOrderList(page: number, limit: number, filters: string, data: any): Promise<void> {
+    async setAdminOrderList(page: number, limit: number, filters: string, search: string, data: any): Promise<void> {
         console.log('📦 save order in catch')
         await this.cacheManager.set(
-            this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters),
+            this.CACHE_KEYS.ADMIN_ORDER_LIST(page, limit, filters, search),
             data,
             this.CACHE_TTL.ADMIN_LIST
         );

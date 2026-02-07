@@ -189,22 +189,16 @@ export class OrderService {
     // 🧾 دریافت تمام سفارش‌ها (ادمین) - با Cache
     async getAllOrders(query: PaginateQuery) {
         // ✅ ساخت کلید cache
-        const cacheKey = JSON.stringify({
-            page: query.page || 1,
-            limit: query.limit || 20,
-            filters: query.filter || {},
-            sortBy: query.sortBy || [],
-        });
+        const filters = JSON.stringify(query.filter || {});
+        const search = JSON.stringify(query.search || {});
+        const page = query.page || 1;
+        const limit = query.limit || 20;
 
         // ✅ چک cache
-        const cached = await this.orderCacheService.getAdminOrderList(
-            query.page || 1,
-            query.limit || 20,
-            cacheKey
-        );
-
+        const cached = await this.orderCacheService.getAdminOrderList(page, limit, filters, search);
         if (cached) {
-            return cached; // Cache Hit 🚀
+            console.log('✅ Category tree paginated از cache');
+            return cached;
         }
 
         // Cache Miss - Query از DB
@@ -237,12 +231,7 @@ export class OrderService {
         };
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setAdminOrderList(
-            query.page || 1,
-            query.limit || 20,
-            cacheKey,
-            result
-        );
+        await this.orderCacheService.setAdminOrderList(page, limit, filters, search, result);
 
         return result;
     }

@@ -15,8 +15,8 @@ export class ProductCacheService {
      */
     private readonly CACHE_KEYS = {
         // لیست محصولات
-        PRODUCT_LIST: (page: number, limit: number, filters: string) =>
-            `product:list:${page}:${limit}:${filters}`,
+        PRODUCT_LIST: (page: number, limit: number, filters: string, search: string) =>
+            `product:list:${page}:${limit}:${filters}:${search}`,
 
         // جزئیات محصول
         PRODUCT_BY_ID: (id: number) => `product:${id}`,
@@ -103,16 +103,16 @@ export class ProductCacheService {
 
     // ==================== لیست محصولات ====================
 
-    async getProductList(page: number, limit: number, filters: string): Promise<any> {
+    async getProductList(page: number, limit: number, filters: string, search: string): Promise<any> {
         const result = await this.cacheManager.get(
-            this.CACHE_KEYS.PRODUCT_LIST(page, limit, filters)
+            this.CACHE_KEYS.PRODUCT_LIST(page, limit, filters, search)
         );
         return result;
     }
 
-    async setProductList(page: number, limit: number, filters: string, data: any): Promise<void> {
+    async setProductList(page: number, limit: number, filters: string, search: string, data: any): Promise<void> {
         await this.cacheManager.set(
-            this.CACHE_KEYS.PRODUCT_LIST(page, limit, filters),
+            this.CACHE_KEYS.PRODUCT_LIST(page, limit, filters, search),
             data,
             this.CACHE_TTL.PRODUCT_LIST
         );

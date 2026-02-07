@@ -77,7 +77,8 @@ export class ProductService implements IProductService {
         const filters = JSON.stringify(query.filter || {});
         const page = query.page || 1;
         const limit = query.limit || 20;
-        const cached = await this.cacheService.getProductList(page, limit, filters);
+        const search = JSON.stringify(query.search || {});
+        const cached = await this.cacheService.getProductList(page, limit, filters, search);
         if (cached) {
             this.logger.log('✅ Product list از cache');
             return cached;
@@ -113,7 +114,7 @@ export class ProductService implements IProductService {
         };
 
         // ✅ ذخیره در cache
-        await this.cacheService.setProductList(page, limit, filters, result);
+        await this.cacheService.setProductList(page, limit, filters, search, result);
         this.logger.log('💾 Product list ذخیره شد در cache');
 
         return result;

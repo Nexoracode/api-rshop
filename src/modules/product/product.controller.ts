@@ -40,6 +40,7 @@ export class ProductController {
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,
         sortableColumns: ['id', 'name', 'price', 'stock'],
+        searchableColumns: ['name'],
         filterableColumns: {
             'is_visible': [FilterOperator.EQ],
             'requires_preparation': [FilterOperator.EQ],

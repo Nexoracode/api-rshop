@@ -18,10 +18,6 @@ export class CategoryService implements ICategoryService {
     private treeCatRepo: TreeRepository<Category>
 
     constructor(
-        @InjectRepository(Category)
-        private readonly catRepo: Repository<Category>,
-        @InjectRepository(Media)
-        private readonly mediaRepo: Repository<Media>,
         private dataSource: DataSource,
         private readonly cacheService: CategoryCacheService, // ✅ اضافه شد
         private readonly catalogCatchService: CatalogCacheService, // ✅ اضافه شد
@@ -268,13 +264,12 @@ export class CategoryService implements ICategoryService {
     async findAllTree(query: PaginateQuery) {
         // ساخت کلید cache با filters
         const filters = JSON.stringify(query.filter || {});
+        const search = JSON.stringify(query.search || {});
         const page = query.page || 1;
         const limit = query.limit || 20;
 
-        console.log(filters);
-
         // ✅ چک کردن cache
-        const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters);
+        const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters, search);
         if (cached) {
             console.log('✅ Category tree paginated از cache');
             return cached;

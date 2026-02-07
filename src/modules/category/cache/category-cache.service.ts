@@ -17,8 +17,8 @@ export class CategoryCacheService {
      */
     private readonly CACHE_KEYS = {
         CATEGORY_TREE: 'category:tree',
-        CATEGORY_TREE_PAGINATED: (page: number, limit: number, filters?: string) =>
-            `category:tree:${page}:${limit}${filters ? ':' + filters : ''}`,
+        CATEGORY_TREE_PAGINATED: (page: number, limit: number, filters?: string, search?: string) =>
+            `category:tree:${page}:${limit}${filters ? ':' + filters : ''}${search ? ':' + search : ''}`,
         CATEGORY_BY_ID: (id: number) => `category:${id}`,
         CATEGORY_BY_SLUG: (slug: string) => `category:slug:${slug}`,
         ACTIVE_CATEGORIES: 'category:active',
@@ -98,10 +98,11 @@ export class CategoryCacheService {
     async getCategoryTreePaginated(
         page: number,
         limit: number,
-        filters?: string
+        filters?: string,
+        search?: string,
     ): Promise<any> {
         const result = await this.cacheManager.get(
-            this.CACHE_KEYS.CATEGORY_TREE_PAGINATED(page, limit, filters)
+            this.CACHE_KEYS.CATEGORY_TREE_PAGINATED(page, limit, filters, search)
         );
         return result;
     }
@@ -113,10 +114,11 @@ export class CategoryCacheService {
         page: number,
         limit: number,
         data: any,
-        filters?: string
+        filters?: string,
+        search?: string,
     ): Promise<void> {
         await this.cacheManager.set(
-            this.CACHE_KEYS.CATEGORY_TREE_PAGINATED(page, limit, filters),
+            this.CACHE_KEYS.CATEGORY_TREE_PAGINATED(page, limit, filters, search),
             data,
             this.CACHE_TTL.CATEGORY_LIST
         );
