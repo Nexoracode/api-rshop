@@ -22,25 +22,25 @@ export class AddChangesToSchema1770111365021 implements MigrationInterface {
 
         // ۳. اضافه کردن فیلد image به home_sections
         await queryRunner.query(`
-            ALTER TABLE \`home_sections\` 
-            ADD COLUMN IF NOT EXISTS \`image\` varchar(500) NULL
+            ALTER TABLE \`home_sections\`
+            ADD COLUMN \`image\` varchar(500) NULL
         `);
 
         // ۴. تغییر user_id به user_ids در promotion_conditions
         await queryRunner.query(`
-            ALTER TABLE \`promotion_conditions\` 
+            ALTER TABLE \`promotion_conditions\`
             CHANGE COLUMN \`user_id\` \`user_ids\` json NULL
         `);
 
         // ۵. اضافه کردن max_discount_amount به promotions
         await queryRunner.query(`
             ALTER TABLE \`promotions\` 
-            ADD COLUMN IF NOT EXISTS \`max_discount_amount\` decimal(15,2) NULL COMMENT 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)'
+            ADD COLUMN \`max_discount_amount\` decimal(15,2) NULL COMMENT 'حداکثر مبلغ تخفیف قابل اعمال (سقف تخفیف)'
         `);
 
         // ۶. اضافه کردن جدول short_urls
         await queryRunner.query(`
-            CREATE TABLE IF NOT EXISTS \`short_urls\` (
+            CREATE TABLE \`short_urls\` (
                 \`id\` int NOT NULL AUTO_INCREMENT,
                 \`code\` varchar(10) NOT NULL,
                 \`original_url\` text NOT NULL,
@@ -97,8 +97,8 @@ export class AddChangesToSchema1770111365021 implements MigrationInterface {
         // ۱۰. اضافه کردن start_date و end_date به home_sections
         await queryRunner.query(`
             ALTER TABLE \`home_sections\` 
-            ADD COLUMN IF NOT EXISTS \`start_date\` timestamp NULL,
-            ADD COLUMN IF NOT EXISTS \`end_date\` timestamp NULL
+            ADD COLUMN \`start_date\` timestamp NULL,
+            ADD COLUMN \`end_date\` timestamp NULL
         `);
     }
 
