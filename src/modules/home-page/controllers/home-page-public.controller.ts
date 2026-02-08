@@ -1,9 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HomePageService } from '../home-page.service';
 import { HomePageDataResponseDto } from '../dto/home-page-response.dto';
 import { Public } from 'src/common/decorator/public.decorator';
 import { HomeSectionService } from '../home-section.service';
+import { Role } from 'src/common/enums/role.enum';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
 
 @ApiTags('Home Page - Public')
 @Controller('home')
@@ -63,5 +66,11 @@ export class HomePagePublicController {
   @Public()
   async getproductBySectionSlug(@Query('slug') slug: string) {
     return this.homeSectionService.findProductBySectionSlug(slug);
+  }
+
+  @Get('dashboard')
+  @UseGuards(AccessGuard, RoleGuard)
+  async getDataForDashboard() {
+    return this.homePageService.getDataForDashobard();
   }
 }

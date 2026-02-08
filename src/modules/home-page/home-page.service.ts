@@ -1,7 +1,7 @@
 // src/homepage/homepage.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Category } from '../category/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { HomePageCacheService } from './cache';
@@ -16,6 +16,8 @@ import { PromoBanner } from './entities/promo-banner.entity';
 import { HeroSlider } from './entities/hero-slider.entity';
 import { SideBanner } from './entities/side-banner.entity';
 import { Product } from '../product/entities/product.entity';
+import { Order } from '../order/entities/order.entity';
+import { runInTransaction } from 'src/common/helpers/transaction.helper';
 
 @Injectable()
 export class HomePageService {
@@ -32,6 +34,7 @@ export class HomePageService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Brand)
     private readonly brandRepository: Repository<Brand>,
+    private readonly dataSource: DataSource,
   ) { }
 
   /**
@@ -270,5 +273,11 @@ export class HomePageService {
       this.logger.warn('خطا در دریافت layout type، استفاده از پیش‌فرض:', error.message);
       return HomePageLayoutType.SIDE_BY_SIDE;
     }
+  }
+
+  async getDataForDashobard() {
+    return runInTransaction(this.dataSource, async (manager) => {
+
+    });
   }
 }

@@ -125,7 +125,6 @@ export class CatalogQueryService {
     // ------------------------------------------
     // ۲. ویژگی‌ها از category_attribute + product_attribute_values
     // ------------------------------------------
-    console.log(category, categoryIds);
     const productAttrs = await this.dataSource.query(
       `
       SELECT DISTINCT
