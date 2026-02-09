@@ -57,7 +57,7 @@ export class PaymentService {
   async getAllPayment(query: PaginateQuery) {
     const payments = await paginate(query, this.paymentRepository, {
       sortableColumns: ["id", "amount", "status", "createdAt"],
-      relations: ['order', 'user', 'logs'],
+      relations: ['order', 'user', 'logs', 'receiptImage'],
       defaultSortBy: [["createdAt", "DESC"]],
       searchableColumns: ["orderId", "authority"],
     });
