@@ -3,7 +3,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
-import { CatalogCacheService } from './cache/catalog-cache.service'; // ✅ تغییر مسیر
+import { CatalogCacheService } from './cache/catalog-cache.service';
 import { Category } from '../category/entities/category.entity';
 import { Brand } from '../brand/entities/brand.entity';
 import { Product } from '../product/entities/product.entity';
@@ -25,7 +25,7 @@ const relations = [
 
 @Injectable()
 export class CatalogService {
-    private readonly logger = new Logger(CatalogService.name); // ✅ اضافه شد
+    private readonly logger = new Logger(CatalogService.name);
 
     constructor(
         private readonly queryService: CatalogQueryService,
@@ -111,11 +111,11 @@ export class CatalogService {
         // ------------------------------------------
         // ۱. بررسی cache (بهبود یافته)
         // ------------------------------------------
-        const cached = await this.cacheService.getCategoryProducts(slug, query);
-        if (cached) {
-            this.logger.log(`✅ Category products ${slug} از cache`);
-            return cached;
-        }
+        // const cached = await this.cacheService.getCategoryProducts(slug, query);
+        // if (cached) {
+        //     this.logger.log(`✅ Category products ${slug} از cache`);
+        //     return cached;
+        // }
 
         // ------------------------------------------
         // ۲. یافتن دسته فعلی و ساخت مسیر
@@ -215,7 +215,7 @@ export class CatalogService {
         }
 
         // ------------------------------------------
-        // 9. فیلتر attributeها
+        // 9. فیلتر attributeها - ✅ نسخه نهایی تصحیح شده
         // ------------------------------------------
         const rawMap = parseAttributeFilter(query['filter[attributes]']);
         const attrIds = Object.keys(rawMap).map((k) => +k).filter(Boolean);
@@ -239,26 +239,38 @@ export class CatalogService {
                 if (validIds.includes(+attrId)) attributeMap[+attrId] = values;
             }
 
-            // 🚫 فقط محصولاتی که variant دارند در نظر بگیر
-            qb.andWhere(`EXISTS (SELECT 1 FROM variants_product vp WHERE vp.product_id = p.id)`);
+            const finalAttrIds = Object.keys(attributeMap).map(k => +k);
 
-            // شرط دقیق برای match attribute-value در variantها
-            for (const [attrId, valueIds] of Object.entries(attributeMap)) {
-                qb.andWhere(
-                    `
-            EXISTS (
-              SELECT 1 FROM variant_attribute_values vav
-              JOIN variants_product vp ON vp.id = vav.variant_id
-              WHERE vp.product_id = p.id
-                AND vav.attribute_id = :attr_${attrId}
-                AND vav.value_id IN (:...vals_${attrId})
-            )
-          `,
-                    {
-                        [`attr_${attrId}`]: +attrId,
-                        [`vals_${attrId}`]: valueIds,
-                    },
-                );
+            if (finalAttrIds.length > 0) {
+                // ✅ استراتژی جدید: بررسی می‌کنیم که یک variant وجود داشته باشه که
+                // تمام attributeهای مورد نظر رو با valueهای مناسب داشته باشه
+
+                const orParts: string[] = [];
+                const params: any = { filter_numAttrs: finalAttrIds.length };
+
+                finalAttrIds.forEach((attrId) => {
+                    const paramAttr = `filter_a${attrId}`;
+                    const paramVals = `filter_v${attrId}`;
+                    orParts.push(`(vav.attribute_id = :${paramAttr} AND vav.value_id IN (:...${paramVals}))`);
+                    params[paramAttr] = attrId;
+                    params[paramVals] = attributeMap[attrId];
+                });
+
+                const existsSql = `
+                    EXISTS (
+                        SELECT 1
+                        FROM variants_product vp
+                        WHERE vp.product_id = p.id
+                          AND (
+                            SELECT COUNT(DISTINCT vav.attribute_id)
+                            FROM variant_attribute_values vav
+                            WHERE vav.variant_id = vp.id
+                              AND (${orParts.join(' OR ')})
+                          ) = :filter_numAttrs
+                    )
+                `;
+
+                qb.andWhere(existsSql, params);
             }
         }
 
