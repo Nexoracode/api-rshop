@@ -134,14 +134,13 @@ export class CatalogQueryService {
         av.id AS attribute_value_id,
         av.value AS attribute_value,
         av.display_color AS attribute_value_color
-      FROM category_attributes ca
-      INNER JOIN attributes a ON a.id = ca.attribute_id
+      FROM attributes a
       INNER JOIN attribute_values av ON av.attribute_id = a.id
       INNER JOIN product_attribute_values pav ON pav.value_id = av.id
       INNER JOIN products p ON p.id = pav.product_id
       WHERE p.is_active = 1
+        AND av.value IS NOT NULL
         AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-        AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND av.value IS NOT NULL
     `,
       [...categoryIds, ...categoryIds],
@@ -159,15 +158,14 @@ export class CatalogQueryService {
         av.id AS attribute_value_id,
         av.value AS attribute_value,
         av.display_color AS attribute_value_color
-      FROM category_attributes ca
-      INNER JOIN attributes a ON a.id = ca.attribute_id
+      FROM attributes a
       INNER JOIN attribute_values av ON av.attribute_id = a.id
       INNER JOIN variant_attribute_values vav ON vav.value_id = av.id
       INNER JOIN variants_product v ON v.id = vav.variant_id
       INNER JOIN products p ON p.id = v.product_id
       WHERE p.is_active = 1
+        AND av.value IS NOT NULL
         AND p.category_id IN (${categoryIds.map(() => '?').join(',')})
-        AND ca.category_id IN (${categoryIds.map(() => '?').join(',')})
         AND av.value IS NOT NULL
     `,
       [...categoryIds, ...categoryIds],

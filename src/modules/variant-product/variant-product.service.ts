@@ -10,6 +10,8 @@ import { VariantProductMapper } from "./mappers/variant-product.mapper";
 import { runInTransaction } from "src/common/helpers/transaction.helper";
 import { ProductCacheService } from "../product/cache";
 import { CatalogCacheService } from "../catalogs/cache";
+import { CategoryAttribute } from "../category-attribute/entities/category-attribute.entity";
+import { Attribute } from "../attributes/attribute/entities/attribute.entity";
 
 type Pair = { attributeId: number; valueId: number };
 function cartesian<T>(arr: T[][]): T[][] {
@@ -67,6 +69,7 @@ export class VariantProductService {
           "variants.attributes.attribute",
           "variants.attributes.value",
           "variants.attributes.attribute.group",
+          "category",
         ],
       });
       if (!product) throw new NotFoundException("محصول یافت نشد");
@@ -82,10 +85,12 @@ export class VariantProductService {
       }
 
       // 2) اتریبیوت/والیوی جدید از ورودی
+      const newAttributeIds = new Set<number>();
       for (const a of dto.attributes) {
         if (!Array.isArray(a.valueIds) || a.valueIds.length === 0) {
           throw new BadRequestException("value_ids برای هر attribute الزامی است");
         }
+        newAttributeIds.add(a.attributeId);
         const set = attrMap.get(a.attributeId) ?? new Set<number>();
         for (const vid of a.valueIds) set.add(vid);
         attrMap.set(a.attributeId, set);
@@ -93,6 +98,33 @@ export class VariantProductService {
 
       if (attrMap.size === 0) {
         throw new BadRequestException("حداقل یک اتریبیوت لازم است");
+      }
+
+      // 🎯 بررسی و اضافه کردن attributeهای isPublic به CategoryAttribute
+      for (const attributeId of newAttributeIds) {
+        const attribute = await manager.findOne(Attribute, {
+          where: { id: attributeId },
+          select: ['id', 'isPublic'],
+        });
+
+        if (attribute && attribute.isPublic) {
+          const existsCategoryAttr = await manager.findOne(CategoryAttribute, {
+            where: {
+              attribute: { id: attributeId },
+              category: { id: product.categoryId },
+            },
+            select: ['id'],
+          });
+
+          if (!existsCategoryAttr) {
+            const createCat = manager.create(CategoryAttribute, {
+              attribute,
+              category: product.category,
+              categoryId: product.categoryId,
+            });
+            await manager.save(CategoryAttribute, createCat);
+          }
+        }
       }
 
       // 3) ساخت ورودی کارتیزین از union همهٔ اتریبیوت‌ها

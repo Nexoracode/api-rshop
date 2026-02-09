@@ -9,6 +9,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 import { MediaType } from 'src/common/enums/media.enum';
 import { MediaService } from '../media/media.service';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('12 - 🎟 Brands')
 @Controller('brand')
@@ -58,6 +59,7 @@ export class BrandController {
   }
 
   @Get('find/:slug')
+  @Public()
   findOneSlug(@Param('slug') slug: string) {
     return this.brandService.findOneBySlug(slug);
   }
