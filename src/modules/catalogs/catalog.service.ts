@@ -256,25 +256,25 @@ export class CatalogService {
                 });
 
                 const existsSql = `
-        EXISTS (
-            SELECT 1
-            FROM variants_product vp2
-            WHERE vp2.product_id = p.id
-              AND (
-                SELECT COUNT(DISTINCT vav2.attribute_id)
-                FROM variant_attribute_values vav2
-                WHERE vav2.variant_id = vp2.id
-                  AND (${orParts.join(' OR ')})
-              ) = :filter_numAttrs
-        ) OR EXISTS (
-            SELECT 1
-            FROM product_attribute_values pav2
-            WHERE pav2.product_id = p.id
-              AND (${orParts.join(' OR ')})
-            GROUP BY pav2.product_id
-            HAVING COUNT(DISTINCT pav2.attribute_id) = :filter_numAttrs
-        )
-    `;
+                    EXISTS (
+                        SELECT 1
+                        FROM variants_product vp2
+                        WHERE vp2.product_id = p.id
+                        AND (
+                            SELECT COUNT(DISTINCT vav2.attribute_id)
+                            FROM variant_attribute_values vav2
+                            WHERE vav2.variant_id = vp2.id
+                            AND (${orParts.join(' OR ')})
+                        ) = :filter_numAttrs
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM product_attribute_values pav2
+                        WHERE pav2.product_id = p.id
+                        AND (${orParts.join(' OR ')})
+                        GROUP BY pav2.product_id
+                        HAVING COUNT(DISTINCT pav2.attribute_id) = :filter_numAttrs
+                    )
+                `;
 
                 qb.andWhere(existsSql, params);
             }
