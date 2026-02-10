@@ -286,9 +286,10 @@ export class ProductService implements IProductService {
             }
             const category = await manager.findOne(Category, { where: { id: data.categoryId ?? product.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
-            if ((data.helperId ?? product.helperId) && (data.helperId ?? product.helperId) !== 0) {
-                const helper = await manager.findOne(HelperEntity, { where: { id: data.helperId ?? product.helperId } })
-                if (!helper) throw new NotFoundException('راهنمای تصویر یافت نشد.');
+            var helper: HelperEntity | null;
+            if (data.helperId !== null) {
+                helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
+                if (!helper) throw new NotFoundException('راهنمای سایز مورد نظر، یافت نشد.');
             }
             if ((data.discountAmount ?? product.discountAmount) && (data.discountPercent ?? product.discountPercent)) {
                 throw new BadRequestException('نمی توان همزمان تخفیف قیمت ثابت و درصدی را وارد کرد.');
@@ -303,6 +304,11 @@ export class ProductService implements IProductService {
                 updated.preparationDays = null;
             }
 
+            const savedProduct = await manager.save(Product, {
+                ...updated,
+                helperId: data.helperId === null ? null : data.helperId,
+                helper: data.helperId === null ? null : helper!,
+            });
             if (data.mediaPinnedId != null) {
                 if (data.mediaPinnedId === 0) {
                     updated.mediaPinned = null as unknown as Media;
@@ -315,7 +321,6 @@ export class ProductService implements IProductService {
                 }
             }
 
-            const savedProduct = await manager.save(Product, updated);
 
             if (data.mediaIds?.length) {
                 const prevMediaIds = (product.medias || []).map((m) => m.id);

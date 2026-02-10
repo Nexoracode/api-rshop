@@ -32,7 +32,7 @@ export interface IProduct {
     brand: Brand | null;
     brandId: number;
     helper: HelperEntity | null;
-    helperId: number;
+    helperId: number | null;
     orderLimit: number;
     createdAt?: Date;
     updatedAt?: Date;

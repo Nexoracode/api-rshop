@@ -89,10 +89,10 @@ export class Product implements IProduct {
 
     @ManyToOne(() => HelperEntity, helper => helper.product, { nullable: true, cascade: true })
     @JoinColumn({ name: 'helper_id' })
-    helper: HelperEntity;
+    helper: HelperEntity | null;
 
     @Column({ name: 'helper_id', nullable: true })
-    helperId: number;
+    helperId: number | null;
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
     variants: VariantProduct[];
