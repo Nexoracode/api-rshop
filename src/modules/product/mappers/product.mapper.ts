@@ -235,6 +235,7 @@ export class ProductMapper {
             price: product.price,
             stock: product.stock,
             sku: product.sku || "",
+            isActive: product.isActive,
             isLimitedStock: product.isLimitedStock || false,
             isSameDayShipping: product.isSameDayShipping,
             orderLimit: product.orderLimit || null,

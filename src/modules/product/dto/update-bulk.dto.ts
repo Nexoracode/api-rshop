@@ -36,6 +36,11 @@ export class UpdateBulkDto {
     @IsBoolean()
     isFeatured?: boolean;
 
+    @ApiPropertyOptional({ example: true })
+    @IsOptional()
+    @IsBoolean()
+    isActive?: boolean;
+
     // 🎯 تخفیف درصدی
     @ApiPropertyOptional({ example: 10, description: "درصد تخفیف (مثلاً 10 برای 10٪)" })
     @IsOptional()
