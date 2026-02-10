@@ -247,27 +247,34 @@ export class CatalogService {
                 const orParts: string[] = [];
                 const params: any = { filter_numAttrs: finalAttrIds.length };
 
-                finalAttrIds.forEach((attrId) => {
-                    const paramAttr = `filter_a${attrId}`;
-                    const paramVals = `filter_v${attrId}`;
-                    orParts.push(`(vav.attribute_id = :${paramAttr} AND vav.value_id IN (:...${paramVals}))`);
+                finalAttrIds.forEach((attrId, idx) => {
+                    const paramAttr = `attr_${idx}`;
+                    const paramVals = `vals_${idx}`;
+                    orParts.push(`(attribute_id = :${paramAttr} AND value_id IN (:...${paramVals}))`);
                     params[paramAttr] = attrId;
                     params[paramVals] = attributeMap[attrId];
                 });
 
                 const existsSql = `
-                    EXISTS (
-                        SELECT 1
-                        FROM variants_product vp
-                        WHERE vp.product_id = p.id
-                          AND (
-                            SELECT COUNT(DISTINCT vav.attribute_id)
-                            FROM variant_attribute_values vav
-                            WHERE vav.variant_id = vp.id
-                              AND (${orParts.join(' OR ')})
-                          ) = :filter_numAttrs
-                    )
-                `;
+        EXISTS (
+            SELECT 1
+            FROM variants_product vp2
+            WHERE vp2.product_id = p.id
+              AND (
+                SELECT COUNT(DISTINCT vav2.attribute_id)
+                FROM variant_attribute_values vav2
+                WHERE vav2.variant_id = vp2.id
+                  AND (${orParts.join(' OR ')})
+              ) = :filter_numAttrs
+        ) OR EXISTS (
+            SELECT 1
+            FROM product_attribute_values pav2
+            WHERE pav2.product_id = p.id
+              AND (${orParts.join(' OR ')})
+            GROUP BY pav2.product_id
+            HAVING COUNT(DISTINCT pav2.attribute_id) = :filter_numAttrs
+        )
+    `;
 
                 qb.andWhere(existsSql, params);
             }
