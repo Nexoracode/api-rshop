@@ -107,7 +107,7 @@ export class VariantProductService {
           select: ['id', 'isPublic'],
         });
 
-        if (attribute && attribute.isPublic) {
+        if (attribute) {
           const existsCategoryAttr = await manager.findOne(CategoryAttribute, {
             where: {
               attribute: { id: attributeId },

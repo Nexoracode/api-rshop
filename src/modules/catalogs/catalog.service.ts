@@ -228,7 +228,6 @@ export class CatalogService {
           FROM category_attributes ca
           INNER JOIN attributes a ON a.id = ca.attribute_id
           WHERE ca.category_id IN (${categoryIdsForAttributes.map(() => '?').join(',')})
-            AND a.is_public = 1
         `,
                 categoryIdsForAttributes,
             );
