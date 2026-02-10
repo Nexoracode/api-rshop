@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IProductService } from './interfaces/product.service.interface';
@@ -306,8 +306,10 @@ export class ProductService implements IProductService {
 
             const savedProduct = await manager.save(Product, {
                 ...updated,
+                category: data.categoryId ? { id: data.categoryId } : product.category,
                 helperId: data.helperId === null ? null : data.helperId,
                 helper: data.helperId === null ? null : helper!,
+                brand: data.brandId ? { id: data.brandId } : product.brand,
             });
             if (data.mediaPinnedId != null) {
                 if (data.mediaPinnedId === 0) {
