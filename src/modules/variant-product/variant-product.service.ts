@@ -143,17 +143,19 @@ export class VariantProductService {
       const createdOrExisting: VariantProduct[] = [];
 
       // 5) برای هر ترکیب: اگر نبود بساز، اگر بود نگه دار
+      var variantId = 1;
       for (const combo of combos) {
         const key = buildKeyFromPairs(combo);
 
         if (existingIndex.has(key)) {
+          variantId++;
           createdOrExisting.push(existingIndex.get(key)!);
           continue;
         }
 
         // SKU یکتا و قطعی
         const deterministic = buildDeterministicSku(dto.sku, combo, product.id);
-        const uniqueSku = `${deterministic}sdk${product.id}`
+        const uniqueSku = `${product.id}-${variantId}`
 
         const variant = manager.create(VariantProduct, {
           sku: uniqueSku,
@@ -173,6 +175,7 @@ export class VariantProductService {
           })
         );
         await manager.save(VariantAttributeValue, vavs);
+        variantId++;
 
         createdOrExisting.push(saved);
         existingIndex.set(key, saved);

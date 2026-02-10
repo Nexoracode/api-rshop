@@ -111,11 +111,11 @@ export class CatalogService {
         // ------------------------------------------
         // ۱. بررسی cache (بهبود یافته)
         // ------------------------------------------
-        // const cached = await this.cacheService.getCategoryProducts(slug, query);
-        // if (cached) {
-        //     this.logger.log(`✅ Category products ${slug} از cache`);
-        //     return cached;
-        // }
+        const cached = await this.cacheService.getCategoryProducts(slug, query);
+        if (cached) {
+            this.logger.log(`✅ Category products ${slug} از cache`);
+            return cached;
+        }
 
         // ------------------------------------------
         // ۲. یافتن دسته فعلی و ساخت مسیر
