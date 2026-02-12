@@ -44,12 +44,10 @@ export class PromoBannerService {
         })
 
         const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
-        await this.promoBannerRepo.save({
+        const saved = await this.promoBannerRepo.save({
             ...banner,
-            sortOrder: nextOrder
-        })
-
-        const saved = await this.promoBannerRepo.save(banner);
+            sortOrder: nextOrder,
+        });
         // ✅ پاک کردن cache
         await this.cacheService.clearPromoBannersCache();
         this.logger.log('🗑️ promo banner cache پاک شد بعد از create');
