@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ParseIntPipe } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, In, LessThan } from 'typeorm';
@@ -7,6 +7,7 @@ import { OrderStatus } from '../order/enums/order-status.enum';
 import { Card, CardStatus } from './entities/card.entity';
 import { CardStatusService } from './card-status.service';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
+import { Setting } from '../setting/entities/setting.entity';
 
 @Injectable()
 export class CartCleanupService {
@@ -34,12 +35,13 @@ export class CartCleanupService {
     async handleExpiredOrders() {
         this.logger.log('🕐 Checking for expired orders...');
 
-        const TIMEOUT_MINUTES = 30;
-        const timeoutDate = new Date();
-        timeoutDate.setMinutes(timeoutDate.getMinutes() - TIMEOUT_MINUTES);
 
         try {
             const result = await runInTransaction(this.dataSource, async (manager) => {
+                const setting = await manager.findOne(Setting, { where: { key: 'reservation_order' } });
+                const TIMEOUT_MINUTES = setting ? parseInt(setting.value) : 120;
+                const timeoutDate = new Date();
+                timeoutDate.setMinutes(timeoutDate.getMinutes() - TIMEOUT_MINUTES);
                 const orderRepo = manager.getRepository(Order);
 
                 // ✅ فقط Order هایی که هنوز در حال پرداخت هستند

@@ -21,6 +21,7 @@ import { iAllOrderResponse } from '../order/interfaces/order.interface';
 import { ProductMapper } from '../product/mappers/product.mapper';
 import { Payment } from '../payment/entities/payment.entity';
 import { PaymentMethod } from '../payment/enums/payment-status.enum';
+import { Setting } from '../setting/entities/setting.entity';
 
 @Injectable()
 export class ProfileService {
@@ -38,6 +39,8 @@ export class ProfileService {
     private readonly recentViewService: RecentViewService,
     private readonly supportService: SupportService,
     private readonly orderService: OrderService,
+    @InjectRepository(Setting)
+    private readonly settingRepo: Repository<Setting>
   ) { }
 
   /**
@@ -288,7 +291,11 @@ export class ProfileService {
       ],
     });
 
+    const setting = await this.settingRepo.findOne({ where: { key: 'reservation_order' } });
     const returnedOrder = orders.map(order => OrderMapper.toAllResponse(order));
-    return returnedOrder;
+    return {
+      reservationOrder: setting ? setting.value : '120',
+      items: returnedOrder,
+    };
   }
 }

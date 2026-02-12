@@ -13,11 +13,12 @@ import { RecentViewModule } from '../recent-view/recent-view.module';
 import { SupportModule } from '../support/support.module';
 import { OrderModule } from '../order/order.module';
 import { Payment } from '../payment/entities/payment.entity';
+import { Setting } from '../setting/entities/setting.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Order, OrderItem, Payment]),
+    TypeOrmModule.forFeature([User, Order, OrderItem, Payment, Setting]),
     ReviewModule,
     WishlistModule,
     RecentViewModule,
