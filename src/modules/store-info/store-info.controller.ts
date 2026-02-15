@@ -1,0 +1,79 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { StoreInfoService } from './store-info.service';
+import { StoreInfoType } from './enums/store-info.enum';
+import { Public } from 'src/common/decorator/public.decorator';
+
+@ApiTags('12 - 🏪 Store Info (Public)')
+@Controller('store-info')
+@Public()
+export class StoreInfoController {
+  constructor(private readonly storeInfoService: StoreInfoService) {}
+
+  // ─── درباره ما ─────────────────────────────────────────────────────────────
+
+  @Get('about-us')
+  @ApiOperation({ summary: 'دریافت صفحه درباره ما' })
+  getAboutUs() {
+    return this.storeInfoService.getAboutUs();
+  }
+
+  // ─── راهنمای خرید ──────────────────────────────────────────────────────────
+
+  @Get('purchase-guide')
+  @ApiOperation({ summary: 'دریافت راهنمای خرید' })
+  getPurchaseGuide() {
+    return this.storeInfoService.getPurchaseGuide();
+  }
+
+  // ─── شرایط بازگشت کالا ─────────────────────────────────────────────────────
+
+  @Get('return-policy')
+  @ApiOperation({ summary: 'دریافت شرایط بازگشت کالا' })
+  getReturnPolicy() {
+    return this.storeInfoService.getReturnPolicy();
+  }
+
+  // ─── سوالات متداول ─────────────────────────────────────────────────────────
+
+  @Get('faqs')
+  @ApiOperation({ summary: 'دریافت تمام سوالات متداول (دسته‌بندی شده)' })
+  getFaqsGrouped() {
+    return this.storeInfoService.getFaqsGroupedByCategory();
+  }
+
+  @Get('faqs/list')
+  @ApiOperation({ summary: 'لیست ساده سوالات متداول فعال' })
+  getAllActiveFaqs() {
+    return this.storeInfoService.getAllFaqs(true);
+  }
+
+  @Get('faqs/:id')
+  @ApiOperation({ summary: 'دریافت یک سوال متداول با شمارش بازدید' })
+  getFaqById(@Param('id', ParseIntPipe) id: number) {
+    return this.storeInfoService.getFaqById(id);
+  }
+
+  // ─── عمومی ─────────────────────────────────────────────────────────────────
+
+  @Get('all')
+  @ApiOperation({ summary: 'دریافت تمام صفحات اطلاعاتی فعال' })
+  getAllActive() {
+    return this.storeInfoService.getActiveStoreInfo();
+  }
+
+  @Get(':type')
+  @ApiOperation({ summary: 'دریافت یک صفحه اطلاعاتی بر اساس نوع (about_us / purchase_guide / return_policy / faq)' })
+  getByType(@Param('type') type: StoreInfoType) {
+    return this.storeInfoService.getStoreInfoByType(type);
+  }
+}
