@@ -43,6 +43,7 @@ import { HomePageModule } from './modules/home-page/home-page.module';
 import { HealthModule } from './modules/health/health.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { ShortUrlModule } from './modules/short-url/short-url.module';
+import { StoreInfoModule } from './modules/store-info/store-info.module';
 
 @Module({
   imports: [
@@ -85,7 +86,8 @@ import { ShortUrlModule } from './modules/short-url/short-url.module';
     HomePageModule,
     HealthModule,
     CollectionModule,
-    ShortUrlModule, // ✅ اضافه شد
+    ShortUrlModule,
+    StoreInfoModule, // ✅ درباره ما، راهنمای خرید، شرایط بازگشت، سوالات متداول
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
