@@ -44,6 +44,7 @@ import { HealthModule } from './modules/health/health.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { ShortUrlModule } from './modules/short-url/short-url.module';
 import { StoreInfoModule } from './modules/store-info/store-info.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -87,7 +88,8 @@ import { StoreInfoModule } from './modules/store-info/store-info.module';
     HealthModule,
     CollectionModule,
     ShortUrlModule,
-    StoreInfoModule, // ✅ درباره ما، راهنمای خرید، شرایط بازگشت، سوالات متداول
+    StoreInfoModule,
+    DashboardModule, // ✅ آمار داشبورد: بازدید، فروش، سفارش، مشتری جدید
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
