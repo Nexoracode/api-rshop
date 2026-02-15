@@ -46,7 +46,7 @@ export class HomePageService {
 
     // ✅ چک cache با پارامتر forAdmin
     const cached = await this.cacheService.getHomePageData(forAdmin);
-    if (cached) {
+    if (cached && !forAdmin) {
       this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
 
       // ✅ layoutType تازه رو اضافه کن (همیشه fresh!)

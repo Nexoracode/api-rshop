@@ -37,7 +37,7 @@ export class HomePagePublicController {
     type: HomePageDataResponseDto,
   })
 
-  async getHomePage(): Promise<HomePageDataResponseDto> {
+  async getHomePage() {
     return await this.homePageService.getHomePageData(false);
   }
 
@@ -52,7 +52,7 @@ export class HomePagePublicController {
     type: HomePageDataResponseDto,
   })
 
-  async getHomePageAdmin(): Promise<HomePageDataResponseDto> {
+  async getHomePageAdmin() {
     return await this.homePageService.getHomePageData(true);
   }
 
