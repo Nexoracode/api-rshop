@@ -8,6 +8,7 @@ import {
     Param,
     ParseIntPipe,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -22,8 +23,9 @@ import { AccessGuard } from 'src/common/guard/access.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
 import { CreatePromoBannerDto, UpdatePromoBannerDto } from '../dto/promo-banner.dto';
 import { PromoBannerService } from '../promo-banner.service';
-@ApiTags('Admin - Promo banner')
-@Controller('admin/promo-banner')
+import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-cache.interceptor';
+@ApiTags('Admin - Promo Banners')
+@Controller('admin/promo-banners')
 @UseGuards(AccessGuard, RoleGuard)
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @ApiBearerAuth()
@@ -31,6 +33,7 @@ export class PromoBannerAdminController {
     constructor(private readonly promoBannerService: PromoBannerService) { }
 
     @Post()
+    @UseInterceptors(ClearHomePageCacheInterceptor)
     @ApiOperation({
         summary: 'ساخت بنر تبلیغاتی جدید',
         description: 'ایجاد یک بنر تبلیغاتی جدید برای نمایش در بالای سایت',
@@ -94,6 +97,7 @@ export class PromoBannerAdminController {
     }
 
     @Patch(':id')
+    @UseInterceptors(ClearHomePageCacheInterceptor)
     @ApiOperation({
         summary: 'بروزرسانی بنر',
         description: 'ویرایش اطلاعات یک بنر تبلیغاتی',
@@ -120,6 +124,7 @@ export class PromoBannerAdminController {
     }
 
     @Patch(':id/toggle')
+    @UseInterceptors(ClearHomePageCacheInterceptor)
     @ApiOperation({
         summary: 'فعال/غیرفعال کردن بنر',
         description: 'تغییر وضعیت فعال بودن بنر',
@@ -143,6 +148,7 @@ export class PromoBannerAdminController {
     }
 
     @Delete(':id')
+    @UseInterceptors(ClearHomePageCacheInterceptor)
     @ApiOperation({
         summary: 'حذف بنر',
         description: 'حذف کامل یک بنر تبلیغاتی',
@@ -165,6 +171,8 @@ export class PromoBannerAdminController {
     }
 
     @Patch(':id/order')
+    @UseInterceptors(ClearHomePageCacheInterceptor)
+    @ApiOperation({ summary: 'تغییر ترتیب نمایش بنر' })
     async updateOrder(
         @Param('id', ParseIntPipe) id: number,
         @Body() data: { displayOrder: number },

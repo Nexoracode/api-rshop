@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Inject, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { HomeSection, SectionType } from './entities/home-section.entity';
@@ -6,7 +6,6 @@ import { CreateHomeSectionDto, UpdateHomeSectionDto } from './dto/home-section.d
 import { Product } from '../product/entities/product.entity';
 import { HomePageCacheService } from './cache/home-page-cache.service';
 import { PromotionRepository } from '../promotion/domain/interfaces/promotion-repository.interface';
-import { UpdateSortDto } from '../attributes/attribute/dto/update-sort-attribute.dto';
 
 @Injectable()
 export class HomeSectionService {
@@ -23,19 +22,22 @@ export class HomeSectionService {
   ) { }
 
   async create(createDto: CreateHomeSectionDto): Promise<HomeSection> {
+    // بررسی slug تکراری
     if (createDto.slug) {
       const existingSection = await this.homeSectionRepository.findOne({
         where: { slug: createDto.slug }
       });
       if (existingSection) {
-        throw new NotFoundException(`بخش صفحه اصلی با اسلاگ ${createDto.slug} قبلاً وجود دارد`);
+        throw new BadRequestException(`بخش صفحه اصلی با اسلاگ ${createDto.slug} قبلاً وجود دارد`);
       }
     }
-    const lastAttribute = await this.homeSectionRepository.find({
+
+    // محاسبه displayOrder بعدی
+    const lastSection = await this.homeSectionRepository.find({
       order: { displayOrder: 'DESC' },
       take: 1,
-    })
-    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
+    });
+    const nextOrder = lastSection.length ? lastSection[0].displayOrder + 1 : 1;
 
     const section = this.homeSectionRepository.create({
       ...createDto,
@@ -43,16 +45,18 @@ export class HomeSectionService {
     });
     const result = await this.homeSectionRepository.save(section);
 
+    // ✅ پاک کردن cache
     await this.cacheService.clearHomeSectionsCache();
-    this.logger.log('کش بخش‌ های صفحه اصلی پاک شد پس از ایجاد');
+    this.logger.log('🗑️ Home sections cache پاک شد بعد از create');
 
     return result;
   }
 
   async findAll(): Promise<HomeSection[]> {
+    // ✅ چک cache
     const cached = await this.cacheService.getAllHomeSections();
     if (cached) {
-      this.logger.log('تمام بخش‌ های صفحه اصلی از کش بازیابی شد');
+      this.logger.log('✅ All home sections از cache');
       return cached;
     }
 
@@ -60,34 +64,38 @@ export class HomeSectionService {
       order: { displayOrder: 'ASC', createdAt: 'DESC' },
     });
 
+    // ✅ ذخیره در cache
     await this.cacheService.setAllHomeSections(result);
-    this.logger.log('تمام بخش‌ های صفحه اصلی در کش ذخیره شد');
+    this.logger.log('💾 All home sections ذخیره شد در cache');
 
     return result;
   }
 
   async findAllActive(): Promise<HomeSection[]> {
+    // ✅ چک cache
     const cached = await this.cacheService.getActiveHomeSections();
     if (cached) {
-      this.logger.log('بخش‌های فعال صفحه اصلی از کش بازیابی شد');
+      this.logger.log('✅ Active home sections از cache');
       return cached;
     }
 
     const result = await this.homeSectionRepository.find({
-      where: { isActive: true, },
+      where: { isActive: true },
       order: { displayOrder: 'ASC' },
     });
 
+    // ✅ ذخیره در cache
     await this.cacheService.setActiveHomeSections(result);
-    this.logger.log('بخش‌های فعال صفحه اصلی در کش ذخیره شد');
+    this.logger.log('💾 Active home sections ذخیره شد در cache');
 
     return result;
   }
 
   async findOne(id: number): Promise<HomeSection> {
+    // ✅ چک cache
     const cached = await this.cacheService.getHomeSectionById(id);
     if (cached) {
-      this.logger.log(`بخش صفحه اصلی ${id} از کش بازیابی شد`);
+      this.logger.log(`✅ Home section ${id} از cache`);
       return cached;
     }
 
@@ -96,8 +104,9 @@ export class HomeSectionService {
       throw new NotFoundException(`بخش صفحه اصلی با شناسه ${id} یافت نشد`);
     }
 
+    // ✅ ذخیره در cache
     await this.cacheService.setHomeSectionById(id, section);
-    this.logger.log(`بخش صفحه اصلی ${id} در کش ذخیره شد`);
+    this.logger.log(`💾 Home section ${id} ذخیره شد در cache`);
 
     return section;
   }
@@ -111,17 +120,19 @@ export class HomeSectionService {
   }
 
   async findProductBySectionSlug(slug: string) {
-    var products: Product[] = [];
+    let products: Product[] = [];
     const section = await this.homeSectionRepository.findOne({ where: { slug } });
     if (!section) {
       throw new NotFoundException(`بخش صفحه اصلی با اسلاگ ${slug} یافت نشد`);
     }
-    if (section.productIds) {
+
+    if (section.productIds && section.productIds.length > 0) {
       products = await this.productRepository.find({
-        where: { id: In(section.productIds) },
+        where: { id: In(section.productIds), isVisible: true },
         relations: ['category', 'mediaPinned', 'brand']
-      })
+      });
     }
+
     return {
       products: products.map((product) => ({
         id: product.id,
@@ -152,23 +163,24 @@ export class HomeSectionService {
   }
 
   async update(id: number, updateDto: UpdateHomeSectionDto): Promise<HomeSection> {
+    // بررسی slug تکراری
     if (updateDto.slug) {
       const existingSection = await this.homeSectionRepository.findOne({
         where: { slug: updateDto.slug }
       });
       if (existingSection && existingSection.id !== id) {
-        throw new NotFoundException(`بخش صفحه اصلی با اسلاگ ${updateDto.slug} قبلاً وجود دارد`);
+        throw new BadRequestException(`بخش صفحه اصلی با اسلاگ ${updateDto.slug} قبلاً وجود دارد`);
       }
     }
 
-    await this.findOne(id);
-    await this.homeSectionRepository.update(id, updateDto);
-    const result = await this.homeSectionRepository.findOne({ where: { id } });
-    if (!result) {
-      throw new NotFoundException(`بخش صفحه اصلی با شناسه ${id} یافت نشد`);
-    }
+    const section = await this.findOne(id);
+    Object.assign(section, updateDto);
+    const result = await this.homeSectionRepository.save(section);
+
+    // ✅ پاک کردن cache با ID
     await this.cacheService.clearHomeSectionsCache(id);
-    this.logger.log(`کش بخش صفحه اصلی ${id} پاک شد پس از حذف`);
+    this.logger.log(`🗑️ Home section ${id} cache پاک شد بعد از update`);
+
     return result;
   }
 
@@ -176,11 +188,12 @@ export class HomeSectionService {
     const section = await this.findOne(id);
     await this.homeSectionRepository.remove(section);
 
+    // ✅ پاک کردن cache با ID
     await this.cacheService.clearHomeSectionsCache(id);
-    this.logger.log(`کش بخش صفحه اصلی ${id} پاک شد پس از حذف`);
+    this.logger.log(`🗑️ Home section ${id} cache پاک شد بعد از delete`);
   }
 
-  async getSectionProducts(sectionId: number, onlyActive: boolean = false) {
+  async getSectionProducts(sectionId: number, onlyActive: boolean = false): Promise<Product[]> {
     const section = await this.homeSectionRepository.findOne({
       where: { id: sectionId },
     });
@@ -192,7 +205,7 @@ export class HomeSectionService {
     let products = await this.getProductsBySection(section);
 
     if (onlyActive) {
-      products = products.filter(p => p.isActive);
+      products = products.filter(p => p.isVisible);
     }
 
     return products;
@@ -209,7 +222,7 @@ export class HomeSectionService {
               id: In(section.productIds),
               isVisible: true
             },
-            relations: ['medias', 'category', 'brand'],
+            relations: ['medias', 'mediaPinned', 'category', 'brand'],
             take: limit,
           });
         }
@@ -221,7 +234,7 @@ export class HomeSectionService {
             isVisible: true,
             isFeatured: true
           },
-          relations: ['medias', 'category', 'brand'],
+          relations: ['medias', 'mediaPinned', 'category', 'brand'],
           order: { createdAt: 'DESC' },
           take: limit,
         });
@@ -243,11 +256,63 @@ export class HomeSectionService {
           return await this.productRepository.find({
             where: {
               categoryId: section.categoryId,
+              isVisible: true,
             },
-            relations: ['medias', 'category', 'brand', 'mediaPinned'],
+            relations: ['medias', 'mediaPinned', 'category', 'brand'],
             order: { createdAt: 'DESC' },
             take: limit,
           });
+        }
+        return [];
+
+      case SectionType.PROMOTION_BASED:
+        if (section.promotionId) {
+          try {
+            const promotion = await this.promotionRepository.findById(section.promotionId);
+            if (!promotion || !promotion.isActive) {
+              return [];
+            }
+
+            // بررسی تاریخ اعتبار
+            const now = new Date();
+            if (promotion.startsAt && now < promotion.startsAt) {
+              return [];
+            }
+            if (promotion.endsAt && now > promotion.endsAt) {
+              return [];
+            }
+
+            // استخراج product IDs از شرایط پروموشن
+            const productIds: number[] = [];
+            if (promotion.conditions) {
+              for (const condition of promotion.conditions) {
+                if (condition.type === 'product' && condition.products) {
+                  for (const prod of condition.products) {
+                    if (prod.productId) {
+                      productIds.push(prod.productId);
+                    }
+                  }
+                }
+              }
+            }
+
+            if (productIds.length === 0) {
+              return [];
+            }
+
+            return await this.productRepository.find({
+              where: {
+                id: In(productIds),
+                isVisible: true,
+              },
+              relations: ['medias', 'mediaPinned', 'category', 'brand'],
+              order: { createdAt: 'DESC' },
+              take: limit,
+            });
+          } catch (error) {
+            this.logger.error(`خطا در دریافت محصولات پروموشن ${section.promotionId}:`, error);
+            return [];
+          }
         }
         return [];
 
@@ -258,13 +323,18 @@ export class HomeSectionService {
 
   async updateOrder(id: number, data: { displayOrder: number }) {
     const section = await this.homeSectionRepository.findOne({ where: { id } });
-    if (!section) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
+    if (!section) throw new NotFoundException('بخش مورد نظر یافت نشد.');
+
     section.displayOrder = data.displayOrder;
     await this.homeSectionRepository.save(section);
+
+    // ✅ پاک کردن cache
     await this.cacheService.clearHomeSectionsCache();
+    this.logger.log('🗑️ Home sections cache پاک شد بعد از تغییر ترتیب');
+
     return {
-      message: 'ترتیب با موفقیت انجام شد',
+      message: 'ترتیب با موفقیت تغییر کرد',
       data: null,
-    }
+    };
   }
 }

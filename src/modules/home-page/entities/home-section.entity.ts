@@ -59,6 +59,10 @@ export class HomeSection {
   @Column({ type: 'int', nullable: true })
   categoryId: number;
 
+  // برای بخش‌های بر اساس پروموشن
+  @Column({ name: 'promotion_id', type: 'int', nullable: true })
+  promotionId: number;
+
   @Column({ type: 'int', default: 10 })
   productsLimit: number;
 

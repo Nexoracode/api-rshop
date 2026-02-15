@@ -51,6 +51,11 @@ export class CreateHomeSectionDto {
   @IsOptional()
   categoryId?: number;
 
+  @ApiPropertyOptional({ name: 'promotion_id', example: 3, description: 'برای بخش‌های promotion_based' })
+  @IsInt()
+  @IsOptional()
+  promotionId?: number;
+
   @ApiPropertyOptional({ name: 'products_limit', example: 10 })
   @IsInt()
   @IsOptional()

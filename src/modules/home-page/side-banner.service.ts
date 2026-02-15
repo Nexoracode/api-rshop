@@ -3,22 +3,31 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SideBanner, BannerPosition } from './entities/side-banner.entity';
 import { CreateSideBannerDto, UpdateSideBannerDto } from './dto/side-banner.dto';
-import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
+import { HomePageCacheService } from './cache/home-page-cache.service';
 
 @Injectable()
 export class SideBannerService {
-  private readonly logger = new Logger(SideBannerService.name); // ✅ اضافه شد
+  private readonly logger = new Logger(SideBannerService.name);
 
   constructor(
     @InjectRepository(SideBanner)
     private sideBannerRepository: Repository<SideBanner>,
-    private readonly cacheService: HomePageCacheService, // ✅ اضافه شد
+    private readonly cacheService: HomePageCacheService,
   ) { }
 
   async create(createDto: CreateSideBannerDto): Promise<SideBanner> {
-    // لاجیک اصلی (بدون تغییر)
     const banner = this.sideBannerRepository.create(createDto);
-    const result = await this.sideBannerRepository.save(banner);
+
+    const lastBanner = await this.sideBannerRepository.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    });
+    const nextOrder = lastBanner.length ? lastBanner[0].displayOrder + 1 : 1;
+
+    const result = await this.sideBannerRepository.save({
+      ...banner,
+      displayOrder: nextOrder,
+    });
 
     // ✅ پاک کردن cache
     await this.cacheService.clearSideBannersCache();
@@ -35,7 +44,6 @@ export class SideBannerService {
       return cached;
     }
 
-    // لاجیک اصلی (بدون تغییر)
     const result = await this.sideBannerRepository.find({
       order: { position: 'ASC', displayOrder: 'ASC' },
     });
@@ -55,9 +63,8 @@ export class SideBannerService {
       return cached;
     }
 
-    // لاجیک اصلی (بدون تغییر)
     const result = await this.sideBannerRepository.find({
-      where: { isActive: true, },
+      where: { isActive: true },
       order: { position: 'ASC', displayOrder: 'ASC' },
     });
 
@@ -69,7 +76,6 @@ export class SideBannerService {
   }
 
   async findByPosition(position: BannerPosition): Promise<SideBanner[]> {
-    // لاجیک اصلی (بدون تغییر - position cache نداریم)
     return await this.sideBannerRepository.find({
       where: { position, isActive: true },
       order: { displayOrder: 'ASC' },
@@ -84,7 +90,6 @@ export class SideBannerService {
       return cached;
     }
 
-    // لاجیک اصلی (بدون تغییر)
     const banner = await this.sideBannerRepository.findOne({ where: { id } });
     if (!banner) {
       throw new NotFoundException(`Side banner with ID ${id} not found`);
@@ -98,25 +103,40 @@ export class SideBannerService {
   }
 
   async update(id: number, updateDto: UpdateSideBannerDto): Promise<SideBanner> {
-    // لاجیک اصلی (بدون تغییر)
     const banner = await this.findOne(id);
     Object.assign(banner, updateDto);
     const result = await this.sideBannerRepository.save(banner);
 
-    // ✅ پاک کردن cache
-    await this.cacheService.clearSideBannersCache();
+    // ✅ پاک کردن cache با ID
+    await this.cacheService.clearSideBannersCache(id);
     this.logger.log(`🗑️ Side banner ${id} cache پاک شد بعد از update`);
 
     return result;
   }
 
   async remove(id: number): Promise<void> {
-    // لاجیک اصلی (بدون تغییر)
     const banner = await this.findOne(id);
     await this.sideBannerRepository.remove(banner);
 
-    // ✅ پاک کردن cache
-    await this.cacheService.clearSideBannersCache()
+    // ✅ پاک کردن cache با ID
+    await this.cacheService.clearSideBannersCache(id);
     this.logger.log(`🗑️ Side banner ${id} cache پاک شد بعد از delete`);
+  }
+
+  async updateSortOrder(id: number, data: { displayOrder: number }) {
+    const banner = await this.sideBannerRepository.findOne({ where: { id } });
+    if (!banner) throw new NotFoundException('بنر مورد نظر یافت نشد.');
+
+    banner.displayOrder = data.displayOrder;
+    await this.sideBannerRepository.save(banner);
+
+    // ✅ پاک کردن cache
+    await this.cacheService.clearSideBannersCache();
+    this.logger.log('🗑️ Side banners cache پاک شد بعد از تغییر ترتیب');
+
+    return {
+      message: 'ترتیب با موفقیت تغییر کرد',
+      data: null,
+    };
   }
 }

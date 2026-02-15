@@ -27,6 +27,13 @@ export class SectionDataValidator implements ValidatorConstraintInterface {
       }
     }
 
+    // اگر نوع بخش promotion_based است، باید promotion_id مشخص شده باشد
+    if (sectionType === SectionType.PROMOTION_BASED) {
+      if (!object.promotion_id || typeof object.promotion_id !== 'number') {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -40,6 +47,10 @@ export class SectionDataValidator implements ValidatorConstraintInterface {
 
     if (sectionType === SectionType.CATEGORY_BASED) {
       return 'برای بخش های دسته‌بندی محور (category_based)، فیلد category_id الزامی است';
+    }
+
+    if (sectionType === SectionType.PROMOTION_BASED) {
+      return 'برای بخش های پروموشن محور (promotion_based)، فیلد promotion_id الزامی است';
     }
 
     return 'اطلاعات بخش نامعتبر است';

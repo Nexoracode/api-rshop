@@ -527,6 +527,8 @@ export class HeroSliderAdminController {
   }
 
   @Patch(':id/order')
+  @UseInterceptors(ClearHomePageCacheInterceptor)
+  @ApiOperation({ summary: 'تغییر ترتیب نمایش اسلایدر' })
   async updateSortOrder(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: { displayOrder: number },
