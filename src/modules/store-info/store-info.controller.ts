@@ -15,12 +15,11 @@ import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('12 - 🏪 Store Info (Public)')
 @Controller('store-info')
-@Public()
 export class StoreInfoController {
-  constructor(private readonly storeInfoService: StoreInfoService) {}
+  constructor(private readonly storeInfoService: StoreInfoService) { }
 
   // ─── درباره ما ─────────────────────────────────────────────────────────────
-
+  @Public()
   @Get('about-us')
   @ApiOperation({ summary: 'دریافت صفحه درباره ما' })
   getAboutUs() {
@@ -29,6 +28,7 @@ export class StoreInfoController {
 
   // ─── راهنمای خرید ──────────────────────────────────────────────────────────
 
+  @Public()
   @Get('purchase-guide')
   @ApiOperation({ summary: 'دریافت راهنمای خرید' })
   getPurchaseGuide() {
@@ -36,7 +36,7 @@ export class StoreInfoController {
   }
 
   // ─── شرایط بازگشت کالا ─────────────────────────────────────────────────────
-
+  @Public()
   @Get('return-policy')
   @ApiOperation({ summary: 'دریافت شرایط بازگشت کالا' })
   getReturnPolicy() {
@@ -45,18 +45,21 @@ export class StoreInfoController {
 
   // ─── سوالات متداول ─────────────────────────────────────────────────────────
 
+  @Public()
   @Get('faqs')
   @ApiOperation({ summary: 'دریافت تمام سوالات متداول (دسته‌بندی شده)' })
   getFaqsGrouped() {
     return this.storeInfoService.getFaqsGroupedByCategory();
   }
 
+  @Public()
   @Get('faqs/list')
   @ApiOperation({ summary: 'لیست ساده سوالات متداول فعال' })
   getAllActiveFaqs() {
     return this.storeInfoService.getAllFaqs(true);
   }
 
+  @Public()
   @Get('faqs/:id')
   @ApiOperation({ summary: 'دریافت یک سوال متداول با شمارش بازدید' })
   getFaqById(@Param('id', ParseIntPipe) id: number) {
@@ -65,12 +68,14 @@ export class StoreInfoController {
 
   // ─── عمومی ─────────────────────────────────────────────────────────────────
 
+  @Public()
   @Get('all')
   @ApiOperation({ summary: 'دریافت تمام صفحات اطلاعاتی فعال' })
   getAllActive() {
     return this.storeInfoService.getActiveStoreInfo();
   }
 
+  @Public()
   @Get(':type')
   @ApiOperation({ summary: 'دریافت یک صفحه اطلاعاتی بر اساس نوع (about_us / purchase_guide / return_policy / faq)' })
   getByType(@Param('type') type: StoreInfoType) {
