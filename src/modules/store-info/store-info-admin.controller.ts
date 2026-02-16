@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   UseGuards,
@@ -23,7 +24,7 @@ import { Role } from 'src/common/enums/role.enum';
 @Controller('admin/store-info')
 @Roles(Role.ADMIN)
 export class StoreInfoAdminController {
-  constructor(private readonly storeInfoService: StoreInfoService) {}
+  constructor(private readonly storeInfoService: StoreInfoService) { }
 
   // ─── مدیریت صفحات اطلاعاتی ─────────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ export class StoreInfoAdminController {
     return this.storeInfoService.upsertStoreInfo(dto);
   }
 
-  @Put(':type')
+  @Patch(':type')
   @ApiOperation({ summary: 'به‌روزرسانی صفحه اطلاعاتی (about_us / purchase_guide / return_policy / faq)' })
   update(
     @Param('type') type: StoreInfoType,
@@ -68,7 +69,7 @@ export class StoreInfoAdminController {
     return this.storeInfoService.createFaq(dto);
   }
 
-  @Put('faqs/:id')
+  @Patch('faqs/:id')
   @ApiOperation({ summary: 'ویرایش سوال متداول' })
   updateFaq(
     @Param('id', ParseIntPipe) id: number,
