@@ -45,6 +45,7 @@ import { CollectionModule } from './modules/collection/collection.module';
 import { ShortUrlModule } from './modules/short-url/short-url.module';
 import { StoreInfoModule } from './modules/store-info/store-info.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { IconModule } from './modules/icon/icon.module';
 
 @Module({
   imports: [
@@ -89,7 +90,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     CollectionModule,
     ShortUrlModule,
     StoreInfoModule,
-    DashboardModule, // ✅ آمار داشبورد: بازدید، فروش، سفارش، مشتری جدید
+    DashboardModule,
+    IconModule, // ✅ آمار داشبورد: بازدید، فروش، سفارش، مشتری جدید
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
