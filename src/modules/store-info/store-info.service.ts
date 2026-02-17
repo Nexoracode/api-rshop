@@ -90,7 +90,15 @@ export class StoreInfoService {
   async createFaqCategory(dto: CreateFaqCategoryDto) {
     const existing = await this.faqCategoryRepo.findOne({ where: { name: dto.name } });
     if (existing) throw new ConflictException(`دسته‌بندی "${dto.name}" قبلاً وجود دارد.`);
-    const entity = this.faqCategoryRepo.create(dto);
+    const lastAttribute = await this.faqCategoryRepo.find({
+      order: { displayOrder: 'DESC' },
+      take: 1,
+    })
+    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
+    const entity = this.faqCategoryRepo.create({
+      ...dto,
+      displayOrder: nextOrder
+    });
     const saved = await this.faqCategoryRepo.save(entity);
     return StoreInfoMapper.toFaqCategoryResponse(saved);
   }
