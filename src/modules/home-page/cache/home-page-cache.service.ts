@@ -30,8 +30,8 @@ export class HomePageCacheService {
         SIDE_BANNERS_ALL: 'homepage:side-banners:all',
         SIDE_BANNER_DETAIL: (id: number) => `homepage:side-banner:${id}`,
 
-        PROMO_BANNERS_ACTIVE: 'homepage:promo-banners:active',
-        PROMO_BANNERS_ALL: 'homepage:promo-banners:all',
+        PROMO_BANNERS_ACTIVE: 'homepage:promo-banner:active',
+        PROMO_BANNERS_ALL: 'homepage:promo-banner:all',
         PROMO_BANNER_DETAIL: (id: number) => `homepage:promo-banner:${id}`,
 
         SECTIONS_ACTIVE: 'homepage:sections:active',

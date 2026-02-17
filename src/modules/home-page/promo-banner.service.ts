@@ -98,11 +98,6 @@ export class PromoBannerService {
      * فقط یک بنر با بالاترین اولویت
      */
     async findAllActive() {
-        const cached = await this.cacheService.getActivePromoBanner();
-        if (cached) {
-            this.logger.log('✅ Active promo banner از cache');
-            return cached;
-        }
         const now = new Date();
         const banners = await this.promoBannerRepo.find({
             where: {
@@ -133,7 +128,6 @@ export class PromoBannerService {
             description: promo.description,
         }));
 
-        await this.cacheService.setActivePromoBanner(newBanners);
         this.logger.log('💾 Active promo banner ذخیره شد در cache');
 
         return newBanners
@@ -221,7 +215,7 @@ export class PromoBannerService {
         if (!promo) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
         promo.displayOrder = data.displayOrder;
         await this.promoBannerRepo.save(promo);
-        await this.cacheService.clearPromoBannersCache();
+        await this.cacheService.clearPromoBannersCache(id);
         return {
             message: 'ترتیب با موفقیت انجام شد',
             data: null,
