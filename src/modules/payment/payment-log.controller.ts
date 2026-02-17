@@ -1,11 +1,16 @@
 import { Controller, Get, Param, UseGuards } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { PaymentLogService } from "./payment-log.service";
 import { AccessGuard } from "src/common/guard/access.guard";
+import { RoleGuard } from "src/common/guard/role.guard";
+import { Roles } from "src/common/decorator/role.decorator";
+import { Role } from "src/common/enums/role.enum";
 
 @ApiTags("Payment Logs")
+@ApiBearerAuth()
 @Controller("payment-logs")
-@UseGuards(AccessGuard)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER)
 export class PaymentLogController {
     constructor(private readonly paymentLogService: PaymentLogService) { }
 

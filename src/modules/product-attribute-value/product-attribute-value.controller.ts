@@ -1,13 +1,20 @@
 // product-attribute-value.controller.ts
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, UseGuards } from "@nestjs/common";
 import { ProductAttributeValueService } from "./product-attribute-value.service";
 import { CreateProductAttributeValueDto } from "./dto/create-product-attribute-value.dto";
 import { UpdateProductAttributeValueDto } from "./dto/update-product-attribute-value.dto";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { AddedImportantDto } from "./dto/added-important.dto";
+import { AccessGuard } from "src/common/guard/access.guard";
+import { RoleGuard } from "src/common/guard/role.guard";
+import { Roles } from "src/common/decorator/role.decorator";
+import { Role } from "src/common/enums/role.enum";
 
 @Controller("product-attributes")
 @ApiTags("10 - 🧲 Product Attributes")
+@ApiBearerAuth()
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class ProductAttributeValueController {
   constructor(private readonly pavService: ProductAttributeValueService) { }
 

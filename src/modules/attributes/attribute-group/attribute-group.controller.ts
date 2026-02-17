@@ -1,12 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { AttributeGroupService } from './attribute-group.service';
 import { CreateAttributeGroupDto } from './dto/create-attribute-group.dto';
 import { UpdateAttributeGroupDto } from './dto/update-attribute-group.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateSortDto } from '../attribute/dto/update-sort-attribute.dto';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('04 - 📁 Attribute Groups')
 @Controller('attribute-group')
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class AttributeGroupController {
   constructor(private readonly attributeGroupService: AttributeGroupService) { }
 
@@ -25,13 +31,13 @@ export class AttributeGroupController {
     return this.attributeGroupService.findOne(id);
   }
 
-
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAttributeGroupDto) {
     return this.attributeGroupService.update(id, data);
   }
 
   @Delete(':id')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.attributeGroupService.remove(id);
   }

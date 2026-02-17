@@ -1,24 +1,31 @@
-import { Controller, Post, Query, Body, Req, Get } from "@nestjs/common";
-import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { Controller, Post, Query, Body, Req, Get, UseGuards } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { PaymentService } from "./payment.service";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { Request } from "express";
-import { User } from "../user/entities/user.entity";
 import { Paginate, PaginateQuery } from "nestjs-paginate";
+import { AccessGuard } from "src/common/guard/access.guard";
+import { RoleGuard } from "src/common/guard/role.guard";
+import { Roles } from "src/common/decorator/role.decorator";
+import { Role } from "src/common/enums/role.enum";
+import { Public } from "src/common/decorator/public.decorator";
 
 @ApiTags("Payment")
 @Controller("payment")
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) { }
 
-  // 🟢 شروع پرداخت
+  // 🟢 شروع پرداخت — کاربر لاگین‌کرده
+  @UseGuards(AccessGuard)
+  @ApiBearerAuth()
   @Post("create")
   @ApiOperation({ summary: "ایجاد لینک پرداخت برای سفارش" })
   async createPayment(@Body() dto: CreatePaymentDto, @Req() req: Request) {
     return this.paymentService.createPayment(dto.callback, dto.orderId, req);
   }
 
-  // 🔵 بازگشت از درگاه پرداخت (callback)
+  // 🔵 بازگشت از درگاه پرداخت — public (callback از Zarinpal)
+  @Public()
   @Post("verify")
   @ApiOperation({
     summary: "تأیید پرداخت بعد از بازگشت از درگاه", description:
@@ -42,7 +49,12 @@ export class PaymentController {
     return this.paymentService.verifyPayment(authority, status, req);
   }
 
+  // 🔵 لیست پرداخت‌ها — فقط ادمین
+  @UseGuards(AccessGuard, RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER)
+  @ApiBearerAuth()
   @Get()
+  @ApiOperation({ summary: "لیست تمام پرداخت‌ها (ادمین)" })
   async getAllPayment(@Paginate() query: PaginateQuery) {
     return this.paymentService.getAllPayment(query);
   }

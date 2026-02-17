@@ -9,7 +9,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { StoreInfoService } from './store-info.service';
 import { CreateStoreInfoDto } from './dto/create-store-info.dto';
 import { UpdateStoreInfoDto } from './dto/update-store-info.dto';
@@ -19,10 +19,14 @@ import { CreateFaqCategoryDto, UpdateFaqCategoryDto } from './dto/faq-category.d
 import { StoreInfoType } from './enums/store-info.enum';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
 
 @ApiTags('12 - 🏪 Store Info (Admin)')
+@ApiBearerAuth()
 @Controller('admin/store-info')
-@Roles(Role.ADMIN)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class StoreInfoAdminController {
   constructor(private readonly storeInfoService: StoreInfoService) { }
 

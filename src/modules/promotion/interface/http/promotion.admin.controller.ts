@@ -8,6 +8,7 @@ import {
     Post,
     Put,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -32,10 +33,13 @@ import { GetPromotionByIdUseCase } from '../../application/usecases/get-promotio
 import { PromotionDetailResponseDto, PromotionResponseDto } from '../../application/dtos/promotion-response.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
 
 @ApiTags('19 - 🎁 Promotions (Admin)')
 @ApiBearerAuth()
-@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
 @Controller('admin/promotions')
 export class PromotionAdminController {
     constructor(

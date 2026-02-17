@@ -1,4 +1,7 @@
 import { Controller, Get, Param, Post, Body, UseGuards, ParseIntPipe, Patch, Delete } from '@nestjs/common';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
 import { OrderService } from './order.service';
 import { AccessGuard } from '../../common/guard/access.guard';
 import { CreateOrderFromCardDto } from './dto/create-from-card.dto';
@@ -15,9 +18,12 @@ import { UpdateRefOrderDto } from './dto/update-ref-order.dto';
 @UseGuards(AccessGuard)
 @Controller('orders')
 export class OrderController {
+  // نکته: endpoints با @Roles مشخص شده‌اند — بدون @Roles = کاربر عادی هم دسترسی دارد
   constructor(private readonly orderService: OrderService) { }
 
   @Get('all')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER, Role.STAFF)
   @ApiPaginationQuery({
     paginationType: PaginationType.CURSOR,
     sortableColumns: ['id', 'createdAt', 'total'],
@@ -33,7 +39,8 @@ export class OrderController {
   }
 
   @Post("manual")
-  @UseGuards(AccessGuard)
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
   async createManualOrder(@Body() dto: CreateManualOrderDto) {
     return this.orderService.createManualOrder(dto);
   }
@@ -55,52 +62,58 @@ export class OrderController {
   }
 
   @Get(':id')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER, Role.STAFF)
   getOne(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.findOneById(id);
   }
 
   @Patch(':id/status')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'تغییر وضعیت سفارش (ادمین)' })
   updateStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStatusDto) {
     return this.orderService.updateStatus(id, dto.status);
   }
 
   @Patch(':id/ref')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
   updatePaymentRef(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRefOrderDto) {
     return this.orderService.updatePaymentRef(id, dto);
   }
 
-  // ✅ تحویل سفارش
   @Post(':id/mark-delivered')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'تحویل سفارش (ادمین)' })
   markAsDelivered(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.markAsDelivered(id);
   }
 
-  // ✅ لغو سفارش
-  @Public()
   @Post(':id/cancel')
-  @ApiOperation({ summary: 'لغو سفارش (ادمین یا کاربر)' })
+  @ApiOperation({ summary: 'لغو سفارش (کاربر)' })
   cancelOrder(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.cancelOrder(id);
   }
 
-  // ✅ در انتظار پرداخت سفارش
-  @Public()
   @Post(':id/awaiting')
-  @ApiOperation({ summary: 'در انتظار پرداخت سفارش (ادمین یا کاربر)' })
+  @ApiOperation({ summary: 'در انتظار پردات سفارش (کاربر)' })
   awaitingpaymentOrder(@CurrentUser() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
     return this.orderService.awaitingPayment(user, id);
   }
 
-  // ✅ بازپرداخت سفارش
   @Post(':id/refund')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'بازپرداخت سفارش (ادمین)' })
   refundOrder(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.refundOrder(id);
   }
 
   @Delete(':id')
+  @UseGuards(RoleGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'حذف سفارش (ادمین)' })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.orderService.remove(id);

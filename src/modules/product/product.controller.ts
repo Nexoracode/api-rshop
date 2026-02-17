@@ -15,9 +15,14 @@ import { SeoService } from '../seo/seo.service';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
 import { User } from '../user/entities/user.entity';
 import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('08 - 📦 Products')
 @Controller('product')
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class ProductController {
     constructor(
         private readonly productService: ProductService,
@@ -107,11 +112,13 @@ export class ProductController {
     }
 
     @Delete('delete/bulk')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     removeBulk(@Body() dto: DeleteProductsDto) {
         return this.productService.removeBulk(dto.ids);
     }
 
     @Delete(':id')
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productService.remove(id);
     }

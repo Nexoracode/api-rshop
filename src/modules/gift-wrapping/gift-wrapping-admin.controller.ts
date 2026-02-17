@@ -10,6 +10,7 @@ import {
     UseInterceptors,
     UploadedFiles,
     BadRequestException,
+    UseGuards,
 } from '@nestjs/common';
 import { GiftWrappingService } from './gift-wrapping.service';
 import { CreateGiftWrappingDto } from './dto/create-gift-wrapping.dto';
@@ -28,12 +29,15 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { MediaService } from '../media/media.service';
 import { MediaType } from 'src/common/enums/media.enum';
 import { Roles } from 'src/common/decorator/role.decorator';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
 import { UploadFilesDto } from '../media/dto/upload-file.dto';
 
 @ApiTags('20 - 🎁 Gift Wrapping (Admin)')
 @Controller('admin/gift-wrappings')
 @ApiBearerAuth()
-@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.SUPER_ADMIN)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
 export class GiftWrappingAdminController {
     constructor(
         private readonly giftWrappingService: GiftWrappingService,

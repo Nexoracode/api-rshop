@@ -19,6 +19,7 @@ import {
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
 import { CollectionService } from './collection.service';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
@@ -26,8 +27,8 @@ import { AddProductsToCollectionDto } from './dto/add-product-to-collection.dto'
 
 @ApiTags('🛍️ Collections (Admin)')
 @Controller('admin/collections')
-@UseGuards(AccessGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
 @ApiBearerAuth()
 export class CollectionAdminController {
     constructor(private readonly collectionService: CollectionService) { }

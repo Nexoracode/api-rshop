@@ -1,11 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { AttributeService } from './attribute.service';
 import { CreateAttributeDto } from './dto/create-attribute.dto';
 import { UpdateAttributeDto } from './dto/update-attribute.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateSortDto } from './dto/update-sort-attribute.dto';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
+
 @ApiTags('05 - 🧬 Attributes')
 @Controller('attribute')
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class AttributeController {
   constructor(private readonly attributeService: AttributeService) { }
 
@@ -40,6 +47,7 @@ export class AttributeController {
   }
 
   @Delete(':id')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.attributeService.remove(id);
   }

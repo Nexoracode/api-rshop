@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UploadedFiles, UseInterceptors, UseGuards } from '@nestjs/common';
 import { HelperService } from './helper.service';
 import { CreateHelperDto } from './dto/create-helper.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -8,8 +8,15 @@ import { MediaType } from 'src/common/enums/media.enum';
 import { UploadService } from 'src/common/services/upload.service';
 import { MediaService } from '../media/media.service';
 import { ApiPaginationQuery, FilterOperator, Paginate, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
+
 @ApiTags('11 - 🆘 Helpers')
 @Controller('helpers')
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class HelperController {
     constructor(
         private readonly helperService: HelperService,

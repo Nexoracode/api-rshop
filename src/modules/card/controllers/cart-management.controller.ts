@@ -1,9 +1,16 @@
-import { Controller, Post, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CardStatusService } from '../card-status.service';
+import { AccessGuard } from 'src/common/guard/access.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('Admin - Cart Management')
+@ApiBearerAuth()
 @Controller('admin/cart-management')
+@UseGuards(AccessGuard, RoleGuard)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 export class CartManagementController {
   constructor(private readonly cardStatusService: CardStatusService) {}
 

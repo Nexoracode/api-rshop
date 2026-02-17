@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AccessGuard } from 'src/common/guard/access.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/common/enums/role.enum';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -14,7 +16,7 @@ import { ApiPaginationQuery, FilterOperator, Paginate, Paginated, PaginateQuery,
 
 @ApiTags('02 - 👤 Users')
 @Controller('users')
-@UseGuards(AccessGuard, RoleGuard)
+@UseGuards(AccessGuard)
 export class UserController {
     constructor(
         private readonly userService: UserService,
@@ -23,6 +25,8 @@ export class UserController {
 
     //user controller
     @Get()
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
     @HttpCode(200)
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,
@@ -47,25 +51,32 @@ export class UserController {
     }
 
     @Get(':id')
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.userService.findOneUser(id);
     }
 
 
     @Post()
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @HttpCode(201)
     create(@Body() data: CreateUserDto) {
         return this.userService.create(data);
     }
 
     @Patch(':id')
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
     @HttpCode(200)
     update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateUserDto) {
-        console.log(id);
         return this.userService.update(id, data);
     }
 
     @Delete(':id')
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @HttpCode(200)
     delete(@Param('id', ParseIntPipe) id: number) {
         return this.userService.remove(id);
@@ -82,6 +93,8 @@ export class UserController {
     }
 
     @Post(':id/addresses')
+    @UseGuards(RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
     createAddressForAdmin(@Param('id', ParseIntPipe) id: number, @Body() data: CreateAddressDto) {
         return this.addressService.create(id, data);
     }
