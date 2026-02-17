@@ -1,13 +1,12 @@
 import { CategoryAttribute } from "src/modules/category-attribute/entities/category-attribute.entity";
 import { Product } from "src/modules/product/entities/product.entity";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent, UpdateDateColumn } from "typeorm";
 import { ICategory } from "../interfaces/category.interface";
 import { Media } from "src/modules/media/entities/image.entity";
+import { Icon } from "src/modules/icon/entities/icon.entity";
 
 @Tree('closure-table')
 @Entity('categories')
-// @Index(['slug'])
-// @Index(['title'])
 export class Category implements ICategory {
     @PrimaryGeneratedColumn()
     id: number;
@@ -37,8 +36,12 @@ export class Category implements ICategory {
     @OneToMany(() => CategoryAttribute, ca => ca.category)
     categoryAttributes: CategoryAttribute[];
 
-    @Column({ type: 'varchar', length: 500, nullable: true })
-    icon: string | null;
+    @Column({ name: 'icon_id', nullable: true })
+    iconId: number | null;
+
+    @ManyToOne(() => Icon, (icon) => icon.categories, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'icon_id' })
+    icon: Icon | null;
 
     @Column({ default: 0 })
     level: number;

@@ -23,6 +23,8 @@ export class StoreInfoMapper {
     return {
       id: entity.id,
       name: entity.name,
+      iconId: entity.iconId ?? null,
+      icon: entity.icon ? { id: entity.icon.id, name: entity.icon.name, svg: entity.icon.svg } : null,
       displayOrder: entity.displayOrder,
       isActive: entity.isActive,
       createdAt: entity.createdAt?.toISOString(),

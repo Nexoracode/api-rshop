@@ -9,6 +9,11 @@ export class CreateFaqCategoryDto {
   @MaxLength(100)
   name: string;
 
+  @ApiPropertyOptional({ description: 'شناسه آیکون', example: 1 })
+  @IsNumber()
+  @IsOptional()
+  iconId?: number;
+
   @ApiPropertyOptional({ description: 'ترتیب نمایش', default: 0 })
   @IsNumber()
   @IsOptional()

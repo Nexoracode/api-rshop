@@ -70,4 +70,14 @@ export class CreateCategoryDto {
     @IsOptional()
     @Min(0, { message: 'شناسه والد باید بزرگتر یا مساوی 0 باشد' })
     parentId?: number;
+
+    @ApiProperty({
+        name: 'icon_id',
+        example: 1,
+        required: false,
+        description: 'شناسه آیکون دسته‌بندی'
+    })
+    @IsNumber()
+    @IsOptional()
+    iconId?: number | null;
 }

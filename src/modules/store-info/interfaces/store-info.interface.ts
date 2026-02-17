@@ -1,18 +1,5 @@
 import { StoreInfoStatus, StoreInfoType } from '../enums/store-info.enum';
 
-export interface IStoreInfo {
-  id: number;
-  type: StoreInfoType;
-  title: string;
-  content: string;
-  metaTitle: string | null;
-  metaDescription: string | null;
-  status: StoreInfoStatus;
-  displayOrder: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface IStoreInfoResponse {
   id: number;
   type: StoreInfoType;
@@ -26,26 +13,21 @@ export interface IStoreInfoResponse {
   updatedAt: string;
 }
 
+export interface IIconResponse {
+  id: number;
+  name: string;
+  svg: string;
+}
+
 export interface IFaqCategoryResponse {
   id: number;
   name: string;
+  iconId: number | null;
+  icon: IIconResponse | null;
   displayOrder: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface IFaq {
-  id: number;
-  question: string;
-  answer: string;
-  faqCategoryId: number | null;
-  faqCategory: IFaqCategoryResponse | null;
-  displayOrder: number;
-  isActive: boolean;
-  viewCount: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface IFaqResponse {

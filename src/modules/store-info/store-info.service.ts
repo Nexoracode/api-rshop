@@ -90,17 +90,13 @@ export class StoreInfoService {
   async createFaqCategory(dto: CreateFaqCategoryDto) {
     const existing = await this.faqCategoryRepo.findOne({ where: { name: dto.name } });
     if (existing) throw new ConflictException(`دسته‌بندی "${dto.name}" قبلاً وجود دارد.`);
-    const lastAttribute = await this.faqCategoryRepo.find({
-      order: { displayOrder: 'DESC' },
-      take: 1,
-    })
-    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
-    const entity = this.faqCategoryRepo.create({
-      ...dto,
-      displayOrder: nextOrder
-    });
+
+    const last = await this.faqCategoryRepo.find({ order: { displayOrder: 'DESC' }, take: 1 });
+    const nextOrder = last.length ? last[0].displayOrder + 1 : 1;
+
+    const entity = this.faqCategoryRepo.create({ ...dto, displayOrder: dto.displayOrder ?? nextOrder });
     const saved = await this.faqCategoryRepo.save(entity);
-    return StoreInfoMapper.toFaqCategoryResponse(saved);
+    return this.getFaqCategoryById(saved.id);
   }
 
   async updateFaqCategory(id: number, dto: UpdateFaqCategoryDto) {
@@ -111,14 +107,13 @@ export class StoreInfoService {
       if (existing) throw new ConflictException(`دسته‌بندی "${dto.name}" قبلاً وجود دارد.`);
     }
     const merged = this.faqCategoryRepo.merge(entity, dto);
-    const saved = await this.faqCategoryRepo.save(merged);
-    return StoreInfoMapper.toFaqCategoryResponse(saved);
+    await this.faqCategoryRepo.save(merged);
+    return this.getFaqCategoryById(id);
   }
 
   async deleteFaqCategory(id: number) {
     const entity = await this.faqCategoryRepo.findOneBy({ id });
     if (!entity) throw new NotFoundException('دسته‌بندی FAQ یافت نشد.');
-    // FAQهای این دسته به faqCategoryId=null تبدیل می‌شوند (onDelete: SET NULL)
     await this.faqCategoryRepo.remove(entity);
     return { message: 'دسته‌بندی FAQ با موفقیت حذف شد.' };
   }
@@ -127,13 +122,14 @@ export class StoreInfoService {
     const where = onlyActive ? { isActive: true } : {};
     const items = await this.faqCategoryRepo.find({
       where,
+      relations: ['icon'],
       order: { displayOrder: 'ASC', id: 'ASC' },
     });
     return items.map(StoreInfoMapper.toFaqCategoryResponse);
   }
 
   async getFaqCategoryById(id: number) {
-    const entity = await this.faqCategoryRepo.findOneBy({ id });
+    const entity = await this.faqCategoryRepo.findOne({ where: { id }, relations: ['icon'] });
     if (!entity) throw new NotFoundException('دسته‌بندی FAQ یافت نشد.');
     return StoreInfoMapper.toFaqCategoryResponse(entity);
   }
@@ -147,27 +143,21 @@ export class StoreInfoService {
     }
     const faq = this.faqRepo.create(dto);
     const saved = await this.faqRepo.save(faq);
-    const withRelation = await this.faqRepo.findOne({
-      where: { id: saved.id },
-      relations: ['faqCategory'],
-    });
-    return StoreInfoMapper.toFaqResponse(withRelation!);
+    return this.faqRepo.findOne({ where: { id: saved.id }, relations: ['faqCategory', 'faqCategory.icon'] })
+      .then(f => StoreInfoMapper.toFaqResponse(f!));
   }
 
   async updateFaq(id: number, dto: UpdateFaqDto) {
-    const faq = await this.faqRepo.findOne({ where: { id }, relations: ['faqCategory'] });
+    const faq = await this.faqRepo.findOneBy({ id });
     if (!faq) throw new NotFoundException('سوال متداول یافت نشد.');
     if (dto.faqCategoryId !== undefined && dto.faqCategoryId !== null) {
       const cat = await this.faqCategoryRepo.findOneBy({ id: dto.faqCategoryId });
       if (!cat) throw new NotFoundException(`دسته‌بندی FAQ با شناسه ${dto.faqCategoryId} یافت نشد.`);
     }
     const merged = this.faqRepo.merge(faq, dto);
-    const saved = await this.faqRepo.save(merged);
-    const withRelation = await this.faqRepo.findOne({
-      where: { id: saved.id },
-      relations: ['faqCategory'],
-    });
-    return StoreInfoMapper.toFaqResponse(withRelation!);
+    await this.faqRepo.save(merged);
+    return this.faqRepo.findOne({ where: { id }, relations: ['faqCategory', 'faqCategory.icon'] })
+      .then(f => StoreInfoMapper.toFaqResponse(f!));
   }
 
   async deleteFaq(id: number) {
@@ -178,7 +168,7 @@ export class StoreInfoService {
   }
 
   async getFaqById(id: number) {
-    const faq = await this.faqRepo.findOne({ where: { id }, relations: ['faqCategory'] });
+    const faq = await this.faqRepo.findOne({ where: { id }, relations: ['faqCategory', 'faqCategory.icon'] });
     if (!faq) throw new NotFoundException('سوال متداول یافت نشد.');
     await this.faqRepo.increment({ id }, 'viewCount', 1);
     return StoreInfoMapper.toFaqResponse({ ...faq, viewCount: faq.viewCount + 1 });
@@ -188,7 +178,7 @@ export class StoreInfoService {
     const where = onlyActive ? { isActive: true } : {};
     const faqs = await this.faqRepo.find({
       where,
-      relations: ['faqCategory'],
+      relations: ['faqCategory', 'faqCategory.icon'],
       order: { displayOrder: 'ASC', id: 'ASC' },
     });
     return faqs.map(StoreInfoMapper.toFaqResponse);
@@ -197,13 +187,11 @@ export class StoreInfoService {
   async getFaqsGroupedByCategory(): Promise<IFaqGroupedByCategory[]> {
     const faqs = await this.faqRepo.find({
       where: { isActive: true },
-      relations: ['faqCategory'],
+      relations: ['faqCategory', 'faqCategory.icon'],
       order: { displayOrder: 'ASC', id: 'ASC' },
     });
 
-    // گروه‌بندی بر اساس faqCategory
     const grouped = new Map<number | 'uncategorized', { category: any; faqs: FaqEntity[] }>();
-
     for (const faq of faqs) {
       const key = faq.faqCategoryId ?? 'uncategorized';
       if (!grouped.has(key)) {
