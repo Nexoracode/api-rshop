@@ -25,7 +25,7 @@ import { CreatePromoBannerDto, UpdatePromoBannerDto } from '../dto/promo-banner.
 import { PromoBannerService } from '../promo-banner.service';
 import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-cache.interceptor';
 @ApiTags('Admin - Promo Banners')
-@Controller('admin/promo-banners')
+@Controller('admin/promo-banner')
 @UseGuards(AccessGuard, RoleGuard)
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @ApiBearerAuth()

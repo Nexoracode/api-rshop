@@ -4,7 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Controller, Get } from "@nestjs/common";
 
 @ApiTags('Public - promo banner')
-@Controller('home/promo-banners')
+@Controller('home/promo-banner')
 export class PromoBannerPublicController {
     constructor(
         private readonly promoBannerService: PromoBannerService

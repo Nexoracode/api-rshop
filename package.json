@@ -19,11 +19,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "npm run build && npx typeorm -d dist/db/data-source.js",
-    "migration:show": "npm run typeorm -- migration:show",
-    "mig:gen": "npm run typeorm -- migration:generate db/migrations/CreateMigration",
-    "mig:run": "npx run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert",
-    "migration:create": "npm run typeorm -- migration:create"
+    "mig:create": "npm run typeorm migration:create -- ./db/migrations/$0",
+    "mig:gen": "npm run typeorm migration:generate -- ./db/migrations/$0",
+    "mig:run": "npm run typeorm migration:run",
+    "mig:revert": "npm run typeorm migration:revert",
+    "mig:show": "npm run typeorm migration:show"
   },
   "dependencies": {
     "@keyv/redis": "^5.1.5",
