@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { BaseService } from 'src/common/bases/base.service';
 import { UserMapper } from './mappers/user.mapper';
 import { IUserResponse } from './interfaces/user.response.interface';
 import { IUserService } from './interfaces/user.service.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { FilterOperator, paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
+import { Role } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class UserService extends BaseService<User> implements IUserService {
@@ -19,15 +20,16 @@ export class UserService extends BaseService<User> implements IUserService {
     ) { super(userRepo) }
 
     async create(data: CreateUserDto): Promise<IUserResponse> {
-        const existing = await this.userRepo.findOne({ where: { phone: data.phone } })
-        if (existing) {
-            throw new BadRequestException('این شماره قبلا ثبت شده است.');
-        }
+        const existing = await this.userRepo.findOne({ where: { phone: data.phone } });
+        if (existing) throw new BadRequestException('این شماره قبلا ثبت شده است.');
+
         const duplicateEmail = await this.userRepo.findOne({ where: { email: data.email } });
         if (duplicateEmail) throw new BadRequestException('این ایمیل از قبل ثبت شده است.');
+
         const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
         const user = this.userRepo.create({
             ...data,
+            role: Role.USER, // ← همیشه USER
             addresses: addressEntities,
         });
         const saved = await this.userRepo.save(user);
@@ -35,35 +37,39 @@ export class UserService extends BaseService<User> implements IUserService {
     }
 
     async update(id: number, data: UpdateUserDto): Promise<IUserResponse> {
-        const user = await this.userRepo.findOne({ where: { id } })
-        if (!user) {
-            throw new NotFoundException('users not found');
-        }
-        // const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
+        const user = await this.userRepo.findOne({ where: { id, role: Role.USER } });
+        if (!user) throw new NotFoundException('کاربر یافت نشد.');
+
         const existsPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
         if (existsPhone && existsPhone.id !== id) throw new BadRequestException('این شماره قبلا ثبت شده است');
+
         const existsEmail = await this.userRepo.findOne({ where: { email: data.email } });
         if (existsEmail && existsEmail.id !== id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
-        const updated = this.userRepo.merge(user, data);
+
+        const updated = this.userRepo.merge(user, { ...data, role: Role.USER }); // ← role قابل تغییر نیست
         const saved = await this.userRepo.save(updated);
         return UserMapper.toResponse(saved);
     }
 
     async remove(id: number): Promise<Object> {
-        const user = await this.userRepo.delete(id);
-        if (user.affected === 0) {
-            throw new NotFoundException('کاربر مورد نظر یافت نشد.');
-        }
+        const user = await this.userRepo.findOne({ where: { id, role: Role.USER } });
+        if (!user) throw new NotFoundException('کاربر مورد نظر یافت نشد.');
+        await this.userRepo.delete(id);
         return { message: 'کاربر با موفقیت حذف شد.', data: null };
     }
 
     async findOneUser(id: number): Promise<IUserResponse> {
-        return this.findOneWithMapper(id, ['addresses'], UserMapper.toResponse);
+        const user = await this.userRepo.findOne({
+            where: { id, role: Role.USER },
+            relations: ['addresses'],
+        });
+        if (!user) throw new NotFoundException('کاربر یافت نشد.');
+        return UserMapper.toResponse(user);
     }
-
 
     async findAllUser(query: PaginateQuery): Promise<Object> {
         const users = await paginate(query, this.userRepo, {
+            where: { role: Role.USER }, // ← فقط کاربران عادی
             relations: ['addresses', 'media'],
             sortableColumns: ['id', 'firstName', 'lastName'],
             searchableColumns: ['firstName', 'lastName', 'phone', 'email'],
@@ -71,15 +77,15 @@ export class UserService extends BaseService<User> implements IUserService {
             select: ['id', 'firstName', 'lastName', 'avatarUrl', 'phone', 'email', 'isPhoneVerified', 'isActive', 'createdAt', 'updatedAt', 'addresses.id', 'media.id', 'media.url'],
             filterableColumns: {
                 isActive: [FilterOperator.EQ],
-                createdAt: [FilterOperator.GTE, FilterOperator.LTE]
-            }
+                createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+            },
         });
         return {
             message: 'لیست کاربران با موفقیت دریافت شد.',
             data: {
                 items: users.data.map(user => UserMapper.toResponse(user)),
                 meta: users.meta,
-            }
-        }
+            },
+        };
     }
 }

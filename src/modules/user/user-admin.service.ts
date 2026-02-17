@@ -116,6 +116,11 @@ export class UserAdminServices {
   ): Promise<ICreatedUserResponse> {
     const callerRole = currentUser.role;
 
+    // Role.USER از این مسیر ساخته نمی‌شود
+    if (dto.role === Role.USER) {
+      throw new ForbiddenException('کاربر عادی از این مسیر ساخته نمی‌شود.');
+    }
+
     // بررسی اینکه آیا کاربر اصلاً مجاز به ساخت کاربر هست
     if (callerRole === Role.USER || callerRole === Role.STAFF) {
       throw new ForbiddenException('شما مجاز به ایجاد کاربر نیستید.');
