@@ -37,6 +37,9 @@ export class Category implements ICategory {
     @OneToMany(() => CategoryAttribute, ca => ca.category)
     categoryAttributes: CategoryAttribute[];
 
+    @Column({ type: 'varchar', length: 500, nullable: true })
+    icon: string | null;
+
     @Column({ default: 0 })
     level: number;
 

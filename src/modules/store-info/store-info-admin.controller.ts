@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -16,6 +15,7 @@ import { CreateStoreInfoDto } from './dto/create-store-info.dto';
 import { UpdateStoreInfoDto } from './dto/update-store-info.dto';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
+import { CreateFaqCategoryDto, UpdateFaqCategoryDto } from './dto/faq-category.dto';
 import { StoreInfoType } from './enums/store-info.enum';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
@@ -53,6 +53,35 @@ export class StoreInfoAdminController {
     @Body() dto: UpdateStoreInfoDto,
   ) {
     return this.storeInfoService.updateStoreInfo(type, dto);
+  }
+
+  // ─── مدیریت دسته‌بندی‌های FAQ ──────────────────────────────────────────────
+
+  @Get('faq-categories')
+  @ApiOperation({ summary: 'لیست تمام دسته‌بندی‌های FAQ (ادمین)' })
+  getAllFaqCategories() {
+    return this.storeInfoService.getAllFaqCategories(false);
+  }
+
+  @Post('faq-categories')
+  @ApiOperation({ summary: 'ایجاد دسته‌بندی FAQ جدید' })
+  createFaqCategory(@Body() dto: CreateFaqCategoryDto) {
+    return this.storeInfoService.createFaqCategory(dto);
+  }
+
+  @Patch('faq-categories/:id')
+  @ApiOperation({ summary: 'ویرایش دسته‌بندی FAQ' })
+  updateFaqCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateFaqCategoryDto,
+  ) {
+    return this.storeInfoService.updateFaqCategory(id, dto);
+  }
+
+  @Delete('faq-categories/:id')
+  @ApiOperation({ summary: 'حذف دسته‌بندی FAQ' })
+  deleteFaqCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.storeInfoService.deleteFaqCategory(id);
   }
 
   // ─── مدیریت سوالات متداول ──────────────────────────────────────────────────

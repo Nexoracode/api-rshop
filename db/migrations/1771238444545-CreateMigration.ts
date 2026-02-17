@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CCreateMigration1771238444545 implements MigrationInterface {
-    name = 'CCreateMigration1771238444545';
+export class CreateMigration1771238444545 implements MigrationInterface {
+  name = 'CreateMigration1771238444545';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
       CREATE TABLE \`icon\` (
         \`id\` int NOT NULL AUTO_INCREMENT,
         \`name\` varchar(255) NOT NULL,
@@ -14,9 +14,9 @@ export class CCreateMigration1771238444545 implements MigrationInterface {
         PRIMARY KEY (\`id\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4                   COLLATE=utf8mb4_unicode_ci
     `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE IF EXISTS \`icon\``);
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE IF EXISTS \`icon\``);
+  }
 }

@@ -1,23 +1,18 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
+/**
+ * این migration دیگر استفاده نمی‌شود.
+ * محتوای آن به migration 1771500000000 منتقل شده است.
+ * به عنوان stub نگه داشته شده تا TypeORM آن را به عنوان "اجرا شده" ثبت کند.
+ */
 export class AddPromotionIdToHomeSections1738000000000 implements MigrationInterface {
   name = 'AddPromotionIdToHomeSections1738000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // اضافه کردن ستون promotion_id به جدول home_sections
-    await queryRunner.addColumn(
-      'home_sections',
-      new TableColumn({
-        name: 'promotion_id',
-        type: 'int',
-        isNullable: true,
-        comment: 'برای بخش‌های بر اساس پروموشن',
-      }),
-    );
+    // no-op: این migration در 1771500000000 ادغام شده است
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // حذف ستون promotion_id
-    await queryRunner.dropColumn('home_sections', 'promotion_id');
+    // no-op
   }
 }

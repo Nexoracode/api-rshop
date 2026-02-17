@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { FaqCategoryEntity } from './faq-category.entity';
 
 @Entity('faqs')
 export class FaqEntity {
@@ -17,8 +20,15 @@ export class FaqEntity {
   @Column({ type: 'text' })
   answer: string;
 
-  @Column({ nullable: true })
-  category: string;
+  @Column({ name: 'faq_category_id', nullable: true })
+  faqCategoryId: number | null;
+
+  @ManyToOne(() => FaqCategoryEntity, (cat) => cat.faqs, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'faq_category_id' })
+  faqCategory: FaqCategoryEntity | null;
 
   @Column({ default: 0 })
   displayOrder: number;

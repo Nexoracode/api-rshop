@@ -26,11 +26,21 @@ export interface IStoreInfoResponse {
   updatedAt: string;
 }
 
+export interface IFaqCategoryResponse {
+  id: number;
+  name: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IFaq {
   id: number;
   question: string;
   answer: string;
-  category: string | null;
+  faqCategoryId: number | null;
+  faqCategory: IFaqCategoryResponse | null;
   displayOrder: number;
   isActive: boolean;
   viewCount: number;
@@ -42,7 +52,8 @@ export interface IFaqResponse {
   id: number;
   question: string;
   answer: string;
-  category: string | null;
+  faqCategoryId: number | null;
+  faqCategory: IFaqCategoryResponse | null;
   displayOrder: number;
   isActive: boolean;
   viewCount: number;
@@ -51,6 +62,6 @@ export interface IFaqResponse {
 }
 
 export interface IFaqGroupedByCategory {
-  category: string;
+  category: IFaqCategoryResponse | null;
   faqs: IFaqResponse[];
 }

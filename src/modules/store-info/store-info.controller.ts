@@ -46,6 +46,13 @@ export class StoreInfoController {
   // ─── سوالات متداول ─────────────────────────────────────────────────────────
 
   @Public()
+  @Get('faq-categories')
+  @ApiOperation({ summary: 'دریافت دسته‌بندی‌های FAQ فعال' })
+  getActiveFaqCategories() {
+    return this.storeInfoService.getAllFaqCategories(true);
+  }
+
+  @Public()
   @Get('faqs')
   @ApiOperation({ summary: 'دریافت تمام سوالات متداول (دسته‌بندی شده)' })
   getFaqsGrouped() {

@@ -1,6 +1,7 @@
 import { StoreInfoEntity } from '../entities/store-info.entity';
 import { FaqEntity } from '../entities/faq.entity';
-import { IFaqResponse, IStoreInfoResponse } from '../interfaces/store-info.interface';
+import { FaqCategoryEntity } from '../entities/faq-category.entity';
+import { IFaqCategoryResponse, IFaqResponse, IStoreInfoResponse } from '../interfaces/store-info.interface';
 
 export class StoreInfoMapper {
   static toResponse(entity: StoreInfoEntity): IStoreInfoResponse {
@@ -18,12 +19,26 @@ export class StoreInfoMapper {
     };
   }
 
+  static toFaqCategoryResponse(entity: FaqCategoryEntity): IFaqCategoryResponse {
+    return {
+      id: entity.id,
+      name: entity.name,
+      displayOrder: entity.displayOrder,
+      isActive: entity.isActive,
+      createdAt: entity.createdAt?.toISOString(),
+      updatedAt: entity.updatedAt?.toISOString(),
+    };
+  }
+
   static toFaqResponse(entity: FaqEntity): IFaqResponse {
     return {
       id: entity.id,
       question: entity.question,
       answer: entity.answer,
-      category: entity.category ?? null,
+      faqCategoryId: entity.faqCategoryId ?? null,
+      faqCategory: entity.faqCategory
+        ? StoreInfoMapper.toFaqCategoryResponse(entity.faqCategory)
+        : null,
       displayOrder: entity.displayOrder,
       isActive: entity.isActive,
       viewCount: entity.viewCount,

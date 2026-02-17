@@ -20,18 +20,17 @@ export class CreateFaqDto {
   @IsNotEmpty()
   answer: string;
 
-  @ApiPropertyOptional({ description: 'دسته‌بندی سوال (مثلاً: پرداخت، ارسال، بازگشت)' })
-  @IsString()
+  @ApiPropertyOptional({ description: 'شناسه دسته‌بندی FAQ', example: 1 })
+  @IsNumber()
   @IsOptional()
-  @MaxLength(100)
-  category?: string;
+  faqCategoryId?: number;
 
-  @ApiPropertyOptional({ name: 'display_order', description: 'ترتیب نمایش', default: 0 })
+  @ApiPropertyOptional({ description: 'ترتیب نمایش', default: 0 })
   @IsNumber()
   @IsOptional()
   displayOrder?: number;
 
-  @ApiPropertyOptional({ name: 'is_active', description: 'وضعیت فعال/غیرفعال', default: true })
+  @ApiPropertyOptional({ description: 'وضعیت فعال/غیرفعال', default: true })
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
