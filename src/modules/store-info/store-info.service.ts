@@ -184,26 +184,46 @@ export class StoreInfoService {
     return faqs.map(StoreInfoMapper.toFaqResponse);
   }
 
-  async getFaqsGroupedByCategory(): Promise<IFaqGroupedByCategory[]> {
-    const faqs = await this.faqRepo.find({
+  // async getFaqsGroupedByCategory(): Promise<IFaqGroupedByCategory[]> {
+  //   var faqs = [];
+  //   var categories = [];
+  //   const result = await this.faqRepo.find({
+  //     where: { isActive: true },
+  //     relations: ['faqCategory', 'faqCategory.icon'],
+  //     order: { displayOrder: 'ASC', id: 'ASC' },
+  //   });
+
+  //   const grouped = new Map<number | 'uncategorized', { category: any; faqs: FaqEntity[] }>();
+  //   for (const faq of faqs) {
+  //     const key = faq.faqCategoryId ?? 'uncategorized';
+  //     if (!grouped.has(key)) {
+  //       grouped.set(key, { category: faq.faqCategory ?? null, faqs: [] });
+  //     }
+  //     grouped.get(key)!.faqs.push(faq);
+  //   }
+
+  //   return Array.from(grouped.values()).map(({ category, faqs: items }) => ({
+  //     category: category ? StoreInfoMapper.toFaqCategoryResponse(category) : null,
+  //     faqs: items.map(StoreInfoMapper.toFaqResponse),
+  //   }));
+  // }
+
+  async getFaqsGroupedByCategory() {
+    const result = await this.faqRepo.find({
       where: { isActive: true },
-      relations: ['faqCategory', 'faqCategory.icon'],
       order: { displayOrder: 'ASC', id: 'ASC' },
     });
 
-    const grouped = new Map<number | 'uncategorized', { category: any; faqs: FaqEntity[] }>();
-    for (const faq of faqs) {
-      const key = faq.faqCategoryId ?? 'uncategorized';
-      if (!grouped.has(key)) {
-        grouped.set(key, { category: faq.faqCategory ?? null, faqs: [] });
-      }
-      grouped.get(key)!.faqs.push(faq);
-    }
+    const items = await this.faqCategoryRepo.find({
+      where: { isActive: true },
+      relations: ['icon'],
+      order: { displayOrder: 'ASC', id: 'ASC' },
+    });
 
-    return Array.from(grouped.values()).map(({ category, faqs: items }) => ({
-      category: category ? StoreInfoMapper.toFaqCategoryResponse(category) : null,
-      faqs: items.map(StoreInfoMapper.toFaqResponse),
-    }));
+    return {
+      faqCategories: items.map(StoreInfoMapper.toFaqCategoryResponse),
+      faqs: result.map(StoreInfoMapper.toFaqResponse),
+    }
   }
 
   async bulkDeleteFaqs(ids: number[]) {
