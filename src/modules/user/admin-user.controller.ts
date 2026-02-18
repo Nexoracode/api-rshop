@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -19,7 +21,7 @@ import { CreateAdminUserDto } from './dto/create-admin-user.dto';
 @Controller('admin/users')
 @UseGuards(AccessGuard, RoleGuard)
 export class UserAdminController {
-  constructor(private readonly userAdminService: UserAdminServices) {}
+  constructor(private readonly userAdminService: UserAdminServices) { }
 
   /**
    * اطلاعات خود ادمین + دسترسی‌هایش
@@ -47,7 +49,7 @@ export class UserAdminController {
    * لیست تمام ادمین‌ها — فقط SUPER_ADMIN
    */
   @Get('admins')
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'لیست تمام کاربران با نقش ادمین (فقط سوپرادمین)' })
   getAdminUsers(@CurrentUser() currentUser: RequestUser) {
     return this.userAdminService.getAdminUsers(currentUser);
@@ -58,6 +60,17 @@ export class UserAdminController {
    * - SUPER_ADMIN: هر نقشی
    * - ADMIN: فقط Manager, Accountant, Staff, Warehouse
    */
+
+  @Get('admins/:id')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'اطلاعات یک ادمین با شناسه مشخص (فقط سوپرادمین)' })
+  getAdminById(
+    @CurrentUser() currentUser: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.userAdminService.getAdminByid(currentUser, id);
+  }
+
   @Post('create')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({

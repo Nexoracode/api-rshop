@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
@@ -74,7 +74,7 @@ export class UserAdminServices {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
   /**
    * اطلاعات ادمین لاگین‌کرده + لیست دسترسی‌هایش
@@ -185,8 +185,49 @@ export class UserAdminServices {
   /**
    * لیست کاربران با نقش‌های ادمینی (فقط برای SUPER_ADMIN)
    */
-  async getAdminUsers(currentUser: RequestUser) {
+
+  async getAdminByid(currentUser: RequestUser, id: number) {
+    const adminRoles = [
+      Role.SUPER_ADMIN,
+      Role.ADMIN,
+      Role.MANAGER,
+      Role.ACCOUNTANT,
+      Role.WERHOUSE_MANAGER,
+      Role.STAFF,
+    ];
     if (currentUser.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException('فقط سوپرادمین می‌تواند اطلاعات ادمین‌ها را ببیند.');
+    }
+
+    const admin = await this.userRepo.findOne({
+      where: {
+        id, role: In([...adminRoles])
+      },
+      select: [
+        'id', 'firstName', 'lastName', 'phone',
+        'email', 'role', 'isActive', 'createdAt',
+      ],
+    });
+
+    if (!admin) {
+      throw new NotFoundException('ادمین مورد نظر یافت نشد.');
+    }
+
+    return {
+      id: admin.id,
+      firstName: admin.firstName ?? null,
+      lastName: admin.lastName ?? null,
+      phone: admin.phone ?? null,
+      email: admin.email ?? null,
+      role: admin.role,
+      isActive: admin.isActive,
+      createdAt: admin.createdAt.toISOString(),
+      permissions: ROLE_PERMISSIONS[admin.role] ?? [],
+    };
+  }
+
+  async getAdminUsers(currentUser: RequestUser) {
+    if (currentUser.role !== Role.SUPER_ADMIN && currentUser.role !== Role.ADMIN) {
       throw new ForbiddenException('فقط سوپرادمین می‌تواند لیست ادمین‌ها را ببیند.');
     }
 
