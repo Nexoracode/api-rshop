@@ -28,15 +28,16 @@ export class CreateAdminUserDto {
   @Matches(/^09\d{9}$/, { message: 'شماره موبایل معتبر نیست' })
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'ایمیل', example: 'admin@shop.ir' })
+  @ApiPropertyOptional({ description: 'ایمیل', nullable: true })
   @IsEmail({}, { message: 'ایمیل معتبر نیست' })
   @IsOptional()
   email?: string;
 
-  @ApiProperty({ description: 'رمز عبور (حداقل ۶ کاراکتر)', example: 'Admin@1234' })
+  @ApiProperty({ description: 'رمز عبور (حداقل ۶ کاراکتر)', nullable: true })
   @IsString()
   @IsNotEmpty()
   @Length(6, 100)
+  @IsOptional()
   password: string;
 
   @ApiProperty({

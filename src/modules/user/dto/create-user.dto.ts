@@ -26,15 +26,16 @@ export class CreateUserDto {
     @IsOptional()
     isPhoneVerified: boolean;
 
-    @ApiProperty({ name: 'email', default: 'example@gmail.com' })
+    @ApiProperty({ name: 'email', nullable: true })
     @IsEmail()
     @IsOptional()
     email: string;
 
-    @ApiProperty({ name: 'password' })
+    @ApiProperty({ name: 'password', nullable: true })
     @IsNotEmpty()
     @IsString()
     @Length(6, 100)
+    @IsOptional()
     password: string;
 
     @ApiProperty({ enum: Role, default: Role.USER })

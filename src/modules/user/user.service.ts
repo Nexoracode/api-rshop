@@ -24,7 +24,7 @@ export class UserService extends BaseService<User> implements IUserService {
         if (existing) throw new BadRequestException('این شماره قبلا ثبت شده است.');
 
         const duplicateEmail = await this.userRepo.findOne({ where: { email: data.email } });
-        if (duplicateEmail) throw new BadRequestException('این ایمیل از قبل ثبت شده است.');
+        if (data.email && duplicateEmail) throw new BadRequestException('این ایمیل از قبل ثبت شده است.');
 
         const addressEntities = data.addresses?.map((id) => ({ id })) ?? [];
         const user = this.userRepo.create({
