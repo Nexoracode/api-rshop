@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Setting } from './entities/setting.entity';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { SettingCategory } from './enums/setting-category.enum';
@@ -98,6 +98,24 @@ export class SettingService {
             throw new NotFoundException(`تنظیم با کلید ${key} یافت نشد`);
         }
         await this.settingRepo.remove(setting);
+    }
+
+    async getByCategory(category: SettingCategory) {
+        const setting = await this.settingRepo.find({
+            where: { category },
+            order: { key: 'ASC' }
+        });
+        return setting;
+    }
+
+    async getFooterSetting() {
+        const setting = await this.settingRepo.find({
+            where: { category: In([SettingCategory.CONTACT, SettingCategory.SOCIAL]) }
+        })
+        return {
+            contact: setting.filter(s => s.category === SettingCategory.CONTACT),
+            social: setting.filter(s => s.category === SettingCategory.SOCIAL),
+        }
     }
 
     async getCardToCardSettings() {

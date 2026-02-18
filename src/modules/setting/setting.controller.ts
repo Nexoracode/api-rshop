@@ -2,6 +2,7 @@ import { Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { SettingService } from './setting.service';
 import { SettingCategory } from './enums/setting-category.enum';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('Settings (Public)')
 @Controller('settings')
@@ -9,18 +10,10 @@ export class SettingController {
     constructor(private readonly settingService: SettingService) { }
 
     @Get('public')
+    @Public()
     @ApiOperation({ summary: 'دریافت تنظیمات عمومی (بدون احراز هویت)' })
     async getPublicSettings() {
-        const allowedKeys = [
-            'shop_name',
-            'shop_phone',
-            'shop_email',
-            'shop_address',
-            'free_shipping_threshold',
-        ];
-
-        const settings = await this.settingService.findAll();
-        return settings.filter(s => allowedKeys.includes(s.key));
+        return this.settingService.findAll();
     }
 
     @Get('card-to-card-info')
@@ -30,19 +23,16 @@ export class SettingController {
     }
 
     @Get('category/:category/public')
+    @Public()
     @ApiOperation({ summary: 'دریافت تنظیمات عمومی یک دسته' })
-    async getPublicCategory(@Param('category') category: string) {
-        if (category === SettingCategory.PAYMENT) {
-            return await this.settingService.getCardToCardSettings();
-        }
+    async getPublicCategory(@Param('category') category: SettingCategory) {
+        return await this.settingService.getByCategory(category);
+    }
 
-        if (category === SettingCategory.GENERAL) {
-            const settings = await this.settingService.findByCategory(SettingCategory.GENERAL);
-            return settings.filter(s =>
-                ['shop_name', 'shop_phone', 'shop_email', 'shop_address'].includes(s.key)
-            );
-        }
-
-        return [];
+    @Get('footer')
+    @Public()
+    @ApiOperation({ summary: 'دریافت تنظیمات عمومی یک دسته' })
+    async getFooterSetting() {
+        return await this.settingService.getFooterSetting();
     }
 }

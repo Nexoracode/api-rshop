@@ -5,6 +5,7 @@ export enum SettingCategory {
     EMAIL = 'email',
     SMS = 'sms',
     SOCIAL = 'social',
+    CONTACT = 'contact',
     SEO = 'seo',
     HOMEPAGE = 'homepage', // ✅ تنظیمات صفحه اصلی
 }
