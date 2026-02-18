@@ -10,6 +10,7 @@ import { User } from '../user/entities/user.entity';
 import { CardStatusService } from './card-status.service';
 import { CartCleanupService } from './cart-cleanup.service';
 import { CartManagementController } from './controllers/cart-management.controller';
+import { ProductCacheService } from '../product/cache';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CartManagementController } from './controllers/cart-management.controll
   controllers: [
     CardController,
     CartManagementController, // ✅ Admin Controller
+    ProductCacheService,
   ],
   providers: [
     CardService,

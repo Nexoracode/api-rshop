@@ -32,6 +32,7 @@ import { CardToCardInitiationHandler } from './handlers/card-to-card/card-to-car
 import { CardToCardUploadReceiptHandler } from './handlers/card-to-card/card-to-card-upload-receipt.handler';
 import { CardToCardRejectionHandler } from './handlers/card-to-card/card-to-card-rejection.handler';
 import { CardToCardApprovalHandler } from './handlers/card-to-card/card-to-card-approval.handler';
+import { ProductCacheService } from '../product/cache';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { CardToCardApprovalHandler } from './handlers/card-to-card/card-to-card-
     IncrementPromotionUsageUseCase,
     CardToCardService,
     PaymentRecoveryService,
+    ProductCacheService,
 
     // Online Payment Handlers
     PaymentCreationHandler,

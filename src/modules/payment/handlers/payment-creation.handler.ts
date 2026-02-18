@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger, BadRequestException } from "@nestjs/common";
 import { EntityManager, In } from "typeorm";
 import { Request } from "express";
 import ZarinPal from "zarinpal-node-sdk";
@@ -16,6 +16,10 @@ import { PaymentResponseMapper } from "../mappers/payment-response.mapper";
 import { CardStatusService } from "../../card/card-status.service";
 import { OrderStatusService } from "src/modules/order/order.status.service";
 import { toInteger } from "lodash";
+import { OrderItem } from "src/modules/order/entities/order-item.entity";
+import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
+import { Product } from "src/modules/product/entities/product.entity";
+import { ProductCacheService } from "src/modules/product/cache";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -29,6 +33,7 @@ export class PaymentCreationHandler {
   constructor(
     private readonly cardStatusService: CardStatusService,
     private readonly OrderStatusService: OrderStatusService,
+    private readonly productCacheService: ProductCacheService
   ) { }
 
   /**
@@ -132,6 +137,8 @@ export class PaymentCreationHandler {
       );
     }
 
+    await this.decreaseStock(manager, order.items);
+
     // ذخیره اطلاعات پرداخت جدید
     await paymentRepo.save({
       user: order.user,
@@ -160,5 +167,50 @@ export class PaymentCreationHandler {
     );
 
     return PaymentResponseMapper.createPayment(order, requestResult.data.authority);
+  }
+
+  private async decreaseStock(manager: any, items: OrderItem[]): Promise<void> {
+    for (const item of items) {
+      if (item.variant) {
+        const variant = await manager.findOne(VariantProduct, {
+          where: { id: item.variant.id },
+        });
+
+        if (!variant) {
+          throw new BadRequestException(
+            `واریانت با شناسه ${item.variant.id} یافت نشد`
+          );
+        }
+
+        if (variant.stock < item.quantity) {
+          throw new BadRequestException(
+            `موجودی واریانت ${variant.sku} کافی نیست. موجودی فعلی: ${variant.stock}`
+          );
+        }
+
+        variant.stock -= item.quantity;
+        await manager.save(VariantProduct, variant);
+      } else if (item.product) {
+        const product = await manager.findOne(Product, {
+          where: { id: item.product.id },
+        });
+
+        if (!product) {
+          throw new BadRequestException(
+            `محصول با شناسه ${item.product.id} یافت نشد`
+          );
+        }
+
+        if (product.stock < item.quantity) {
+          throw new BadRequestException(
+            `موجودی محصول "${product.name}" کافی نیست. موجودی فعلی: ${product.stock}`
+          );
+        }
+
+        product.stock -= item.quantity;
+        await manager.save(Product, product);
+        await this.productCacheService.clearProductCache(product.id);
+      }
+    }
   }
 }

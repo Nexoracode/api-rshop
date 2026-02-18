@@ -1,4 +1,4 @@
-import { Injectable, Logger, ParseIntPipe } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, ParseIntPipe } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, In, LessThan } from 'typeorm';
@@ -8,6 +8,10 @@ import { Card, CardStatus } from './entities/card.entity';
 import { CardStatusService } from './card-status.service';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
 import { Setting } from '../setting/entities/setting.entity';
+import { OrderItem } from '../order/entities/order-item.entity';
+import { VariantProduct } from '../variant-product/entities/variant-product.entity';
+import { Product } from '../product/entities/product.entity';
+import { ProductCacheService } from '../product/cache';
 
 @Injectable()
 export class CartCleanupService {
@@ -17,6 +21,7 @@ export class CartCleanupService {
         @InjectDataSource()
         private readonly dataSource: DataSource,
         private readonly cardStatusService: CardStatusService,
+        private readonly productCacheService: ProductCacheService,
     ) { }
 
     // ═══════════════════════════════════════════════════════════════
@@ -71,6 +76,7 @@ export class CartCleanupService {
                     // 2. ✅ Unlock کردن Cart (نه Abandon!)
                     // چون ممکنه کاربر بخواد دوباره همون محصولات رو سفارش بده
                     await this.cardStatusService.unlockCart(order.user.id, manager);
+                    await this.inCreaseStock(manager, order.items);
 
                     this.logger.log(
                         `✅ Order ${order.id} expired and cart unlocked for user ${order.user.id}`
@@ -233,6 +239,31 @@ export class CartCleanupService {
             this.logger.log('📊 Weekly Cart Stats:', JSON.stringify(stats[0], null, 2));
         } catch (error) {
             this.logger.error('❌ Error generating stats:', error.stack);
+        }
+    }
+
+    private async inCreaseStock(manager: any, items: OrderItem[]): Promise<void> {
+        for (const item of items) {
+            if (item.variant) {
+                const variant = await manager.findOne(VariantProduct, {
+                    where: { id: item.variant.id },
+                });
+                variant.stock += item.quantity;
+                await manager.save(VariantProduct, variant);
+            } else if (item.product) {
+                const product = await manager.findOne(Product, {
+                    where: { id: item.product.id },
+                });
+
+                if (!product) {
+                    throw new BadRequestException(
+                        `محصول با شناسه ${item.product.id} یافت نشد`
+                    );
+                }
+                product.stock += item.quantity;
+                await manager.save(Product, product);
+                await this.productCacheService.clearProductCache(product.id);
+            }
         }
     }
 }
