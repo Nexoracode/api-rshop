@@ -21,8 +21,6 @@ import { Role } from 'src/common/enums/role.enum';
 
 @ApiTags('08 - 📦 Products')
 @Controller('product')
-@UseGuards(AccessGuard, RoleGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class ProductController {
     constructor(
         private readonly productService: ProductService,
@@ -42,6 +40,8 @@ export class ProductController {
     }
 
     @Get()
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @ApiPaginationQuery({
         paginationType: PaginationType.CURSOR,
         sortableColumns: ['id', 'name', 'price', 'stock'],
@@ -65,7 +65,6 @@ export class ProductController {
     }
 
     @Post()
-    @UseGuards(AccessGuard)
     create(@Body() data: CreateProductDto, @CurrentUser() user: User) {
         // ✅ ارسال userId به service
         const userId = user.id;
@@ -73,12 +72,15 @@ export class ProductController {
     }
 
     @Patch(':id')
-    @UseGuards(AccessGuard)
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateProductDto, @CurrentUser() user: User) {
         return this.productService.update(id, data, user.id);
     }
 
     @Get(':id')
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.productService.findOne(id);
     }
@@ -107,17 +109,23 @@ export class ProductController {
 می‌توانید وضعیت نمایش، ویژه بودن، قیمت، یا تخفیف درصدی/مبلغی را تغییر دهید.\n\n تغییر وضعیت قیمت : PriceMode\n\nset : قیمت جدید \n\n increase : افزایش قیمت\n\n decrease : کاهش قیمت",
     })
     @Patch('update/bulk')
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     updateBulk(@Body() dto: UpdateBulkDto) {
         return this.productService.updateBulk(dto.ids, dto);
     }
 
     @Delete('delete/bulk')
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     removeBulk(@Body() dto: DeleteProductsDto) {
         return this.productService.removeBulk(dto.ids);
     }
 
     @Delete(':id')
+    @UseGuards(AccessGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productService.remove(id);
