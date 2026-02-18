@@ -190,12 +190,16 @@ export class HomePageService {
       ? { parentId: undefined }
       : { parentId: undefined, isActive: true };
 
-    return await this.categoryRepository.find({
+    const categories = await this.categoryRepository.find({
       where: whereCondition,
       relations: ['media'],
       order: { displayOrder: 'ASC' },
       take: 18,
     });
+    if (categories.map((category) => category.products?.length === 0).every(isEmpty => isEmpty)) {
+      return [];
+    }
+    return categories;
   }
 
   /**
