@@ -51,17 +51,9 @@ export class AddIconToCategoriesAndFaqCategoryTable1771500000000 implements Migr
       ADD CONSTRAINT \`FK_faqs_faq_category_id\`
       FOREIGN KEY (\`faq_category_id\`) REFERENCES \`faq_categories\` (\`id\`) ON DELETE SET NULL
     `);
-
-    // ۶. اضافه کردن promotion_id به home_sections
-    await queryRunner.query(`
-      ALTER TABLE \`home_sections\`
-      ADD COLUMN IF NOT EXISTS \`promotion_id\` int NULL
-    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE \`home_sections\` DROP COLUMN IF EXISTS \`promotion_id\``);
-
     await queryRunner.query(`ALTER TABLE \`faqs\` DROP FOREIGN KEY \`FK_faqs_faq_category_id\``);
     await queryRunner.query(`ALTER TABLE \`faqs\` ADD COLUMN \`category\` varchar(255) NULL`);
     await queryRunner.query(`ALTER TABLE \`faqs\` DROP COLUMN \`faq_category_id\``);

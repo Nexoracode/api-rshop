@@ -5,10 +5,10 @@ export class CreateMigration1771238444545 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE \`icon\` (
+      CREATE TABLE \`icons\` (
         \`id\` int NOT NULL AUTO_INCREMENT,
-        \`name\` varchar(255) NOT NULL,
-        \`svg\` longtext NOT NULL,
+        \`name\` varchar(100) NOT NULL,
+        \`svg\` text NOT NULL,
         \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
         \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
         PRIMARY KEY (\`id\`)
