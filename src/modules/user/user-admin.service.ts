@@ -249,7 +249,7 @@ export class UserAdminServices {
       },
       select: [
         'id', 'firstName', 'lastName', 'phone',
-        'email', 'role', 'isActive', 'createdAt',
+        'email', 'role', 'isActive', 'createdAt', 'avatarUrl'
       ],
     });
 
@@ -265,6 +265,7 @@ export class UserAdminServices {
       email: admin.email ?? null,
       role: admin.role,
       isActive: admin.isActive,
+      avatarUrl: admin.avatarUrl ?? null,
       createdAt: admin.createdAt.toISOString(),
       permissions: ROLE_PERMISSIONS[admin.role] ?? [],
     };
@@ -309,6 +310,7 @@ export class UserAdminServices {
       role: u.role,
       isActive: u.isActive,
       createdAt: u.createdAt.toISOString(),
+      avatarUrl: u.avatarUrl ?? null,
       permissions: ROLE_PERMISSIONS[u.role] ?? [],
     }));
   }
