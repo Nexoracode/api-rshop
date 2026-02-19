@@ -13,6 +13,8 @@ import { CustomRequest } from 'src/common/interfaces/request.interface';
 import { CreateAddressDto } from '../address/dto/create-address.dto';
 import { UpdateAddressDto } from '../address/dto/update-address.dto';
 import { ApiPaginationQuery, FilterOperator, Paginate, Paginated, PaginateQuery, PaginationType } from 'nestjs-paginate';
+import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
 @ApiTags('02 - 👤 Users')
 @Controller('users')
@@ -107,6 +109,12 @@ export class UserController {
     @Delete('me/addresses/:addressId')
     deleteUserAddress(@Param('addressId', ParseIntPipe) addressId: number) {
         return this.addressService.remove(addressId);
+    }
+
+    @Patch('me')
+    @UseGuards(AccessGuard)
+    updateUserMe(@CurrentUser() user: RequestUser, @Body() data: UpdateUserDto) {
+        return this.userService.updateMe(user, data);
     }
 
 

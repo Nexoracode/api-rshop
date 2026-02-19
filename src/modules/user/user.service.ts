@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterOperator, paginate, PaginateQuery } from 'nestjs-paginate';
 import { Role } from 'src/common/enums/role.enum';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
 @Injectable()
 export class UserService extends BaseService<User> implements IUserService {
@@ -47,6 +48,21 @@ export class UserService extends BaseService<User> implements IUserService {
         if (existsEmail && existsEmail.id !== id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
 
         const updated = this.userRepo.merge(user, { ...data, role: Role.USER }); // ← role قابل تغییر نیست
+        const saved = await this.userRepo.save(updated);
+        return UserMapper.toResponse(saved);
+    }
+
+    async updateMe(me: RequestUser, data: UpdateUserDto) {
+        const user = await this.userRepo.findOne({ where: { id: me.id } });
+        if (!user) throw new NotFoundException('کاربر یافت نشد.');
+
+        const existsPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
+        if (existsPhone && existsPhone.id !== me.id) throw new BadRequestException('این شماره قبلا ثبت شده است');
+
+        const existsEmail = await this.userRepo.findOne({ where: { email: data.email } });
+        if (existsEmail && existsEmail.id !== me.id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
+
+        const updated = this.userRepo.merge(user, { ...data, role: me.role }); // ← role قابل تغییر نیست
         const saved = await this.userRepo.save(updated);
         return UserMapper.toResponse(saved);
     }

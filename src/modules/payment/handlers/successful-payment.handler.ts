@@ -61,7 +61,9 @@ export class SuccessfulPaymentHandler {
 
     // تغییر وضعیت سفارش و پرداخت
     order.status = OrderStatus.PREPARING;
+
     payment.status = PaymentStatus.SUCCESS;
+    order.paymentGatewayRef = refId;
     payment.refId = refId;
     payment.message = 'پرداخت با موفقیت تایید شد.';
 
