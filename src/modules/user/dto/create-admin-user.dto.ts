@@ -40,6 +40,11 @@ export class CreateAdminUserDto {
   @IsOptional()
   password: string;
 
+  @ApiProperty({ description: 'آدرس تصویر پروفایل', nullable: true })
+  @IsString()
+  @IsOptional()
+  avatarUrl: string;
+
   @ApiProperty({
     enum: Role,
     description: 'نقش کاربر جدید',

@@ -111,7 +111,7 @@ export class UserController {
         return this.addressService.remove(addressId);
     }
 
-    @Patch('me')
+    @Patch('me/update')
     @UseGuards(AccessGuard)
     updateUserMe(@CurrentUser() user: RequestUser, @Body() data: UpdateUserDto) {
         return this.userService.updateMe(user, data);

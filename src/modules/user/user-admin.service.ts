@@ -212,6 +212,9 @@ export class UserAdminServices {
       if (existEmail) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
       admin.email = data.email ?? admin.email;
     }
+    if (data.avatarUrl !== undefined) {
+      admin.avatarUrl = data.avatarUrl ?? admin.avatarUrl;
+    }
 
     await this.userRepo.save(admin);
 
