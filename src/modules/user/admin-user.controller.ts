@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { RequestUser } from 'src/common/interfaces/request-user.interface';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
+import { UpdateadminDto } from './dto/update-admin.user.dto';
 
 @ApiTags('🧑 User - Admin')
 @Controller('admin/users')
@@ -69,6 +71,18 @@ export class UserAdminController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.userAdminService.getAdminByid(currentUser, id);
+  }
+
+  @Patch('admins/:id')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'ویرایش اطلاعات یک ادمین با شناسه مشخص (فقط سوپرادمین)' })
+  updateAdminById(
+    @CurrentUser() currentUser: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateadminDto,
+
+  ) {
+    return this.userAdminService.updateAdminById(currentUser, id, dto);
   }
 
   @Post('create')

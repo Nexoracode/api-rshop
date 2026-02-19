@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { RequestUser } from 'src/common/interfaces/request-user.interface';
@@ -14,6 +14,8 @@ import {
   IAdminSelfInfo,
   ICreatedUserResponse,
 } from './interfaces/admin-user.interface';
+import { UpdateAccountDto } from '../accounting/dto/account.dto';
+import { UpdateadminDto } from './dto/update-admin.user.dto';
 
 /** نقش‌هایی که فقط SUPER_ADMIN می‌تواند بسازد */
 const SUPER_ADMIN_ONLY_ROLES: Role[] = [Role.SUPER_ADMIN, Role.ADMIN];
@@ -185,6 +187,45 @@ export class UserAdminServices {
   /**
    * لیست کاربران با نقش‌های ادمینی (فقط برای SUPER_ADMIN)
    */
+
+  async updateAdminById(currentUser: RequestUser, id: number, data: UpdateadminDto) {
+    if (currentUser.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException('فقط سوپرادمین می‌تواند اطلاعات ادمین‌ها را ویرایش کند.');
+    }
+
+    const admin = await this.userRepo.findOne({ where: { id } });
+
+    if (!admin) {
+      throw new NotFoundException('ادمین مورد نظر یافت نشد.');
+    }
+
+    // فقط فیلدهای مشخصی قابل ویرایش هستند
+    if (data.firstName !== undefined) admin.firstName = data.firstName;
+    if (data.lastName !== undefined) admin.lastName = data.lastName;
+    if (data.phone !== undefined) {
+      const existPhone = await this.userRepo.findOne({ where: { phone: data.phone, id: Not(id) } });
+      if (existPhone) throw new BadRequestException('این شماره موبایل قبلاً ثبت شده است.');
+      admin.phone = data.phone;
+    }
+    if (data.email !== undefined) {
+      const existEmail = await this.userRepo.findOne({ where: { email: data.email, id: Not(id) } });
+      if (existEmail) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
+      admin.email = data.email ?? admin.email;
+    }
+
+    await this.userRepo.save(admin);
+
+    return {
+      id: admin.id,
+      firstName: admin.firstName ?? null,
+      lastName: admin.lastName ?? null,
+      phone: admin.phone ?? null,
+      email: admin.email ?? null,
+      role: admin.role,
+      isActive: admin.isActive,
+      createdAt: admin.createdAt.toISOString(),
+    };
+  }
 
   async getAdminByid(currentUser: RequestUser, id: number) {
     const adminRoles = [
