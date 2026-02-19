@@ -19,12 +19,12 @@ import { ProductCacheService } from '../product/cache';
   controllers: [
     CardController,
     CartManagementController, // ✅ Admin Controller
-    ProductCacheService,
   ],
   providers: [
     CardService,
     CardStatusService,
     CartCleanupService, // ✅ Cron Service
+    ProductCacheService,
   ],
   exports: [CardService, CardStatusService],
 })

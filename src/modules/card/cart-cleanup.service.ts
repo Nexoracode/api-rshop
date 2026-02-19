@@ -35,7 +35,7 @@ export class CartCleanupService {
      * - کاربر نباید بتونه با قیمت قدیمی خرید کنه (اگه قیمت تغییر کرده)
      * - Cart باید Unlock بشه تا کاربر بتونه دوباره سفارش بده
      */
-    @Cron('*/15 * * * *')
+    @Cron("0 */60 * * * *")
     // @Cron(CronExpression.EVERY_30_MINUTES)
     async handleExpiredOrders() {
         this.logger.log('🕐 Checking for expired orders...');
@@ -59,7 +59,7 @@ export class CartCleanupService {
                         ]),
                         createdAt: LessThan(timeoutDate),
                     },
-                    relations: ['user'],
+                    relations: ['items', 'items.product', 'items.variant', 'user'],
                 });
 
                 if (expiredOrders.length === 0) {
@@ -71,12 +71,12 @@ export class CartCleanupService {
                 for (const order of expiredOrders) {
                     // 1. تغییر وضعیت Order به EXPIRED
                     order.status = OrderStatus.EXPIRED;
+                    await this.inCreaseStock(manager, order.items);
                     await orderRepo.save(order);
 
                     // 2. ✅ Unlock کردن Cart (نه Abandon!)
                     // چون ممکنه کاربر بخواد دوباره همون محصولات رو سفارش بده
                     await this.cardStatusService.unlockCart(order.user.id, manager);
-                    await this.inCreaseStock(manager, order.items);
 
                     this.logger.log(
                         `✅ Order ${order.id} expired and cart unlocked for user ${order.user.id}`

@@ -349,24 +349,24 @@ export class ProductCacheService {
      */
     async clearProductCache(productId: number, slug?: string): Promise<void> {
         try {
-            this.logger.log(`🗑️ شروع پاک کردن cache محصول ${productId}...`);
+            // this.logger.log(`🗑️ شروع پاک کردن cache محصول ${productId}...`);
 
             // ✅ نمایش کلیدها
             const productKey = this.CACHE_KEYS.PRODUCT_BY_ID(productId);
-            this.logger.debug(`🔑 کلید محصول: ${productKey}`);
+            // this.logger.debug(`🔑 کلید محصول: ${productKey}`);
             if (slug) {
                 const slugKey = this.CACHE_KEYS.PRODUCT_BY_SLUG(slug);
-                this.logger.debug(`🔑 کلید slug: ${slugKey}`);
+                // this.logger.debug(`🔑 کلید slug: ${slugKey}`);
             }
 
             // پاک کردن cache این محصول
             await this.cacheManager.del(productKey);
-            this.logger.log(`✅ Cache PRODUCT_BY_ID(${productId}) پاک شد`);
+            // this.logger.log(`✅ Cache PRODUCT_BY_ID(${productId}) پاک شد`);
 
             // پاک کردن cache slug
             if (slug) {
                 await this.cacheManager.del(this.CACHE_KEYS.PRODUCT_BY_SLUG(slug));
-                this.logger.log(`✅ Cache PRODUCT_BY_SLUG(${slug}) پاک شد`);
+                // this.logger.log(`✅ Cache PRODUCT_BY_SLUG(${slug}) پاک شد`);
             }
 
             // پاک کردن لیست‌ها (چون محصول تغییر کرده)
@@ -388,13 +388,13 @@ export class ProductCacheService {
             const redisClient = this.getRedisClient();
 
             if (redisClient && typeof redisClient.keys === 'function') {
-                this.logger.log('🔍 پاک کردن cache لیست‌های محصولات با Redis...');
+                // this.logger.log('🔍 پاک کردن cache لیست‌های محصولات با Redis...');
 
                 // ✅ اول ببینیم چه کلیدهایی داریم
                 const allProductKeys = await redisClient.keys(`*product:*`);
-                this.logger.debug(`🔍 تعداد کل کلیدهای product: ${allProductKeys?.length || 0}`);
+                // this.logger.debug(`🔍 تعداد کل کلیدهای product: ${allProductKeys?.length || 0}`);
                 if (allProductKeys && allProductKeys.length > 0) {
-                    this.logger.debug(`🔍 نمونه کلیدها: ${allProductKeys.slice(0, 5).join(', ')}`);
+                    // this.logger.debug(`🔍 نمونه کلیدها: ${allProductKeys.slice(0, 5).join(', ')}`);
                 }
 
                 // ⚠️ cache-manager خودش namespace رو اضافه میکنه، پس باید pattern ها رو با namespace اضافی بسازیم
@@ -414,7 +414,7 @@ export class ProductCacheService {
 
                 for (const pattern of patterns) {
                     const keys = await redisClient.keys(pattern);
-                    this.logger.debug(`🔍 Pattern "${pattern}" -> ${keys?.length || 0} کلید`);
+                    // this.logger.debug(`🔍 Pattern "${pattern}" -> ${keys?.length || 0} کلید`);
                     if (keys && keys.length > 0) {
                         // ✅ چک کنیم pipeline وجود داره یا نه
                         if (typeof redisClient.pipeline === 'function') {
@@ -423,11 +423,11 @@ export class ProductCacheService {
                             await pipeline.exec();
                         } else {
                             // Fallback: یک‌به‌یک delete
-                            this.logger.warn('⚠️ pipeline موجود نیست، استفاده از del تکی...');
+                            // this.logger.warn('⚠️ pipeline موجود نیست، استفاده از del تکی...');
                             await Promise.all(keys.map((key: string) => redisClient.del(key)));
                         }
                         totalDeleted += keys.length;
-                        this.logger.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
+                        // this.logger.log(`✅ ${keys.length} کلید با pattern "${pattern}" پاک شد`);
                     }
                 }
 
@@ -436,11 +436,11 @@ export class ProductCacheService {
             }
 
             // فال‌بک
-            this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback method...');
+            // this.logger.warn('⚠️ Redis client موجود نیست، استفاده از fallback method...');
             const store = this.getStore();
 
             if (store && typeof store.iterator === 'function') {
-                this.logger.log('🔍 پاک کردن لیست‌ها با Iterator...');
+                // this.logger.log('🔍 پاک کردن لیست‌ها با Iterator...');
 
                 const keysToDelete: string[] = [];
 
