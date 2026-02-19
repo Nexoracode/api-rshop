@@ -202,13 +202,13 @@ export class UserAdminServices {
     // فقط فیلدهای مشخصی قابل ویرایش هستند
     if (data.firstName) admin.firstName = data.firstName;
     if (data.lastName) admin.lastName = data.lastName;
-    if (data.phone && currentUser.id !== admin.id) {
+    if (data.phone && admin.id !== id) {
       const existPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
       if (existPhone) throw new BadRequestException('این شماره موبایل قبلاً ثبت شده است.');
     }
 
     // بررسی تکراری نبودن ایمیل
-    if (data.email && currentUser.id !== admin.id) {
+    if (data.email && admin.id !== id) {
       const existEmail = await this.userRepo.findOne({ where: { email: data.email } });
       if (existEmail) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
     }

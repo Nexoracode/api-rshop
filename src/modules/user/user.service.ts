@@ -41,11 +41,16 @@ export class UserService extends BaseService<User> implements IUserService {
         const user = await this.userRepo.findOne({ where: { id, role: Role.USER } });
         if (!user) throw new NotFoundException('کاربر یافت نشد.');
 
-        const existsPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
-        if (existsPhone && existsPhone.id !== id) throw new BadRequestException('این شماره قبلا ثبت شده است');
+        if (data.phone) {
+            const existPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
+            if (existPhone) throw new BadRequestException('این شماره موبایل قبلاً ثبت شده است.');
+        }
 
-        const existsEmail = await this.userRepo.findOne({ where: { email: data.email } });
-        if (existsEmail && existsEmail.id !== id) throw new BadRequestException('این ایمیل از قبل ثبت شده است');
+        // بررسی تکراری نبودن ایمیل
+        if (data.email) {
+            const existEmail = await this.userRepo.findOne({ where: { email: data.email } });
+            if (existEmail) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
+        }
 
         const updated = this.userRepo.merge(user, { ...data, role: Role.USER }); // ← role قابل تغییر نیست
         const saved = await this.userRepo.save(updated);
