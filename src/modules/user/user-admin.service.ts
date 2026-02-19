@@ -200,19 +200,19 @@ export class UserAdminServices {
     }
 
     // فقط فیلدهای مشخصی قابل ویرایش هستند
-    if (data.firstName !== undefined) admin.firstName = data.firstName;
-    if (data.lastName !== undefined) admin.lastName = data.lastName;
-    if (data.phone !== undefined) {
-      const existPhone = await this.userRepo.findOne({ where: { phone: data.phone, id: Not(id) } });
+    if (data.firstName) admin.firstName = data.firstName;
+    if (data.lastName) admin.lastName = data.lastName;
+    if (data.phone && currentUser.id !== admin.id) {
+      const existPhone = await this.userRepo.findOne({ where: { phone: data.phone } });
       if (existPhone) throw new BadRequestException('این شماره موبایل قبلاً ثبت شده است.');
-      admin.phone = data.phone;
     }
-    if (data.email !== undefined) {
-      const existEmail = await this.userRepo.findOne({ where: { email: data.email, id: Not(id) } });
+
+    // بررسی تکراری نبودن ایمیل
+    if (data.email && currentUser.id !== admin.id) {
+      const existEmail = await this.userRepo.findOne({ where: { email: data.email } });
       if (existEmail) throw new BadRequestException('این ایمیل قبلاً ثبت شده است.');
-      admin.email = data.email ?? admin.email;
     }
-    if (data.avatarUrl !== undefined) {
+    if (data.avatarUrl) {
       admin.avatarUrl = data.avatarUrl ?? admin.avatarUrl;
     }
 
@@ -295,6 +295,7 @@ export class UserAdminServices {
         'user.email',
         'user.role',
         'user.isActive',
+        'user.avatarUrl',
         'user.createdAt',
       ])
       .where('user.role IN (:...roles)', { roles: adminRoles })

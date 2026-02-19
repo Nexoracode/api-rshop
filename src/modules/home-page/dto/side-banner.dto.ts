@@ -26,7 +26,7 @@ export class CreateSideBannerDto {
   @IsEnum(BannerPosition)
   position: BannerPosition;
 
-  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
+  @ApiPropertyOptional({ name: 'background_color', nullable: true })
   @IsHexColor()
   @IsOptional()
   backgroundColor?: string;
@@ -79,7 +79,7 @@ export class UpdateSideBannerDto {
   @IsOptional()
   position?: BannerPosition;
 
-  @ApiPropertyOptional({ name: 'background_color', example: '#FF6B6B' })
+  @ApiPropertyOptional({ name: 'background_color', nullable: true })
   @IsHexColor()
   @IsOptional()
   backgroundColor?: string;

@@ -114,7 +114,7 @@ export class OrderMapperNew {
             }, 0) || 0,
 
             // 📝 سایر
-            paymentMethod: order.paymentGatewayRef || null,
+            paymentGatewayRef: order.paymentGatewayRef || null,
             customerNote: order.note || null,
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,

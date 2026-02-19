@@ -39,7 +39,7 @@ export class SideBanner {
   })
   position: BannerPosition;
 
-  @Column({ type: 'varchar', length: 7, default: '#FF6B6B' })
+  @Column({ type: 'varchar', length: 7, nullable: true })
   backgroundColor: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
