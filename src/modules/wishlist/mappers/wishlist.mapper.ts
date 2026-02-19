@@ -30,6 +30,8 @@ export class WishlistMapper {
                 discountAmount: product.discountAmount,
                 discountPercent: product.discountPercent,
                 finalPrice,
+                stock: product.stock,
+                isActive: product.isActive,
                 image: product.mediaPinned?.url || null,
                 isAvailable: product.isVisible && product.stock > 0,
             },

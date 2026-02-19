@@ -29,8 +29,10 @@ import { GiftWrapping } from "../gift-wrapping/entities/gift-wrapping.entity";
 import { GiftWrappingStatus } from "../gift-wrapping/enums/gift-wrapping-status.enum";
 import { CardStatusService } from "../card/card-status.service";
 import { OrderCacheService } from "./cache/order-cache.service";
-import { PaymentStatus } from "../payment/enums/payment-status.enum";
+import { CardToCardStatus, PaymentStatus } from "../payment/enums/payment-status.enum";
 import { UpdateRefOrderDto } from "./dto/update-ref-order.dto";
+import { Invoice } from "../invoice/entities/invoice.entity";
+import { InvoiceStatus } from "../invoice/enums/invoice-status.enum";
 
 const relations = [
     "user",
@@ -611,8 +613,8 @@ export class OrderService {
     // 📦 جزئیات سفارش - با Cache
     async findOneByUser(user: RequestUser, id: number) {
         // ✅ چک cache
-        const cached = await this.orderCacheService.getUserOrderDetail(user.id, id);
-        if (cached) return cached;
+        // const cached = await this.orderCacheService.getUserOrderDetail(user.id, id);
+        // if (cached) return cached;
 
         // Cache Miss - Query از DB
         const order = await this.orderRepo.findOne({
@@ -631,7 +633,7 @@ export class OrderService {
         const result = OrderMapperNew.toDetail(order, payment);
 
         // ✅ ذخیره در cache
-        await this.orderCacheService.setUserOrderDetail(user.id, id, result);
+        // await this.orderCacheService.setUserOrderDetail(user.id, id, result);
 
         return result;
     }
@@ -644,6 +646,63 @@ export class OrderService {
                 relations: ['user'] // ✅ نیاز به user برای cache
             });
             if (!order) throw new NotFoundException("سفارش یافت نشد.");
+
+            const payment = await manager.findOne(Payment, {
+                where: { order: { id: order.id } },
+                order: { createdAt: 'DESC' },
+            });
+
+            const invoice = await manager.findOne(Invoice, {
+                where: { order: { id: order.id } },
+                order: { createdAt: 'DESC' },
+            });
+
+            if (invoice) {
+                if (status === OrderStatus.PAYMENT_CONFIRMATION_PENDING) {
+                    invoice.status = InvoiceStatus.PENDING;
+                } else if (status === OrderStatus.PREPARING) {
+                    invoice.status = InvoiceStatus.PAID;
+                } else if (status === OrderStatus.CANCELLED || status === OrderStatus.EXPIRED) {
+                    invoice.status = InvoiceStatus.CANCELLED;
+                } else if (status === OrderStatus.DELIVERED) {
+                    invoice.status = InvoiceStatus.DELIVERED;
+                } else if (status === OrderStatus.REFUNDED) {
+                    invoice.status = InvoiceStatus.REFUNDED;
+                } else if (status === OrderStatus.NOT_DELIVERED) {
+                    invoice.status = InvoiceStatus.FAILED;
+                } else {
+                    invoice.status = InvoiceStatus.PENDING;
+                }
+            }
+
+            if (payment) {
+                if (status === OrderStatus.PAYMENT_CONFIRMATION_PENDING) {
+                    payment.status = PaymentStatus.PENDING;
+                    payment.cardToCardStatus = CardToCardStatus.UPLOADED;
+                    payment.message = payment.receiptImage ? 'تصویر رسید آپلود شد، منتظر تایید ادمین' : 'اطلاعات واریز ثبت شد، منتظر تایید ادمین'
+                } else if (status === OrderStatus.PREPARING) {
+                    payment.status = PaymentStatus.SUCCESS;
+                    payment.cardToCardStatus = CardToCardStatus.APPROVED;
+                    payment.message = 'پرداخت با موفقیت تایید شد.';
+                } else if (status === OrderStatus.CANCELLED || status === OrderStatus.EXPIRED) {
+                    payment.status = PaymentStatus.FAILED;
+                    payment.cardToCardStatus = CardToCardStatus.REJECTED;
+                    payment.message = 'پرداخت لغو شد.';
+                } else if (status === OrderStatus.DELIVERED) {
+                    payment.status = PaymentStatus.SUCCESS;
+                    payment.cardToCardStatus = CardToCardStatus.APPROVED;
+                    payment.message = 'پرداخت با موفقیت تایید شد.';
+                } else if (status === OrderStatus.REFUNDED) {
+                    payment.status = PaymentStatus.REFUNDED;
+                    payment.cardToCardStatus = CardToCardStatus.REJECTED;
+                    payment.message = 'پرداخت بازپرداخت شد.';
+                } else if (status === OrderStatus.NOT_DELIVERED) {
+                    payment.status = PaymentStatus.FAILED;
+                    payment.cardToCardStatus = CardToCardStatus.REJECTED;
+                    payment.message = 'سفارش تحویل داده نشد، پرداخت ناموفق.';
+                }
+                await manager.save(Payment, payment);
+            }
 
             order.status = status;
             const result = await manager.save(order);
@@ -737,17 +796,13 @@ export class OrderService {
                 throw new BadRequestException('سفارش برای این کاربر نیست.');
             }
 
-            if (order.status !== OrderStatus.START_ORDER) {
-                throw new BadRequestException('فقط سفارش های ثبت اولیه قابل تغییر هستند.');
-            }
+            // if (order.status !== OrderStatus.START_ORDER) {
+            //     throw new BadRequestException('فقط سفارش های ثبت اولیه قابل تغییر هستند.');
+            // }
 
             order.status = OrderStatus.AWAITING_PAYMENT;
             await manager.save(Order, order);
             await this.cardStatusService.abandonCart(order.user.id, manager);
-
-            // ✅ پاک کردن cache
-            await this.orderCacheService.clearCacheAfterStatusChange(orderId, order.user.id);
-
             return order;
         });
     }
