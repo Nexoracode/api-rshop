@@ -162,18 +162,8 @@ export class ProductService implements IProductService {
         // ✅ چک cache (با کلید متفاوت برای site)
         const cached = await this.cacheService.getProductById(id);
         if (cached) {
-            // اگر در cache موجود است، بررسی وضعیت visibility
-            if ((cached as any).product && (cached as any).product.isVisible === false) {
-                return {
-                    message: 'این محصول در حال حاضر قابل نمایش نیست',
-                    isVisible: false
-                };
-            }
-
-            if (cached && (cached as any).reviews) {
-                this.logger.log(`✅ Product ${id} for site از cache`);
-                return cached;
-            }
+            this.logger.log(`✅ Product ${id} از cache`);
+            return cached;
         }
 
         // لاجیک اصلی
