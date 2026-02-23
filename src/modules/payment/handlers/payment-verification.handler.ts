@@ -58,6 +58,11 @@ export class PaymentVerificationHandler {
         'order.items',
         'order.items.product',
         'order.items.product.mediaPinned',
+        "order.items.variant",
+        "order.items.variant.attributes",
+        "order.items.variant.attributes.attribute",
+        "order.items.variant.attributes.value",
+        "order.items.variant.attributes.attribute.group",
       ],
     });
 

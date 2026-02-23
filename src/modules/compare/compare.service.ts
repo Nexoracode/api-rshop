@@ -15,10 +15,14 @@ const relations = [
   'product.category',
   'product.mediaPinned',
   'product.brand',
-  'product.variants',
-  'product.variants.attributes',
-  'product.variants.attributes.attribute',
-  'product.variants.attributes.value',
+  "product.variants",
+  "product.variants.attributes",
+  "product.variants.attributes.attribute",
+  "product.variants.attributes.value",
+  "product.variants.attributes.attribute.group",
+  'product.attributeValues',
+  'product.attributeValues.attribute',
+  'product.attributeValues.attribute.group',
 ]
 
 @Injectable()
@@ -43,7 +47,6 @@ export class CompareService {
 
     const product = await this.productRepo.findOne({
       where: { id: dto.productId },
-      relations: ['category', 'mediaPinned', 'brand', 'variants', 'variants.attributes', 'variants.attributes.attribute', 'variants.attributes.value'],
     });
 
     if (!product) throw new NotFoundException('محصول یافت نشد');

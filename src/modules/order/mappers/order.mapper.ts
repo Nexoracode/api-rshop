@@ -24,6 +24,7 @@ export class OrderMapper {
             items: order.items.length ? order.items.map((item) => ({
                 id: item.id,
                 order: item.order,
+                unitPrice: item.unitPrice,
                 product: {
                     id: item.product.id,
                     name: item.product.name,
@@ -222,7 +223,7 @@ export class OrderMapperNew {
             quantity: item.quantity,
             discount: Number(item.discount),
             lineTotal: Number(item.lineTotal),
-
+            unitPrice: Number(item.unitPrice),
             product: {
                 id: item.product.id,
                 name: item.product.name,
