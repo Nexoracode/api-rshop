@@ -96,6 +96,12 @@ export class StoreInfoAdminController {
     return this.storeInfoService.getAllFaqs(false);
   }
 
+  @Get(':category/faqs')
+  @ApiOperation({ summary: 'لیست تمام سوالات متداول (ادمین)' })
+  getFaqsByCategory(@Param('category', ParseIntPipe) id: number) {
+    return this.storeInfoService.getFaqByCategory(id);
+  }
+
   @Post('faqs')
   @ApiOperation({ summary: 'ایجاد سوال متداول جدید' })
   createFaq(@Body() dto: CreateFaqDto) {

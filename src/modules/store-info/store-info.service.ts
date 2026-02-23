@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { StoreInfoEntity } from './entities/store-info.entity';
 import { FaqEntity } from './entities/faq.entity';
 import { FaqCategoryEntity } from './entities/faq-category.entity';
@@ -172,6 +172,16 @@ export class StoreInfoService {
     if (!faq) throw new NotFoundException('سوال متداول یافت نشد.');
     await this.faqRepo.increment({ id }, 'viewCount', 1);
     return StoreInfoMapper.toFaqResponse({ ...faq, viewCount: faq.viewCount + 1 });
+  }
+
+  async getFaqByCategory(id: number) {
+    const faqs = await this.faqRepo.find({
+      where: { faqCategoryId: id },
+      relations: ['faqCategory', 'faqCategory.icon'],
+      order: { displayOrder: 'ASC', id: 'ASC' },
+    })
+    // await this.faqRepo.increment({ id : In(faqs) }, 'viewCount', 1);
+    return faqs.map(StoreInfoMapper.toFaqResponse)
   }
 
   async getAllFaqs(onlyActive = false) {
