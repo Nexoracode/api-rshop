@@ -5,6 +5,7 @@ import { HeroSlider } from './entities/hero-slider.entity';
 import { CreateHeroSliderDto, UpdateHeroSliderDto } from './dto/hero-slider.dto';
 import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
 import { UpdateSortDto } from '../attributes/attribute/dto/update-sort-attribute.dto';
+import { HeroSliderOrder } from './dto/her-slider-order.dto';
 
 @Injectable()
 export class HeroSliderService {
@@ -18,18 +19,17 @@ export class HeroSliderService {
 
   async create(createDto: CreateHeroSliderDto): Promise<HeroSlider> {
     // لاجیک اصلی (بدون تغییر)
-    const slider = this.heroSliderRepository.create(createDto);
-    const result = await this.heroSliderRepository.save(slider);
 
-    const lastAttribute = await this.heroSliderRepository.find({
+    const lasHero = await this.heroSliderRepository.find({
       order: { displayOrder: 'DESC' },
       take: 1,
     })
-    const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
-    await this.heroSliderRepository.save({
-      ...result,
-      sortOrder: nextOrder
+    const nextOrder = lasHero.length ? lasHero[0].displayOrder + 1 : 1;
+    const heroSlider = this.heroSliderRepository.create({
+      ...createDto,
+      displayOrder: nextOrder
     })
+    const result = await this.heroSliderRepository.save(heroSlider);
     // ✅ پاک کردن cache
     await this.cacheService.clearHeroSlidersCache();
     this.logger.log('🗑️ Hero sliders cache پاک شد بعد از create');
@@ -122,10 +122,11 @@ export class HeroSliderService {
     this.logger.log(`🗑️ Hero slider ${id} cache پاک شد بعد از delete`);
   }
 
-  async updateSortOrder(id: number, data: { displayOrder: number }): Promise<{ message: string; data: null }> {
+  async updateSortOrder(id: number, data: HeroSliderOrder): Promise<{ message: string; data: null }> {
     const heroSlider = await this.heroSliderRepository.findOne({ where: { id } });
     if (!heroSlider) throw new NotFoundException('مقدار مورد نظر یافت نشد.');
     heroSlider.displayOrder = data.displayOrder;
+    console.log(data);
     await this.heroSliderRepository.save(heroSlider);
     await this.cacheService.clearHeroSlidersCache();
     return {

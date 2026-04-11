@@ -19,6 +19,7 @@ import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { ClearHomePageCacheInterceptor } from '../interceptors/clear-homepage-cache.interceptor';
 import { UpdateSortDto } from 'src/modules/attributes/attribute/dto/update-sort-attribute.dto';
+import { HeroSliderOrder } from '../dto/her-slider-order.dto';
 
 /**
  * کنترلر مدیریت اسلایدرهای اصلی صفحه (Hero Sliders)
@@ -531,7 +532,7 @@ export class HeroSliderAdminController {
   @ApiOperation({ summary: 'تغییر ترتیب نمایش اسلایدر' })
   async updateSortOrder(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: { displayOrder: number },
+    @Body() data: HeroSliderOrder,
   ) {
     return this.heroSliderService.updateSortOrder(id, data);
   }
