@@ -294,13 +294,19 @@ export class ProductService implements IProductService {
                 updated.preparationDays = null;
             }
 
+            if (data.mediaPinnedId && data.mediaPinnedId !== updated.mediaPinnedId) {
+                const newmediaPinnedId = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
+                if (!newmediaPinnedId) throw new NotFoundException('تصویر پین شده یافت نشد.');
+                updated.mediaPinned = newmediaPinnedId;
+            }
+
             const savedProduct = await manager.save(Product, {
                 ...updated,
                 category: data.categoryId ? { id: data.categoryId } : product.category,
                 helperId: data.helperId === null ? null : data.helperId,
                 helper: data.helperId === null ? null : helper!,
                 brand: data.brandId ? { id: data.brandId } : product.brand,
-                mediaPinnedId: data.mediaPinnedId == null ? null : data.mediaPinnedId,
+                mediaPinned: data.mediaPinnedId ? { id: data.mediaPinnedId } : product.mediaPinned,
             });
             // if (data.mediaPinnedId != null) {
             //     if (data.mediaPinnedId === 0) {
