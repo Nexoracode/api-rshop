@@ -523,12 +523,22 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
+
+
             if (data.title !== undefined) existsCategory.title = data.title;
             if (data.slug !== undefined) existsCategory.slug = data.slug;
             if (data.description !== undefined) existsCategory.description = data.description;
             if (data.discount !== undefined) existsCategory.discount = data.discount;
             if (data.displayOrder !== undefined) existsCategory.displayOrder = data.displayOrder;
             if (data.isActive !== undefined) existsCategory.isActive = data.isActive;
+
+            if (data.iconId) {
+                const icon = await manager.findOne(Icon, { where: { id: data.iconId } })
+                if (!icon) {
+                    throw new NotFoundException('آیکون مورد نظر یافت نشد.');
+                }
+                existsCategory.icon = icon;
+            }
 
             if (parentChanged) {
                 existsCategory.parent = newParent;
@@ -581,7 +591,7 @@ export class CategoryService implements ICategoryService {
     ): Promise<void> {
         const children = await treeRepo.find({
             where: { parent: { id: parent.id } },
-            relations: ['icon', 'children']
+            relations: ['icon', 'parent', 'children']
         });
 
         for (const child of children) {

@@ -300,18 +300,19 @@ export class ProductService implements IProductService {
                 helperId: data.helperId === null ? null : data.helperId,
                 helper: data.helperId === null ? null : helper!,
                 brand: data.brandId ? { id: data.brandId } : product.brand,
+                mediaPinnedId: data.mediaPinnedId == null ? null : data.mediaPinnedId,
             });
-            if (data.mediaPinnedId != null) {
-                if (data.mediaPinnedId === 0) {
-                    updated.mediaPinned = null as unknown as Media;
-                    updated.mediaPinnedId = null;
-                } else {
-                    const media = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
-                    if (!media) throw new NotFoundException('تصویر پین‌شده یافت نشد.');
-                    updated.mediaPinned = media;
-                    updated.mediaPinnedId = media.id;
-                }
-            }
+            // if (data.mediaPinnedId != null) {
+            //     if (data.mediaPinnedId === 0) {
+            //         updated.mediaPinned = null as unknown as Media;
+            //         updated.mediaPinnedId = null;
+            //     } else {
+            //         const media = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
+            //         if (!media) throw new NotFoundException('تصویر پین‌شده یافت نشد.');
+            //         updated.mediaPinned = media;
+            //         updated.mediaPinnedId = media.id;
+            //     }
+            // }
 
 
             if (data.mediaIds?.length) {
@@ -322,15 +323,15 @@ export class ProductService implements IProductService {
                 await manager.update(Media, { id: In(data.mediaIds) }, { product: savedProduct });
             }
 
-            if (data.mediaPinnedId != null) {
-                if (data.mediaPinnedId === 0) {
-                    if (product.mediaPinned) {
-                        await manager.update(Media, { id: product.mediaPinned.id, product: { id: savedProduct.id } }, { product: null });
-                    }
-                } else {
-                    await manager.update(Media, { id: data.mediaPinnedId }, { product: savedProduct });
-                }
-            }
+            // if (data.mediaPinnedId != null) {
+            //     if (data.mediaPinnedId === 0) {
+            //         if (product.mediaPinned) {
+            //             await manager.update(Media, { id: product.mediaPinned.id, product: { id: savedProduct.id } }, { product: null });
+            //         }
+            //     } else {
+            //         await manager.update(Media, { id: data.mediaPinnedId }, { product: savedProduct });
+            //     }
+            // }
 
             const productResult = await manager.findOne(Product, {
                 where: { id: savedProduct.id },
