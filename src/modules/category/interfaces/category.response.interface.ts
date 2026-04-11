@@ -13,7 +13,11 @@ export interface ICategoryResponse {
     slug: string;
     isActive: boolean;
     media: Media | null;
-    icon: Icon | null;
+    icon: {
+        id: number,
+        name: string;
+        svg: string;
+    } | null;
     products: Product[];
 }
 
@@ -25,5 +29,9 @@ export interface ICategoryResponseSite {
     title: string;
     slug: string;
     isActive?: boolean;
-    icon: Icon | null;
+    icon: {
+        id: number,
+        name: string;
+        svg: string;
+    } | null;
 }

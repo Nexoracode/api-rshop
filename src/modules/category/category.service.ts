@@ -276,16 +276,17 @@ export class CategoryService implements ICategoryService {
         const page = query.page || 1;
         const limit = query.limit || 20;
 
-        // ✅ چک کردن cache
-        const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters, search);
-        if (cached) {
-            console.log('✅ Category tree paginated از cache');
-            return cached;
-        }
+        // // ✅ چک کردن cache
+        // const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters, search);
+        // if (cached) {
+        //     console.log('✅ Category tree paginated از cache');
+        //     return cached;
+        // }
 
         // اجرای query
         const config: PaginateConfig<Category> = {
             sortableColumns: ['id', 'title', 'level', 'displayOrder'],
+            relations: ['icon', 'parent', 'children'],
             defaultSortBy: [['displayOrder', 'ASC']],
             searchableColumns: ['title', 'description', 'slug'],
             filterableColumns: {
@@ -311,7 +312,7 @@ export class CategoryService implements ICategoryService {
         const categoriesWithChildren = await Promise.all(
             paginatedRoots.data.map(async (root) => {
                 const fullTree = await this.treeCatRepo.findDescendantsTree(root, {
-                    relations: ['icon', 'media', 'products', 'products.medias', 'products.mediaPinned']
+                    relations: ['parent', 'children', 'icon', 'media', 'products', 'products.medias', 'products.mediaPinned']
                 });
                 return this.filterTreeByDiscount(fullTree, discountFilters);
             })
@@ -335,14 +336,16 @@ export class CategoryService implements ICategoryService {
      */
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
         // ✅ چک کردن cache
-        const cached = await this.cacheService.getCategoryTree();
-        if (cached) {
-            console.log('✅ Category tree for site از cache');
-            return cached as any;
-        }
+        // const cached = await this.cacheService.getCategoryTree();
+        // if (cached) {
+        //     console.log('✅ Category tree for site از cache');
+        //     return cached as any;
+        // }
 
         // دریافت از دیتابیس
-        const categories = await this.treeCatRepo.findTrees();
+        const categories = await this.treeCatRepo.findTrees({
+            relations: ['parent', 'children', 'icon']
+        });
         const result = CategoryMapper.toResponseSiteList(categories);
 
         // ✅ ذخیره در cache

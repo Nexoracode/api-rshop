@@ -17,7 +17,11 @@ export class CategoryMapper {
             isDelete: !category.children || category.children.length === 0,
             children: category.children?.map((child) => this.toResponse(child)) ?? [],
             media: category.media ?? null,
-            icon: category.icon ?? null,
+            icon: category.icon ? {
+                id: category.icon.id,
+                name: category.icon.name,
+                svg: category.icon.svg,
+            } : null,
             products: category.products || [],
         };
     }
@@ -47,7 +51,11 @@ export class CategoryMapper {
             level: category.level,
             isActive: category.isActive,
             parentId: category.parent?.id || 0,
-            icon: category.icon ?? null,
+            icon: category.icon ? {
+                id: category.icon.id,
+                name: category.icon.name,
+                svg: category.icon.svg,
+            } : null,
             children: category.children?.map((child) => this.toResponseSite(child)) ?? [],
         };
     }

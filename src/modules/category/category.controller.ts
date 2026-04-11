@@ -86,6 +86,7 @@ export class CategoryController {
   @ApiPaginationQuery({
     paginationType: PaginationType.CURSOR,
     sortableColumns: ['id', 'title', 'level', 'displayOrder'],
+    relations: ['icon', 'parent', 'children'],
     defaultSortBy: [['displayOrder', 'ASC']],
     filterableColumns: {
       isActive: [FilterOperator.EQ],
