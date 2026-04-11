@@ -12,6 +12,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FilterOperator, paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
 import { CategoryCacheService } from './cache/category-cache.service';
 import { CatalogCacheService } from '../catalogs/cache';
+import { Icon } from '../icon/entities/icon.entity';
 
 @Injectable()
 export class CategoryService implements ICategoryService {
@@ -41,12 +42,12 @@ export class CategoryService implements ICategoryService {
         }
         const node = await this.treeCatRepo.findOne({
             where: { slug },
-            relations: ['parent']
+            relations: ['icon', 'parent']
         })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
 
         const category = await this.treeCatRepo.findDescendantsTree(node, {
-            relations: ['parent']
+            relations: ['icon', 'parent']
         });
         await this.cacheService.setCategoryBySlug(slug, category);
         console.log(`💾 Category slug ${slug} for site ذخیره شد در cache`);
@@ -62,6 +63,7 @@ export class CategoryService implements ICategoryService {
             level: number;
             isActive: boolean;
             media: any;
+            icon: any;
         };
         parents?: Array<{
             id: number;
@@ -69,6 +71,7 @@ export class CategoryService implements ICategoryService {
             slug: string;
             description: string | null;
             level: number;
+            icon: any;
         }>;
         breadcrumb: Array<{
             id: number;
@@ -79,7 +82,7 @@ export class CategoryService implements ICategoryService {
     }> {
         const category = await this.treeCatRepo.findOne({
             where: { slug },
-            relations: ['media']
+            relations: ['icon', 'media']
         });
 
         if (!category) {
@@ -114,6 +117,7 @@ export class CategoryService implements ICategoryService {
                 level: category.level,
                 isActive: category.isActive,
                 media: category.media,
+                icon: category.icon,
             },
             parents: parents.map(p => ({
                 id: p.id,
@@ -121,6 +125,7 @@ export class CategoryService implements ICategoryService {
                 slug: p.slug,
                 description: p.description ?? null,
                 level: p.level,
+                icon: category.icon,
             })),
             breadcrumb,
         };
@@ -135,6 +140,7 @@ export class CategoryService implements ICategoryService {
             level: number;
             isActive: boolean;
             media: any;
+            icon: any;
         };
         parents: Array<{
             id: number;
@@ -152,7 +158,7 @@ export class CategoryService implements ICategoryService {
     }> {
         const category = await this.treeCatRepo.findOne({
             where: { id },
-            relations: ['media']
+            relations: ['icon', 'media']
         });
 
         if (!category) {
@@ -187,6 +193,7 @@ export class CategoryService implements ICategoryService {
                 level: category.level,
                 isActive: category.isActive,
                 media: category.media,
+                icon: category.icon,
             },
             parents: parents.map(p => ({
                 id: p.id,
@@ -194,6 +201,7 @@ export class CategoryService implements ICategoryService {
                 slug: p.slug,
                 description: p.description,
                 level: p.level,
+                icon: p.icon,
             })),
             breadcrumb,
         };
@@ -303,7 +311,7 @@ export class CategoryService implements ICategoryService {
         const categoriesWithChildren = await Promise.all(
             paginatedRoots.data.map(async (root) => {
                 const fullTree = await this.treeCatRepo.findDescendantsTree(root, {
-                    relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
+                    relations: ['icon', 'media', 'products', 'products.medias', 'products.mediaPinned']
                 });
                 return this.filterTreeByDiscount(fullTree, discountFilters);
             })
@@ -355,12 +363,12 @@ export class CategoryService implements ICategoryService {
         // دریافت از دیتابیس
         const node = await this.treeCatRepo.findOne({
             where: { id },
-            relations: ['parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
+            relations: ['icon', 'parent', 'media', 'products', 'products.medias', 'products.mediaPinned']
         })
         if (!node) throw new NotFoundException(`دسته مورد نظر یافت نشد.`);
 
         const category = await this.treeCatRepo.findDescendantsTree(node, {
-            relations: ['media', 'products', 'products.medias', 'products.mediaPinned']
+            relations: ['icon', 'media', 'products', 'products.medias', 'products.mediaPinned']
         });
 
         const result = CategoryMapper.toResponseWithDescendants(category);
@@ -388,6 +396,7 @@ export class CategoryService implements ICategoryService {
                 throw new BadRequestException('نامک دسته بندی تکراری است.');
             }
 
+
             let parent: Category | null = null;
             if (data.parentId && data.parentId !== 0) {
                 parent = await treeRepo.findOne({
@@ -399,6 +408,7 @@ export class CategoryService implements ICategoryService {
                 level = parent.level;
             }
 
+
             const category = treeRepo.create({
                 title: data.title,
                 slug: data.slug,
@@ -409,6 +419,14 @@ export class CategoryService implements ICategoryService {
                 parent: parent,
                 level: level + 1,
             });
+
+            if (data.iconId) {
+                const icon = await manager.findOne(Icon, { where: { id: data.iconId } })
+                if (!icon) {
+                    throw new NotFoundException('آیکون مورد نظر یافت نشد.');
+                }
+                category.icon = icon;
+            }
 
             const savedCategory = await treeRepo.save(category);
 
@@ -423,7 +441,7 @@ export class CategoryService implements ICategoryService {
 
             const loadedCategory = await treeRepo.findOne({
                 where: { id: savedCategory.id },
-                relations: ['parent', 'media']
+                relations: ['icon', 'parent', 'media']
             });
 
             return CategoryMapper.toResponse(loadedCategory!);
@@ -443,7 +461,7 @@ export class CategoryService implements ICategoryService {
 
             const existsCategory = await treeRepo.findOne({
                 where: { id },
-                relations: ['parent', 'media', 'children']
+                relations: ['icon', 'parent', 'media', 'children']
             });
 
             if (!existsCategory) {
@@ -540,7 +558,7 @@ export class CategoryService implements ICategoryService {
 
             const updatedCategory = await treeRepo.findOne({
                 where: { id },
-                relations: ['parent', 'media']
+                relations: ['icon', 'parent', 'media']
             });
 
             return CategoryMapper.toResponse(updatedCategory!);
@@ -560,7 +578,7 @@ export class CategoryService implements ICategoryService {
     ): Promise<void> {
         const children = await treeRepo.find({
             where: { parent: { id: parent.id } },
-            relations: ['children']
+            relations: ['icon', 'children']
         });
 
         for (const child of children) {
@@ -579,7 +597,7 @@ export class CategoryService implements ICategoryService {
 
             const node = await treeRepo.findOne({
                 where: { id },
-                relations: ['children', 'products']
+                relations: ['icon', 'children', 'products']
             });
 
             if (!node) {
