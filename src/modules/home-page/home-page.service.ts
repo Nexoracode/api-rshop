@@ -242,6 +242,7 @@ export class HomePageService {
       discountPercent: product.discountPercent,
       image: product.mediaPinned?.url ?? null,
       isActive: product.isActive,
+      isVisible: product.isVisible,
       // سایر فیلدهای مورد نیاز
     };
   }
