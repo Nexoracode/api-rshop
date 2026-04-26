@@ -198,11 +198,11 @@ export class OrderService {
         const limit = query.limit || 20;
 
         // ✅ چک cache
-        const cached = await this.orderCacheService.getAdminOrderList(page, limit, filters, search);
-        if (cached) {
-            console.log('✅ Category tree paginated از cache');
-            return cached;
-        }
+        // const cached = await this.orderCacheService.getAdminOrderList(page, limit, filters, search);
+        // if (cached) {
+        //     console.log('✅ Category tree paginated از cache');
+        //     return cached;
+        // }
 
         // Cache Miss - Query از DB
         const orders = await paginate(query, this.orderRepo, {
@@ -354,6 +354,7 @@ export class OrderService {
     }
 
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
+        console.log('added to card');
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
             const cardItemRepo = manager.getRepository(CardItem);
@@ -382,10 +383,12 @@ export class OrderService {
                 if (ci.variant) {
                     const variant = await manager.findOne(VariantProduct, {
                         where: { id: ci.variant.id },
+                        relations: ['product', 'attributes', 'attributes.value']
                     });
                     if (!variant || variant.stock < ci.quantity) {
+                        const findAttr = variant?.attributes.find((v) => v.id === 1)?.id;
                         throw new BadRequestException(
-                            `موجودی واریانت ${variant?.sku || ci.variant.id} کافی نیست`
+                            `موجودی ${variant?.product.name} ( ${variant?.attributes.map((a) => a.value.value)} ) به اتمام رسید`,
                         );
                     }
                 } else {
@@ -599,7 +602,7 @@ export class OrderService {
         if (!order) throw new NotFoundException("سفارش یافت نشد.");
 
         const payment = await this.paymentRepo.findOne({
-            where: { order: { id: order.id } }
+            where: { order: { id: order.id } },
         });
 
         const result = OrderMapperNew.toDetail(order, payment);

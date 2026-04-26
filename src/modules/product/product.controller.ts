@@ -18,6 +18,7 @@ import { AccessGuard } from 'src/common/guard/access.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { Role } from 'src/common/enums/role.enum';
+import { RequestUser } from 'src/common/interfaces/request-user.interface';
 
 @ApiTags('08 - 📦 Products')
 @Controller('product')
@@ -65,9 +66,10 @@ export class ProductController {
     }
 
     @Post()
-    create(@Body() data: CreateProductDto, @CurrentUser() user: User) {
+    create(@Body() data: CreateProductDto, @CurrentUser() user: RequestUser) {
         // ✅ ارسال userId به service
-        const userId = user.id;
+        console.log(user);
+        const userId = user.id || 1;
         return this.productService.create(data, userId);
     }
 
@@ -118,14 +120,12 @@ export class ProductController {
     @Delete('delete/bulk')
     @UseGuards(AccessGuard, RoleGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     removeBulk(@Body() dto: DeleteProductsDto) {
         return this.productService.removeBulk(dto.ids);
     }
 
     @Delete(':id')
     @UseGuards(AccessGuard, RoleGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.productService.remove(id);
@@ -141,6 +141,7 @@ export class ProductController {
         summary: 'دریافت محصولات مشابه',
         description: 'محصولات مشابه بر اساس دسته‌بندی و برند محصول اصلی'
     })
+
     @ApiResponse({
         status: 200,
         description: 'لیست محصولات مشابه'

@@ -78,11 +78,11 @@ export class ProductService implements IProductService {
         const page = query.page || 1;
         const limit = query.limit || 20;
         const search = JSON.stringify(query.search || {});
-        const cached = await this.cacheService.getProductList(page, limit, filters, search);
-        if (cached) {
-            this.logger.log('✅ Product list از cache');
-            return cached;
-        }
+        // const cached = await this.cacheService.getProductList(page, limit, filters, search);
+        // if (cached) {
+        //     this.logger.log('✅ Product list از cache');
+        //     return cached;
+        // }
 
         // لاجیک اصلی (بدون تغییر)
         const products = await paginate(query, this.productRepo, {
