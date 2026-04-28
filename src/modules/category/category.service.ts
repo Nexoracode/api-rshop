@@ -523,8 +523,6 @@ export class CategoryService implements ICategoryService {
                 }
             }
 
-
-
             if (data.title !== undefined) existsCategory.title = data.title;
             if (data.slug !== undefined) existsCategory.slug = data.slug;
             if (data.description !== undefined) existsCategory.description = data.description;
@@ -532,12 +530,17 @@ export class CategoryService implements ICategoryService {
             if (data.displayOrder !== undefined) existsCategory.displayOrder = data.displayOrder;
             if (data.isActive !== undefined) existsCategory.isActive = data.isActive;
 
-            if (data.iconId) {
-                const icon = await manager.findOne(Icon, { where: { id: data.iconId } })
-                if (!icon) {
-                    throw new NotFoundException('آیکون مورد نظر یافت نشد.');
+            // ✅ تغییر بخش icon - اجازه set به null
+            if (data.iconId !== undefined) {
+                if (data.iconId === null) {
+                    existsCategory.icon = null;
+                } else if (data.iconId) {
+                    const icon = await manager.findOne(Icon, { where: { id: data.iconId } });
+                    if (!icon) {
+                        throw new NotFoundException('آیکون مورد نظر یافت نشد.');
+                    }
+                    existsCategory.icon = icon;
                 }
-                existsCategory.icon = icon;
             }
 
             if (parentChanged) {
@@ -552,6 +555,7 @@ export class CategoryService implements ICategoryService {
                 await treeRepo.save(existsCategory);
             }
 
+            // ✅ تغییر بخش media - اجازه set به null
             if (data.mediaId !== undefined) {
                 const oldMedia = await manager.findOne(Media, { where: { category: { id } } });
                 if (oldMedia) {
@@ -559,7 +563,10 @@ export class CategoryService implements ICategoryService {
                     await manager.save(Media, oldMedia);
                 }
 
-                if (data.mediaId) {
+                if (data.mediaId === null) {
+                    // media حذف می‌شود و همان null می‌ماند
+                    // قبلاً oldMedia.category = null شده
+                } else if (data.mediaId) {
                     const newMedia = await manager.findOne(Media, { where: { id: data.mediaId } });
                     if (!newMedia) {
                         throw new NotFoundException('فایل مدیا یافت نشد.');
@@ -579,7 +586,6 @@ export class CategoryService implements ICategoryService {
 
         // ✅ پاک کردن cache بعد از update
         await this.cacheService.clearCategoryCache(id, data.slug);
-        // await this.catalogCatchService.clearAllCatalogCache(); // پاک کردن کش کاتالوگ‌ها
         console.log(`🗑️ Cache پاک شد برای category ${id}`);
 
         return result;
