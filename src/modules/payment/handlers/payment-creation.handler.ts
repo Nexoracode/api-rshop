@@ -104,9 +104,11 @@ export class PaymentCreationHandler {
         payload: { e },
       });
 
+      console.log(e.response.data.errors);
+
       throw new ZarinpalException(
-        e.errors.code ?? -1,
-        e.errors.message ?? 'خطای نامشخص در درگاه پرداخت',
+        e.response.data.errors.code ?? -1,
+        e.response.data.errors.message ?? 'خطای نامشخص در درگاه پرداخت',
       );
     }
 

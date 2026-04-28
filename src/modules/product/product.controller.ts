@@ -66,10 +66,10 @@ export class ProductController {
     }
 
     @Post()
-    create(@Body() data: CreateProductDto, @CurrentUser() user: RequestUser) {
+    create(@Body() data: CreateProductDto, @CurrentUser() user: User) {
         // ✅ ارسال userId به service
         console.log(user);
-        const userId = user.id || 1;
+        const userId = user ? user.id : 1;
         return this.productService.create(data, userId);
     }
 

@@ -65,6 +65,7 @@ export class AttributeGroupService implements IAttributeGroupService {
   }
 
   async findAll(): Promise<IAttributeGroupResponse[]> {
+    console.log('click attribute gourp');
     const attributeGroups = await this.attrGroupRepo.find({
       relations: ['attributes'], order: {
         displayOrder: 'ASC'

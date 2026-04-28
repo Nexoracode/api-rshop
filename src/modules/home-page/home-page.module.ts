@@ -34,6 +34,8 @@ import { PromoBannerPublicController } from './controllers/promo-banner-public.c
 import { SettingModule } from '../setting/setting.module';
 import { HomePageSettingListener } from './listeners/home-page-setting.listener';
 import { PromotionModule } from '../promotion/promotion.module';
+import { Promotion } from '../promotion/domain/entities/promotion.entity';
+import { PromotionOrmEntity } from '../promotion/infrastructure/entities/promotion.orm-entity';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { PromotionModule } from '../promotion/promotion.module';
       Product,
       Category,
       Brand,
+      PromotionOrmEntity,
     ]),
     MediaModule,
     SettingModule,

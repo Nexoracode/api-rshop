@@ -18,6 +18,7 @@ import { SideBanner } from './entities/side-banner.entity';
 import { Product } from '../product/entities/product.entity';
 import { Order } from '../order/entities/order.entity';
 import { runInTransaction } from 'src/common/helpers/transaction.helper';
+import { PromotionOrmEntity } from '../promotion/infrastructure/entities/promotion.orm-entity';
 
 @Injectable()
 export class HomePageService {
@@ -32,6 +33,8 @@ export class HomePageService {
     private readonly settingService: SettingService, // ✅ اضافه شد
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(PromotionOrmEntity)
+    private readonly promotionRepository: Repository<PromotionOrmEntity>,
     @InjectRepository(Brand)
     private readonly brandRepository: Repository<Brand>,
     private readonly dataSource: DataSource,
@@ -92,6 +95,10 @@ export class HomePageService {
           relations: ['media']
         });
 
+        const promotion = await this.promotionRepository.findOne({
+          where: { id: section.promotionId }
+        })
+
         return {
           id: section.id,
           title: section.title,
@@ -105,8 +112,9 @@ export class HomePageService {
           isActive: section.isActive,
           viewAllLink: section.viewAllLink,
           productsLimit: section.productsLimit,
-          startDate: section.startDate,
-          endDate: section.endDate,
+          promotionId: section.promotionId,
+          startDate: promotion ? promotion.startsAt : section.startDate,
+          endDate: promotion ? promotion.endsAt : section.endDate,
           category: category ? await this.formatCategory(category) : null,
           products: await Promise.all(products.map(product => this.formatProduct(product))),
         };

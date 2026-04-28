@@ -54,18 +54,18 @@ export class HomeSectionService {
 
   async findAll(): Promise<HomeSection[]> {
     // ✅ چک cache
-    const cached = await this.cacheService.getAllHomeSections();
-    if (cached) {
-      this.logger.log('✅ All home sections از cache');
-      return cached;
-    }
+    // const cached = await this.cacheService.getAllHomeSections();
+    // if (cached) {
+    //   this.logger.log('✅ All home sections از cache');
+    //   return cached;
+    // }
 
     const result = await this.homeSectionRepository.find({
       order: { displayOrder: 'ASC', createdAt: 'DESC' },
     });
 
     // ✅ ذخیره در cache
-    await this.cacheService.setAllHomeSections(result);
+    // await this.cacheService.setAllHomeSections(result);
     this.logger.log('💾 All home sections ذخیره شد در cache');
 
     return result;
@@ -288,8 +288,8 @@ export class HomeSectionService {
               for (const condition of promotion.conditions) {
                 if (condition.type === 'product' && condition.products) {
                   for (const prod of condition.products) {
-                    if (prod.productId) {
-                      productIds.push(prod.productId);
+                    if (prod.id) {
+                      productIds.push(prod.id);
                     }
                   }
                 }
@@ -299,6 +299,8 @@ export class HomeSectionService {
             if (productIds.length === 0) {
               return [];
             }
+            section.startDate = promotion.startsAt;
+            section.endDate = promotion.endsAt;
 
             return await this.productRepository.find({
               where: {

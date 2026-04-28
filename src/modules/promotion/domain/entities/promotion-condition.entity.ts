@@ -1,6 +1,7 @@
 import { ConditionType } from "../enums/condition-type.enum";
 
 export interface PromotionProductCondition {
+    id?: number;
     productId: number;
     variantIds?: number[];
 }
