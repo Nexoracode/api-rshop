@@ -112,6 +112,7 @@ export class HomePageService {
           isActive: section.isActive,
           viewAllLink: section.viewAllLink,
           productsLimit: section.productsLimit,
+          productIds: section.productIds,
           promotionId: section.promotionId,
           startDate: promotion ? promotion.startsAt : section.startDate,
           endDate: promotion ? promotion.endsAt : section.endDate,

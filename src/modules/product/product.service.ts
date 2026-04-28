@@ -277,7 +277,7 @@ export class ProductService implements IProductService {
             const category = await manager.findOne(Category, { where: { id: data.categoryId ?? product.categoryId } })
             if (!category) throw new NotFoundException('دسته بندی مورد نظر یافت نشد');
             var helper: HelperEntity | null;
-            if (data.helperId !== null) {
+            if (data.helperId) {
                 helper = await manager.findOne(HelperEntity, { where: { id: data.helperId } })
                 if (!helper) throw new NotFoundException('راهنمای سایز مورد نظر، یافت نشد.');
             }

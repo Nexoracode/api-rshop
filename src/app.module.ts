@@ -91,7 +91,7 @@ import { IconModule } from './modules/icon/icon.module';
     ShortUrlModule,
     StoreInfoModule,
     DashboardModule,
-    IconModule, // ✅ آمار داشبورد: بازدید، فروش، سفارش، مشتری جدید
+    IconModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
