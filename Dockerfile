@@ -1,36 +1,23 @@
-# Stage 1: Build the app
-FROM node:20-alpine AS builder
-
-WORKDIR /usr/src/app
-
-# کپی فایل‌های package
-COPY package*.json ./
-
-# نصب تمام وابستگی‌ها (شامل devDependencies که nest cli داره)
-RUN npm install
-
-# کپی سورس کد
-COPY . .
-
-# بیلد کردن پروژه (با nest cli)
-RUN npm run build
-
-# Stage 2: Production image
 FROM node:20-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# کپی فقط package.json ها
+# نصب وابستگی‌های مورد نیاز برای native modules
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 
-# نصب فقط وابستگی‌های پروداکشن
-RUN npm install --omit=dev
+# نصب همه چیز (شامل dev dependencies)
+RUN npm install
 
-# کپی فایل‌های بیلد شده از مرحله قبل
-COPY --from=builder /usr/src/app/dist ./dist
+COPY . .
 
-# پورت اپلیکیشن
+# بیلد پروژه
+RUN npm run build
+
+# پاک کردن devDependencies بعد از بیلد
+RUN npm prune --production
+
 EXPOSE 3000
 
-# اجرای اپلیکیشن (طبق script تو package.json)
 CMD ["node", "dist/src/main.js"]
