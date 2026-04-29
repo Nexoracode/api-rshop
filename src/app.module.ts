@@ -46,6 +46,7 @@ import { ShortUrlModule } from './modules/short-url/short-url.module';
 import { StoreInfoModule } from './modules/store-info/store-info.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { IconModule } from './modules/icon/icon.module';
+import { AmadastModule } from './modules/amadast/amadast.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { IconModule } from './modules/icon/icon.module';
     StoreInfoModule,
     DashboardModule,
     IconModule,
+    AmadastModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],

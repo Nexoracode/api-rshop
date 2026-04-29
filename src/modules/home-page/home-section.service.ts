@@ -173,6 +173,7 @@ export class HomeSectionService {
       }
     }
 
+
     const section = await this.findOne(id);
     Object.assign(section, updateDto);
     const result = await this.homeSectionRepository.save(section);
