@@ -1,18 +1,28 @@
-FROM node:20
+# Stage 1: Build the app
+FROM node:20-alpine AS builder
 
-RUN echo "=== Checking Node and npm ===" && \
-    which node && \
-    node --version && \
-    which npm && \
-    npm --version || echo "npm not found!"
+WORKDIR /usr/src/app
 
-WORKDIR /app
 COPY package*.json ./
-RUN ls -la && cat package.json
-
-RUN npm install || echo "npm install failed!"
+# RUN npm config set registry https://package-mirror.liara.ir/repository/npm/
+RUN npm install
 
 COPY . .
-RUN npm run build || echo "npm run build failed!"
+# این خط اپلیکیشن را بیلد می‌کند
+RUN npm run build
 
-CMD ["node", "dist/src/main.js"]
+# Stage 2: Create the production image
+FROM node:20-alpine  
+
+WORKDIR /usr/src/app
+
+# # فقط فایل‌های مورد نیاز پروداکشن را کپی کنید
+COPY package*.json ./
+# RUN npm config set registry https://package-mirror.liara.ir/repository/npm/
+RUN npm install --only=production
+
+# فایل‌های بیلد شده را از مرحله قبل کپی کنید
+COPY --from=builder /usr/src/app/dist ./dist
+
+# اپلیکیشن بیلد شده را اجرا کنید
+CMD [ "node", "dist/src/main.js" ]
