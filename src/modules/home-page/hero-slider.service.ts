@@ -47,7 +47,7 @@ export class HeroSliderService {
 
     // لاجیک اصلی (بدون تغییر)
     const result = await this.heroSliderRepository.find({
-      order: { displayOrder: 'ASC', createdAt: 'DESC' },
+      order: { displayOrder: 'ASC' },
     });
 
     // ✅ ذخیره در cache
@@ -68,7 +68,7 @@ export class HeroSliderService {
     // لاجیک اصلی (بدون تغییر)
     const result = await this.heroSliderRepository.find({
       where: { isActive: true, },
-      order: { displayOrder: 'ASC', createdAt: 'DESC' },
+      order: { displayOrder: 'ASC' },
     });
 
     // ✅ ذخیره در cache
