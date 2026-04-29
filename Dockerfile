@@ -1,15 +1,12 @@
 # Stage 1: Build the app
 FROM node:20-alpine AS builder
 
-# اضافه کردن PATH صریح
-ENV PATH=/usr/src/app/node_modules/.bin:$PATH
-
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-# نصب npm به صورت صریح (بعضی وقتا کمک می‌کنه)
-RUN npm install -g npm@latest && npm install
+# فقط npm install ساده، بدون نصب مجدد npm
+RUN npm install
 
 COPY . .
 RUN npm run build
@@ -17,14 +14,12 @@ RUN npm run build
 # Stage 2: Create the production image
 FROM node:20-alpine  
 
-# اضافه کردن PATH صریح برای مرحله پروداکشن
-ENV PATH=/usr/src/app/node_modules/.bin:$PATH
-
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --only=production
+# فقط نصب وابستگی‌های پروداکشن
+RUN npm install --omit=dev
 
 COPY --from=builder /usr/src/app/dist ./dist
 
