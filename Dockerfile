@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-# RUN npm config set registry https://package-mirror.liara.ir/repository/npm/
+RUN npm config set registry https://package-mirror.liara.ir/repository/npm
 RUN npm install
 
 COPY . .
@@ -18,7 +18,7 @@ WORKDIR /usr/src/app
 
 # # فقط فایل‌های مورد نیاز پروداکشن را کپی کنید
 COPY package*.json ./
-# RUN npm config set registry https://package-mirror.liara.ir/repository/npm/
+RUN npm config set registry https://package-mirror.liara.ir/repository/npm
 RUN npm install --only=production
 
 # فایل‌های بیلد شده را از مرحله قبل کپی کنید
