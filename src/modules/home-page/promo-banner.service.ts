@@ -4,7 +4,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual, MoreThanOrEqual, IsNull } from 'typeorm';
+import { Repository, LessThanOrEqual, MoreThanOrEqual, IsNull, MoreThan } from 'typeorm';
 import { PromoBanner } from './entities/promo-banner.entity';
 import { CreatePromoBannerDto, UpdatePromoBannerDto } from './dto/promo-banner.dto';
 import { HomePageCacheService } from './cache';
@@ -46,7 +46,7 @@ export class PromoBannerService {
         const nextOrder = lastAttribute.length ? lastAttribute[0].displayOrder + 1 : 1;
         const saved = await this.promoBannerRepo.save({
             ...banner,
-            sortOrder: nextOrder,
+            displayOrder: nextOrder,
         });
         // ✅ پاک کردن cache
         await this.cacheService.clearPromoBannersCache();
@@ -60,11 +60,11 @@ export class PromoBannerService {
      * لیست تمام بنرها (Admin)
      */
     async findAll() {
-        const cached = await this.cacheService.getAllPromoBanner();
-        if (cached) {
-            this.logger.log('✅ All promo banner از cache');
-            return cached;
-        }
+        // const cached = await this.cacheService.getAllPromoBanner();
+        // if (cached) {
+        //     this.logger.log('✅ All promo banner از cache');
+        //     return cached;
+        // }
         const banners = await this.promoBannerRepo.find({
             order: {
                 displayOrder: 'DESC',
@@ -98,6 +98,11 @@ export class PromoBannerService {
      * فقط یک بنر با بالاترین اولویت
      */
     async findAllActive() {
+        const cached = await this.cacheService.getAllPromoBanner();
+        if (cached) {
+            this.logger.log('✅ All promo banner از cache');
+            return cached;
+        }
         const now = new Date();
         const banners = await this.promoBannerRepo.find({
             where: {
@@ -193,7 +198,23 @@ export class PromoBannerService {
      */
     async remove(id: number): Promise<void> {
         const banner = await this.findOne(id);
+        const deletedOrder = banner.displayOrder;
+
+        // حذف بنر
         await this.promoBannerRepo.remove(banner);
+
+        // دریافت بنرهایی که ترتیب بالاتری دارند
+        const remainingBanners = await this.promoBannerRepo.find({
+            where: { displayOrder: MoreThan(deletedOrder) },
+            order: { displayOrder: 'ASC' }
+        });
+
+        // به‌روزرسانی ترتیب آنها
+        for (const item of remainingBanners) {
+            item.displayOrder -= 1;
+            await this.promoBannerRepo.save(item);
+        }
+
         await this.cacheService.clearPromoBannersCache(id);
         this.logger.log(`🗑️ promo banner ${id} cache پاک شد بعد از delete`);
     }
