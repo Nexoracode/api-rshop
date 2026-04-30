@@ -12,6 +12,7 @@ import {
     PromotionLimitReachedException,
     PromotionNotStartedException,
 } from '../../domain/exceptions/promotion.exceptions';
+import { PromotionType } from '../../domain/enums/promotion-type.enum';
 
 @Injectable()
 export class CheckPromotionUseCase {
@@ -79,9 +80,19 @@ export class CheckPromotionUseCase {
             promotions = [promo];
             this.logger.log(`Found promotion by code: ${dto.code} (ID: ${promo.id})`);
         } else {
-            // پیدا کردن تمام پروموشن‌های فعال
-            promotions = await this.repo.findActiveForOrder(order);
-            this.logger.log(`Found ${promotions.length} active promotions for user`);
+            // پیدا کردن پروموشن‌های فعال غیر کوپن (COUPON نیاز به code دارد)
+            const allActive = await this.repo.findActiveForOrder(order);
+
+            // ✅ لایه دفاعی: اطمینان از حذف کامل COUPON ها در صورت عدم ارسال code
+            promotions = allActive.filter(p => p.type !== PromotionType.COUPON);
+
+            if (allActive.length !== promotions.length) {
+                this.logger.warn(
+                    `Filtered out ${allActive.length - promotions.length} COUPON promotion(s) from auto-apply list for user ${dto.userId}`
+                );
+            }
+
+            this.logger.log(`Found ${promotions.length} active non-coupon promotions for user`);
         }
 
         // اعمال پروموشن‌ها

@@ -20,6 +20,7 @@ import { User } from 'src/modules/user/entities/user.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { VariantProduct } from 'src/modules/variant-product/entities/variant-product.entity';
 import { ConditionType } from '../../domain/enums/condition-type.enum';
+import { PromotionType } from '../../domain/enums/promotion-type.enum';
 import { ProductMapper } from 'src/modules/product/mappers/product.mapper';
 
 @Injectable()
@@ -269,7 +270,8 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
     }
 
     /**
-     * دریافت پروموشن‌های فعال برای سفارش
+     * دریافت پروموشن‌های فعال برای سفارش (بدون نیاز به کد)
+     * ✅ پروموشن‌های COUPON که نیاز به code دارن حذف می‌شن
      */
     async findActiveForOrder(order: OrderPreview): Promise<Promotion[]> {
         const now = new Date();
@@ -280,7 +282,9 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
             .leftJoinAndSelect('p.actions', 'a')
             .where('p.isActive = :isActive', { isActive: true })
             .andWhere('p.startsAt <= :now', { now })
-            .andWhere('p.endsAt >= :now', { now });
+            .andWhere('p.endsAt >= :now', { now })
+            // ✅ کوپن‌ها باید با code وارد شوند، نه به صورت خودکار
+            .andWhere('p.type != :couponType', { couponType: PromotionType.COUPON });
 
         // فیلتر بر اساس userIds
         qb.andWhere(`
@@ -296,7 +300,7 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
         const entities = await qb.getMany();
 
         this.logger.debug(
-            `Found ${entities.length} active promotions for user ${order.userId}`,
+            `Found ${entities.length} active promotions (non-coupon) for user ${order.userId}`,
         );
 
         return entities.map(PromotionMapper.fromOrmToDomain);
