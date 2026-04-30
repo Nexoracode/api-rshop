@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { SideBanner, BannerPosition } from './entities/side-banner.entity';
 import { CreateSideBannerDto, UpdateSideBannerDto } from './dto/side-banner.dto';
 import { HomePageCacheService } from './cache/home-page-cache.service';
@@ -116,7 +116,21 @@ export class SideBannerService {
 
   async remove(id: number): Promise<void> {
     const banner = await this.findOne(id);
+    const deletedOrder = banner.displayOrder;
     await this.sideBannerRepository.remove(banner);
+
+    // حذف بنر
+    // دریافت بنرهایی که ترتیب بالاتری دارند
+    const remainingBanners = await this.sideBannerRepository.find({
+      where: { displayOrder: MoreThan(deletedOrder) },
+      order: { displayOrder: 'ASC' }
+    });
+
+    // به‌روزرسانی ترتیب آنها
+    for (const item of remainingBanners) {
+      item.displayOrder -= 1;
+      await this.sideBannerRepository.save(item);
+    }
 
     // ✅ پاک کردن cache با ID
     await this.cacheService.clearSideBannersCache(id);
