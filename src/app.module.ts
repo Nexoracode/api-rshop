@@ -47,6 +47,7 @@ import { StoreInfoModule } from './modules/store-info/store-info.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { IconModule } from './modules/icon/icon.module';
 import { AmadastModule } from './modules/amadast/amadast.module';
+import { LocationModule } from './modules/location/location.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { AmadastModule } from './modules/amadast/amadast.module';
     DashboardModule,
     IconModule,
     AmadastModule,
+    LocationModule,
   ],
   controllers: [AppController, HelperController],
   providers: [AppService, CatalogImportService],
