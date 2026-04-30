@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { HeroSlider } from './entities/hero-slider.entity';
 import { CreateHeroSliderDto, UpdateHeroSliderDto } from './dto/hero-slider.dto';
 import { HomePageCacheService } from './cache/home-page-cache.service'; // ✅ اضافه شد
@@ -116,6 +116,19 @@ export class HeroSliderService {
     // لاجیک اصلی (بدون تغییر)
     const slider = await this.findOne(id);
     await this.heroSliderRepository.remove(slider);
+    const deletedOrder = slider.displayOrder;
+    // حذف بنر    
+    // دریافت بنرهایی که ترتیب بالاتری دارند
+    const remainingBanners = await this.heroSliderRepository.find({
+      where: { displayOrder: MoreThan(deletedOrder) },
+      order: { displayOrder: 'ASC' }
+    });
+
+    // به‌روزرسانی ترتیب آنها
+    for (const item of remainingBanners) {
+      item.displayOrder -= 1;
+      await this.heroSliderRepository.save(item);
+    }
 
     // ✅ پاک کردن cache
     await this.cacheService.clearHeroSlidersCache(id);
