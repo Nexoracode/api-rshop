@@ -72,7 +72,7 @@ export class SuccessfulPaymentHandler {
     // ✅ Abandon کردن سبد خرید با error handling
     try {
       await this.cardStatusService.abandonCart(order.user.id, manager);
-    } catch (error) {
+    } catch (error: any) {
       // ⚠️ فقط لاگ میکنیم، transaction را fail نمیکنیم
       this.logger.error(
         `Failed to abandon cart for user ${order.user.id}`,
@@ -124,7 +124,7 @@ export class SuccessfulPaymentHandler {
       this.logger.log(
         `Incremented usage count for ${promotionIds.length} promotion(s) in order ${order.id}`,
       );
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Failed to increment promotion usage for order ${order.id}`,
         error.stack,
@@ -142,7 +142,7 @@ export class SuccessfulPaymentHandler {
         new OrderPaidEvent(order.id, payment.id, order.user.id),
       );
       this.logger.log(`🎉 Event 'order.paid' emitted for order ${order.id}`);
-    } catch (error) {
+    } catch (error: any) {
       // اگر Event Listener مشکل داشت، پرداخت باز هم موفق است
       this.logger.error(
         `Failed to emit order.paid event for order ${order.id}`,
@@ -176,7 +176,7 @@ export class SuccessfulPaymentHandler {
         refId,
         invoice!.createdAt,
       );
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(`Failed to create invoice for order ${order.id}`, e);
 
       // اگر فاکتور صادر نشد، پرداخت همچنان موفق است

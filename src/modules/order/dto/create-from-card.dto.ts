@@ -8,7 +8,7 @@ export class CreateOrderFromCardDto {
         description: 'شناسه آدرس انتخاب شده برای سفارش',
     })
     @IsInt()
-    addressId: number;
+    addressId!: number;
 
     @ApiPropertyOptional({
         example: 'سفارش برای هدیه پیچیده شود',
@@ -20,7 +20,6 @@ export class CreateOrderFromCardDto {
 
     @ApiPropertyOptional({
         name: 'promotion_code',
-        example: 'WINTER15',
         description: 'کد تخفیف مربوط به پروموشن (اختیاری)',
     })
     @IsOptional()

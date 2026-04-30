@@ -173,7 +173,7 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                 enrichedCondition.categories = (condition.categoryIds || [])
                     .map((cId: number) => categoryMap.get(cId))
                     .filter(Boolean)
-                    .map((c: Category) => ({
+                    .map((c: any) => ({
                         id: c.id,
                         title: c.title,
                         slug: c.slug,
@@ -192,7 +192,7 @@ export class PromotionRepositoryImpl extends PromotionRepoInterface {
                     enrichedCondition.users = condition.userIds
                         .map((uId: number) => userMap.get(uId))
                         .filter(Boolean)
-                        .map((u: User) => ({
+                        .map((u: any) => ({
                             id: u.id,
                             firstName: u.firstName,
                             lastName: u.lastName,

@@ -386,7 +386,6 @@ export class OrderService {
                         relations: ['product', 'attributes', 'attributes.value']
                     });
                     if (!variant || variant.stock < ci.quantity) {
-                        const findAttr = variant?.attributes.find((v) => v.id === 1)?.id;
                         throw new BadRequestException(
                             `موجودی ${variant?.product.name} ( ${variant?.attributes.map((a) => a.value.value)} ) به اتمام رسید`,
                         );
@@ -397,7 +396,7 @@ export class OrderService {
                     });
                     if (!product || product.stock < ci.quantity) {
                         throw new BadRequestException(
-                            `موجودی محصول "${product?.name || ci.product.id}" کافی نیست`
+                            `موجودی محصول "${product?.name || ci.product.id}" به اتمام رسید.`
                         );
                     }
                 }
@@ -411,14 +410,17 @@ export class OrderService {
                     user: { id: user.id },
                     status: OrderStatus.START_ORDER
                 },
-                relations: ['user', 'address', "items", 'giftWrapping'],
             });
+            if (existingOrder) {
+                await orderRepo.delete({ id: existingOrder.id });
+            }
 
             const shippingCost = await this.calculateShippingCost(user, address, card.items);
             const previousOrders = await orderRepo.count({
                 where: { user: { id: user.id } }
             });
             const isFirstOrder = previousOrders === 0;
+            console.log('promotion code => ', dto.promotionCode);
 
             const promotionResult = await this.promotionCheck.execute({
                 userId: user.id,
@@ -447,40 +449,40 @@ export class OrderService {
             const discountTotal = Number(productDiscount) + Number(promotionDiscountAmount);
             const finalTotal = card.subtotal - discountTotal + finalShippingCost + giftWrappingCost;
 
-            if (existingOrder) {
-                existingOrder.subtotal = card.subtotal;
-                existingOrder.discountTotal = discountTotal;
-                existingOrder.total = finalTotal;
-                existingOrder.promotionCode = dto.promotionCode ?? null;
-                existingOrder.promotionDiscountAmount = promotionDiscountAmount;
-                existingOrder.promotionDetails = promotionDetails;
-                existingOrder.shippingCost = finalShippingCost;
-                existingOrder.note = dto.note;
-                existingOrder.address = address;
-                existingOrder.isGift = dto.isGift ?? false;
-                existingOrder.giftWrappingId = dto.giftWrappingId ?? null;
-                existingOrder.giftWrappingCost = giftWrappingCost;
-                existingOrder.giftMessage = dto.giftMessage ?? null;
+            // if (existingOrder) {
+            //     existingOrder.subtotal = card.subtotal;
+            //     existingOrder.discountTotal = discountTotal;
+            //     existingOrder.total = finalTotal;
+            //     existingOrder.promotionCode = dto.promotionCode ?? null;
+            //     existingOrder.promotionDiscountAmount = promotionDiscountAmount;
+            //     existingOrder.promotionDetails = promotionDetails;
+            //     existingOrder.shippingCost = finalShippingCost;
+            //     existingOrder.note = dto.note;
+            //     existingOrder.address = address;
+            //     existingOrder.isGift = dto.isGift ?? false;
+            //     existingOrder.giftWrappingId = dto.giftWrappingId ?? null;
+            //     existingOrder.giftWrappingCost = giftWrappingCost;
+            //     existingOrder.giftMessage = dto.giftMessage ?? null;
 
-                await orderItemRepo.delete({ order: { id: existingOrder.id } });
-                for (const ci of card.items) {
-                    const item = orderItemRepo.create({
-                        order: existingOrder,
-                        product: ci.product,
-                        variant: ci.variant || null,
-                        quantity: ci.quantity,
-                        unitPrice: ci.unitPrice,
-                        discount: ci.discount,
-                        lineTotal: ci.lineTotal,
-                    });
-                    await orderItemRepo.save(item);
-                }
+            //     await orderItemRepo.delete({ order: { id: existingOrder.id } });
+            //     for (const ci of card.items) {
+            //         const item = orderItemRepo.create({
+            //             order: existingOrder,
+            //             product: ci.product,
+            //             variant: ci.variant || null,
+            //             quantity: ci.quantity,
+            //             unitPrice: ci.unitPrice,
+            //             discount: ci.discount,
+            //             lineTotal: ci.lineTotal,
+            //         });
+            //         await orderItemRepo.save(item);
+            //     }
 
-                // ✅ پاک کردن cache
-                await this.orderCacheService.clearCacheAfterCreate(user.id);
+            //     // ✅ پاک کردن cache
+            //     await this.orderCacheService.clearCacheAfterCreate(user.id);
 
-                return OrderMapperNew.toDetail(existingOrder);
-            }
+            //     return OrderMapperNew.toDetail(existingOrder);
+            // }
 
             const newOrder = orderRepo.create({
                 user,

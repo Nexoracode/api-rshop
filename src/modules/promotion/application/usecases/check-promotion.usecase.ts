@@ -20,7 +20,7 @@ export class CheckPromotionUseCase {
     constructor(
         private readonly repo: PromotionRepository,
         private readonly engine: PromotionEngine,
-    ) {}
+    ) { }
 
     async execute(dto: CheckPromotionDto & { isFirstOrder: boolean }) {
         this.logger.log(
@@ -43,7 +43,9 @@ export class CheckPromotionUseCase {
         let promotions;
 
         // اگر کد تخفیف مشخص شده
+        console.log(dto.code);
         if (dto.code) {
+            console.log('checking promotion code => ', dto.code);
             const promo = await this.repo.findActiveByCode(dto.code);
 
             if (!promo) {
