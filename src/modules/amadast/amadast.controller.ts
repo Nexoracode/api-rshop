@@ -19,4 +19,9 @@ export class AmadastController {
   async getCities(@Query('province_id') provinceId: string) {
     return this.amadastService.getCities(provinceId);
   }
+
+  @Post('createOrder')
+  async createOrder() {
+    return this.amadastService.createOrder();
+  }
 }
