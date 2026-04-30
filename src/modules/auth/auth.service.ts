@@ -13,6 +13,7 @@ import { IAuthResponse } from './interfaces/auth-response.interface';
 import { AuthMapper } from './mappers/auth.mapper';
 import { LoginDto } from './dto/login.dto';
 import { OtpService } from '../otps/otps.service';
+import { Role } from 'src/common/enums/role.enum';
 @Injectable()
 export class AuthService implements IAuthService {
     constructor(
@@ -55,7 +56,7 @@ export class AuthService implements IAuthService {
     async logout(userId: number, res: Response) {
         const user = await this.userRepo.findOne({ where: { id: userId } });
         if (!user) throw new NotFoundException('کاربر یافت نشد.');
-        user.apiToken = null;
+        if (user.role === Role.USER) user.apiToken = null;
         this.jwtUtil.removeTokenFromCookie(res, JwtTypeToken.ACCESS)
         this.jwtUtil.removeTokenFromCookie(res, JwtTypeToken.REFRESH)
         await this.userRepo.save(user);

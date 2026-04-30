@@ -222,7 +222,10 @@ export class ProductService implements IProductService {
             const brand = await manager.findOne(Brand, { where: { id: data.brandId } })
             if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
             const product = manager.create(Product, data);
-            if (!data.requiresPreparation) {
+            console.log(data.preparationDays);
+            console.log(data.requiresPreparation);
+            console.log(data.isSameDayShipping);
+            if (!data.requiresPreparation && data.requiresPreparation == undefined) {
                 product.preparationDays = null;
             }
             const media = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
@@ -249,7 +252,7 @@ export class ProductService implements IProductService {
                         new ProductCreatedEvent(savedProduct.id, data.stock, userId || 1),
                     );
                     this.logger.log(`🎉 Event 'product.created' emitted for product ${savedProduct.id} with stock ${data.stock}`);
-                } catch (error) {
+                } catch (error: any) {
                     this.logger.error(`Failed to emit product.created event for product ${savedProduct.id}`, error.stack);
                 }
             }
@@ -288,11 +291,12 @@ export class ProductService implements IProductService {
             if (!brand) throw new NotFoundException('برند مورد نظر یافت نشد');
 
             const oldStock = product.stock;
+            console.log(data.preparationDays);
+            console.log(data.requiresPreparation);
+            console.log(data.isSameDayShipping);
 
             const updated = manager.merge(Product, product, data);
-            if (!data.requiresPreparation) {
-                updated.preparationDays = null;
-            }
+
 
             if (data.mediaPinnedId && data.mediaPinnedId !== updated.mediaPinnedId) {
                 const newmediaPinnedId = await manager.findOne(Media, { where: { id: data.mediaPinnedId } });
@@ -353,7 +357,7 @@ export class ProductService implements IProductService {
                         new ProductStockUpdatedEvent(savedProduct.id, oldStock, data.stock, userId || 1),
                     );
                     this.logger.log(`🎉 Event 'product.stock.updated' emitted for product ${savedProduct.id}: ${oldStock} → ${data.stock}`);
-                } catch (error) {
+                } catch (error: any) {
                     this.logger.error(`Failed to emit product.stock.updated event for product ${savedProduct.id}`, error.stack);
                 }
             }
@@ -619,7 +623,7 @@ export class ProductService implements IProductService {
             this.logger.log(`✅ Similar products برای ${productId} ذخیره شد`);
 
             return result;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`❌ خطا در پیدا کردن similar products:`, error);
             throw error;
         }

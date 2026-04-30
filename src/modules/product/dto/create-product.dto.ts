@@ -7,19 +7,19 @@ export class CreateProductDto {
 
     @ApiProperty()
     @IsString()
-    name: string;
+    name!: string;
 
     @ApiProperty()
     @IsNumber()
-    price: number;
+    price!: number;
 
     @ApiProperty()
     @IsInt()
-    stock: number;
+    stock!: number;
 
     @ApiProperty()
     @IsString()
-    sku: string;
+    sku!: string;
 
     @ApiProperty({ name: 'is_limited_stock', default: false })
     @IsOptional()
@@ -28,7 +28,7 @@ export class CreateProductDto {
 
     @ApiProperty({ name: 'category_id', default: 0 })
     @IsInt()
-    categoryId: number;
+    categoryId!: number;
 
     @ApiProperty({ name: 'discount_amount', default: 0 })
     @IsOptional()
@@ -57,24 +57,24 @@ export class CreateProductDto {
 
     @ApiProperty({ name: 'weight_unit', enum: WeightUnit, default: WeightUnit.KG })
     @IsEnum(WeightUnit)
-    weightUnit: WeightUnit
+    weightUnit!: WeightUnit;
 
     @ApiProperty({ name: 'is_same_day_shipping', default: false })
     @IsOptional()
     @IsBoolean()
-    isSameDayShipping: boolean;
+    isSameDayShipping!: boolean;
 
     @ApiProperty({ name: 'requires_preparation', default: false })
     @IsOptional()
     @IsBoolean()
-    requiresPreparation: boolean;
+    requiresPreparation!: boolean;
 
     @ApiProperty({ name: 'preparation_days', default: 0 })
     @IsOptional()
     @ValidateIf(o => o.requiresPreparation === true)
     @IsInt()
     @Min(1)
-    preparationDays: number;
+    preparationDays!: number;
 
     @ApiProperty()
     @IsOptional()
