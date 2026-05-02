@@ -14,7 +14,7 @@ export class RecentViewService {
   constructor(
     @InjectRepository(RecentView)
     private readonly repo: Repository<RecentView>,
-  ) {}
+  ) { }
 
   /**
    * ✅ افزودن محصول به بازدیدهای اخیر
@@ -47,13 +47,13 @@ export class RecentViewService {
         where: { userId: user.id, productId: dto.productId },
         relations: ['product'],
       });
-    } catch (error) {
+    } catch (error: any) {
       // اگه باز هم Duplicate Entry خورد (بعید!)، ignore کن
       if (error.code === 'ER_DUP_ENTRY') {
         this.logger.debug(
           `Duplicate entry ignored for user ${user.id}, product ${dto.productId}`
         );
-        
+
         // فقط update کن
         await this.repo.update(
           { userId: user.id, productId: dto.productId },
@@ -102,7 +102,7 @@ export class RecentViewService {
           `Cleaned up ${result.affectedRows} old recent views for user ${userId}`
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       // اگه cleanup با خطا مواجه شد، فقط لاگ کن (مهم نیست)
       this.logger.error(`Failed to cleanup old views for user ${userId}`, error.stack);
     }

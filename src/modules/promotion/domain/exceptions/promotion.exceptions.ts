@@ -1,83 +1,57 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 
-/**
- * پروموشن پیدا نشد
- */
 export class PromotionNotFoundException extends NotFoundException {
     constructor(identifier: string | number) {
         super({
-            message: `پروموشن با شناسه '${identifier}' یافت نشد`,
-            error: 'PROMOTION_NOT_FOUND',
-            statusCode: 404,
+            message: `کد تخفیف '${identifier}' وجود ندارد یا غیرفعال است.`,
+            reasonCode: 'PROMOTION_NOT_FOUND',
         });
     }
 }
 
-/**
- * کد تخفیف منقضی شده است
- */
 export class PromotionExpiredException extends BadRequestException {
     constructor(code: string) {
         super({
-            message: `کد تخفیف '${code}' منقضی شده است`,
-            error: 'PROMOTION_EXPIRED',
-            statusCode: 400,
+            message: `مدت اعتبار کد تخفیف '${code}' به پایان رسیده است.`,
+            reasonCode: 'PROMOTION_EXPIRED',
         });
     }
 }
 
-/**
- * محدودیت استفاده از کد تخفیف به پایان رسیده
- */
 export class PromotionLimitReachedException extends BadRequestException {
     constructor(code: string) {
         super({
-            message: `کد تخفیف '${code}' به حد مجاز استفاده رسیده است`,
-            error: 'PROMOTION_LIMIT_REACHED',
-            statusCode: 400,
+            message: `ظرفیت استفاده از کد تخفیف '${code}' تکمیل شده است.`,
+            reasonCode: 'USAGE_LIMIT_REACHED',
         });
     }
 }
 
-/**
- * کد تخفیف غیرفعال است
- */
 export class PromotionInactiveException extends BadRequestException {
     constructor(code: string) {
         super({
-            message: `کد تخفیف '${code}' غیرفعال است`,
-            error: 'PROMOTION_INACTIVE',
-            statusCode: 400,
+            message: `کد تخفیف '${code}' غیرفعال است.`,
+            reasonCode: 'PROMOTION_INACTIVE',
         });
     }
 }
 
-/**
- * کد تخفیف هنوز شروع نشده است
- */
 export class PromotionNotStartedException extends BadRequestException {
     constructor(code: string, startsAt: Date) {
         super({
-            message: `کد تخفیف '${code}' از تاریخ ${startsAt.toISOString()} فعال می‌شود`,
-            error: 'PROMOTION_NOT_STARTED',
-            statusCode: 400,
+            message: `کد تخفیف '${code}' هنوز فعال نشده است.`,
+            reasonCode: 'PROMOTION_NOT_STARTED',
+            meta: { startsAt },
         });
     }
 }
 
-/**
- * شرایط استفاده از پروموشن برآورده نشده
- */
-export class PromotionConditionsNotMetException extends BadRequestException {
-    constructor(code: string, reason?: string) {
-        const message = reason
-            ? `شرایط استفاده از کد تخفیف '${code}' برآورده نشده: ${reason}`
-            : `شرایط استفاده از کد تخفیف '${code}' برآورده نشده است`;
-
+export class PromotionConditionsNotMetException extends UnprocessableEntityException {
+    constructor(code: string, reason: string, reasonCode: string, meta?: Record<string, any>) {
         super({
-            message,
-            error: 'PROMOTION_CONDITIONS_NOT_MET',
-            statusCode: 400,
+            message: reason,
+            reasonCode,
+            meta: meta ?? null,
         });
     }
 }

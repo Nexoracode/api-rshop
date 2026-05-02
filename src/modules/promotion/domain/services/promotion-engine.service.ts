@@ -24,35 +24,37 @@ export class PromotionEngineService extends PromotionEngine {
         let totalDiscount = 0;
         let freeShipping = false;
 
-        const appliedPromotions: {
-            promotion: Promotion;
-            discountAmount: number;
-        }[] = [];
+        const appliedPromotions: PromotionApplyResult['appliedPromotions'] = [];
+        const rejectedPromotions: PromotionApplyResult['rejectedPromotions'] = [];
 
-        // مرتب‌سازی پروموشن‌ها بر اساس priority (اگر در آینده اضافه شد)
-        // در حال حاضر، به ترتیب دریافت شده اعمال می‌شوند
-        const sortedPromotions = [...promotions];
-
-        for (const promo of sortedPromotions) {
+        for (const promo of promotions) {
             const promotionId = `${promo.id} (${promo.code || promo.name})`;
 
-            // بررسی اعتبار
-            const isValid = await this.validator.isValid(order, promo);
-            if (!isValid) {
-                this.logger.debug(`Promotion ${promotionId} is not valid, skipping`);
+            // بررسی اعتبار با دریافت دلیل رد شدن
+            const validationResult = await this.validator.validate(order, promo);
+
+            if (!validationResult.valid) {
+                this.logger.debug(
+                    `Promotion ${promotionId} rejected: [${validationResult.reasonCode}] ${validationResult.reason}`,
+                );
+                rejectedPromotions.push({
+                    promotion: promo,
+                    reason: validationResult.reason!,
+                    reasonCode: validationResult.reasonCode!,
+                    meta: validationResult.meta,
+                });
                 continue;
             }
 
             let discountForThisPromo = 0;
 
-            // اعمال تمام Action های این پروموشن
             for (const action of promo.actions) {
                 switch (action.type) {
                     case ActionType.PERCENT_DISCOUNT:
                         const percentDiscount = (order.subtotal * (action.value ?? 0)) / 100;
                         discountForThisPromo += percentDiscount;
                         this.logger.debug(
-                            `Applied ${action.value}% discount (${percentDiscount} Rials) from promotion ${promotionId}`,
+                            `Applied ${action.value}% → ${percentDiscount} Rials from promotion ${promotionId}`,
                         );
                         break;
 
@@ -60,73 +62,51 @@ export class PromotionEngineService extends PromotionEngine {
                         const amountDiscount = action.value ?? 0;
                         discountForThisPromo += amountDiscount;
                         this.logger.debug(
-                            `Applied ${amountDiscount} Rials discount from promotion ${promotionId}`,
+                            `Applied ${amountDiscount} Rials from promotion ${promotionId}`,
                         );
                         break;
 
                     case ActionType.FREE_SHIPPING:
                         freeShipping = true;
-                        this.logger.debug(
-                            `Applied free shipping from promotion ${promotionId}`,
-                        );
+                        this.logger.debug(`Free shipping from promotion ${promotionId}`);
                         break;
 
                     case ActionType.NEXT_ORDER_COUPON:
-                        // این action فقط برای خرید بعدی است
-                        // در اینجا فقط لاگ می‌کنیم
-                        this.logger.debug(
-                            `Next order coupon will be issued from promotion ${promotionId}`,
-                        );
+                        this.logger.debug(`Next order coupon from promotion ${promotionId}`);
                         break;
 
                     default:
-                        this.logger.warn(
-                            `Unknown action type: ${action.type} in promotion ${promotionId}`,
-                        );
+                        this.logger.warn(`Unknown action type: ${action.type} in promotion ${promotionId}`);
                 }
             }
 
-            // ✅ اعمال سقف تخفیف (maxDiscountAmount)
+            // اعمال سقف تخفیف
             if (promo.maxDiscountAmount && promo.maxDiscountAmount > 0) {
                 if (discountForThisPromo > promo.maxDiscountAmount) {
                     this.logger.log(
-                        `Discount capped for promotion ${promotionId}: ${discountForThisPromo} -> ${promo.maxDiscountAmount}`
+                        `Discount capped for ${promotionId}: ${discountForThisPromo} → ${promo.maxDiscountAmount}`,
                     );
                     discountForThisPromo = promo.maxDiscountAmount;
                 }
             }
 
-            // اگر تخفیف یا free shipping اعمال شد
             if (discountForThisPromo > 0 || freeShipping) {
-                appliedPromotions.push({
-                    promotion: promo,
-                    discountAmount: discountForThisPromo,
-                });
-
-                this.logger.log(
-                    `Successfully applied promotion ${promotionId} with discount: ${discountForThisPromo}`,
-                );
+                appliedPromotions.push({ promotion: promo, discountAmount: discountForThisPromo });
+                this.logger.log(`Applied promotion ${promotionId}: discount=${discountForThisPromo}`);
             }
 
             totalDiscount += discountForThisPromo;
         }
 
-        // اطمینان از اینکه تخفیف کل از مبلغ سفارش بیشتر نباشد
         if (totalDiscount > order.subtotal) {
-            this.logger.warn(
-                `Total discount (${totalDiscount}) exceeds subtotal (${order.subtotal}), capping at subtotal`,
-            );
+            this.logger.warn(`Total discount capped at subtotal: ${totalDiscount} → ${order.subtotal}`);
             totalDiscount = order.subtotal;
         }
 
         this.logger.log(
-            `Final result for user ${order.userId}: discount=${totalDiscount}, freeShipping=${freeShipping}, appliedCount=${appliedPromotions.length}`,
+            `Result for user ${order.userId}: discount=${totalDiscount}, freeShipping=${freeShipping}, applied=${appliedPromotions.length}, rejected=${rejectedPromotions.length}`,
         );
 
-        return {
-            discount: totalDiscount,
-            freeShipping,
-            appliedPromotions,
-        };
+        return { discount: totalDiscount, freeShipping, appliedPromotions, rejectedPromotions };
     }
 }

@@ -438,9 +438,9 @@ export class OrderService {
             });
 
             const promotionDetails = promotionResult.appliedPromotions?.map(ap => ({
-                promotionId: ap.promotion.id!,
-                name: ap.promotion.name,
-                type: ap.promotion.type,
+                promotionId: ap.id!,
+                name: ap.name,
+                type: ap.type,
                 amount: ap.discountAmount,
             })) ?? [];
 

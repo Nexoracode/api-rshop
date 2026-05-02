@@ -21,22 +21,27 @@ export class AllExceptionsFilter implements ExceptionFilter {
         let status = HttpStatus.INTERNAL_SERVER_ERROR;
         let message = 'خطای داخلی سرور';
         let error = 'Internal Server Error';
+        let reasonCode: string | undefined;
+        let meta: any = null;
 
         if (exception instanceof HttpException) {
             status = exception.getStatus();
             const exceptionResponse = exception.getResponse();
 
-            if (typeof exceptionResponse === 'object') {
-                message = (exceptionResponse as any).message || message;
-                error = (exceptionResponse as any).error || error;
+            if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+                const res = exceptionResponse as any;
+                message = res.message || message;
+                error = res.error || error;
+                // ✅ فیلدهای اضافه رو هم منتقل می‌کنیم
+                reasonCode = res.reasonCode;
+                meta = res.meta ?? null;
             } else {
-                message = exceptionResponse;
+                message = exceptionResponse as string;
             }
         } else if (exception instanceof Error) {
             message = exception.message;
             error = exception.name;
 
-            // ✅ لاگ خطاهای Redis
             if (message.includes('Redis') || message.includes('ECONNREFUSED')) {
                 this.logger.error(`❌ [Redis Error] ${message}`);
                 message = 'خطا در اتصال به کش. لطفاً دوباره تلاش کنید';
@@ -48,14 +53,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
             exception instanceof Error ? exception.stack : ''
         );
 
-        // ✅ همیشه JSON برمی‌گردونه، نه HTML
-        response.status(status).json({
+        // ✅ ساخت body پاسخ — فیلدهای اختیاری فقط اگه مقدار داشتن اضافه میشن
+        const responseBody: Record<string, any> = {
             statusCode: status,
+            success: false,
             timestamp: new Date().toISOString(),
             path: request.url,
             method: request.method,
             message,
             error,
-        });
+        };
+
+        if (reasonCode) responseBody.reasonCode = reasonCode;
+        if (meta !== null) responseBody.meta = meta;
+
+        response.status(status).json(responseBody);
     }
 }

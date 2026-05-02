@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PromotionValidator } from '../interfaces/promotion-validator.interface';
+import { PromotionValidator, PromotionValidationResult } from '../interfaces/promotion-validator.interface';
 import { Promotion } from '../entities/promotion.entity';
 import { ConditionType } from '../enums/condition-type.enum';
 import { OrderPreview } from '../interfaces/promotion-repository.interface';
@@ -8,27 +8,37 @@ import { OrderPreview } from '../interfaces/promotion-repository.interface';
 export class PromotionValidatorService extends PromotionValidator {
     private readonly logger = new Logger(PromotionValidatorService.name);
 
-    async isValid(order: OrderPreview, promotion: Promotion): Promise<boolean> {
+    async validate(order: OrderPreview, promotion: Promotion): Promise<PromotionValidationResult> {
         const now = new Date();
         const promotionId = `${promotion.id} (${promotion.code || promotion.name})`;
 
         if (!promotion.isActive) {
             this.logger.debug(`Promotion ${promotionId} is inactive`);
-            return false;
+            return {
+                valid: false,
+                reason: 'این کد تخفیف غیرفعال است.',
+                reasonCode: 'PROMOTION_INACTIVE',
+            };
         }
 
         if (promotion.startsAt && promotion.startsAt > now) {
-            this.logger.debug(
-                `Promotion ${promotionId} has not started yet. Starts at: ${promotion.startsAt.toISOString()}`,
-            );
-            return false;
+            this.logger.debug(`Promotion ${promotionId} has not started yet.`);
+            return {
+                valid: false,
+                reason: `این کد تخفیف هنوز فعال نشده است.`,
+                reasonCode: 'PROMOTION_NOT_STARTED',
+                meta: { startsAt: promotion.startsAt },
+            };
         }
 
         if (promotion.endsAt && promotion.endsAt < now) {
-            this.logger.debug(
-                `Promotion ${promotionId} has expired. Ended at: ${promotion.endsAt.toISOString()}`,
-            );
-            return false;
+            this.logger.debug(`Promotion ${promotionId} has expired.`);
+            return {
+                valid: false,
+                reason: 'مدت اعتبار این کد تخفیف به پایان رسیده است.',
+                reasonCode: 'PROMOTION_EXPIRED',
+                meta: { endsAt: promotion.endsAt },
+            };
         }
 
         if (
@@ -36,33 +46,31 @@ export class PromotionValidatorService extends PromotionValidator {
             promotion.usageLimit > 0 &&
             promotion.usedCount >= promotion.usageLimit
         ) {
-            this.logger.debug(
-                `Promotion ${promotionId} has reached usage limit: ${promotion.usedCount}/${promotion.usageLimit}`,
-            );
-            return false;
+            this.logger.debug(`Promotion ${promotionId} usage limit reached.`);
+            return {
+                valid: false,
+                reason: 'ظرفیت استفاده از این کد تخفیف تکمیل شده است.',
+                reasonCode: 'USAGE_LIMIT_REACHED',
+            };
         }
 
+        // بررسی تمام شرایط
         for (const condition of promotion.conditions) {
-            const isConditionValid = await this.validateCondition(
-                order,
-                condition,
-                promotionId,
-            );
-
-            if (!isConditionValid) {
-                return false;
+            const conditionResult = this.validateCondition(order, condition, promotionId);
+            if (!conditionResult.valid) {
+                return conditionResult;
             }
         }
 
         this.logger.debug(`Promotion ${promotionId} is valid for user ${order.userId}`);
-        return true;
+        return { valid: true };
     }
 
-    private async validateCondition(
+    private validateCondition(
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): Promise<boolean> {
+    ): PromotionValidationResult {
         switch (condition.type) {
             case ConditionType.USER:
                 return this.validateUserCondition(order, condition, promotionId);
@@ -80,10 +88,8 @@ export class PromotionValidatorService extends PromotionValidator {
                 return this.validateFirstOrderCondition(order, condition, promotionId);
 
             default:
-                this.logger.warn(
-                    `Unknown condition type: ${condition.type} for promotion ${promotionId}`,
-                );
-                return true;
+                this.logger.warn(`Unknown condition type: ${condition.type} for promotion ${promotionId}`);
+                return { valid: true };
         }
     }
 
@@ -91,100 +97,111 @@ export class PromotionValidatorService extends PromotionValidator {
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): boolean {
-        // فقط userIds (userId حذف شد)
+    ): PromotionValidationResult {
         if (condition.userIds && Array.isArray(condition.userIds) && condition.userIds.length > 0) {
             if (!condition.userIds.includes(order.userId)) {
-                this.logger.debug(
-                    `Promotion ${promotionId} condition failed: User ${order.userId} not in allowed users list`,
-                );
-                return false;
+                this.logger.debug(`Promotion ${promotionId}: user ${order.userId} not in allowed list`);
+                return {
+                    valid: false,
+                    reason: 'این کد تخفیف برای حساب کاربری شما معتبر نیست.',
+                    reasonCode: 'USER_NOT_ELIGIBLE',
+                };
             }
         }
-
-        return true;
+        return { valid: true };
     }
 
     private validateProductCondition(
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): boolean {
-        if (!condition.products?.length) return true;
+    ): PromotionValidationResult {
+        if (!condition.products?.length) return { valid: true };
 
         const match = condition.products.some((rule: any) => {
             return order.items.some((item) => {
                 if (item.productId !== rule.productId) return false;
-
-                if (!rule.variantIds?.length) {
-                    return true;
-                }
-
+                if (!rule.variantIds?.length) return true;
                 if (!item.variantId) return false;
                 return rule.variantIds.includes(item.variantId);
             });
         });
 
         if (!match) {
-            this.logger.debug(
-                `Promotion ${promotionId} condition failed: Required products/variants not found in order`,
-            );
+            this.logger.debug(`Promotion ${promotionId}: required products not in order`);
+            return {
+                valid: false,
+                reason: 'محصولات مورد نیاز برای استفاده از این کد تخفیف در سبد خرید شما وجود ندارد.',
+                reasonCode: 'REQUIRED_PRODUCTS_NOT_IN_CART',
+            };
         }
 
-        return match;
+        return { valid: true };
     }
 
     private validateCategoryCondition(
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): boolean {
-        if (!condition.categoryIds?.length) return true;
+    ): PromotionValidationResult {
+        if (!condition.categoryIds?.length) return { valid: true };
 
         const hasCategory = order.items.some((item) =>
             item.categoryId ? condition.categoryIds.includes(item.categoryId) : false,
         );
 
         if (!hasCategory) {
-            this.logger.debug(
-                `Promotion ${promotionId} condition failed: Required categories not found in order`,
-            );
+            this.logger.debug(`Promotion ${promotionId}: required categories not in order`);
+            return {
+                valid: false,
+                reason: 'این کد تخفیف فقط برای دسته‌بندی‌های خاصی معتبر است که در سبد خرید شما وجود ندارد.',
+                reasonCode: 'REQUIRED_CATEGORIES_NOT_IN_CART',
+            };
         }
 
-        return hasCategory;
+        return { valid: true };
     }
 
     private validateMinAmountCondition(
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): boolean {
-        if (typeof condition.minAmount !== 'number') return true;
+    ): PromotionValidationResult {
+        if (typeof condition.minAmount !== 'number') return { valid: true };
 
-        const isValid = order.subtotal >= condition.minAmount;
-
-        if (!isValid) {
+        if (order.subtotal < condition.minAmount) {
             this.logger.debug(
-                `Promotion ${promotionId} condition failed: Order subtotal (${order.subtotal}) is less than min amount (${condition.minAmount})`,
+                `Promotion ${promotionId}: subtotal ${order.subtotal} < minAmount ${condition.minAmount}`,
             );
+            return {
+                valid: false,
+                reason: `حداقل مبلغ خرید برای استفاده از این کد تخفیف ${condition.minAmount.toLocaleString('fa-IR')} تومان است.`,
+                reasonCode: 'MIN_AMOUNT_NOT_MET',
+                meta: {
+                    minAmount: condition.minAmount,
+                    currentSubtotal: order.subtotal,
+                    remaining: condition.minAmount - order.subtotal,
+                },
+            };
         }
 
-        return isValid;
+        return { valid: true };
     }
 
     private validateFirstOrderCondition(
         order: OrderPreview,
         condition: any,
         promotionId: string,
-    ): boolean {
-        const isValid = order.isFirstOrder === true;
-
-        if (!isValid) {
-            this.logger.debug(
-                `Promotion ${promotionId} condition failed: Not user's first order`,
-            );
+    ): PromotionValidationResult {
+        if (!order.isFirstOrder) {
+            this.logger.debug(`Promotion ${promotionId}: not user's first order`);
+            return {
+                valid: false,
+                reason: 'این کد تخفیف فقط برای اولین خرید معتبر است.',
+                reasonCode: 'NOT_FIRST_ORDER',
+            };
         }
 
-        return isValid;
+        return { valid: true };
     }
 }
