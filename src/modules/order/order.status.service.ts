@@ -75,7 +75,7 @@ export class OrderStatusService {
             // );
 
             this.logger.log(`✅ پیامک یادآوری برای سفارش ${order.id} ارسال شد با لینک: ${shortLink}`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`❌ خطا در ارسال پیامک برای سفارش ${order.id}: ${error.message}`);
         }
     }

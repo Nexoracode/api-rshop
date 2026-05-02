@@ -309,81 +309,81 @@ export class CatalogQueryService {
     `,
     );
 
-    // ------------------------------------------
-    // ۲. ویژگی‌ها از product_attribute_values
-    // ------------------------------------------
-    const productAttrs = await this.dataSource.query(
-      `
-      SELECT DISTINCT
-        a.id AS attribute_id,
-        a.name AS attribute_name,
-        a.type AS attribute_type,
-        av.id AS attribute_value_id,
-        av.value AS attribute_value,
-        av.display_color AS attribute_value_color
-      FROM attributes a
-      INNER JOIN attribute_values av ON av.attribute_id = a.id
-      INNER JOIN product_attribute_values pav ON pav.value_id = av.id
-      INNER JOIN products p ON p.id = pav.product_id
-      WHERE p.is_active = 1
-        AND av.value IS NOT NULL
-    `,
-    );
+    // // ------------------------------------------
+    // // ۲. ویژگی‌ها از product_attribute_values
+    // // ------------------------------------------
+    // const productAttrs = await this.dataSource.query(
+    //   `
+    //   SELECT DISTINCT
+    //     a.id AS attribute_id,
+    //     a.name AS attribute_name,
+    //     a.type AS attribute_type,
+    //     av.id AS attribute_value_id,
+    //     av.value AS attribute_value,
+    //     av.display_color AS attribute_value_color
+    //   FROM attributes a
+    //   INNER JOIN attribute_values av ON av.attribute_id = a.id
+    //   INNER JOIN product_attribute_values pav ON pav.value_id = av.id
+    //   INNER JOIN products p ON p.id = pav.product_id
+    //   WHERE p.is_active = 1
+    //     AND av.value IS NOT NULL
+    // `,
+    // );
 
-    // ------------------------------------------
-    // ۳. ویژگی‌های واریانت از variant_attribute_values
-    // ------------------------------------------
-    const variantAttrs = await this.dataSource.query(
-      `
-      SELECT DISTINCT
-        a.id AS attribute_id,
-        a.name AS attribute_name,
-        a.type AS attribute_type,
-        av.id AS attribute_value_id,
-        av.value AS attribute_value,
-        av.display_color AS attribute_value_color
-      FROM attributes a
-      INNER JOIN attribute_values av ON av.attribute_id = a.id
-      INNER JOIN variant_attribute_values vav ON vav.value_id = av.id
-      INNER JOIN variants_product v ON v.id = vav.variant_id
-      INNER JOIN products p ON p.id = v.product_id
-      WHERE p.is_active = 1
-        AND av.value IS NOT NULL
-    `,
-    );
+    // // ------------------------------------------
+    // // ۳. ویژگی‌های واریانت از variant_attribute_values
+    // // ------------------------------------------
+    // const variantAttrs = await this.dataSource.query(
+    //   `
+    //   SELECT DISTINCT
+    //     a.id AS attribute_id,
+    //     a.name AS attribute_name,
+    //     a.type AS attribute_type,
+    //     av.id AS attribute_value_id,
+    //     av.value AS attribute_value,
+    //     av.display_color AS attribute_value_color
+    //   FROM attributes a
+    //   INNER JOIN attribute_values av ON av.attribute_id = a.id
+    //   INNER JOIN variant_attribute_values vav ON vav.value_id = av.id
+    //   INNER JOIN variants_product v ON v.id = vav.variant_id
+    //   INNER JOIN products p ON p.id = v.product_id
+    //   WHERE p.is_active = 1
+    //     AND av.value IS NOT NULL
+    // `,
+    // );
 
     // ------------------------------------------
     // ۴. ترکیب نتایج product + variant و حذف تکراری‌ها
     // ------------------------------------------
-    const attributesRaw = [...productAttrs, ...variantAttrs];
-    const attributeMap = new Map<
-      number,
-      { id: number; name: string; type: string; values: AttributeValue[] }
-    >();
+    // const attributesRaw = [...productAttrs, ...variantAttrs];
+    // const attributeMap = new Map<
+    //   number,
+    //   { id: number; name: string; type: string; values: AttributeValue[] }
+    // >();
 
-    for (const row of attributesRaw) {
-      if (!attributeMap.has(row.attribute_id)) {
-        attributeMap.set(row.attribute_id, {
-          id: row.attribute_id,
-          name: row.attribute_name,
-          type: row.attribute_type,
-          values: [],
-        });
-      }
+    // for (const row of attributesRaw) {
+    //   if (!attributeMap.has(row.attribute_id)) {
+    //     attributeMap.set(row.attribute_id, {
+    //       id: row.attribute_id,
+    //       name: row.attribute_name,
+    //       type: row.attribute_type,
+    //       values: [],
+    //     });
+    //   }
 
-      const attr = attributeMap.get(row.attribute_id)!;
-      if (
-        row.attribute_value &&
-        row.attribute_value_id &&
-        !attr.values.some((v) => v.id === row.attribute_value_id)
-      ) {
-        attr.values.push({
-          id: row.attribute_value_id,
-          value: row.attribute_value,
-          displayColor: row.attribute_value_color ?? null,
-        });
-      }
-    }
+    //   const attr = attributeMap.get(row.attribute_id)!;
+    //   if (
+    //     row.attribute_value &&
+    //     row.attribute_value_id &&
+    //     !attr.values.some((v) => v.id === row.attribute_value_id)
+    //   ) {
+    //     attr.values.push({
+    //       id: row.attribute_value_id,
+    //       value: row.attribute_value,
+    //       displayColor: row.attribute_value_color ?? null,
+    //     });
+    //   }
+    // }
 
     // ------------------------------------------
     // ۵. بازه قیمت
@@ -425,7 +425,7 @@ export class CatalogQueryService {
     // ۷. خروجی نهایی
     // ------------------------------------------
     return {
-      attributes: Array.from(attributeMap.values()),
+      attributes: [],
       generic: {
         boolean_filter: {
           special_offer: {
