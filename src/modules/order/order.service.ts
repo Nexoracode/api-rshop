@@ -355,6 +355,7 @@ export class OrderService {
 
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
         console.log('added to card');
+        console.log(dto);
         return runInTransaction(this.dataSource, async (manager) => {
             const cardRepo = manager.getRepository(Card);
             const cardItemRepo = manager.getRepository(CardItem);
@@ -420,11 +421,11 @@ export class OrderService {
                 where: { user: { id: user.id } }
             });
             const isFirstOrder = previousOrders === 0;
-            console.log('promotion code => ', dto.promotionCode);
+            console.log('promotion code => ', dto.code);
 
             const promotionResult = await this.promotionCheck.execute({
                 userId: user.id,
-                code: dto.promotionCode,
+                code: dto.code,
                 isFirstOrder,
                 subtotal: card.subtotal,
                 items: card.items.map(ci => ({
@@ -492,7 +493,7 @@ export class OrderService {
                 discountTotal,
                 total: finalTotal,
                 note: dto.note,
-                promotionCode: dto.promotionCode ?? null,
+                promotionCode: dto.code ?? null,
                 promotionDiscountAmount,
                 promotionDetails,
                 shippingCost: finalShippingCost,

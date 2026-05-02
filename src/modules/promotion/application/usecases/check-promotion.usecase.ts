@@ -45,54 +45,58 @@ export class CheckPromotionUseCase {
 
         // اگر کد تخفیف مشخص شده
         console.log(dto.code);
-        if (dto.code) {
-            console.log('checking promotion code => ', dto.code);
-            const promo = await this.repo.findActiveByCode(dto.code);
+        try {
+            if (dto.code) {
+                const promo = await this.repo.findActiveByCode(dto.code);
 
-            if (!promo) {
-                this.logger.warn(`Promotion code not found or inactive: ${dto.code}`);
-                throw new PromotionNotFoundException(dto.code);
+                if (!promo) {
+                    this.logger.warn(`Promotion code not found or inactive: ${dto.code}`);
+                    throw new PromotionNotFoundException(dto.code);
+                }
+
+                // بررسی‌های اضافی برای error handling بهتر
+                const now = new Date();
+
+                if (!promo.isActive) {
+                    throw new PromotionInactiveException(dto.code);
+                }
+
+                if (promo.startsAt && promo.startsAt > now) {
+                    throw new PromotionNotStartedException(dto.code, promo.startsAt);
+                }
+
+                if (promo.endsAt && promo.endsAt < now) {
+                    throw new PromotionExpiredException(dto.code);
+                }
+
+                if (
+                    typeof promo.usageLimit === 'number' &&
+                    promo.usageLimit > 0 &&
+                    promo.usedCount >= promo.usageLimit
+                ) {
+                    throw new PromotionLimitReachedException(dto.code);
+                }
+
+                promotions = [promo];
+                this.logger.log(`Found promotion by code: ${dto.code} (ID: ${promo.id})`);
+            } else {
+                // پیدا کردن پروموشن‌های فعال غیر کوپن (COUPON نیاز به code دارد)
+                const allActive = await this.repo.findActiveForOrder(order);
+
+                // ✅ لایه دفاعی: اطمینان از حذف کامل COUPON ها در صورت عدم ارسال code
+                promotions = allActive.filter(p => p.type !== PromotionType.COUPON);
+
+                if (allActive.length !== promotions.length) {
+                    this.logger.warn(
+                        `Filtered out ${allActive.length - promotions.length} COUPON promotion(s) from auto-apply list for user ${dto.userId}`
+                    );
+                }
+
+                this.logger.log(`Found ${promotions.length} active non-coupon promotions for user`);
             }
-
-            // بررسی‌های اضافی برای error handling بهتر
-            const now = new Date();
-
-            if (!promo.isActive) {
-                throw new PromotionInactiveException(dto.code);
-            }
-
-            if (promo.startsAt && promo.startsAt > now) {
-                throw new PromotionNotStartedException(dto.code, promo.startsAt);
-            }
-
-            if (promo.endsAt && promo.endsAt < now) {
-                throw new PromotionExpiredException(dto.code);
-            }
-
-            if (
-                typeof promo.usageLimit === 'number' &&
-                promo.usageLimit > 0 &&
-                promo.usedCount >= promo.usageLimit
-            ) {
-                throw new PromotionLimitReachedException(dto.code);
-            }
-
-            promotions = [promo];
-            this.logger.log(`Found promotion by code: ${dto.code} (ID: ${promo.id})`);
-        } else {
-            // پیدا کردن پروموشن‌های فعال غیر کوپن (COUPON نیاز به code دارد)
-            const allActive = await this.repo.findActiveForOrder(order);
-
-            // ✅ لایه دفاعی: اطمینان از حذف کامل COUPON ها در صورت عدم ارسال code
-            promotions = allActive.filter(p => p.type !== PromotionType.COUPON);
-
-            if (allActive.length !== promotions.length) {
-                this.logger.warn(
-                    `Filtered out ${allActive.length - promotions.length} COUPON promotion(s) from auto-apply list for user ${dto.userId}`
-                );
-            }
-
-            this.logger.log(`Found ${promotions.length} active non-coupon promotions for user`);
+        } catch (error: any) {
+            this.logger.error(`Error checking promotion: ${error.message}`, error.stack);
+            throw error; // دوباره پرتاب کردن خطا برای مدیریت بهتر در لایه بالاتر
         }
 
         // اعمال پروموشن‌ها

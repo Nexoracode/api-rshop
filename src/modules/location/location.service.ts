@@ -23,7 +23,6 @@ export class LocationService {
   }
 
   async cityByProvince(provinceId: number) {
-    console.log(provinceId);
     const city = await this.cityRepo.find({
       where: { provinceId },
       select: ['id', 'title', 'cityId', 'location']

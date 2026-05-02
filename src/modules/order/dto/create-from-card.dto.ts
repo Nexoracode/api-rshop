@@ -19,12 +19,12 @@ export class CreateOrderFromCardDto {
     note?: string;
 
     @ApiPropertyOptional({
-        name: 'promotion_code',
+        name: 'code',
         description: 'کد تخفیف مربوط به پروموشن (اختیاری)',
     })
     @IsOptional()
     @IsString()
-    promotionCode?: string;
+    code?: string;
 
     // 🎁 Gift Wrapping Fields
     @ApiPropertyOptional({
