@@ -57,6 +57,25 @@ const relations = [
     "medias",
     "mediaPinned",
 ];
+
+// اینترفیس برای خروجی پروموشن
+interface ProductPromotionInfo {
+    promotionId: number;
+    promotionName: string;
+    conditionId: number;
+    discountType: string;
+    discountValue: string;
+    startsAt: Date;
+    endsAt: Date;
+    appliedOn: 'product' | 'variant';
+    variantId?: number | null;
+}
+
+// تعریف interface برای ساختار JSON محصولات در شرط پروموشن
+interface PromotionProductCondition {
+    productId: number;
+    variantIds: number[]; // آرایه‌ای از ID ویرینت‌ها
+}
 @Injectable()
 export class ProductService implements IProductService {
     private readonly logger = new Logger(ProductService.name);
@@ -124,19 +143,104 @@ export class ProductService implements IProductService {
 
     async findOne(id: number): Promise<IProductResponse> {
         // ✅ چک cache
-        // const cached = await this.cacheService.getProductById(id);
-        // if (cached) {
-        //     this.logger.log(`✅ Product ${id} از cache`);
-        //     return cached;
-        // }
+        const cached = await this.cacheService.getProductById(id);
+        if (cached) {
+            this.logger.log(`✅ Product ${id} از cache`);
+            return cached;
+        }
 
-        // لاجیک اصلی (بدون تغییر)
+        // دریافت محصول با تمام ارتباطات
         const product = await this.productRepo.findOne({
             where: { id },
-            relations,
+            relations: ['variants'], // لود کردن ویرینت‌ها
             comment: 'find product by id'
         });
+
         if (!product) throw new NotFoundException('محصول مورد نظر یافت نشد.');
+
+        // ✅ دریافت همه پروموشن‌های فعال (یکبار برای کل محصول و ویرینت‌ها)
+        const now = new Date();
+        const activePromotions = await this.promotionRepo.find({
+            where: {
+                isActive: true,
+                startsAt: LessThanOrEqual(now),
+                endsAt: MoreThanOrEqual(now)
+            },
+            relations: ['conditions', 'actions']
+        });
+
+        // ✅ تابع کمکی برای پیدا کردن پروموشن
+        // const findPromotion = (productId: number, variantId?: number) => {
+        //     for (const promotion of activePromotions) {
+        //         if (!promotion.conditions || promotion.conditions.length === 0) continue;
+
+        //         for (const condition of promotion.conditions) {
+        //             if (!condition.products) continue;
+
+        //             let productList: Array<{ productId: number; variantIds: number[] }> = [];
+        //             try {
+        //                 productList = typeof condition.products === 'string'
+        //                     ? JSON.parse(condition.products)
+        //                     : condition.products;
+        //             } catch (error) {
+        //                 continue;
+        //             }
+
+        //             for (const item of productList) {
+        //                 // پروموشن روی ویرینت خاص (اولویت با ویرینت)
+        //                 if (variantId && item.productId === productId && item.variantIds?.includes(variantId)) {
+        //                     if (promotion.actions && promotion.actions.length > 0) {
+        //                         return {
+        //                             promotionId: promotion.id,
+        //                             promotionName: promotion.name,
+        //                             conditionId: condition.id,
+        //                             discountType: promotion.actions[0].type,
+        //                             discountValue: promotion.actions[0].value,
+        //                             startDate: promotion.startsAt,
+        //                             endDate: promotion.endsAt,
+        //                             appliedOn: 'variant',
+        //                             variantId: variantId
+        //                         };
+        //                     }
+        //                 }
+
+        //                 // پروموشن روی خود محصول (همه ویرینت‌ها)
+        //                 if (item.productId === productId && (!item.variantIds || item.variantIds.length === 0)) {
+        //                     if (promotion.actions && promotion.actions.length > 0) {
+        //                         return {
+        //                             promotionId: promotion.id,
+        //                             promotionName: promotion.name,
+        //                             conditionId: condition.id,
+        //                             discountType: promotion.actions[0].type,
+        //                             discountValue: promotion.actions[0].value,
+        //                             startDate: promotion.startsAt,
+        //                             endDate: promotion.endsAt,
+        //                             appliedOn: 'product',
+        //                             variantId: null
+        //                         };
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     return null;
+        // };
+
+        // ✅ دریافت پروموشن خود محصول
+        // const productPromotion = findPromotion(id);
+
+        // ✅ دریافت پروموشن برای هر ویرینت
+        // const variantsWithPromotions = (product.variants || []).map(variant => {
+        //     const variantPromotion = findPromotion(id, variant.id);
+        //     return {
+        //         ...variant,
+        //         hasPromotion: !!variantPromotion,
+        //         promotion: variantPromotion
+        //     };
+        // });
+
+        // console.log(productPromotion, variantsWithPromotions);
+        // دریافت ریویوهای محصول
         const reviews = await this.reviewRepo.find({
             where: {
                 product: { id: product.id },
@@ -145,17 +249,24 @@ export class ProductService implements IProductService {
             relations: ['user', 'product'],
         });
 
+        // محاسبه میانگین امتیازات
         const averageRating = getAverageRating(reviews);
         const lengthReview = reviews.length;
+
+        // اضافه کردن فیلدهای اضافی به محصول
         (product as any).averageRating = averageRating;
         (product as any).reviewsCount = lengthReview;
         (product as any).reviews = reviews.map(r => ReviewMapper.toResponse(r));
+        // (product as any).hasPromotion = !!productPromotion;
+        // (product as any).promotion = productPromotion;
+        // (product as any).variants = variantsWithPromotions;
 
+        // تبدیل به خروجی مورد نظر
         const result = ProductMapper.toResponse(product, { cartesian: true });
 
         // ✅ ذخیره در cache
-        await this.cacheService.setProductById(id, result);
-        this.logger.log(`💾 Product ${id} ذخیره شد در cache`);
+        // await this.cacheService.setProductById(id, result);
+        // this.logger.log(`💾 Product ${id} ذخیره شد در cache`);
 
         return result;
     }

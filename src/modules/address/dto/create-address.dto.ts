@@ -6,17 +6,22 @@ export class CreateAddressDto {
     @ApiProperty({ name: 'city', default: 'مشهد' })
     @IsNotEmpty()
     @IsString()
-    city: string;
+    city!: string;
+
+    @ApiProperty({ name: 'city_id', example: 1 })
+    @IsNotEmpty()
+    @IsNumber()
+    cityId!: number;
 
     @ApiProperty({ name: 'province', default: 'خراسان رضوی' })
     @IsNotEmpty()
     @IsString()
-    province: string;
+    province!: string;
 
     @ApiProperty({ name: 'address_line', default: 'بلوار الهیه، الهیه 22' })
     @IsNotEmpty()
     @IsString()
-    addressLine: string;
+    addressLine!: string;
 
     @ApiProperty({ name: 'plaque', default: '20' })
     @IsNotEmpty()
@@ -47,15 +52,15 @@ export class CreateAddressDto {
     @IsOptional()
     @IsString()
     @Length(10, 10)
-    postalCode: string;
+    postalCode!: string;
 
     @ApiProperty({ name: 'is_self', default: true })
     @IsOptional()
     @IsBoolean()
-    isSelf: boolean;
+    isSelf!: boolean;
 
     @ApiProperty({ name: 'is_primary', default: true })
     @IsOptional()
     @IsBoolean()
-    isPrimary: boolean;
+    isPrimary!: boolean;
 }

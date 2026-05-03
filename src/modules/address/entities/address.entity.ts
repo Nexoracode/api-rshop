@@ -5,13 +5,16 @@ import { IAddress } from "../interfaces/address.interface";
 @Entity('addresses')
 export class Address implements IAddress {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column()
-    city: string;
+    city!: string;
 
     @Column()
-    province: string;
+    cityId!: number
+
+    @Column()
+    province!: string;
 
     @Column({ nullable: true })
     plaque?: string;
@@ -20,36 +23,36 @@ export class Address implements IAddress {
     unit?: string;
 
     @Column({ name: 'address_line', nullable: true })
-    addressLine: string;
+    addressLine!: string;
 
     @Column({ name: 'address_name', nullable: true })
-    addressName: string;
+    addressName!: string;
 
     @Column({ name: 'recipient_name', nullable: true })
-    recipientName: string
+    recipientName!: string;
 
     @Column({ name: 'recipient_phone', nullable: true })
-    recipientPhone: string
+    recipientPhone!: string;
 
     @Column({ name: 'is_self', default: true })
-    isSelf: boolean;
+    isSelf!: boolean;
 
     @Column({ unique: true, name: 'postal_code' })
-    postalCode: string;
+    postalCode!: string;
 
     @Column({ name: 'is_primary', default: true })
-    isPrimary: boolean;
+    isPrimary!: boolean;
 
     @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
-    user: User;
+    user!: User;
 
     @Column({ type: 'int', name: 'user_id' })
-    userId: number;
+    userId!: number;
 
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    updatedAt!: Date;
 }
