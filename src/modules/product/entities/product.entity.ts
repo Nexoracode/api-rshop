@@ -16,31 +16,31 @@ import { Collection } from "src/modules/collection/entities/collection.entity";
 
 @Entity('products')
 export class Product implements IProduct {
-    media: Media[];
+    media!: Media[];
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({ unique: true })
-    name: string;
+    name!: string;
 
     @Column('decimal')
-    price: number;
+    price!: number;
 
     @Column('int')
-    stock: number;
+    stock!: number;
 
     @Column({ name: 'is_same_day_shipping', default: false })
-    isSameDayShipping: boolean;
+    isSameDayShipping!: boolean;
 
     @Column({ name: 'requires_preparation', default: false })
-    requiresPreparation: boolean;
+    requiresPreparation!: boolean;
 
     @Column({ name: 'preparation_days', type: 'int', nullable: true })
     preparationDays?: number | null;
 
     @Column({ name: 'is_limited_stock', default: false })
-    isLimitedStock: boolean;
+    isLimitedStock!: boolean;
 
     @Column({ name: 'discount_amount', type: 'float', default: 0 })
     discountAmount?: number;
@@ -49,86 +49,86 @@ export class Product implements IProduct {
     discountPercent?: number;
 
     @Column({ name: 'is_featured', default: false })
-    isFeatured: boolean;
+    isFeatured!: boolean;
 
     @Column({ type: 'float', default: 0 })
-    weight: number;
+    weight!: number;
 
     @Column({ name: 'weight_unit', type: 'enum', enum: WeightUnit, default: WeightUnit.KG })
-    weightUnit: WeightUnit;
+    weightUnit!: WeightUnit;
 
     @Column({ type: 'longtext', nullable: true })
     description?: string | null | undefined;
 
     @Column({ name: 'is_visible', default: false })
-    isVisible: boolean;
+    isVisible!: boolean;
 
     @Column({ name: 'order_limit', nullable: true })
-    orderLimit: number
+    orderLimit!: number;
 
     @ManyToOne(() => Category, category => category.products)
 
     @JoinColumn({ name: 'category_id' })
-    category: Category;
+    category!: Category;
 
     @Column({ name: 'category_id' })
-    categoryId: number;
+    categoryId!: number;
 
     @Column({ type: 'varchar', length: 100, unique: true })
-    sku: string;
+    sku!: string;
 
     @OneToMany(() => Media, media => media.product, { cascade: true, eager: true })
-    medias: Media[];
+    medias!: Media[];
 
     @ManyToOne(() => Media, media => media.product, { eager: true })
     @JoinColumn({ name: 'media_pinned_id' })
-    mediaPinned: Media;
+    mediaPinned!: Media;
 
     @Column({ name: 'media_pinned_id', nullable: true })
     mediaPinnedId?: number | null;
 
     @ManyToOne(() => HelperEntity, helper => helper.product, { nullable: true, cascade: true })
     @JoinColumn({ name: 'helper_id' })
-    helper: HelperEntity | null;
+    helper!: HelperEntity | null;
 
     @Column({ name: 'helper_id', nullable: true })
-    helperId: number | null;
+    helperId!: number | null;
 
     @OneToMany(() => VariantProduct, variant => variant.product, { cascade: true })
-    variants: VariantProduct[];
+    variants!: VariantProduct[];
 
     @OneToMany(() => ProductAttributeValue, (pav) => pav.product, { cascade: true })
-    attributeValues: ProductAttributeValue[];
+    attributeValues!: ProductAttributeValue[];
 
     @ManyToOne(() => Brand, brand => brand.products, { cascade: true, nullable: true })
     @JoinColumn({ name: 'brand_id' })
-    brand: Brand;
+    brand!: Brand;
 
     @OneToMany(() => Review, (review) => review.product, { cascade: true })
-    reviews: Review[];
+    reviews!: Review[];
 
     @OneToMany(() => Wishlist, (wishlist) => wishlist.product)
-    wishlists: Wishlist[];
+    wishlists!: Wishlist[];
 
     @OneToMany(() => RecentView, (recentView) => recentView.product)
-    recentViews: RecentView[];
+    recentViews!: RecentView[];
 
     @OneToMany(() => Support, (support) => support.product)
-    supports: Support[];
+    supports!: Support[];
 
     @ManyToMany(() => Collection, (collection) => collection.products)
-    collections: Collection[];
+    collections!: Collection[];
 
     @Column({ name: 'brand_id', nullable: true })
-    brandId: number;
+    brandId!: number;
 
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    createdAt!: Date;
 
     @Column({ name: 'is_active', default: true })
-    isActive: boolean | true;
+    isActive!: boolean | true;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    updatedAt!: Date;
 
 }

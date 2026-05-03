@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { DataSource, EntityManager, In, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IProductService } from './interfaces/product.service.interface';
@@ -22,6 +22,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
 import e from 'express';
 import { CatalogCacheService } from '../catalogs/cache';
+import { PromotionOrmEntity } from '../promotion/infrastructure/entities/promotion.orm-entity';
 
 // Event های موجود
 export class ProductCreatedEvent {
@@ -56,7 +57,6 @@ const relations = [
     "medias",
     "mediaPinned",
 ];
-
 @Injectable()
 export class ProductService implements IProductService {
     private readonly logger = new Logger(ProductService.name);
@@ -69,7 +69,9 @@ export class ProductService implements IProductService {
         private dataSource: DataSource,
         private readonly eventEmitter: EventEmitter2,
         private readonly cacheService: ProductCacheService, // ✅ اضافه شد
-        private readonly catalogCatchService: CatalogCacheService
+        private readonly catalogCatchService: CatalogCacheService,
+        @InjectRepository(PromotionOrmEntity)
+        private readonly promotionRepo: Repository<PromotionOrmEntity>,
     ) { }
 
     async findAll(query: PaginateQuery): Promise<Object> {
@@ -122,11 +124,11 @@ export class ProductService implements IProductService {
 
     async findOne(id: number): Promise<IProductResponse> {
         // ✅ چک cache
-        const cached = await this.cacheService.getProductById(id);
-        if (cached) {
-            this.logger.log(`✅ Product ${id} از cache`);
-            return cached;
-        }
+        // const cached = await this.cacheService.getProductById(id);
+        // if (cached) {
+        //     this.logger.log(`✅ Product ${id} از cache`);
+        //     return cached;
+        // }
 
         // لاجیک اصلی (بدون تغییر)
         const product = await this.productRepo.findOne({

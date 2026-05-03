@@ -11,10 +11,12 @@ import { Review } from '../review/entities/review.entity';
 import { SeoModule } from '../seo/seo.module';
 import { ProductCacheService } from './cache/product-cache.service'; // ✅ اضافه شد
 import { CatalogCacheService } from '../catalogs/cache';
+import { PromotionConditionOrmEntity } from '../promotion/infrastructure/entities/promotion-condition.orm-entity';
+import { PromotionOrmEntity } from '../promotion/infrastructure/entities/promotion.orm-entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, Review]),
+    TypeOrmModule.forFeature([Product, Review, PromotionOrmEntity]),
     CategoryModule,
     VariantAttributeValueModule,
     MediaModule,
