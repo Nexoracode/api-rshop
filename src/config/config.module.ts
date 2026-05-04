@@ -57,13 +57,13 @@ const isProduction = process.env.NODE_ENV === 'production';
             useFactory: async (configService: ConfigService) => {
                 const isProduction = process.env.NODE_ENV === 'production';
 
-                console.log('[Redis Config] ================');
-                console.log('NODE_ENV:', process.env.NODE_ENV);
-                console.log('REDIS_HOST:', process.env.REDIS_HOST);
-                console.log('REDIS_PORT:', process.env.REDIS_PORT);
-                console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD ? `SET (${process.env.REDIS_PASSWORD.length} chars)` : 'NOT SET');
-                console.log('REDIS_DB:', process.env.REDIS_DB);
-                console.log('[Redis Config] ================');
+                // console.log('[Redis Config] ================');
+                // console.log('NODE_ENV:', process.env.NODE_ENV);
+                // console.log('REDIS_HOST:', process.env.REDIS_HOST);
+                // console.log('REDIS_PORT:', process.env.REDIS_PORT);
+                // console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD ? `SET (${process.env.REDIS_PASSWORD.length} chars)` : 'NOT SET');
+                // console.log('REDIS_DB:', process.env.REDIS_DB);
+                // console.log('[Redis Config] ================');
 
                 try {
                     let redisUrl: string;
@@ -96,14 +96,14 @@ const isProduction = process.env.NODE_ENV === 'production';
                             };
                         }
 
-                        console.log('[Redis Production] Using URL:', redisUrl.replace(/:([^@]+)@/, ':****@')); // برای امنیت
+                        // console.log('[Redis Production] Using URL:', redisUrl.replace(/:([^@]+)@/, ':****@')); // برای امنیت
                     } else {
                         // ✅ Development - بدون رمز عبور
                         const host = configService.get<string>('REDIS_HOST', 'localhost');
                         const port = configService.get<number>('REDIS_PORT', 6379);
                         const db = configService.get<number>('REDIS_DB', 0);
                         redisUrl = `redis://${host}:${port}/${db}`;
-                        console.log('[Redis Development] Using URL:', redisUrl);
+                        // console.log('[Redis Development] Using URL:', redisUrl);
                     }
 
                     // ایجاد اتصال Redis
@@ -134,7 +134,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                                 return result > 0;
                             }
                             return await originalDelete(key);
-                        } catch (error) {
+                        } catch (error: any) {
                             console.error('[Redis Delete Error]:', error.message);
                             return false;
                         }
@@ -151,7 +151,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                         ttl: configService.get<number>('REDIS_TTL', 300) * 1000,
                         max: configService.get<number>('REDIS_MAX_ITEMS', 1000),
                     };
-                } catch (error) {
+                } catch (error: any) {
                     console.error('[Redis] Connection setup failed:', error.message);
                     console.warn('[Cache] Falling back to Memory Cache');
 
@@ -168,7 +168,7 @@ const isProduction = process.env.NODE_ENV === 'production';
                 inject: [ConfigService],
                 useFactory: (configService: ConfigService) => [{
                     ttl: configService.get<number>('THROTTLE_TTL', 60000),
-                    limit: configService.get<number>('THROTTLE_LIMIT', 100),
+                    limit: configService.get<number>('THROTTLE_LIMIT', 5000),
                     ignoreUserAgents: [/googlebot/gi, /bingbot/gi],
                 }]
             })
