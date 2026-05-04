@@ -276,12 +276,12 @@ export class CategoryService implements ICategoryService {
         const page = query.page || 1;
         const limit = query.limit || 20;
 
-        // // ✅ چک کردن cache
-        // const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters, search);
-        // if (cached) {
-        //     console.log('✅ Category tree paginated از cache');
-        //     return cached;
-        // }
+        // ✅ چک کردن cache
+        const cached = await this.cacheService.getCategoryTreePaginated(page, limit, filters, search);
+        if (cached) {
+            console.log('✅ Category tree paginated از cache');
+            return cached;
+        }
 
         // اجرای query
         const config: PaginateConfig<Category> = {
@@ -336,11 +336,11 @@ export class CategoryService implements ICategoryService {
      */
     async findAllTreeForSite(): Promise<ICategoryResponseSite[]> {
         // ✅ چک کردن cache
-        // const cached = await this.cacheService.getCategoryTree();
-        // if (cached) {
-        //     console.log('✅ Category tree for site از cache');
-        //     return cached as any;
-        // }
+        const cached = await this.cacheService.getCategoryTree();
+        if (cached) {
+            console.log('✅ Category tree for site از cache');
+            return cached as any;
+        }
 
         // دریافت از دیتابیس
         const categories = await this.treeCatRepo.findTrees({
