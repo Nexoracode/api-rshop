@@ -53,10 +53,10 @@ export class HomePageService {
       this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
 
       // ✅ layoutType تازه رو اضافه کن (همیشه fresh!)
-      return {
-        ...cached,
-        layoutType,
-      };
+      // return {
+      //   ...cached,
+      //   layoutType,
+      // };
     }
 
     this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
@@ -92,7 +92,7 @@ export class HomePageService {
 
         const category = await this.categoryRepository.findOne({
           where: { id: section.categoryId },
-          relations: ['media']
+          relations: ['media', 'products']
         });
 
         const promotion = await this.promotionRepository.findOne({
@@ -197,18 +197,16 @@ export class HomePageService {
   private async getCategoriesForHomePage(forAdmin: boolean) {
     const whereCondition = forAdmin
       ? { parentId: undefined }
-      : { parentId: undefined, isActive: true };
+      : { parentId: undefined, isActive: true, products: undefined };
 
     const categories = await this.categoryRepository.find({
       where: whereCondition,
-      relations: ['media'],
+      relations: ['media', 'products'],
       order: { displayOrder: 'ASC' },
       take: 18,
     });
-    if (categories.map((category) => category.products?.length === 0).every(isEmpty => isEmpty)) {
-      return [];
-    }
-    return categories;
+    const resultCategories = categories.filter((value) => value.products?.length !== 0)
+    return resultCategories;
   }
 
   /**
@@ -283,7 +281,7 @@ export class HomePageService {
       await this.cacheService.setLayoutType(layoutType);
 
       return layoutType;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.warn('خطا در دریافت layout type، استفاده از پیش‌فرض:', error.message);
       return HomePageLayoutType.SIDE_BY_SIDE;
     }
