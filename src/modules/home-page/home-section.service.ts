@@ -223,7 +223,7 @@ export class HomeSectionService {
               id: In(section.productIds),
               isVisible: true
             },
-            relations: ['medias', 'mediaPinned', 'category', 'brand'],
+            relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
             take: limit,
           });
         }
@@ -235,7 +235,7 @@ export class HomeSectionService {
             isVisible: true,
             isFeatured: true
           },
-          relations: ['medias', 'mediaPinned', 'category', 'brand'],
+          relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
           order: { createdAt: 'DESC' },
           take: limit,
         });
@@ -247,6 +247,7 @@ export class HomeSectionService {
           .leftJoinAndSelect('product.mediaPinned', 'mediaPinned')
           .leftJoinAndSelect('product.category', 'category')
           .leftJoinAndSelect('product.brand', 'brand')
+          .leftJoinAndSelect('product.variants', 'variants')
           .where('product.is_visible = :visible', { visible: true })
           .orderBy('product.id', 'DESC')
           .take(limit)
@@ -259,7 +260,7 @@ export class HomeSectionService {
               categoryId: section.categoryId,
               isVisible: true,
             },
-            relations: ['medias', 'mediaPinned', 'category', 'brand'],
+            relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
             order: { createdAt: 'DESC' },
             take: limit,
           });
@@ -308,7 +309,7 @@ export class HomeSectionService {
                 id: In(productIds),
                 isVisible: true,
               },
-              relations: ['medias', 'mediaPinned', 'category', 'brand'],
+              relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
               order: { createdAt: 'DESC' },
               take: limit,
             });

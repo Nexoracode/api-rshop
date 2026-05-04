@@ -74,7 +74,7 @@ export interface ProductData {
   id: number;
   name: string;
   price: number;
-  category: Category | null;
+  // category: Category | null;
   stock: number;
   discountAmount?: number | null;
   discountPercent?: number | null;

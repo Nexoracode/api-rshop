@@ -20,6 +20,7 @@ import { OrderItem } from "src/modules/order/entities/order-item.entity";
 import { VariantProduct } from "src/modules/variant-product/entities/variant-product.entity";
 import { Product } from "src/modules/product/entities/product.entity";
 import { ProductCacheService } from "src/modules/product/cache";
+import { OrderCacheService } from "src/modules/order/cache/order-cache.service";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -32,6 +33,7 @@ export class PaymentCreationHandler {
 
   constructor(
     private readonly cardStatusService: CardStatusService,
+    private readonly orderCatch: OrderCacheService,
     private readonly OrderStatusService: OrderStatusService,
     private readonly productCacheService: ProductCacheService
   ) { }
@@ -167,7 +169,7 @@ export class PaymentCreationHandler {
     this.logger.log(
       `Payment request created for order ${orderId}, authority: ${requestResult.data.authority}`,
     );
-
+    await this.orderCatch.clearOrderCache(order.id);
     return PaymentResponseMapper.createPayment(order, requestResult.data.authority);
   }
 

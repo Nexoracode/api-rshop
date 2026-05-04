@@ -33,6 +33,7 @@ import { CardToCardUploadReceiptHandler } from './handlers/card-to-card/card-to-
 import { CardToCardRejectionHandler } from './handlers/card-to-card/card-to-card-rejection.handler';
 import { CardToCardApprovalHandler } from './handlers/card-to-card/card-to-card-approval.handler';
 import { ProductCacheService } from '../product/cache';
+import { OrderCacheService } from '../order/cache/order-cache.service';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { ProductCacheService } from '../product/cache';
     CardToCardService,
     PaymentRecoveryService,
     ProductCacheService,
+    OrderCacheService,
 
     // Online Payment Handlers
     PaymentCreationHandler,

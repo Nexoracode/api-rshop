@@ -257,6 +257,7 @@ export class ProductMapper {
             isVisible: product.isVisible || false,
             averageRaiting: getAverageRating((product as any).reviews || []),
             reviewsCount: (product as any).reviewsCount || 0,
+            promotion: (product as any).promotion || null,
             medias: product.medias ? product.medias.map((m) => ({
                 id: m.id,
                 url: m.url,

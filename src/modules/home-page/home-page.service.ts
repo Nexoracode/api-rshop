@@ -44,6 +44,7 @@ export class HomePageService {
    * دریافت داده کامل صفحه اصلی
    */
   async getHomePageData(forAdmin: boolean = false) {
+    console.log('click section')
     // ✅ اول layoutType رو بگیر (جدا از cache اصلی)
     const layoutType = await this.getLayoutType();
 
@@ -53,10 +54,10 @@ export class HomePageService {
       this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
 
       // ✅ layoutType تازه رو اضافه کن (همیشه fresh!)
-      return {
-        ...cached,
-        layoutType,
-      };
+      // return {
+      //   ...cached,
+      //   layoutType,
+      // };
     }
 
     this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
@@ -201,9 +202,9 @@ export class HomePageService {
 
     const categories = await this.categoryRepository.find({
       where: whereCondition,
-      relations: ['media', 'products'],
+      relations: ['media'],
       order: { displayOrder: 'ASC' },
-      take: 18,
+      take: 10,
     });
     const resultCategories = categories.filter((value) => value.products?.length !== 0)
     return resultCategories;
@@ -242,8 +243,8 @@ export class HomePageService {
     return {
       id: product.id,
       name: product.name,
-      price: product.price,
-      category: product.category,
+      price: product.variants.length != 0 ? product.variants[0].price : product.price,
+      category: null,
       stock: product.stock,
       discountAmount: product.discountAmount,
       discountPercent: product.discountPercent,

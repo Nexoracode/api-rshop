@@ -35,8 +35,8 @@ export class PaymentRecoveryService {
             .leftJoin('order.invoice', 'invoice')
             .leftJoinAndSelect('payment.order', 'orderRelation')
             .leftJoinAndSelect('payment.user', 'user')
-            .where('payment.status IN (:...statuses)', { 
-                statuses: [PaymentStatus.SUCCESS, PaymentStatus.VERIFIED] 
+            .where('payment.status IN (:...statuses)', {
+                statuses: [PaymentStatus.SUCCESS, PaymentStatus.VERIFIED]
             })
             .andWhere('invoice.id IS NULL') // ✅ فقط کسایی که Invoice ندارن
             .getMany();
@@ -107,7 +107,7 @@ export class PaymentRecoveryService {
             this.logger.log(
                 `✅ فاکتور ${invoice!.id} با موفقیت برای پرداخت ${payment.id} صادر شد.`,
             );
-        } catch (e) {
+        } catch (e: any) {
             await queryRunner.rollbackTransaction();
             this.logger.error(
                 `❌ خطا در بازیابی فاکتور برای پرداخت ${payment.id}: ${e.message}`,

@@ -12,6 +12,7 @@ import { OrderItem } from '../order/entities/order-item.entity';
 import { VariantProduct } from '../variant-product/entities/variant-product.entity';
 import { Product } from '../product/entities/product.entity';
 import { ProductCacheService } from '../product/cache';
+import { Payment } from '../payment/entities/payment.entity';
 
 @Injectable()
 export class CartCleanupService {
@@ -54,7 +55,7 @@ export class CartCleanupService {
                     where: {
                         status: In([
                             OrderStatus.AWAITING_PAYMENT,      // در درگاه پرداخت
-                            OrderStatus.PAYMENT_CONFIRMATION_PENDING, // در حال تأیید
+                            // OrderStatus.PAYMENT_CONFIRMATION_PENDING, // در حال تأیید
                             OrderStatus.PAYMENT_FAILED,        // پرداخت ناموفق
                         ]),
                         createdAt: LessThan(timeoutDate),
@@ -89,7 +90,7 @@ export class CartCleanupService {
             if (result.count > 0) {
                 this.logger.log(`✅ Successfully expired ${result.count} orders`);
             }
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ Error expiring orders:', error.stack);
         }
     }
@@ -143,7 +144,7 @@ export class CartCleanupService {
                             user: { id: cart.user.id },
                             status: In([
                                 OrderStatus.AWAITING_PAYMENT,
-                                OrderStatus.PAYMENT_CONFIRMATION_PENDING,
+                                // OrderStatus.PAYMENT_CONFIRMATION_PENDING,
                             ]),
                         },
                     });
@@ -173,7 +174,7 @@ export class CartCleanupService {
             } else {
                 this.logger.log('ℹ️ No stuck carts found');
             }
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ Error unlocking stuck carts:', error.stack);
         }
     }
@@ -204,7 +205,7 @@ export class CartCleanupService {
             } else {
                 this.logger.log(`ℹ️ No abandoned carts older than ${DAYS_OLD} days found`);
             }
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ Error cleaning up abandoned carts:', error.stack);
         }
     }
@@ -237,7 +238,7 @@ export class CartCleanupService {
             `);
 
             this.logger.log('📊 Weekly Cart Stats:', JSON.stringify(stats[0], null, 2));
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ Error generating stats:', error.stack);
         }
     }

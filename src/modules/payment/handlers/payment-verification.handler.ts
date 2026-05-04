@@ -19,6 +19,7 @@ import { FailedPaymentHandler } from "./failed-payment.handler";
 import { Order } from "../../order/entities/order.entity";
 import { OrderStatusService } from "src/modules/order/order.status.service";
 import { toInteger } from "lodash";
+import { OrderCacheService } from "src/modules/order/cache/order-cache.service";
 
 const zarinpal = new ZarinPal({
   merchantId: process.env.ZARINPAL_MERCHANT_ID || '',
@@ -34,6 +35,7 @@ export class PaymentVerificationHandler {
     private readonly successfulPaymentHandler: SuccessfulPaymentHandler,
     private readonly failedPaymentHandler: FailedPaymentHandler,
     private readonly orderStatusService: OrderStatusService,
+    private readonly orderCatchService: OrderCacheService,
 
   ) { }
 
@@ -173,6 +175,7 @@ export class PaymentVerificationHandler {
       }
 
       // ✅ پرداخت ناموفق (سایر کدها)
+      await this.orderCatchService.clearOrderCache(order.id);
       return await this.failedPaymentHandler.handle(
         manager,
         order,
@@ -204,6 +207,7 @@ export class PaymentVerificationHandler {
         payload: { data: e.data },
       });
 
+      await this.orderCatchService.clearOrderCache(order.id);
       throw new ZarinpalException(
         e.errors?.code ?? -99,
         e.errors?.message ?? 'Zarinpal verification error',

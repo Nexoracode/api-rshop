@@ -16,6 +16,7 @@ import { CardStatusService } from "../../card/card-status.service";
 import { getRefId } from "../helpers/zarinpal.helper";
 import { IncrementPromotionUsageUseCase } from "../../promotion/application/usecases/increment-promotion-usage.usecase";
 import { OrderPaidEvent } from "../../accounting/listeners/order-accounting.listener";
+import { OrderCacheService } from "src/modules/order/cache/order-cache.service";
 
 // Relations لازم برای invoice
 const INVOICE_RELATIONS = [
@@ -37,6 +38,7 @@ export class SuccessfulPaymentHandler {
   constructor(
     private readonly cardStatusService: CardStatusService,
     private readonly invoiceService: InvoiceService,
+    private readonly orderCatchService: OrderCacheService,
     private readonly incrementPromotionUsage: IncrementPromotionUsageUseCase,
     private readonly eventEmitter: EventEmitter2,
   ) { }
@@ -70,6 +72,7 @@ export class SuccessfulPaymentHandler {
     await paymentRepo.save(payment);
 
     // ✅ Abandon کردن سبد خرید با error handling
+    await this.orderCatchService.clearOrderCache(order.id);
     try {
       await this.cardStatusService.abandonCart(order.user.id, manager);
     } catch (error: any) {

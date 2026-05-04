@@ -27,7 +27,7 @@ export class TasksService {
             const deleted = await this.cardStatusService.cleanupAbandonedCarts(daysOld);
 
             this.logger.log(`✅ ${deleted} Cart قدیمی پاک شد (قدیمی‌تر از ${daysOld} روز)`);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ خطا در پاکسازی Cart ها:', error.stack);
         }
     }
@@ -43,7 +43,7 @@ export class TasksService {
 
             // ارسال یادآوری برای سفارشات 15 دقیقه پیش
             this.logger.log('✅ یادآوری‌های پرداخت ارسال شد');
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('❌ خطا در ارسال یادآوری‌ها:', error.stack);
         }
     }

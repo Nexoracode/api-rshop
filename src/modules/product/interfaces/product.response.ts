@@ -7,6 +7,7 @@ import { Brand } from "src/modules/brand/entities/brand.entity";
 import { AttributeUnit } from "src/common/enums/attribute.enum";
 import { Product } from "../entities/product.entity";
 import { IVariantAttributeValue } from "src/modules/attributes/variant-attribute-value/interfaces/variant-attribute-value.interface";
+import { Promotion } from "src/modules/promotion/domain/entities/promotion.entity";
 
 export interface IProductResponse {
     id: number;
@@ -33,7 +34,8 @@ export interface IProductResponse {
     createdAt?: Date;
     orderLimit?: number;
     updatedAt?: Date;
-    variants: IVariantProduct[] | null
+    variants: IVariantProduct[] | null;
+    promotion: Promotion
 }
 
 export interface IVariantProduct {
