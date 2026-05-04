@@ -53,10 +53,10 @@ export class HomePageService {
       this.logger.log(`✅ Home page data از cache (${forAdmin ? 'admin' : 'public'})`);
 
       // ✅ layoutType تازه رو اضافه کن (همیشه fresh!)
-      // return {
-      //   ...cached,
-      //   layoutType,
-      // };
+      return {
+        ...cached,
+        layoutType,
+      };
     }
 
     this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
