@@ -779,4 +779,16 @@ export class ProductService implements IProductService {
             throw error;
         }
     }
+
+    async getAllProducts() {
+        const productIds: Number[] = []
+        const products = await this.productRepo
+            .createQueryBuilder('product')
+            .select(['product.id'])
+            .getMany();
+        for (const pr of products) {
+            productIds.push(pr.id)
+        }
+        return productIds;
+    }
 }

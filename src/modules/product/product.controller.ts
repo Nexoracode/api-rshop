@@ -58,11 +58,15 @@ export class ProductController {
             'discount_percent': [FilterOperator.GTE, FilterOperator.LTE],
             price: [FilterOperator.GTE, FilterOperator.LTE],
             stock: [FilterOperator.GTE, FilterOperator.LTE],
-
         }
     })
     findAll(@Paginate() query: PaginateQuery) {
         return this.productService.findAll(query);
+    }
+
+    @Get('ids')
+    findAllId() {
+        return this.productService.getAllProducts();
     }
 
     @Post()
