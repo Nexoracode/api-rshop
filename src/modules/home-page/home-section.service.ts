@@ -128,7 +128,7 @@ export class HomeSectionService {
     if (section.productIds && section.productIds.length > 0) {
       products = await this.productRepository.find({
         where: { id: In(section.productIds), isVisible: true },
-        relations: ['category', 'mediaPinned', 'brand']
+        relations: ['mediaPinned', 'brand']
       });
     }
 
@@ -222,8 +222,8 @@ export class HomeSectionService {
               id: In(section.productIds),
               isVisible: true
             },
-            relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
-            select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+            relations: ['medias', 'mediaPinned', 'variants'],
+            select: ['id', 'name', 'price', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
             order: { createdAt: 'DESC' },
             take: limit,
           });
@@ -236,8 +236,8 @@ export class HomeSectionService {
             isVisible: true,
             isFeatured: true
           },
-          relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
-          select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+          relations: ['medias', 'mediaPinned', 'variants'],
+          select: ['id', 'name', 'price', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
           order: { createdAt: 'DESC' },
           take: limit,
         });
@@ -247,8 +247,8 @@ export class HomeSectionService {
           where: {
             isVisible: true,
           },
-          relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
-          select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+          relations: ['medias', 'mediaPinned', 'variants'],
+          select: ['id', 'name', 'price', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
           order: { createdAt: 'DESC' },
           take: limit,
         });
@@ -260,8 +260,8 @@ export class HomeSectionService {
               categoryId: section.categoryId,
               isVisible: true,
             },
-            relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
-            select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+            relations: ['medias', 'mediaPinned', 'variants'],
+            select: ['id', 'name', 'price', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
             order: { createdAt: 'DESC' },
             take: limit,
           });
@@ -310,8 +310,8 @@ export class HomeSectionService {
                 id: In(productIds),
                 isVisible: true,
               },
-              relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
-              select: ['attributeValues', 'id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+              relations: ['medias', 'mediaPinned', 'variants'],
+              select: ['attributeValues', 'id', 'name', 'price', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
               order: { createdAt: 'DESC' },
               take: limit,
             });

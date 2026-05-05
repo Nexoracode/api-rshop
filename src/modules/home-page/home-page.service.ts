@@ -204,6 +204,7 @@ export class HomePageService {
     const categories = await this.categoryRepository.find({
       where: whereCondition,
       relations: ['media'],
+      select: ['id', 'title', 'slug', 'displayOrder'],
       order: { displayOrder: 'ASC' },
       take: 10,
     });
@@ -221,6 +222,7 @@ export class HomePageService {
 
     return await this.brandRepository.find({
       where: whereCondition,
+      select: ['id', 'name', 'slug', 'logo',],
       order: { name: 'ASC' },
     });
   }
@@ -245,7 +247,6 @@ export class HomePageService {
       id: product.id,
       name: product.name,
       price: product.variants.length != 0 ? product.variants[0].price : product.price,
-      category: null,
       stock: product.stock,
       discountAmount: product.discountAmount,
       discountPercent: product.discountPercent,
