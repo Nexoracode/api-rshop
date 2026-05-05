@@ -23,70 +23,70 @@ export enum SectionDisplayStyle {
 @Entity('home_sections')
 export class HomeSection {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'varchar', length: 255 })
-  title: string;
+  title!: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  image: string | null;
+  image!: string | null;
 
   @Column({ type: 'varchar', length: 100, unique: true })
-  slug: string;
+  slug!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description!: string;
 
   @Column({
     type: 'enum',
     enum: SectionType,
     default: SectionType.FEATURED,
   })
-  sectionType: SectionType;
+  sectionType!: SectionType;
 
   @Column({
     type: 'enum',
     enum: SectionDisplayStyle,
     default: SectionDisplayStyle.CAROUSEL,
   })
-  displayStyle: SectionDisplayStyle;
+  displayStyle!: SectionDisplayStyle;
 
   // برای بخش‌های دستی - آیدی محصولات
   @Column({ type: 'json', nullable: true })
-  productIds: number[];
+  productIds!: number[];
 
   // برای بخش‌های بر اساس دسته‌بندی
   @Column({ type: 'int', nullable: true })
-  categoryId: number;
+  categoryId!: number;
 
   // برای بخش‌های بر اساس پروموشن
   @Column({ name: 'promotion_id', type: 'int', nullable: true })
-  promotionId: number;
+  promotionId!: number;
 
   @Column({ type: 'int', default: 10 })
-  productsLimit: number;
+  productsLimit!: number;
 
   @Column({ type: 'int', default: 0 })
-  displayOrder: number;
+  displayOrder!: number;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ type: 'boolean', default: false })
-  showViewAllButton: boolean;
+  showViewAllButton!: boolean;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  viewAllLink: string;
+  viewAllLink!: string;
 
   @Column({ name: 'start_date', type: 'timestamp', nullable: true })
-  startDate: Date | null;
+  startDate!: Date | null;
 
   @Column({ name: 'end_date', type: 'timestamp', nullable: true })
-  endDate: Date | null;
+  endDate!: Date | null;
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

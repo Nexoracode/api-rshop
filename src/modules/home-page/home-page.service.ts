@@ -93,7 +93,8 @@ export class HomePageService {
 
         const category = await this.categoryRepository.findOne({
           where: { id: section.categoryId },
-          relations: ['media', 'products']
+          relations: ['media'],
+          select: ['id', 'title', 'slug']
         });
 
         const promotion = await this.promotionRepository.findOne({

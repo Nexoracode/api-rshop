@@ -6,7 +6,6 @@ import { CreateHomeSectionDto, UpdateHomeSectionDto } from './dto/home-section.d
 import { Product } from '../product/entities/product.entity';
 import { HomePageCacheService } from './cache/home-page-cache.service';
 import { PromotionRepository } from '../promotion/domain/interfaces/promotion-repository.interface';
-
 @Injectable()
 export class HomeSectionService {
   private readonly logger = new Logger(HomeSectionService.name);
@@ -224,6 +223,8 @@ export class HomeSectionService {
               isVisible: true
             },
             relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
+            select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+            order: { createdAt: 'DESC' },
             take: limit,
           });
         }
@@ -236,22 +237,21 @@ export class HomeSectionService {
             isFeatured: true
           },
           relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
+          select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
           order: { createdAt: 'DESC' },
           take: limit,
         });
 
       case SectionType.MOST_POPULAR:
-        return await this.productRepository
-          .createQueryBuilder('product')
-          .leftJoinAndSelect('product.medias', 'medias')
-          .leftJoinAndSelect('product.mediaPinned', 'mediaPinned')
-          .leftJoinAndSelect('product.category', 'category')
-          .leftJoinAndSelect('product.brand', 'brand')
-          .leftJoinAndSelect('product.variants', 'variants')
-          .where('product.is_visible = :visible', { visible: true })
-          .orderBy('product.id', 'DESC')
-          .take(limit)
-          .getMany();
+        return await this.productRepository.find({
+          where: {
+            isVisible: true,
+          },
+          relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
+          select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
+          order: { createdAt: 'DESC' },
+          take: limit,
+        });
 
       case SectionType.CATEGORY_BASED:
         if (section.categoryId) {
@@ -261,6 +261,7 @@ export class HomeSectionService {
               isVisible: true,
             },
             relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
+            select: ['id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
             order: { createdAt: 'DESC' },
             take: limit,
           });
@@ -310,6 +311,7 @@ export class HomeSectionService {
                 isVisible: true,
               },
               relations: ['medias', 'mediaPinned', 'category', 'brand', 'variants'],
+              select: ['attributeValues', 'id', 'name', 'price', 'category', 'stock', 'discountAmount', 'discountPercent', 'mediaPinned', 'isActive', 'isVisible', 'createdAt'],
               order: { createdAt: 'DESC' },
               take: limit,
             });
