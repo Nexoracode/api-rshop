@@ -22,10 +22,10 @@ export class BrandService {
     if (existingBrand) throw new BadRequestException('برند با این نام وجود دارد');
     const brand = this.brandRepo.create(createBrandDto);
     const result = await this.brandRepo.save(brand);
-    
+
     // ✅ پاک کردن cache کاتالوگ بعد از create
     await this.catalogCacheService.clearAllCatalogCache();
-    
+
     return {
       message: 'برند با موفقیت ایجاد شد',
       data: result,
@@ -87,10 +87,10 @@ export class BrandService {
     }
     const updatedBrand = this.brandRepo.merge(brand, updateBrandDto);
     const result = await this.brandRepo.save(updatedBrand);
-    
+
     // ✅ پاک کردن cache کاتالوگ بعد از update
     await this.catalogCacheService.clearAllCatalogCache();
-    
+
     return {
       message: 'برند با موفقیت به‌ روزرسانی شد',
       data: result,
@@ -101,13 +101,24 @@ export class BrandService {
     const brand = await this.brandRepo.findOne({ where: { id } });
     if (!brand) throw new BadRequestException('برند یافت نشد');
     await this.brandRepo.delete(id);
-    
+
     // ✅ پاک کردن cache کاتالوگ بعد از delete
     await this.catalogCacheService.clearAllCatalogCache();
-    
+
     return {
       message: 'برند با موفقیت حذف شد',
       data: null,
     };
+  }
+
+  async allSlugs() {
+    const slugBrand: String[] = [];
+    const brands = await this.brandRepo.find({
+      select: ['slug']
+    })
+    for (const brand of brands) {
+      slugBrand.push(brand.slug);
+    }
+    return slugBrand;
   }
 }

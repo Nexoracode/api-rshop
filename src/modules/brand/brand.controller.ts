@@ -22,6 +22,13 @@ export class BrandController {
     private readonly uploadService: MediaService,
   ) { }
 
+
+  @Public()
+  @Get('slugs')
+  async getSlugsBrand() {
+    return this.brandService.allSlugs();
+  }
+
   @Public()
   @Get('find/:slug')
   findOneSlug(@Param('slug') slug: string) {
