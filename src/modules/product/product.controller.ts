@@ -64,6 +64,7 @@ export class ProductController {
         return this.productService.findAll(query);
     }
 
+    @Public()
     @Get('ids')
     findAllId() {
         return this.productService.getAllProducts();
