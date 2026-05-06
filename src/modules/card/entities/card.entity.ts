@@ -13,45 +13,45 @@ export enum CardStatus {
 export class Card {
 
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @ManyToOne(() => User, (u) => u.cards, { nullable: false, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
-    user: User;
+    user!: User;
 
 
     @OneToMany(() => CardItem, (ci) => ci.card, { cascade: true })
-    items: CardItem[];
+    items!: CardItem[];
 
 
     @Column({ type: 'enum', enum: CardStatus, default: CardStatus.OPEN })
-    status: CardStatus;
+    status!: CardStatus;
 
 
     @Column({ type: 'int', default: 0 })
-    itemsCount: number;
+    itemsCount!: number;
 
 
     @Column({ type: 'int', default: 0 })
-    totalQuantity: number;
+    totalQuantity!: number;
 
 
     @Column({ type: 'bigint', default: 0 })
-    subtotal: number; // مجموع قیمت قبل از تخفیف
+    subtotal!: number; // مجموع قیمت قبل از تخفیف
 
 
     @Column({ type: 'bigint', default: 0 })
-    discountTotal: number; // مجموع تخفیف‌ها
+    discountTotal!: number; // مجموع تخفیف‌ها
 
 
     @Column({ type: 'bigint', default: 0 })
-    total: number; // مبلغ نهایی پرداختی
+    total!: number; // مبلغ نهایی پرداختی
 
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }

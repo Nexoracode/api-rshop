@@ -179,7 +179,11 @@ export class CardService {
         total: snapshot.total,
       });
 
-      return { ...card, ...snapshot, items };
+      return {
+        message: 'عملیات با موفقیت انجام شد',
+        itemId: item.id,
+        cardId: card.id,
+      }
     });
   }
 
@@ -196,7 +200,11 @@ export class CardService {
       if (!card) throw new NotFoundException('سبد خرید یافت نشد.');
 
 
-      const item = await itemRepo.findOne({ where: { id: dto.itemId }, relations: ['card'], lock: { mode: 'pessimistic_write' } });
+      const item = await itemRepo.findOne({
+        where: { id: dto.itemId },
+        // relations: ['card'],
+        lock: { mode: 'pessimistic_write' }
+      });
       if (!item || item.cardId !== card.id) throw new NotFoundException('موردی برای سبد خرید یافت نشد.');
 
 
@@ -209,10 +217,13 @@ export class CardService {
         await itemRepo.save(item);
       }
 
-
       const items = await itemRepo.find({ where: { card: { id: card.id } } });
       await cardRepo.save(this.computeSnapshot(items, card));
-      return { ...card, items };
+      return {
+        message: item.quantity === 0 ? 'سبدخرید شما خالی شد' : 'سبدخرید شما با موفقیت بروزشد',
+        itemId: item.id,
+        cardId: card.id,
+      }
     });
   }
 
