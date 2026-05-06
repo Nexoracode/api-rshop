@@ -73,4 +73,16 @@ export class CatalogController {
     ) {
         return this.catalogService.searchProductsWithPaginate(term, query!);
     }
+
+    // 🔹 لیست محصولات یک دسته‌بندی
+    @Public()
+    @Get(':slug')
+    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری' })
+    @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'mohr-tasbih' })
+    async getProductsByCategory(
+        @Param('slug') slug: string,
+        @Query() query?: CatalogQueryDto,
+    ) {
+        return this.catalogService.getProductsByCategoryWithPaginate(slug, query!);
+    }
 }
