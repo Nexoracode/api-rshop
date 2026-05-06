@@ -350,7 +350,7 @@ export class OrderService {
 
     // 🛒 ساخت سفارش از سبد خرید
     private async calculateShippingCost(user: User, address: Address, items: CardItem[]) {
-        return 100000;
+        return 0;
     }
 
     async createFromCard(userReq: User, dto: CreateOrderFromCardDto) {
