@@ -29,6 +29,12 @@ export class CategoryController {
   // ─── Public endpoints ───────────────────────────────────────────────────────
 
   @Public()
+  @Get('slugs')
+  async getCategorySlugs() {
+    return this.categoryService.getCategoyrSlugs();
+  }
+
+  @Public()
   @Get('site')
   async findAllTreeSite() {
     return this.categoryService.findAllTreeForSite();

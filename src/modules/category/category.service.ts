@@ -653,4 +653,27 @@ export class CategoryService implements ICategoryService {
 
         return result;
     }
+
+    async getCategoyrSlugs() {
+        const categories = await this.treeCatRepo.findTrees({
+            relations: ['parent', 'children', 'icon'],
+        });
+
+        const extractSlugsWithPath = (items: any[], parentPath: string = ''): string[] => {
+            let slugs: string[] = [];
+
+            for (const item of items) {
+                const currentPath = parentPath ? `${parentPath}/${item.slug}` : item.slug;
+                slugs.push(currentPath);
+
+                if (item.children && item.children.length > 0) {
+                    slugs = slugs.concat(extractSlugsWithPath(item.children, currentPath));
+                }
+            }
+
+            return slugs;
+        };
+
+        return extractSlugsWithPath(categories);
+    }
 }
