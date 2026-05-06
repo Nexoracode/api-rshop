@@ -103,16 +103,11 @@ export class CatalogSearchService {
       LEFT JOIN medias m ON m.id = p.media_pinned_id
       WHERE p.is_active = 1
         AND p.is_visible = 1
-        AND (
-          p.name LIKE ? OR
-          p.description LIKE ? OR
-          b.name LIKE ? OR
-          c.title LIKE ?
-        )
+        AND ( p.name LIKE ? )
       ORDER BY p.id DESC
       LIMIT ?
       `,
-      [likeTerm, likeTerm, likeTerm, likeTerm, limit],
+      [likeTerm, limit],
     );
 
     // 🧩 برندها
@@ -124,10 +119,10 @@ export class CatalogSearchService {
       WHERE p.is_active = 1
         AND p.is_visible = 1
         AND b.is_active = 1
-        AND (b.name LIKE ? OR p.name LIKE ?)
+        AND (b.name LIKE ?)
       LIMIT 10
       `,
-      [likeTerm, likeTerm],
+      [likeTerm],
     );
 
     // 🧩 دسته‌ها
@@ -139,10 +134,10 @@ export class CatalogSearchService {
       WHERE p.is_active = 1
         AND p.is_visible = 1
         AND c.is_active = 1
-        AND (c.title LIKE ? OR p.name LIKE ?)
+        AND (c.title LIKE ? )
       LIMIT 10
       `,
-      [likeTerm, likeTerm],
+      [likeTerm],
     );
 
     const result: CatalogSearchResult = {

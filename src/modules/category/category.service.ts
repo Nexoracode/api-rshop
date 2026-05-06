@@ -68,7 +68,7 @@ export class CategoryService implements ICategoryService {
         parents?: Array<{
             id: number;
             title: string;
-            slug: string;
+            // slug: string;
             description: string | null;
             level: number;
             icon: any;
@@ -76,7 +76,7 @@ export class CategoryService implements ICategoryService {
         breadcrumb: Array<{
             id: number;
             title: string;
-            slug: string;
+            // slug: string;
             level: number;
         }>;
     }> {
@@ -97,7 +97,7 @@ export class CategoryService implements ICategoryService {
             ...parents.map(p => ({
                 id: p.id,
                 title: p.title,
-                slug: p.slug,
+                // slug: p.slug,
                 level: p.level,
             })),
             {
@@ -122,7 +122,7 @@ export class CategoryService implements ICategoryService {
             parents: parents.map(p => ({
                 id: p.id,
                 title: p.title,
-                slug: p.slug,
+                // slug: p.slug,
                 description: p.description ?? null,
                 level: p.level,
                 icon: category.icon,
@@ -145,14 +145,14 @@ export class CategoryService implements ICategoryService {
         parents: Array<{
             id: number;
             title: string;
-            slug: string;
+            // slug: string;
             description?: string | null;
             level: number;
         }>;
         breadcrumb: Array<{
             id: number;
             title: string;
-            slug: string;
+            // slug: string;
             level: number;
         }>;
     }> {
@@ -173,7 +173,7 @@ export class CategoryService implements ICategoryService {
             ...parents.map(p => ({
                 id: p.id,
                 title: p.title,
-                slug: p.slug,
+                // slug: p.slug,
                 level: p.level,
             })),
             {
@@ -198,7 +198,7 @@ export class CategoryService implements ICategoryService {
             parents: parents.map(p => ({
                 id: p.id,
                 title: p.title,
-                slug: p.slug,
+                // slug: p.slug,
                 description: p.description,
                 level: p.level,
                 icon: p.icon,

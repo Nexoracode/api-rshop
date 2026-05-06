@@ -18,8 +18,8 @@ export class CatalogController {
     @Public()
     @Get('suggest')
     @ApiOperation({ summary: 'پیشنهاد سریع برای autocomplete', description: 'نمایش چند عنوان مرتبط هنگام تایپ در هدر' })
-    @ApiQuery({ name: 'term', required: true, example: 'تسبیح' })
-    async suggest(@Query('term') term: string) {
+    @ApiQuery({ name: 'search', required: true, example: 'تسبیح' })
+    async suggest(@Query('search') term: string) {
         return this.searchService.getSuggestions(term);
     }
 
@@ -64,13 +64,13 @@ export class CatalogController {
 
     // 🔹 لیست محصولات یک دسته‌بندی
     @Public()
-    @Get(':slug')
-    @ApiOperation({ summary: 'لیست محصولات بر اساس اسلاگ کتگوری' })
-    @ApiParam({ name: 'slug', description: 'اسلاگ کتگوری', example: 'mohr-tasbih' })
-    async getProductsByCategory(
-        @Param('slug') slug: string,
+    @Get('search/:search')
+    @ApiOperation({ summary: 'جستجوی محصولات با فیلترهای پیشرفته' })
+    @ApiParam({ name: 'search', description: 'متن جستجو', example: 'قاب' })
+    async searchProducts(
+        @Param('search') term: string,
         @Query() query?: CatalogQueryDto,
     ) {
-        return this.catalogService.getProductsByCategoryWithPaginate(slug, query!);
+        return this.catalogService.searchProductsWithPaginate(term, query!);
     }
 }

@@ -264,11 +264,11 @@ export class CatalogQueryService {
         boolean_filter: {
           special_offer: {
             type: 'boolean',
-            label: 'فقط محصولات پیشنهاد ویژه',
+            label: 'محصولات پیشنهاد ویژه',
           },
           discounted: {
             type: 'boolean',
-            label: 'فقط محصولات دارای تخفیف'
+            label: 'محصولات تخفیف دار'
           },
           same_day_shipping: {
             type: 'boolean',
@@ -276,7 +276,7 @@ export class CatalogQueryService {
           },
           in_stock: {
             type: 'boolean',
-            label: 'فقط محصولات موجود در انبار',
+            label: 'محصولات موجود در انبار',
           },
         },
         price_range: {
@@ -430,11 +430,11 @@ export class CatalogQueryService {
         boolean_filter: {
           special_offer: {
             type: 'boolean',
-            label: 'فقط محصولات پیشنهاد ویژه',
+            label: 'محصولات پیشنهاد ویژه',
           },
           discounted: {
             type: 'boolean',
-            label: 'فقط محصولات دارای تخفیف'
+            label: 'محصولات تخفیف دار'
           },
           same_day_shipping: {
             type: 'boolean',
@@ -442,7 +442,7 @@ export class CatalogQueryService {
           },
           in_stock: {
             type: 'boolean',
-            label: 'فقط محصولات موجود در انبار',
+            label: 'محصولات موجود در انبار',
           },
         },
         price_range: {
@@ -458,6 +458,204 @@ export class CatalogQueryService {
         })),
       },
     };
+  }
+
+  async buildSearchFilters(searchTerm: string) {
+    // ------------------------------------------
+    // ۱. برندها - از محصولات منطبق با جستجو
+    // ------------------------------------------
+    const brands = await this.dataSource.query(
+      `
+        SELECT b.id, b.slug, b.name, COUNT(p.id) as count
+        FROM products p
+        INNER JOIN brands b ON b.id = p.brand_id
+        WHERE p.is_active = 1 
+            AND b.is_active = 1
+            AND (p.name LIKE ?)
+        GROUP BY b.id, b.name
+        `,
+      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+    );
+
+    // ------------------------------------------
+    // ۲. ویژگی‌ها از product_attribute_values
+    // ------------------------------------------
+    const productAttrs = await this.dataSource.query(
+      `
+        SELECT DISTINCT
+            a.id AS attribute_id,
+            a.name AS attribute_name,
+            a.type AS attribute_type,
+            av.id AS attribute_value_id,
+            av.value AS attribute_value,
+            av.display_color AS attribute_value_color
+        FROM attributes a
+        INNER JOIN attribute_values av ON av.attribute_id = a.id
+        INNER JOIN product_attribute_values pav ON pav.value_id = av.id
+        INNER JOIN products p ON p.id = pav.product_id
+        WHERE p.is_active = 1
+            AND av.value IS NOT NULL
+            AND (p.name LIKE ?)
+        `,
+      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+    );
+
+    // ------------------------------------------
+    // ۳. ویژگی‌های واریانت
+    // ------------------------------------------
+    const variantAttrs = await this.dataSource.query(
+      `
+        SELECT DISTINCT
+            a.id AS attribute_id,
+            a.name AS attribute_name,
+            a.type AS attribute_type,
+            av.id AS attribute_value_id,
+            av.value AS attribute_value,
+            av.display_color AS attribute_value_color
+        FROM attributes a
+        INNER JOIN attribute_values av ON av.attribute_id = a.id
+        INNER JOIN variant_attribute_values vav ON vav.value_id = av.id
+        INNER JOIN variants_product v ON v.id = vav.variant_id
+        INNER JOIN products p ON p.id = v.product_id
+        WHERE p.is_active = 1
+            AND av.value IS NOT NULL
+            AND (p.name LIKE ?)
+        `,
+      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+    );
+
+    // ------------------------------------------
+    // ۴. ترکیب ویژگی‌ها
+    // ------------------------------------------
+    const attributesRaw = [...productAttrs, ...variantAttrs];
+    const attributeMap = new Map<
+      number,
+      { id: number; name: string; type: string; values: AttributeValue[] }
+    >();
+
+    for (const row of attributesRaw) {
+      if (!attributeMap.has(row.attribute_id)) {
+        attributeMap.set(row.attribute_id, {
+          id: row.attribute_id,
+          name: row.attribute_name,
+          type: row.attribute_type,
+          values: [],
+        });
+      }
+
+      const attr = attributeMap.get(row.attribute_id)!;
+      if (
+        row.attribute_value &&
+        row.attribute_value_id &&
+        !attr.values.some((v) => v.id === row.attribute_value_id)
+      ) {
+        attr.values.push({
+          id: row.attribute_value_id,
+          value: row.attribute_value,
+          displayColor: row.attribute_value_color ?? null,
+        });
+      }
+    }
+
+    // ------------------------------------------
+    // ۵. بازه قیمت - از محصولات منطبق با جستجو
+    // ------------------------------------------
+    const priceRange = await this.dataSource.query(
+      `
+        SELECT 
+            MIN(p.price - COALESCE(p.discount_amount, 0)) as min,
+            MAX(p.price - COALESCE(p.discount_amount, 0)) as max
+        FROM products p
+        WHERE p.is_active = 1
+            AND (p.name LIKE ?)
+        `,
+      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+    );
+
+    // ------------------------------------------
+    // ۶. دسته‌بندی‌های مرتبط با جستجو (برای نمایش درخت)
+    // ------------------------------------------
+    const categoriesFromSearch = await this.dataSource.query(
+      `
+        SELECT DISTINCT 
+            c.id, c.title, c.slug, c.parent_id
+        FROM categories c
+        INNER JOIN products p ON p.category_id = c.id
+        WHERE p.is_active = 1
+            AND (p.name LIKE ?)
+        `,
+      [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+    );
+
+    // ساخت درخت دسته‌بندی از نتایج جستجو
+    const categoryTree = this.buildCategoryTreeFromResults(categoriesFromSearch);
+
+    // ------------------------------------------
+    // ۷. خروجی نهایی
+    // ------------------------------------------
+    return {
+      attributes: Array.from(attributeMap.values()),
+      generic: {
+        boolean_filter: {
+          special_offer: {
+            type: 'boolean',
+            label: 'محصولات پیشنهاد ویژه',
+          },
+          discounted: {
+            type: 'boolean',
+            label: 'محصولات تخفیف دار'
+          },
+          same_day_shipping: {
+            type: 'boolean',
+            label: 'ارسال سریع',
+          },
+          in_stock: {
+            type: 'boolean',
+            label: 'محصولات موجود در انبار',
+          },
+        },
+        price_range: {
+          min: Number(priceRange[0]?.min) || 0,
+          max: Number(priceRange[0]?.max) || 0,
+        },
+        categories: categoryTree,
+        brands: brands.map((b) => ({
+          id: b.id,
+          name: b.name,
+          slug: b.slug,
+          count: Number(b.count),
+        })),
+      },
+    };
+  }
+
+  // helper برای ساخت درخت دسته‌بندی
+  private buildCategoryTreeFromResults(categories: any[]): any[] {
+    const categoryMap = new Map();
+    const roots: any[] = [];
+
+    // ابتدا همه دسته‌ها را در مپ قرار می‌دهیم
+    categories.forEach(cat => {
+      categoryMap.set(cat.id, {
+        id: cat.id,
+        title: cat.title,
+        slug: cat.slug,
+        children: []
+      });
+    });
+
+    // ساخت درخت
+    categories.forEach(cat => {
+      const node = categoryMap.get(cat.id);
+      if (cat.parent_id && categoryMap.has(cat.parent_id)) {
+        const parent = categoryMap.get(cat.parent_id);
+        parent.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    return roots;
   }
 
   // 🎯 ساخت فیلترها برای محصولات یک برند
@@ -579,11 +777,11 @@ export class CatalogQueryService {
         boolean_filter: {
           special_offer: {
             type: 'boolean',
-            label: 'فقط محصولات پیشنهاد ویژه',
+            label: 'محصولات پیشنهاد ویژه',
           },
           discounted: {
             type: 'boolean',
-            label: 'فقط محصولات دارای تخفیف'
+            label: 'محصولات تخفیف دار'
           },
           same_day_shipping: {
             type: 'boolean',
@@ -591,7 +789,7 @@ export class CatalogQueryService {
           },
           in_stock: {
             type: 'boolean',
-            label: 'فقط محصولات موجود در انبار',
+            label: 'محصولات موجود در انبار',
           },
         },
         price_range: {

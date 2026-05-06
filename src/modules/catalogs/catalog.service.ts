@@ -1,5 +1,5 @@
 // catalog.service.ts - نسخه نهایی با کد تو که کار می‌کنه
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { PaginateQuery, paginate } from 'nestjs-paginate';
 import { DataSource } from 'typeorm';
 import { CatalogQueryService } from './services/catalog-query.service';
@@ -407,6 +407,97 @@ export class CatalogService {
             data: products,
             meta: paginated.meta,
             filters,
+        };
+    }
+
+    async searchProductsWithPaginate(
+        searchTerm: string,
+        query: PaginateQuery,
+    ): Promise<any> {
+        if (!searchTerm || searchTerm.trim() === '') {
+            throw new BadRequestException('متن جستجو نمی‌تواند خالی باشد');
+        }
+
+        // 1. ابتدا محصولات منطبق با جستجو را پیدا می‌کنیم
+        const qb = this.dataSource
+            .getRepository(Product)
+            .createQueryBuilder('p')
+            .leftJoinAndSelect('p.brand', 'b')
+            .leftJoinAndSelect('p.category', 'c')
+            .leftJoinAndSelect('p.mediaPinned', 'm')
+            .leftJoinAndSelect('p.medias', 'me')
+            .leftJoinAndSelect('p.variants', 'v')
+            .leftJoinAndSelect('v.attributes', 'va')
+            .leftJoinAndSelect('va.attribute', 'attr')
+            .leftJoinAndSelect('va.value', 'aval')
+            .where('p.is_active = :active', { active: true })
+            .andWhere('p.is_visible = :visible', { visible: true })
+            .andWhere(
+                '(p.name LIKE :search)',
+                { search: `%${searchTerm}%` }
+            );
+
+        // اعمال فیلترهای مشابه متد قبلی
+        if (query['filter[brand]']) {
+            const brandIds = Array.isArray(query['filter[brand]'])
+                ? query['filter[brand]']
+                : query['filter[brand]'].split(',').map((id: string) => parseInt(id.trim(), 10));
+            qb.andWhere('b.id IN (:...brandIds)', { brandIds });
+        }
+
+        if (query['filter[price_min]']) {
+            qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) >= :min', {
+                min: query['filter[price_min]']
+            });
+        }
+        if (query['filter[price_max]']) {
+            qb.andWhere('(p.price - COALESCE(p.discount_amount,0)) <= :max', {
+                max: query['filter[price_max]']
+            });
+        }
+
+        if (query['filter[special_offer]'] === '1' || query['filter[special_offer]'] === 'true') {
+            qb.andWhere('p.is_featured > 0');
+        }
+
+        if (query['filter[discounted]'] === '1' || query['filter[discounted]'] === 'true') {
+            qb.andWhere('(p.discount_amount > 0 OR p.discount_percent > 0)');
+        }
+
+        if (query['filter[same_day_shipping]'] === '1' || query['filter[same_day_shipping]'] === 'true') {
+            qb.andWhere('p.is_same_day_shipping > 0');
+        }
+
+        if (query['filter[in_stock]'] === '1' || query['filter[in_stock]'] === 'true') {
+            qb.andWhere('p.stock > 0');
+        }
+
+        if (query.sortBy && typeof query.sortBy === 'string') {
+            this.applySorting(qb, query.sortBy);
+        }
+
+        // فیلتر attribute (مشابه متد قبلی)
+        await this.applyAttributeFilter(qb, query);
+
+        const paginated = await paginate(query, qb, {
+            sortableColumns: ['id', 'price', 'createdAt'],
+            searchableColumns: ['name', 'description'],
+            defaultSortBy: [['id', 'DESC']],
+            defaultLimit: query.limit || 20,
+            maxLimit: 100,
+        });
+
+        const products = paginated.data.map(CatalogMapper.toProduct);
+
+        // 2. ساخت فیلترها بر اساس نتایج جستجو (نه بر اساس کتگوری!)
+        const filters = await this.queryService.buildSearchFilters(searchTerm);
+
+        return {
+            items_count: paginated.meta.totalItems,
+            data: products,
+            meta: paginated.meta,
+            filters,
+            search_term: searchTerm,
         };
     }
 }
