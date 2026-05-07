@@ -5,23 +5,23 @@ import { FaqCategoryEntity } from "src/modules/store-info/entities/faq-category.
 @Entity('icons')
 export class Icon {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({ length: 100, unique: true })
-    name: string;
+    name!: string;
 
     @Column({ type: 'text' })
-    svg: string;
+    svg!: string;
 
     @OneToMany(() => Category, (category) => category.icon)
-    categories: Category[];
+    categories!: Category[];
 
     @OneToMany(() => FaqCategoryEntity, (faqCat) => faqCat.icon)
-    faqCategories: FaqCategoryEntity[];
+    faqCategories!: FaqCategoryEntity[];
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }
