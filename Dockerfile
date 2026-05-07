@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm install && npm install -g @nestjs/cli
+RUN npm install
 
 COPY . .
 # این خط اپلیکیشن را بیلد می‌کند
@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 
 # # فقط فایل‌های مورد نیاز پروداکشن را کپی کنید
 COPY package*.json ./
-RUN npm install && npm install -g @nestjs/cli
+RUN npm install --only=production
 
 # فایل‌های بیلد شده را از مرحله قبل کپی کنید
 COPY --from=builder /usr/src/app/dist ./dist
