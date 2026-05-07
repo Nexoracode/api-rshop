@@ -17,7 +17,7 @@ export class CardItem {
     cardId!: number;
 
 
-    @ManyToOne(() => Product, { eager: true, nullable: false })
+    @ManyToOne(() => Product, { nullable: false })
     @JoinColumn({ name: 'product_id' })
     product!: Product;
 

@@ -64,7 +64,11 @@ function resolveDiscountByVariant(
 @Injectable()
 export class CardService {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource,
+    @InjectRepository(Card)
+    private readonly cardRepo: Repository<Card>,
+    @InjectRepository(CardItem)
+    private readonly cardItemRepo: Repository<CardItem>
   ) { }
 
   private computeSnapshot(items: CardItem[], card: Card) {
@@ -77,12 +81,79 @@ export class CardService {
   }
 
   async getOrCreateUserCard(user: User) {
-    const cardRepo = this.dataSource.getRepository(Card);
+    let card = await this.cardRepo
+      .createQueryBuilder('card')
+      .leftJoin('card.items', 'items')
+      .leftJoin('items.product', 'product')
+      .leftJoin('product.mediaPinned', 'mediaPinned')
+      .leftJoin('items.variant', 'variant')
+      .leftJoin('variant.attributes', 'variantAttributes')
+      .leftJoin('variantAttributes.attribute', 'attribute')
+      .leftJoin('variantAttributes.value', 'attributeValue')
+      .where('card.user.id = :userId', { userId: user.id })
+      .andWhere('card.status = :status', { status: CardStatus.OPEN })
+      .addSelect([
+        // فیلدهای card
+        'card.id',
+        'card.status',
+        'card.itemsCount',
+        'card.totalQuantity',
+        'card.subtotal',
+        'card.discountTotal',
+        'card.total',
 
-    let card = await cardRepo.findOne({ where: { user: { id: user.id }, status: CardStatus.OPEN }, relations });
+        // فیلدهای items
+        "items.id",
+        "items.cardId",
+        "items.productId",
+        "items.variantId",
+        "items.quantity",
+        "items.unitPrice",
+        "items.discount",
+        "items.lineTotal",
+
+        // فقط فیلدهای مورد نیاز product (بدون description!)
+        'product.id',
+        'product.name',
+        'product.price',
+        'product.weight',
+        'product.stock',
+        'product.discountAmount',
+        'product.discountPercent',
+        'product.orderLimit',
+        'product.isVisible',
+
+        // فقط فیلدهای مورد نیاز media_pinned
+        'mediaPinned.url',
+
+        // فیلدهای variant
+        "variant.id",
+        "variant.stock",
+        "variant.price",
+        "variant.sku",
+        "variant.discountAmount",
+        "variant.discountPercent",
+
+        // فیلدهای variantAttributes (جدول intermediate)
+        'variantAttributes.id',
+
+        // فیلدهای attribute
+        'attribute.id',
+        'attribute.name',
+        'attribute.type',
+
+        // فیلدهای attributeValue
+        'attributeValue.id',
+        'attributeValue.value',
+        "attributeValue.displayColor",
+      ])
+      .where('card.user.id = :userId', { userId: user.id })
+      .andWhere('card.status = :status', { status: CardStatus.OPEN })
+      .getOne();
+
     if (!card) {
-      card = cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
-      await cardRepo.save(card);
+      card = this.cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
+      await this.cardRepo.save(card);
     }
     return card!;
   }
@@ -233,8 +304,9 @@ export class CardService {
 
   async getMyCard(user: User) {
     const card = await this.getOrCreateUserCard(user);
-    const items = await this.dataSource.getRepository(CardItem).find({
-      where: { card: { id: card.id } }, relations: [
+    const items = await this.cardItemRepo.find({
+      where: { card: { id: card.id } },
+      relations: [
         'variant.attributes']
     });
     return this.computeSnapshot(items, card);
