@@ -12,21 +12,22 @@ import {
   IMonthlyDataPoint,
   IPersianMonth,
 } from './interfaces/dashboard.interface';
+import { Review } from '../review/entities/review.entity';
 
 /** لیست ماه‌های شمسی به ترتیب */
 const PERSIAN_MONTHS: IPersianMonth[] = [
-  { id: 0,  month: 'فروردین',  slug: 'farvardin',   monthNumber: 1  },
-  { id: 1,  month: 'اردیبهشت', slug: 'ordibehesht', monthNumber: 2  },
-  { id: 2,  month: 'خرداد',    slug: 'khordad',     monthNumber: 3  },
-  { id: 3,  month: 'تیر',      slug: 'tir',         monthNumber: 4  },
-  { id: 4,  month: 'مرداد',    slug: 'mordad',      monthNumber: 5  },
-  { id: 5,  month: 'شهریور',   slug: 'shahrivar',   monthNumber: 6  },
-  { id: 6,  month: 'مهر',      slug: 'mehr',        monthNumber: 7  },
-  { id: 7,  month: 'آبان',     slug: 'aban',        monthNumber: 8  },
-  { id: 8,  month: 'آذر',      slug: 'azar',        monthNumber: 9  },
-  { id: 9,  month: 'دی',       slug: 'dey',         monthNumber: 10 },
-  { id: 10, month: 'بهمن',     slug: 'bahman',      monthNumber: 11 },
-  { id: 11, month: 'اسفند',    slug: 'esfand',      monthNumber: 12 },
+  { id: 0, month: 'فروردین', slug: 'farvardin', monthNumber: 1 },
+  { id: 1, month: 'اردیبهشت', slug: 'ordibehesht', monthNumber: 2 },
+  { id: 2, month: 'خرداد', slug: 'khordad', monthNumber: 3 },
+  { id: 3, month: 'تیر', slug: 'tir', monthNumber: 4 },
+  { id: 4, month: 'مرداد', slug: 'mordad', monthNumber: 5 },
+  { id: 5, month: 'شهریور', slug: 'shahrivar', monthNumber: 6 },
+  { id: 6, month: 'مهر', slug: 'mehr', monthNumber: 7 },
+  { id: 7, month: 'آبان', slug: 'aban', monthNumber: 8 },
+  { id: 8, month: 'آذر', slug: 'azar', monthNumber: 9 },
+  { id: 9, month: 'دی', slug: 'dey', monthNumber: 10 },
+  { id: 10, month: 'بهمن', slug: 'bahman', monthNumber: 11 },
+  { id: 11, month: 'اسفند', slug: 'esfand', monthNumber: 12 },
 ];
 
 /**
@@ -41,16 +42,16 @@ function getPersianMonth(date: Date): number {
   // مرجع: تبدیل تقریبی ماه میلادی به شمسی
   // فروردین = مارس 21 تا آوریل 20
   const MILADI_TO_JALALI: Array<{ start: [number, number]; jalali: number }> = [
-    { start: [3, 21], jalali: 1  }, // فروردین
-    { start: [4, 21], jalali: 2  }, // اردیبهشت
-    { start: [5, 22], jalali: 3  }, // خرداد
-    { start: [6, 22], jalali: 4  }, // تیر
-    { start: [7, 23], jalali: 5  }, // مرداد
-    { start: [8, 23], jalali: 6  }, // شهریور
-    { start: [9, 23], jalali: 7  }, // مهر
+    { start: [3, 21], jalali: 1 }, // فروردین
+    { start: [4, 21], jalali: 2 }, // اردیبهشت
+    { start: [5, 22], jalali: 3 }, // خرداد
+    { start: [6, 22], jalali: 4 }, // تیر
+    { start: [7, 23], jalali: 5 }, // مرداد
+    { start: [8, 23], jalali: 6 }, // شهریور
+    { start: [9, 23], jalali: 7 }, // مهر
     { start: [10, 23], jalali: 8 }, // آبان
     { start: [11, 22], jalali: 9 }, // آذر
-    { start: [12, 22], jalali: 10}, // دی
+    { start: [12, 22], jalali: 10 }, // دی
     { start: [1, 21], jalali: 11 }, // بهمن (سال بعد)
     { start: [2, 20], jalali: 12 }, // اسفند
   ];
@@ -58,19 +59,19 @@ function getPersianMonth(date: Date): number {
   // ماه‌های دی و بهمن و اسفند (میلادی: ژانویه، فوریه، مارس قبل از ۲۱)
   if (month === 1 && day >= 21) return 11; // بهمن
   if (month === 2 && day >= 20) return 12; // اسفند
-  if (month === 3 && day < 21)  return 12; // اسفند (ادامه)
+  if (month === 3 && day < 21) return 12; // اسفند (ادامه)
   if (month === 3 && day >= 21) return 1;  // فروردین
-  if (month === 4 && day < 21)  return 1;  // فروردین
+  if (month === 4 && day < 21) return 1;  // فروردین
   if (month === 4 && day >= 21) return 2;  // اردیبهشت
-  if (month === 5 && day < 22)  return 2;  // اردیبهشت
+  if (month === 5 && day < 22) return 2;  // اردیبهشت
   if (month === 5 && day >= 22) return 3;  // خرداد
-  if (month === 6 && day < 22)  return 3;  // خرداد
+  if (month === 6 && day < 22) return 3;  // خرداد
   if (month === 6 && day >= 22) return 4;  // تیر
-  if (month === 7 && day < 23)  return 4;  // تیر
+  if (month === 7 && day < 23) return 4;  // تیر
   if (month === 7 && day >= 23) return 5;  // مرداد
-  if (month === 8 && day < 23)  return 5;  // مرداد
+  if (month === 8 && day < 23) return 5;  // مرداد
   if (month === 8 && day >= 23) return 6;  // شهریور
-  if (month === 9 && day < 23)  return 6;  // شهریور
+  if (month === 9 && day < 23) return 6;  // شهریور
   if (month === 9 && day >= 23) return 7;  // مهر
   if (month === 10 && day < 23) return 7;  // مهر
   if (month === 10 && day >= 23) return 8; // آبان
@@ -78,7 +79,7 @@ function getPersianMonth(date: Date): number {
   if (month === 11 && day >= 22) return 9; // آذر
   if (month === 12 && day < 22) return 9;  // آذر
   if (month === 12 && day >= 22) return 10;// دی
-  if (month === 1 && day < 21)  return 10; // دی (ادامه)
+  if (month === 1 && day < 21) return 10; // دی (ادامه)
 
   return 1;
 }
@@ -117,7 +118,10 @@ export class DashboardService {
 
     @InjectRepository(Payment)
     private readonly paymentRepo: Repository<Payment>,
-  ) {}
+
+    @InjectRepository(Review)
+    private readonly reviewRepo: Repository<Review>
+  ) { }
 
   /**
    * دریافت آمار کامل داشبورد برای سال جاری شمسی
@@ -136,10 +140,12 @@ export class DashboardService {
     const jalaliYearEnd = new Date(jalaliYearStart);
     jalaliYearEnd.setFullYear(jalaliYearStart.getFullYear() + 1);
 
-    const [newCustomers, orders, totalSales] = await Promise.all([
+    const [newCustomers, orders, totalSales, reviews] = await Promise.all([
       this.getNewCustomersMonthly(jalaliYearStart, jalaliYearEnd),
       this.getOrdersMonthly(jalaliYearStart, jalaliYearEnd),
       this.getTotalSalesMonthly(jalaliYearStart, jalaliYearEnd),
+      this.getReviewsMonthly(jalaliYearStart, jalaliYearEnd), // <--- اضافه شد
+
     ]);
 
     return {
@@ -147,6 +153,7 @@ export class DashboardService {
       total_sales: totalSales,
       orders: orders,
       new_customers: newCustomers,
+      reviews: reviews,
     };
   }
 
@@ -248,5 +255,29 @@ export class DashboardService {
       slug: m.slug,
       value: mockVisits[i],
     }));
+  }
+
+  // ─── نظرات (reviews) ─────────────────────────────────────────────────────
+
+  private async getReviewsMonthly(
+    from: Date,
+    to: Date,
+  ): Promise<IMonthlyDataPoint[]> {
+    // دریافت تمام نظرات (چه تایید شده و چه تایید نشده)
+    // اگر فقط نظرات تایید شده می‌خواهید، شرط is_approved = true را اضافه کنید
+    const rows: Array<{ createdAt: Date }> = await this.reviewRepo
+      .createQueryBuilder('review')
+      .select('review.created_at', 'createdAt')
+      .where('review.created_at >= :from', { from })
+      .andWhere('review.created_at < :to', { to })
+      .getRawMany();
+
+    const monthMap = buildEmptyMonths();
+    for (const row of rows) {
+      const jalaliMonth = getPersianMonth(new Date(row.createdAt));
+      monthMap.set(jalaliMonth, (monthMap.get(jalaliMonth) ?? 0) + 1);
+    }
+
+    return mapToDataPoints(monthMap);
   }
 }

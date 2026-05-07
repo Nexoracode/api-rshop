@@ -17,6 +17,8 @@ export interface IDashboardStats {
 
   /** مشتری‌های جدید ماهانه */
   new_customers: IMonthlyDataPoint[];
+
+  reviews: IMonthlyDataPoint[]; // <--- اضافه شد
 }
 
 /** اطلاعات ثابت ماه‌های شمسی */

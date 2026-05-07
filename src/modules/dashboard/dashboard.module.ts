@@ -7,10 +7,11 @@ import { RbacController } from './rbac/rbac.controller';
 import { User } from '../user/entities/user.entity';
 import { Order } from '../order/entities/order.entity';
 import { Payment } from '../payment/entities/payment.entity';
+import { Review } from '../review/entities/review.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Order, Payment]),
+    TypeOrmModule.forFeature([User, Order, Payment, Review]),
   ],
   controllers: [
     DashboardController,
@@ -25,4 +26,4 @@ import { Payment } from '../payment/entities/payment.entity';
     RbacService,
   ],
 })
-export class DashboardModule {}
+export class DashboardModule { }

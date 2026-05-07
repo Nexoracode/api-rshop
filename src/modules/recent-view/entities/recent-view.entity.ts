@@ -14,27 +14,27 @@ import {
 @Unique(['userId', 'productId'])
 export class RecentView {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({ name: 'user_id', type: 'int' })
-    userId: number;
+    userId!: number;
 
     @ManyToOne(() => User, (user) => user.recentViews, {
         onDelete: 'CASCADE',
     })
-    user: User;
+    user!: User;
 
     @Column({ name: 'product_id', type: 'int' })
-    productId: number;
+    productId!: number;
 
     @ManyToOne(() => Product, (product) => product.recentViews, {
         onDelete: 'CASCADE',
     })
-    product: Product;
+    product!: Product;
 
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    updatedAt!: Date;
 }

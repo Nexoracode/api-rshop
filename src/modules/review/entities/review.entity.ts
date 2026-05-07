@@ -5,7 +5,6 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -13,36 +12,36 @@ import {
 @Entity({ name: 'reviews' })
 export class Review {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @Column({ name: 'product_id', type: 'int' })
-    productId: number;
+    productId!: number;
 
     @ManyToOne(() => Product, (product) => product.reviews, {
         onDelete: 'CASCADE',
     })
-    product: Product;
+    product!: Product;
 
     @Column({ name: 'user_id', type: 'int' })
-    userId: number;
+    userId!: number;
 
     @ManyToOne(() => User, (user) => user.reviews, {
         onDelete: 'CASCADE',
     })
-    user: User;
+    user!: User;
 
     @Column({ type: 'tinyint', default: 0 })
-    rating: number;
+    rating!: number;
 
     @Column({ type: 'text', nullable: true })
     comment?: string;
 
     @Column({ name: 'is_approved', type: 'boolean', default: null, nullable: true })
-    isApproved: boolean | null;
+    isApproved!: boolean | null;
 
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    updatedAt!: Date;
 }
