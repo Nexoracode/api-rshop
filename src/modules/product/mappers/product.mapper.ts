@@ -264,7 +264,7 @@ export class ProductMapper {
                 alt: m.altText,
                 type: m.type,
             })) : [],
-            mediaIds: product.medias.length ? product.medias.map((p) => p.id) : [],
+            mediaIds: product.medias ? product.medias.map((p) => p.id) : [],
             variants,
             specifications: mapSpecificationsGrouped(product.attributeValues || []),
             attribute_nodes,

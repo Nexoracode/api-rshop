@@ -77,10 +77,10 @@ export class Product implements IProduct {
     @Column({ type: 'varchar', length: 100, unique: true })
     sku!: string;
 
-    @OneToMany(() => Media, media => media.product, { cascade: true, eager: true })
+    @OneToMany(() => Media, media => media.product, { cascade: true })
     medias!: Media[];
 
-    @ManyToOne(() => Media, media => media.product, { eager: true })
+    @ManyToOne(() => Media, media => media.product)
     @JoinColumn({ name: 'media_pinned_id' })
     mediaPinned!: Media;
 
