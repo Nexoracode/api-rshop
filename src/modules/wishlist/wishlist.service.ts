@@ -30,7 +30,7 @@ export class WishlistService {
   async getAll(user: RequestUser) {
     const list = await this.wishlistRepo.find({
       where: { userId: user.id },
-      relations: ['product'],
+      relations: ['product', 'product.mediaPinned'],
       order: { createdAt: 'DESC' },
     });
     return WishlistMapper.toList(list);
