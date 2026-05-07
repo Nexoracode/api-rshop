@@ -40,6 +40,13 @@ export class ProductController {
         return this.uploadService.uploadFile(files, MediaType.PRODUCT);
     }
 
+
+    @Public()
+    @Get('ids')
+    findAllId() {
+        return this.productService.getAllProducts();
+    }
+
     @Get()
     @UseGuards(AccessGuard, RoleGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -62,12 +69,6 @@ export class ProductController {
     })
     findAll(@Paginate() query: PaginateQuery) {
         return this.productService.findAll(query);
-    }
-
-    @Public()
-    @Get('ids')
-    findAllId() {
-        return this.productService.getAllProducts();
     }
 
     @Post()
