@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 
 # # فقط فایل‌های مورد نیاز پروداکشن را کپی کنید
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install --only=production && npm install -g @nestjs/cli
 
 # فایل‌های بیلد شده را از مرحله قبل کپی کنید
 COPY --from=builder /usr/src/app/dist ./dist
