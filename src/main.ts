@@ -22,33 +22,6 @@ async function bootstrap() {
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
-  const dataSource = app.get(DataSource);
-  let reconnecting = false;
-  async function pingDatabase() {
-    if (reconnecting) return;
-    try {
-      if (dataSource.isInitialized) {
-        await dataSource.query('SELECT 1');
-      }
-    } catch (error: any) {
-      if (error.code === 'ECONNRESET' || error.message?.includes('ECONNRESET')) {
-        reconnecting = true;
-        logger.warn('ECONNRESET detected, reconnecting...');
-
-        try {
-          await dataSource.destroy();
-          await dataSource.initialize();
-          logger.log('Database reconnected successfully');
-        } catch (e: any) {
-          logger.error('Reconnect failed:', e.message);
-        } finally {
-          reconnecting = false;
-        }
-      }
-    }
-  }
-  setInterval(pingDatabase, 30000);
-  setTimeout(pingDatabase, 5000);
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter()),

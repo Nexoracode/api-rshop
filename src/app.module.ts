@@ -48,6 +48,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { IconModule } from './modules/icon/icon.module';
 import { AmadastModule } from './modules/amadast/amadast.module';
 import { LocationModule } from './modules/location/location.module';
+import { DatabaseKeepaliveService } from './common/database/database.interceptor';
 
 @Module({
   imports: [
@@ -98,7 +99,7 @@ import { LocationModule } from './modules/location/location.module';
     LocationModule,
   ],
   controllers: [AppController, HelperController],
-  providers: [AppService, CatalogImportService],
+  providers: [DatabaseKeepaliveService, AppService, CatalogImportService],
 })
 
 export class AppModule { }

@@ -81,84 +81,33 @@ export class CardService {
   }
 
   async getOrCreateUserCard(user: User) {
-    let card = await this.cardRepo
-      .createQueryBuilder('card')
-      .leftJoin('card.items', 'items')
-      .leftJoin('items.product', 'product')
-      .leftJoin('product.mediaPinned', 'mediaPinned')
-      .leftJoin('items.variant', 'variant')
-      .leftJoin('variant.attributes', 'variantAttributes')
-      .leftJoin('variantAttributes.attribute', 'attribute')
-      .leftJoin('variantAttributes.value', 'attributeValue')
-      .where('card.user.id = :userId', { userId: user.id })
-      .andWhere('card.status = :status', { status: CardStatus.OPEN })
-      .addSelect([
-        // فیلدهای card
-        'card.id',
-        'card.status',
-        'card.itemsCount',
-        'card.totalQuantity',
-        'card.subtotal',
-        'card.discountTotal',
-        'card.total',
+    // مرحله 1: فقط کارت رو بگیر
+    let card = await this.cardRepo.findOne({
+      where: {
+        user: { id: user.id },
+        status: CardStatus.OPEN
+      },
+      select: ['id', 'status', 'itemsCount', 'totalQuantity', 'subtotal', 'discountTotal', 'total']
+    });
 
-        // فیلدهای items
-        "items.id",
-        "items.cardId",
-        "items.productId",
-        "items.variantId",
-        "items.quantity",
-        "items.unitPrice",
-        "items.discount",
-        "items.lineTotal",
-
-        // فقط فیلدهای مورد نیاز product (بدون description!)
-        'product.id',
-        'product.name',
-        'product.price',
-        'product.weight',
-        'product.stock',
-        'product.discountAmount',
-        'product.discountPercent',
-        'product.orderLimit',
-        'product.isVisible',
-
-        // فقط فیلدهای مورد نیاز media_pinned
-        'mediaPinned.url',
-
-        // فیلدهای variant
-        "variant.id",
-        "variant.stock",
-        "variant.price",
-        "variant.sku",
-        "variant.discountAmount",
-        "variant.discountPercent",
-
-        // فیلدهای variantAttributes (جدول intermediate)
-        'variantAttributes.id',
-
-        // فیلدهای attribute
-        'attribute.id',
-        'attribute.name',
-        'attribute.type',
-
-        // فیلدهای attributeValue
-        'attributeValue.id',
-        'attributeValue.value',
-        "attributeValue.displayColor",
-      ])
-      .where('card.user.id = :userId', { userId: user.id })
-      .andWhere('card.status = :status', { status: CardStatus.OPEN })
-      .getOne();
-
+    // مرحله 2: اگه نداره، بساز
     if (!card) {
       card = this.cardRepo.create({ user, status: CardStatus.OPEN, items: [] });
       await this.cardRepo.save(card);
+      return card;
     }
-    return card!;
+
+    // مرحله 3: اگه آیتم داره، جداگانه آیتم‌ها رو بگیر
+    if (card.itemsCount > 0) {
+      const items = await this.cardItemRepo.find({
+        where: { cardId: card.id },
+        relations: ['product', 'product.mediaPinned', 'variant', 'variant.attributes', 'variant.attributes.attribute', 'variant.attributes.value']
+      });
+      card.items = items;
+    }
+
+    return card;
   }
-
-
 
   async addItem(user: User, dto: AddItemDto) {
     return runInTransaction(this.dataSource, async (manager) => {
