@@ -28,7 +28,7 @@ export class ReviewService {
   async findAllByUser(userId: number) {
     const list = await this.reviewRepo.find({
       where: { user: { id: userId } },
-      relations: ['user', 'product'],
+      relations: ['user', 'product', 'product.mediaPinned'],
       order: { createdAt: 'DESC' },
     });
     return ReviewMapper.toList(list);
