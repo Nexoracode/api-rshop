@@ -86,7 +86,7 @@ export class UserService extends BaseService<User> implements IUserService {
 
     async findOneUser(id: number): Promise<IUserResponse> {
         const user = await this.userRepo.findOne({
-            where: { id },
+            where: { id, addresses: { isActive: true } },
             relations: ['addresses'],
         });
         if (!user) throw new NotFoundException('کاربر یافت نشد.');

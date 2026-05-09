@@ -6,7 +6,7 @@ import { Request } from "express";
 export interface IAddressService {
     create(userId: number, data: CreateAddressDto): Promise<IAddressResponse>;
     update(id: number, data: UpdateAddressDto): Promise<IAddressResponse>;
-    remove(id: number): Promise<Object>;
+    remove(userId: number, id: number): Promise<Object>;
     findByUserId(userId: number): Promise<IAddressResponse[]>;
     findMe(userId: number): Promise<IAddressResponse>;
 }

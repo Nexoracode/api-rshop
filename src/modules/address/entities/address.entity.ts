@@ -43,6 +43,9 @@ export class Address implements IAddress {
     @Column({ name: 'is_primary', default: true })
     isPrimary!: boolean;
 
+    @Column({ name: 'is_active', default: true })
+    isActive!: boolean;  // فعال/غیرفعال
+
     @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user!: User;
@@ -55,4 +58,7 @@ export class Address implements IAddress {
 
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt!: Date;
+
+    @Column({ name: 'deleted_at', nullable: true })
+    deletedAt!: Date
 }

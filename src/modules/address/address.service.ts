@@ -71,12 +71,15 @@ export class AddressService implements IAddressService {
         return AddressMapper.toResponse(saved);
     }
 
-    async remove(id: number): Promise<Object> {
+    async remove(userId: number, id: number): Promise<Object> {
         const exists = await this.addressRepo.findOne({
             where: { id },
         })
         if (!exists) throw new BadRequestException('آدرس یافت نشد');
-        await this.addressRepo.delete(id);
+        await this.addressRepo.update(
+            { id, userId: userId },
+            { deletedAt: new Date(), isActive: false }
+        )
         return { message: 'آدرس با موفقیت حذف شد', data: null };
     }
 

@@ -107,8 +107,8 @@ export class UserController {
     }
 
     @Delete('me/addresses/:addressId')
-    deleteUserAddress(@Param('addressId', ParseIntPipe) addressId: number) {
-        return this.addressService.remove(addressId);
+    deleteUserAddress(@CurrentUser() user: RequestUser, @Param('addressId', ParseIntPipe) addressId: number) {
+        return this.addressService.remove(user.id, addressId);
     }
 
     @Patch('me/update')
