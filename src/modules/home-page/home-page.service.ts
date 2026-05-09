@@ -63,7 +63,7 @@ export class HomePageService {
     this.logger.log(`🔄 بارگذاری home page data از DB (${forAdmin ? 'admin' : 'public'})`);
 
     // ✅ دریافت داده‌ها بر اساس forAdmin
-    const [heroSliders, sideBanners, promoBanners, sections, categories, brands] = await Promise.all([
+    const [heroSliders, sideBanners, sections, categories, brands] = await Promise.all([
       forAdmin
         ? this.heroSliderService.findAll()
         : this.heroSliderService.findAllActive(),
@@ -71,10 +71,6 @@ export class HomePageService {
       forAdmin
         ? this.sideBannerService.findAll()
         : this.sideBannerService.findAllActive(),
-
-      forAdmin
-        ? this.promoBannerService.findAll()
-        : this.promoBannerService.findAllActive(),
 
       forAdmin
         ? this.homeSectionService.findAll()
@@ -126,22 +122,6 @@ export class HomePageService {
 
     const result: HomePageData = {
       layoutType: layoutType, // ✅ اضافه میشه به response ولی توی cache ذخیره نمیشه
-      promoBanners: promoBanners.map((promo: PromoBanner) => ({
-        id: promo.id,
-        title: promo.title,
-        backgroundColor: promo.backgroundColor,
-        textColor: promo.textColor,
-        link: promo.link,
-        linkText: promo.linkText,
-        imageUrl: promo.imageUrl,
-        isActive: promo.isActive,
-        isClosable: promo.isClosable,
-        displayOrder: promo.displayOrder,
-        startDate: promo.startDate,
-        endDate: promo.endDate,
-        displayDuration: promo.displayDuration,
-        description: promo.description,
-      })),
       heroSliders: heroSliders.map((slider: HeroSlider) => ({
         id: slider.id,
         title: slider.title,

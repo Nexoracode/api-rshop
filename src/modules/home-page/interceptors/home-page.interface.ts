@@ -103,7 +103,6 @@ export interface HomeSectionData {
 
 export interface HomePageData {
   layoutType?: HomePageLayoutType;  // ✅ optional کردیم
-  promoBanners: PromoBannerData[];
   heroSliders: HeroSliderData[];
   sideBanners: SideBannerData[];
   categories: CategoryData[];
