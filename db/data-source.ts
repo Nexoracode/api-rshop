@@ -16,7 +16,8 @@ export const dataSourceOption: DataSourceOptions = {
         'dist/**/*.orm-entity{.ts,.js}'
     ],
     migrations: [__dirname + '/migrations/*.js'],
-    logging: process.env.NODE_ENV !== 'production',
+    // logging: process.env.NODE_ENV !== 'production',
+    logging: false,
     synchronize: process.env.NODE_ENV === 'development',
     extra: {
         connectionLimit: 10,

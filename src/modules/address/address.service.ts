@@ -41,6 +41,8 @@ export class AddressService implements IAddressService {
     async findMe(userId: number): Promise<IAddressResponse> {
         const address = await this.addressRepo.findOne({
             where: {
+                isActive: true,
+                deletedAt: new Date(),
                 user: { id: userId },
                 isPrimary: true,
             },
@@ -84,12 +86,14 @@ export class AddressService implements IAddressService {
     }
 
     async findByUserId(userId: number): Promise<IAddressResponse[]> {
-        const user = await this.userRepo.findOne({ where: { id: userId } });
+        const user = await this.userRepo.findOne({
+            where: { id: userId }
+        });
         if (!user) {
             throw new NotFoundException('user not found');
         }
         const address = await this.addressRepo.find({
-            where: { user: { id: userId } },
+            where: { user: { id: userId }, isActive: true },
         })
         return address.map((a) => AddressMapper.toResponse(a))
     }
