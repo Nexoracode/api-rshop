@@ -8,6 +8,7 @@ import { ResponseSnakeCaseInterceptor } from './common/interceptors/response.int
 import { SnakeToCamelInterceptor } from './common/interceptors/snake-case.interceptor';
 import { SwaggerDocumentBuilder } from './swagger/swagger-document-builder';
 import { AllExceptionsFilter } from './common/interceptors/http-exception';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -21,6 +22,33 @@ async function bootstrap() {
   // const importer = app.get(CatalogImportService);
   // await importer.run();
   // await app.close;
+  const dataSource = app.get(DataSource);
+  let reconnecting = false;
+  async function pingDatabase() {
+    if (reconnecting) return;
+    try {
+      if (dataSource.isInitialized) {
+        await dataSource.query('SELECT 1');
+      }
+    } catch (error: any) {
+      if (error.code === 'ECONNRESET' || error.message?.includes('ECONNRESET')) {
+        reconnecting = true;
+        logger.warn('ECONNRESET detected, reconnecting...');
+
+        try {
+          await dataSource.destroy();
+          await dataSource.initialize();
+          logger.log('Database reconnected successfully');
+        } catch (e: any) {
+          logger.error('Reconnect failed:', e.message);
+        } finally {
+          reconnecting = false;
+        }
+      }
+    }
+  }
+  setInterval(pingDatabase, 30000);
+  setTimeout(pingDatabase, 5000);
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter()),
@@ -55,15 +83,10 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseSnakeCaseInterceptor(), new SnakeToCamelInterceptor());
   // ✅ Graceful Shutdown
   app.enableShutdownHooks();
-
-  // ✅ Handle signals
-  process.on('SIGTERM', async () => {
-    logger.warn('⚠️ SIGTERM signal received: closing HTTP server');
-    await app.close();
-  });
   app.setGlobalPrefix('api');
   const swaggerDocumentBuilder = new SwaggerDocumentBuilder(app);
   swaggerDocumentBuilder.setupSwagger();
+
   await app.listen(process.env.PORT || 3001).then(() => {
     logger.log(`🚀 Application is running on: ${process.env.PORT}`);
   });

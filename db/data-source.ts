@@ -16,12 +16,26 @@ export const dataSourceOption: DataSourceOptions = {
         'dist/**/*.orm-entity{.ts,.js}'
     ],
     migrations: [__dirname + '/migrations/*.js'],
-    logging: false,
+    logging: process.env.NODE_ENV !== 'production',
     synchronize: process.env.NODE_ENV === 'development',
+    extra: {
+        connectionLimit: 10,
+        idleTimeoutMillis: 30000,
+        enableKeepAlive: true,
+        keepAliveInitialDelayMillis: 0,
+        // خودکار reconnect
+        waitForConnections: true,
+        queueLimit: 0,
+    },
     // synchronize: false,
     namingStrategy: new SnakeNamingStrategy(),
     timezone: '+03:30',
     // dropSchema: true,
+    cache: {
+        duration: 30000,
+    },
+    migrationsRun: false,
+    connectTimeout: 60000,
 };
 
 const dataSource = new DataSource(dataSourceOption);
