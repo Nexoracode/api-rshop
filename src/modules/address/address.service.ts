@@ -5,7 +5,7 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 import { IAddressResponse } from './interfaces/address.response.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Address } from './entities/address.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { AddressMapper } from './mappers/address.mapper';
 import { User } from '../user/entities/user.entity';
 
@@ -74,14 +74,45 @@ export class AddressService implements IAddressService {
     }
 
     async remove(userId: number, id: number): Promise<Object> {
-        const exists = await this.addressRepo.findOne({
-            where: { id },
-        })
-        if (!exists) throw new BadRequestException('آدرس یافت نشد');
+        // 1️⃣ پیدا کردن آدرس مورد نظر برای حذف
+        const addressToDelete = await this.addressRepo.findOne({
+            where: { id, userId },
+        });
+
+        if (!addressToDelete) {
+            throw new BadRequestException('آدرس یافت نشد');
+        }
+
+        // 2️⃣ چک کن آیا این آدرس اصلی بود؟
+        const wasPrimary = addressToDelete.isPrimary === true;
+
+        // 3️⃣ حذف منطقی آدرس
         await this.addressRepo.update(
-            { id, userId: userId },
-            { deletedAt: new Date(), isActive: false }
-        )
+            { id, userId },
+            { deletedAt: new Date(), isActive: false, isPrimary: false }
+        );
+
+        // 4️⃣ اگر آدرس حذف شده اصلی بود، یک آدرس جدید رو اصلی کن
+        if (wasPrimary) {
+            // پیدا کردن جدیدترین آدرس فعال دیگه (غیر از آدرسی که حذف شده)
+            const anotherActiveAddress = await this.addressRepo.findOne({
+                where: {
+                    userId,
+                    isActive: true,
+                    id: Not(id)  // آدرس حذف شده رو исключи
+                },
+                order: { createdAt: 'DESC' },  // جدیدترین آدرس
+            });
+
+            // اگر آدرس دیگه‌ای وجود داره، اون رو اصلی کن
+            if (anotherActiveAddress) {
+                await this.addressRepo.update(
+                    { id: anotherActiveAddress.id },
+                    { isPrimary: true }
+                );
+            }
+        }
+
         return { message: 'آدرس با موفقیت حذف شد', data: null };
     }
 

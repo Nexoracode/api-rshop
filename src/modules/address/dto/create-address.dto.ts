@@ -48,7 +48,7 @@ export class CreateAddressDto {
     @IsString()
     recipientPhone?: string;
 
-    @ApiProperty({ name: 'postal_code', default: '9952365214' })
+    @ApiProperty({ name: 'postal_code', example: '9952365214' })
     @IsOptional()
     @IsString()
     @Length(10, 10)

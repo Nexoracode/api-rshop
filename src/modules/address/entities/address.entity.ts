@@ -37,7 +37,7 @@ export class Address implements IAddress {
     @Column({ name: 'is_self', default: true })
     isSelf!: boolean;
 
-    @Column({ unique: true, name: 'postal_code' })
+    @Column({ name: 'postal_code' })
     postalCode!: string;
 
     @Column({ name: 'is_primary', default: true })
